@@ -1,0 +1,15 @@
+{
+    "Pool": ["Global", "CERN", "ITB", "Volunteer", "HEPCloud"],
+    "WMTool": ["WMAgent", "Unknown", "User", "HammerCloud"],
+    "SubmissionTool": ["CRAB", "WMAgent", "CMSConnect", "SiteSchedd"],
+    "Type": ["Production", "Analysis", "Test", "Tier0"],
+    "CMS_JobType": ["LogCollect", "Merge", "Processing", "Production", "Harvesting", "Cleanup", "Skim", "Repack", "Express"],
+    "TaskType": ["Reco", "Digi", "Gen", "GenSimDigi", "scriptExe", "CMSRun", "HCtest", "HCother"],
+    "PrimaryInputType": ["MC", "Data", "None"],
+    "PrimaryInputLocation": ["Onsite", "Offsite", "Mixed"],
+    "SecondaryInputType": ["MC", "Data", "None"],
+    "SecondaryInputLocation": ["Onsite", "Offsite", "Mixed"],
+    "JobFailed": [0, 1],
+    "ErrorType": ["Env", "Exe", "Stageout", "Publication", "Internal", "FileOpen", "DataRead", "Others"],
+    "ErrorCategory": ["Site", "Application", "WMTool"]
+}
