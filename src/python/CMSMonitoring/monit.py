@@ -55,12 +55,14 @@ class OptionParser():
             dest="idx", default=0, help="result index, default 0")
         self.parser.add_argument("--limit", action="store",
             dest="limit", default=10, help="result limit, default 10")
+        self.parser.add_argument("--verbose", action="store",
+            dest="verbose", default=0, help="verbose level, default 0")
 
 DBDICT = {
     'monit_prod_wmagent': 7617,
     'monit_production_condor': 7731
 }
-def run(url, token, dbid, dbname, query, idx=0, limit=10):
+def run(url, token, dbid, dbname, query, idx=0, limit=10, verbose=0):
     headers = {'Authorization': 'Bearer {}'.format(token)}
     dbid = dbid if dbid else DBDICT.get(dbname, 0)
     if not dbid:
@@ -94,22 +96,23 @@ def run(url, token, dbid, dbname, query, idx=0, limit=10):
             query = '{}\n{}\n'.format(json.dumps(qstr), json.dumps(qdict))
         else:
             query = ustr
-        return query_es(url, dbid, query, headers)
+        return query_es(url, dbid, query, headers, verbose)
     # influxDB query
-    return query_idb(url, dbid, dbname, query, headers)
+    return query_idb(url, dbid, dbname, query, headers, verbose)
 
-def query_idb(base, dbid, dbname, query, headers):
+def query_idb(base, dbid, dbname, query, headers, verbose=0):
     "Method to query InfluxDB"
     uri = base + '/api/datasources/proxy/{}/query?db={}&q={}'.format(dbid, dbname, query)
     response = requests.get(uri, headers=headers)
     return json.loads(response.text)
 
-def query_es(base, dbid, query, headers):
+def query_es(base, dbid, query, headers, verbose=0):
     "Method to query ES DB"
     # see https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
     headers.update({'Content-type': 'application/x-ndjson', 'Accept': 'application/json'})
     uri = base + '/api/datasources/proxy/{}/_msearch'.format(dbid)
-    print("Query ES: uri={} query={}".format(uri, query))
+    if verbose:
+        print("Query ES: uri={} query={}".format(uri, query))
     response = requests.get(uri, data=query, headers=headers)
     return json.loads(response.text)
 
@@ -120,8 +123,9 @@ def main():
     dbid = int(opts.dbid)
     idx = int(opts.idx)
     limit = int(opts.limit)
-    results = run(opts.url, opts.token, dbid, opts.dbname, opts.query, idx, limit)
-    print(results)
+    verbose = int(opts.verbose)
+    results = run(opts.url, opts.token, dbid, opts.dbname, opts.query, idx, limit, verbose)
+    print(json.dumps(results))
 
 if __name__ == '__main__':
     main()
