@@ -40,6 +40,9 @@ class OptionParser():
         desc += '\n'
         desc += 'Example of querying InfluxDB:\n'
         desc += '   monit --token=$token --dbname=monit_production_condor --query="SHOW TAG KEYS"\n'
+        desc += '\n'
+        desc += 'Token can be obtained at https://monit-grafana.cern.ch/org/apikeys\n'
+        desc += 'For more info see: http://docs.grafana.org/http_api/auth/'
         self.parser = argparse.ArgumentParser(prog='PROG', usage=desc)
         self.parser.add_argument("--dbid", action="store",
             dest="dbid", default=0, help="DB identifier")
