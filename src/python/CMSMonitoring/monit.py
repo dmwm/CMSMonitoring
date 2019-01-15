@@ -63,7 +63,9 @@ class OptionParser():
 
 DBDICT = {
     'monit_prod_wmagent': 7617,
-    'monit_production_condor': 7731
+    'monit_production_cmsjm': 7731,
+    'monit_prod_crab': 8978,
+    'monit_prod_condor': 8787
 }
 def run(url, token, dbid, dbname, query, idx=0, limit=10, verbose=0):
     headers = {'Authorization': 'Bearer {}'.format(token)}
