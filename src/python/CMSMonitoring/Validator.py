@@ -19,8 +19,18 @@ class Validator(object):
         self.schema = json.load(open(schema))
 
     def validate(self, key, value):
+        "Validate given key/value pair against the schema"
         if value not in self.schema.get(key, []):
             return False
+        return True
+
+    def validate_all(self, doc):
+        "Validate all keys in a given document"
+        if not isinstance(doc, dict):
+            return False
+        for key, val in doc.items():
+            if not self.validate(key, val):
+                return False
         return True
 
 class ClassAdsValidator(Validator):
