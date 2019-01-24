@@ -3,7 +3,7 @@
     "WMTool": ["WMAgent", "Unknown", "User", "HammerCloud"],
     "SubmissionTool": ["CRAB", "WMAgent", "CMSConnect", "SiteSchedd"],
     "Type": ["Production", "Analysis", "Test", "Tier0"],
-    "JobType": ["LogCollect", "Merge", "Processing", "Production", "Harvesting", "Cleanup", "Skim", "Repack", "Express"],
+    "JobType": ["LogCollect", "Merge", "Processing", "Production", "Harvesting", "Cleanup", "Skim", "Repack", "Express", "Analysis"],
     "TaskType": ["Reco", "Digi", "Gen", "GenSimDigi", "scriptExe", "CMSRun", "HCtest", "HCother"],
     "PrimaryInputType": ["MC", "Data", "None"],
     "PrimaryInputLocation": ["Onsite", "Offsite", "Mixed"],
