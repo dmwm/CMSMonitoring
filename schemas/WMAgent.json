@@ -1,0 +1,7 @@
+{
+"agent_url": "reqmgr2",
+"request_status": "rejected",
+"type": "reqmgr2_prio",
+"request_priority": 220000,
+"num_requests": 1
+}

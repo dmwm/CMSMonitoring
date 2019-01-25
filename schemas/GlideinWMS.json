@@ -1,0 +1,18 @@
+{
+  "status": "WARNING",
+  "service_flavour": "HTCONDOR-CE",
+  "start_timestamp": "1548441327640",
+  "site_name": "T2_CH_CERN",
+  "metric_name": "org.cms.WN-PSST",
+  "hostname": "b67f93fa04.cern.ch",
+  "disk_size": "253517",
+  "free_cvmfs_cache_space": "4984",
+  "exit_code": "10043",
+  "free_scratch_space": "219379",
+  "cvmfs_cache_quota": "24176",
+  "GridName": "/DC=ch/DC=cern/OU=OrganicUnits/OU=Users/CN=rmaciula/CN=780070/CN=Rokas Maciulaitis",
+  "CMSUser": "rmaciula",
+  "singularity": "True",
+  "target_ce": "cet02.cern.ch",
+  "logs": "log entry"
+}

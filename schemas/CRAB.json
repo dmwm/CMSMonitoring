@@ -1,0 +1,16 @@
+{
+  "status": "degraded",
+  "total_running_tasks": 1620,
+  "total_running_tp": 2811,
+  "total_idle_tasks": 0,
+  "current_task_states": {
+    "SUBMITFAILED": 13,
+    "SUBMITTED": 159
+  },
+  "abs_task_states": {
+    "UPLOADED": 11211,
+    "SUBMITFAILED": 177334,
+    "KILLFAILED": 4605,
+    "RESUBMITFAILED": 2860
+  }
+}
