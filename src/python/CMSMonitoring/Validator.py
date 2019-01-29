@@ -24,8 +24,6 @@ try:
 except ImportError:
     JSONSCHEMA = False
 
-JSONSCHEMA = False
-
 class Singleton(type):
     """Implementation of Singleton class"""
     _instances = {}
@@ -41,7 +39,7 @@ class Singleton(type):
 #     def __init__(self, schema):
 #         self.validator = jsonschema.validators.validator_for(schema)(schema)
 #         self.validator.check_schema(schema)
-#     def validate_schema(doc, schema):
+#     def validate_schema(doc):
 #         self.validator.validate(doc)
 #         return True
 # python 2.X implementation
@@ -84,7 +82,7 @@ def _validate_schema(schema, doc):
             print("{}: key={} is not in a schema".format(base, key))
             return False
         if isinstance(val, dict):
-            sub_schema = validate_schema(val, schema[key])
+            sub_schema = _validate_schema(schema[key], val)
             if not sub_schema:
                 print("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], val))
                 return False
@@ -139,7 +137,7 @@ class Validator(object):
 
     def validate_schema(self, doc):
         "Validate schema of a given document"
-        return validate_schema(doc, self.schema)
+        return validate_schema(self.schema, doc)
 
 class ClassAdsValidator(Validator):
     def __init__(self, schema=None):
