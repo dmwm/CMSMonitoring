@@ -28,10 +28,10 @@ class OptionParser():
         desc += 'MONIT datatabases via ES/Influx DB queries or key:val pairs\n'
         desc += '\n'
         desc += 'Example of querying ES DB via key:val pairs:\n'
-        desc += '   monit --token=$token --dbname=monit_prod_wmagent --query="status:Available,sum:35967"\n'
+        desc += '   monit --dbname=monit_prod_wmagent --query="status:Available,sum:35967"\n'
         desc += '\n'
         desc += 'Example of querying ES DB via ES query:\n'
-        desc += '   monit --token=$token --dbname=monit_prod_wmagent --query=query.json\n'
+        desc += '   monit --dbname=monit_prod_wmagent --query=query.json\n'
         desc += '   where query.json is ES query, e.g.\n'
         desc += '   {"query":{"match":{"data.payload.status": "Available"}}}\n'
         desc += '   For ES query syntax see:\n'
@@ -39,10 +39,11 @@ class OptionParser():
         desc += '   https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-term-query.html\n'
         desc += '\n'
         desc += 'Example of querying InfluxDB:\n'
-        desc += '   monit --token=$token --dbname=monit_production_condor --query="SHOW TAG KEYS"\n'
+        desc += '   monit --dbname=monit_production_condor --query="SHOW TAG KEYS"\n'
         desc += '\n'
         desc += 'Token can be obtained at https://monit-grafana.cern.ch/org/apikeys\n'
-        desc += 'For more info see: http://docs.grafana.org/http_api/auth/'
+        desc += 'For more info see: http://docs.grafana.org/http_api/auth/\n'
+        desc += 'If token is not provided we will use default one'
         self.parser = argparse.ArgumentParser(prog='PROG', usage=desc)
         self.parser.add_argument("--dbid", action="store",
             dest="dbid", default=0, help="DB identifier")
@@ -50,8 +51,9 @@ class OptionParser():
             dest="dbname", default="", help="DB name, e.g. monit_prod_wmagent")
         self.parser.add_argument("--query", action="store",
             dest="query", default="", help="DB query, JSON for ES and SQL for InfluxDB")
+        token = '/afs/cern.ch/user/l/leggerf/cms/token.txt'
         self.parser.add_argument("--token", action="store",
-            dest="token", default="", help="User token")
+            dest="token", default=token, help="User token")
         self.parser.add_argument("--url", action="store",
             dest="url", default="https://monit-grafana.cern.ch", help="MONIT URL")
         self.parser.add_argument("--idx", action="store",
@@ -129,7 +131,11 @@ def main():
     idx = int(opts.idx)
     limit = int(opts.limit)
     verbose = int(opts.verbose)
-    results = run(opts.url, opts.token, dbid, opts.dbname, opts.query, idx, limit, verbose)
+    dbname = opts.dbname
+    query = opts.query
+    token = open(opts.token).read().replace('\n', '') \
+            if os.path.exists(opts.token) else opts.token
+    results = run(opts.url, token, dbid, dbname, query, idx, limit, verbose)
     print(json.dumps(results))
 
 if __name__ == '__main__':
