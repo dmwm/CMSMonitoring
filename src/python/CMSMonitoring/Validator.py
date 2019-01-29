@@ -24,6 +24,8 @@ try:
 except ImportError:
     JSONSCHEMA = False
 
+JSONSCHEMA = False
+
 class Singleton(type):
     """Implementation of Singleton class"""
     _instances = {}
@@ -109,10 +111,10 @@ def validate_schema(schema, doc, verbose=False):
     if JSONSCHEMA:
         if verbose:
             print("using jsonschema validator")
-        return validate_jsonschema(doc, schema)
+        return validate_jsonschema(schema, doc)
     if verbose:
         print("using python based validator")
-    return _validate_schema(doc, schema)
+    return _validate_schema(schema, doc)
 
 class Validator(object):
     def __init__(self, schema):
