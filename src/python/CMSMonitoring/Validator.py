@@ -12,8 +12,56 @@ import os
 import sys
 import json
 
-def validate_schema(doc, schema):
-    "Validate schema of a given document"
+try:
+    import jsonschema
+    JSONSCHEMA = True
+except ImportError:
+    JSONSCHEMA = False
+
+class Singleton(type):
+    """Implementation of Singleton class"""
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = \
+                    super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+# python 3.X implementation
+# class JsonSchemaValidator(object, metaclass=Singleton):
+#     "Python 3.X implementation of validator based on jsonschema package"
+#     def __init__(self, schema):
+#         self.validator = jsonschema.validators.validator_for(schema)(schema)
+#         self.validator.check_schema(schema)
+#     def validate_schema(doc, schema):
+#         self.validator.validate(doc)
+#         return True
+# python 2.X implementation
+class JsonSchemaValidator(object):
+    "Python 2.X implementation of validator based on jsonschema package"
+    __metaclass__ = Singleton
+    def __init__(self, schema):
+        self.validator = jsonschema.validators.validator_for(schema)(schema)
+        self.validator.check_schema(schema)
+    def validate_schema(self, doc):
+        self.validator.validate(doc)
+        return True
+
+def validate_jsonschema(schema, doc):
+    """
+    Jsonschema implementation of validate schema of a given document
+    :param schema: schema to be used
+    :param doc: document to be validated
+    """
+    validator = JsonSchemaValidator(schema)
+    return validator.validate_schema(doc)
+
+def validate_schema(schema, doc):
+    """
+    Python based implementation to validate schema of a given document
+    :param schema: schema to be used
+    :param doc: document to be validated
+    """
     base = 'SCHEMA_VALIDATOR'
     if not isinstance(doc, dict):
         return False
@@ -39,6 +87,20 @@ def validate_schema(doc, schema):
             print("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, val, type(val), type(expect)))
             return False
     return True
+
+def validate_schema(schema, doc, verbose=False):
+    """
+    validates given document against given shema
+    :param schema: schema to be used
+    :param doc: document to be validated
+    """
+    if JSONSCHEMA:
+        if verbose:
+            print("using jsonschema validator")
+        return validate_jsonschema(doc, schema)
+    if verbose:
+        print("using python based validator")
+    return _validate_schema(doc, schema)
 
 class Validator(object):
     def __init__(self, schema):
