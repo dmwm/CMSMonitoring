@@ -5,6 +5,12 @@
 File       : Validator.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: set of utilities to validate CMS Monitoring schema(s)
+The API to use is validate_schema. We provide two implementation:
+- based on jsonschema [1] and genson [2] packages
+- pure python based implementation
+
+[1] https://github.com/Julian/jsonschema
+[2] https://github.com/wolverdude/genson/
 """
 
 # system modules
