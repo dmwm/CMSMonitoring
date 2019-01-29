@@ -62,7 +62,13 @@ def validate_jsonschema(schema, doc):
     validator = JsonSchemaValidator(schema)
     return validator.validate_schema(doc)
 
-def validate_schema(schema, doc):
+def etype(val):
+    "Helper function to deduce type of given value either from python based type or jsonschema"
+    if isinstance(val, dict) and 'type' in val:
+        return val['type']
+    return type(val)
+
+def _validate_schema(schema, doc):
     """
     Python based implementation to validate schema of a given document
     :param schema: schema to be used
@@ -86,11 +92,11 @@ def validate_schema(schema, doc):
             if len(types) != 1:
                 print("{}: for key={} val={} has inconsisten data-types".format(base, key, val))
                 return False
-            if list(types)[0] != type(expect[0]):
-                print("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(base, key, val, type(val), type(expect)))
+            if list(types)[0] != etype(expect[0]):
+                print("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(base, key, val, type(val), etype(expect)))
                 return False
-        if type(val) != type(expect):
-            print("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, val, type(val), type(expect)))
+        if type(val) != etype(expect):
+            print("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, val, type(val), etype(expect)))
             return False
     return True
 
