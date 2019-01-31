@@ -16,16 +16,13 @@ def version():
     return ver if ver else 'development'
 
 def main():
-    with open("README.md", "r") as fh:
-        long_description = fh.read()
-
     dist = setup(
         name                 = 'CMSMonitoring',
         version              = version(),
         author               = 'Valentin Kuznetsov',
         author_email         = 'vkuznet@gmail.com',
         description          = 'CMS Monitoring utilities',
-        long_description     = long_description,
+        long_description     = description,
         packages             = ['CMSMonitoring'],
         package_dir          = {'CMSMonitoring': 'src/python/CMSMonitoring'},
         requires             = ['jsonschema (>=2.6.0)', 'genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
