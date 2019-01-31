@@ -5,9 +5,25 @@ Standard python setup.py file for CMSMonitoring
 """
 import os
 import sys
+import fnmatch
 import subprocess
 
 from distutils.core import setup
+
+def datafiles(dir, pattern=None):
+    """Return list of data files in provided relative dir"""
+    files = []
+    for dirname, dirnames, filenames in os.walk(dir):
+        for subdirname in dirnames:
+            files.append(os.path.join(dirname, subdirname))
+        for filename in filenames:
+            if  filename[-1] == '~':
+                continue
+            # match file name pattern (e.g. *.css) if one given
+            if pattern and not fnmatch.fnmatch(filename, pattern):
+                continue
+            files.append(os.path.join(dirname, filename))
+    return files
 
 def version():
     "Return git tag version of the package or custom version"
@@ -28,6 +44,7 @@ def main():
         install_requires     = ['jsonschema>=2.6.0', 'genson>=1.0.2', 'stomp.py==4.1.21'],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         url                  = 'https://github.com/dmwm/CMSMonitoring',
+        data_files           = [('CMSMonitoring/schemas', datafiles('schemas', '*.json'))],
         classifiers          = [
             "Programming Language :: Python",
             "Operating System :: OS Independent",
