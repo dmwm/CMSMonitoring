@@ -5,11 +5,40 @@ Basic interface to CERN ActiveMQ via stomp
 from __future__ import print_function
 from __future__ import division
 
+import os
 import json
 import logging
 import time
-import stomp
-from uuid import uuid64
+try:
+    import stomp
+except ImportError:
+    print("No stomp module found")
+from uuid import uuid4
+
+from CMSMonitoring.Validator import validate_schema
+
+def schemas():
+    "Return all known CMSMonitoring schemas"
+    fname = __file__.split('CMSMonitoring/StompAMQ.py')[0].split('CMSMonitoring')[0]
+    fdir = '{}/CMSMonitoring/schemas'.format(fname)
+    try:
+        return os.listdir(fdir)
+    except OSError:
+        raise Exception('Invalid CMSMonitoring schemas area: {}'.format(fdir))
+    except Exception as exp:
+        raise Exception('Invalid CMSMonitoring schemas area: {}, error={}'.format(fdir, str(exp)))
+
+def validate(data):
+    "Helper function to validate given document against CMSMonitoring schemas"
+    doc = data
+    if 'data' in data:
+        doc = data['data']
+    if 'payload' in data:
+        doc = data['payload']
+    for schema in schemas:
+        if validate_schema(schema, doc):
+            return True
+    return False
 
 class StompyListener(object):
     """
@@ -95,6 +124,11 @@ class StompAMQ(object):
         # If only a single notification, put it in a list
         if isinstance(data, dict) and 'body' in data:
             data = [data]
+
+        # validate given data
+        for doc in data:
+            if not validate(doc):
+                raise Exception('Document {} conflicts with all CMSMonitoring schemas'.format(doc))
 
         conn = stomp.Connection(host_and_ports=self._host_and_ports)
 
