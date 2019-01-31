@@ -33,7 +33,7 @@ def main():
         requires             = ['jsonschema (>=2.6.0)', ' genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
         classifiers          = ["Operating System :: OS Independent",
             "License :: OSI Approved :: MIT License",
-            "Programming Language :: Python"],
+            "Programming Language :: Python :: 2"],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         author               = 'Valentin Kuznetsov',
         author_email         = 'vkuznet@gmail.com',
