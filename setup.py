@@ -25,20 +25,21 @@ def main():
     dist = setup(
         name                 = 'CMSMonitoring',
         version              = version(),
+        author               = 'Valentin Kuznetsov',
+        author_email         = 'vkuznet@gmail.com',
         description          = 'CMS Monitoring utilities',
         long_description     = long_description,
         keywords             = ['CMS experiment', 'CERN', 'Monitoring'],
         packages             = ['CMSMonitoring'],
         package_dir          = {'CMSMonitoring': 'src/python/CMSMonitoring'},
         requires             = ['jsonschema (>=2.6.0)', ' genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
-        classifiers          = ["Operating System :: OS Independent",
-            "License :: OSI Approved :: MIT License",
-            "Programming Language :: Python :: 2.7"],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
-        author               = 'Valentin Kuznetsov',
-        author_email         = 'vkuznet@gmail.com',
         url                  = 'https://github.com/dmwm/CMSMonitoring',
-        license              = license,
+        classifiers          = [
+            "Programming Language :: Python",
+            "Operating System :: OS Independent",
+            "License :: OSI Approved :: MIT License",
+            ],
     )
 
 if __name__ == "__main__":
