@@ -24,9 +24,9 @@ with open("README.md", "r") as fh:
 version      = version()
 name         = "CMSMonitoring"
 description  = "CMS Monitoring utilities"
-author       = "Valentin Kuznetsov",
-author_email = "vkuznet@gmail.com",
-url          = "https://github.com/dmwm/CMSMonitoring",
+author       = "Valentin Kuznetsov"
+author_email = "vkuznet@gmail.com"
+url          = "https://github.com/dmwm/CMSMonitoring"
 keywords     = ["CMS", "Monitoring"]
 package_dir  = {'CMSMonitoring': 'src/python/CMSMonitoring'}
 packages     = ['CMSMonitoring']
