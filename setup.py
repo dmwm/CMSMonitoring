@@ -18,45 +18,26 @@ def version():
     ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read().replace('\n', '')
     return ver if ver else 'development'
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
-version      = version()
-name         = "CMSMonitoring"
-description  = "CMS Monitoring utilities"
-author       = "Valentin Kuznetsov"
-author_email = "vkuznet@gmail.com"
-url          = "https://github.com/dmwm/CMSMonitoring"
-keywords     = ["CMS", "Monitoring"]
-package_dir  = {'CMSMonitoring': 'src/python/CMSMonitoring'}
-packages     = ['CMSMonitoring']
-license      = "CMS experiment software"
-classifiers  = [
-    "Development Status :: 3 - Production/Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: CMS/CERN Software License",
-    "Operating System :: MacOS :: MacOS X",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX",
-    "Programming Language :: Python",
-    "Topic :: Monitoring"
-]
-
 def main():
+    with open("README.md", "r") as fh:
+        long_description = fh.read()
+
     dist = setup(
-        name                 = name,
-        version              = version,
-        description          = description,
+        name                 = 'CMSMonitoring',
+        version              = version(),
+        description          = 'CMS Monitoring utilities',
         long_description     = long_description,
-        keywords             = keywords,
-        packages             = packages,
-        package_dir          = package_dir,
+        keywords             = ['CMS experiment', 'CERN', 'Monitoring'],
+        packages             = ['CMSMonitoring'],
+        package_dir          = {'CMSMonitoring': 'src/python/CMSMonitoring'},
         requires             = ['jsonschema (>=2.6.0)', ' genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
-        classifiers          = classifiers,
+        classifiers          = ["License :: OSI Approved :: CMS/CERN Software License",
+            "Operating System :: OS Independent", "Programming Language :: Python",
+            "Topic :: Monitoring"],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
-        author               = author,
-        author_email         = author_email,
-        url                  = url,
+        author               = 'Valentin Kuznetsov',
+        author_email         = 'vkuznet@gmail.com',
+        url                  = 'https://github.com/dmwm/CMSMonitoring',
         license              = license,
     )
 
