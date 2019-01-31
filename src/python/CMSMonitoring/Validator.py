@@ -12,6 +12,7 @@ The API to use is validate_schema. We provide two implementation:
 [1] https://github.com/Julian/jsonschema
 [2] https://github.com/wolverdude/genson/
 """
+from __future__ import print_function
 
 # system modules
 import os
