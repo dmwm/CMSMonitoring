@@ -18,12 +18,12 @@ def version():
     ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     return ver if ver else 'development'
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 version      = version()
 name         = "CMSMonitoring"
 description  = "CMS Monitoring utilities"
-readme       ="""
-CMSMonitoring: https://github.com/dmwm/CMSMonitoring
-"""
 author       = "Valentin Kuznetsov",
 author_email = "vkuznet@gmail.com",
 url          = "https://github.com/dmwm/CMSMonitoring",
@@ -47,7 +47,7 @@ def main():
         name                 = name,
         version              = version,
         description          = description,
-        long_description     = readme,
+        long_description     = long_description,
         keywords             = keywords,
         packages             = packages,
         package_dir          = package_dir,
