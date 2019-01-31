@@ -6,13 +6,19 @@ Standard python setup.py file for CMSMonitoring
 from __future__ import print_function
 __author__ = "Valentin Kuznetsov"
 
-import sys
 import os
+import sys
 import subprocess
 
 from distutils.core import setup
 
-version      = 'development'
+def version():
+    "Return git tag version of the package or custom version"
+    cmd = 'git tag --list | tail -1'
+    ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
+    return ver if ver else 'development'
+
+version      = version()
 name         = "CMSMonitoring"
 description  = "CMS Monitoring utilities"
 readme       ="""
