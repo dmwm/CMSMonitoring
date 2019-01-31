@@ -32,11 +32,10 @@ def main():
         keywords             = ['CMS experiment', 'CERN', 'Monitoring'],
         packages             = ['CMSMonitoring'],
         package_dir          = {'CMSMonitoring': 'src/python/CMSMonitoring'},
-        requires             = ['jsonschema (>=2.6.0)', ' genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
+        requires             = ['jsonschema (>=2.6.0)', 'genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         url                  = 'https://github.com/dmwm/CMSMonitoring',
         classifiers          = [
-            "Programming Language :: Python",
             "Operating System :: OS Independent",
             "License :: OSI Approved :: MIT License",
             ],
