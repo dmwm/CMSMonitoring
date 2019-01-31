@@ -25,7 +25,7 @@ def main():
         long_description     = 'CMS Monitoring utilities',
         packages             = ['CMSMonitoring'],
         package_dir          = {'CMSMonitoring': 'src/python/CMSMonitoring'},
-        requires             = ['jsonschema (>=2.6.0)', 'genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
+        requires             = ['jsonschema', 'genson', 'stomp.py'],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         url                  = 'https://github.com/dmwm/CMSMonitoring',
         classifiers          = [
