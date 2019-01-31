@@ -15,7 +15,7 @@ from distutils.core import setup
 def version():
     "Return git tag version of the package or custom version"
     cmd = 'git tag --list | tail -1'
-    ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
+    ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read().replace('\n', '')
     return ver if ver else 'development'
 
 with open("README.md", "r") as fh:
