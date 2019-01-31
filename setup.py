@@ -3,9 +3,6 @@
 """
 Standard python setup.py file for CMSMonitoring
 """
-from __future__ import print_function
-__author__ = "Valentin Kuznetsov"
-
 import os
 import sys
 import subprocess
@@ -29,13 +26,13 @@ def main():
         author_email         = 'vkuznet@gmail.com',
         description          = 'CMS Monitoring utilities',
         long_description     = long_description,
-        keywords             = ['CMS experiment', 'CERN', 'Monitoring'],
         packages             = ['CMSMonitoring'],
         package_dir          = {'CMSMonitoring': 'src/python/CMSMonitoring'},
         requires             = ['jsonschema (>=2.6.0)', 'genson (>=1.0.2)', 'stomp.py (==4.1.21)'],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         url                  = 'https://github.com/dmwm/CMSMonitoring',
         classifiers          = [
+            "Programming Language :: Python",
             "Operating System :: OS Independent",
             "License :: OSI Approved :: MIT License",
             ],
@@ -43,4 +40,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
