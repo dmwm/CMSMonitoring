@@ -19,6 +19,7 @@ import os
 import sys
 import json
 import time
+import hashlib
 
 try:
     import jsonschema
@@ -26,31 +27,33 @@ try:
 except ImportError:
     JSONSCHEMA = False
 
-class Singleton(type):
-    """Implementation of Singleton class"""
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = \
-                    super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+def md5hash(rec):
+    "Return md5 hash of given query"
+    if  not isinstance(rec, dict):
+        raise NotImplementedError
+    # discard timestamp fields from hash calculations since they're dynamic
+    record = dict(rec)
+    rec = json.JSONEncoder(sort_keys=True).encode(record)
+    keyhash = hashlib.md5()
+    try:
+        keyhash.update(rec)
+    except TypeError: # python3
+        keyhash.update(rec.encode('ascii'))
+    return keyhash.hexdigest()
 
-# python 3.X implementation
-# class JsonSchemaValidator(object, metaclass=Singleton):
-#     "Python 3.X implementation of validator based on jsonschema package"
-#     def __init__(self, schema):
-#         self.validator = jsonschema.validators.validator_for(schema)(schema)
-#         self.validator.check_schema(schema)
-#     def validate_schema(doc):
-#         self.validator.validate(doc)
-#         return True
-# python 2.X implementation
+# global pool of validators
+VALIDATORS = {}
+
 class JsonSchemaValidator(object):
     "Python 2.X implementation of validator based on jsonschema package"
-    __metaclass__ = Singleton
     def __init__(self, schema):
-        self.validator = jsonschema.validators.validator_for(schema)(schema)
-        self.validator.check_schema(schema)
+        shash = md5hash(schema)
+        if shash in VALIDATORS:
+            self.validator = VALIDATORS[shash]
+        else:
+            self.validator = jsonschema.validators.validator_for(schema)(schema)
+            self.validator.check_schema(schema)
+            VALIDATORS[shash] = self.validator
     def validate_schema(self, doc, verbose=False):
         try:
             self.validator.validate(doc)
