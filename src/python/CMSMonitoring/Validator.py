@@ -50,18 +50,18 @@ class JsonSchemaValidator(object):
     def __init__(self, schema):
         self.validator = jsonschema.validators.validator_for(schema)(schema)
         self.validator.check_schema(schema)
-    def validate_schema(self, doc):
+    def validate_schema(self, doc, verbose=False):
         self.validator.validate(doc)
         return True
 
-def validate_jsonschema(schema, doc):
+def validate_jsonschema(schema, doc, verbose=False):
     """
     Jsonschema implementation of validate schema of a given document
     :param schema: schema to be used
     :param doc: document to be validated
     """
     validator = JsonSchemaValidator(schema)
-    return validator.validate_schema(doc)
+    return validator.validate_schema(doc, verbose)
 
 def etype(val):
     "Helper function to deduce type of given value either from python based type or jsonschema"
@@ -69,7 +69,7 @@ def etype(val):
         return val['type']
     return type(val)
 
-def _validate_schema(schema, doc):
+def _validate_schema(schema, doc, verbose=False):
     """
     Python based implementation to validate schema of a given document
     :param schema: schema to be used
@@ -80,24 +80,29 @@ def _validate_schema(schema, doc):
         return False
     for key, val in doc.items():
         if key not in schema:
-            print("{}: key={} is not in a schema".format(base, key))
+            if verbose:
+                print("{}: key={} is not in a schema".format(base, key))
             return False
         if isinstance(val, dict):
             sub_schema = _validate_schema(schema[key], val)
             if not sub_schema:
-                print("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], val))
+                if verbose:
+                    print("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], val))
                 return False
         expect = schema[key]
         if isinstance(val, list):
             types = set([type(x) for x in val])
             if len(types) != 1:
-                print("{}: for key={} val={} has inconsisten data-types".format(base, key, val))
+                if verbose:
+                    print("{}: for key={} val={} has inconsisten data-types".format(base, key, val))
                 return False
             if list(types)[0] != etype(expect[0]):
-                print("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(base, key, val, type(val), etype(expect)))
+                if verbose:
+                    print("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(base, key, val, type(val), etype(expect)))
                 return False
         if type(val) != etype(expect):
-            print("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, val, type(val), etype(expect)))
+            if verbose:
+                print("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, val, type(val), etype(expect)))
             return False
     return True
 
@@ -107,13 +112,13 @@ def validate_schema(schema, doc, verbose=False):
     :param schema: schema to be used
     :param doc: document to be validated
     """
-    if JSONSCHEMA:
+    if '$schema' in schema:
         if verbose:
             print("using jsonschema validator")
-        return validate_jsonschema(schema, doc)
+        return validate_jsonschema(schema, doc, verbose)
     if verbose:
         print("using python based validator")
-    return _validate_schema(schema, doc)
+    return _validate_schema(schema, doc, verbose)
 
 class Validator(object):
     def __init__(self, schema):
