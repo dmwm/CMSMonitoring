@@ -1,0 +1,1 @@
+{"$schema": "http://json-schema.org/schema#", "required": ["agent_url", "num_requests", "request_priority", "request_status", "type"], "type": "object", "properties": {"agent_url": {"type": "string"}, "request_status": {"type": "string"}, "type": {"type": "string"}, "request_priority": {"type": "integer"}, "num_requests": {"type": "integer"}}}
