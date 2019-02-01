@@ -17,25 +17,41 @@ from uuid import uuid4
 
 from CMSMonitoring.Validator import validate_schema
 
-def schemas():
-    "Return all known CMSMonitoring schemas"
-    fname = __file__.split('CMSMonitoring/StompAMQ.py')[0].split('CMSMonitoring')[0]
-    fdir = '{}/CMSMonitoring/schemas'.format(fname)
-    try:
-        return os.listdir(fdir)
-    except OSError:
-        raise Exception('Invalid CMSMonitoring schemas area: {}'.format(fdir))
-    except Exception as exp:
-        raise Exception('Invalid CMSMonitoring schemas area: {}, error={}'.format(fdir, str(exp)))
+class Schemas(object):
+    def __init__(self, update=3600):
+        self.tstamp = time.time()
+        self.update = update
+        self.sdict = {}
+    def schemas(self):
+        "Return all known CMSMonitoring schemas"
+        if self.sdict and (time.time()-self.tstamp) < self.update:
+            return self.sdict
+        fname = __file__.split('CMSMonitoring/StompAMQ.py')[0].split('CMSMonitoring')[0]
+        fdir = '{}/CMSMonitoring/schemas'.format(fname)
+        snames = []
+        try:
+            snames = os.listdir(fdir)
+        except OSError:
+            raise Exception('Invalid CMSMonitoring schemas area: {}'.format(fdir))
+        except Exception as exp:
+            raise Exception('Invalid CMSMonitoring schemas area: {}, error={}'.format(fdir, str(exp)))
+        for sname in snames:
+            self.sdict[sname] = json.load(open(os.path.join(fdir, sname)))
+        return self.sdict
 
-def validate(data):
+# global object which holds CMS Monitoring schemas
+_schemas = Schemas()
+
+def validate(data, verbose=False):
     "Helper function to validate given document against CMSMonitoring schemas"
     doc = data
     if 'data' in data:
         doc = data['data']
     if 'payload' in data:
         doc = data['payload']
-    for schema in schemas():
+    for sname, schema in _schemas.schemas().items():
+        if verbose:
+            print('validate document {} against schema {} {}'.format(data, sname, schema))
         if validate_schema(schema, doc):
             return True
     return False
