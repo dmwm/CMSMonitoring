@@ -18,6 +18,7 @@ from __future__ import print_function
 import os
 import sys
 import json
+import time
 
 try:
     import jsonschema
@@ -51,8 +52,41 @@ class JsonSchemaValidator(object):
         self.validator = jsonschema.validators.validator_for(schema)(schema)
         self.validator.check_schema(schema)
     def validate_schema(self, doc, verbose=False):
-        self.validator.validate(doc)
+        try:
+            self.validator.validate(doc)
+        except Exception as exp:
+            if verbose:
+                print("Fail schema validation")
+                print(str(exp))
+            return False
         return True
+
+class Schemas(object):
+    "Schemas object provides access to CMSMonitoring schema files"
+    def __init__(self, update=3600, jsonschemas=False):
+        self.tstamp = time.time()
+        self.update = update
+        self.sdict = {}
+        self.jsonschemas = jsonschemas
+
+    def schemas(self):
+        "Return all known CMSMonitoring schemas"
+        if self.sdict and (time.time()-self.tstamp) < self.update:
+            return self.sdict
+        fname = __file__.split('CMSMonitoring/StompAMQ.py')[0].split('CMSMonitoring')[0]
+        fdir = '{}/CMSMonitoring/schemas'.format(fname)
+        if self.jsonschemas:
+            fdir = '{}/CMSMonitoring/jsonschemas'.format(fname)
+        snames = []
+        try:
+            snames = os.listdir(fdir)
+        except OSError:
+            raise Exception('Invalid CMSMonitoring schemas area: {}'.format(fdir))
+        except Exception as exp:
+            raise Exception('Invalid CMSMonitoring schemas area: {}, error={}'.format(fdir, str(exp)))
+        for sname in snames:
+            self.sdict[sname] = json.load(open(os.path.join(fdir, sname)))
+        return self.sdict
 
 def validate_jsonschema(schema, doc, verbose=False):
     """
