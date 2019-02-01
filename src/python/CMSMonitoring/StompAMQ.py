@@ -30,7 +30,7 @@ def validate(data, verbose=False):
     for sname, schema in _schemas.schemas().items():
         if verbose:
             print('validate document {} against schema {} {}'.format(data, sname, schema))
-        if validate_schema(schema, doc):
+        if validate_schema(schema, doc, verbose):
             return True
     return False
 
