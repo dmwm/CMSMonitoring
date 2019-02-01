@@ -15,32 +15,10 @@ except ImportError:
     print("No stomp module found")
 from uuid import uuid4
 
-from CMSMonitoring.Validator import validate_schema
-
-class Schemas(object):
-    def __init__(self, update=3600):
-        self.tstamp = time.time()
-        self.update = update
-        self.sdict = {}
-    def schemas(self):
-        "Return all known CMSMonitoring schemas"
-        if self.sdict and (time.time()-self.tstamp) < self.update:
-            return self.sdict
-        fname = __file__.split('CMSMonitoring/StompAMQ.py')[0].split('CMSMonitoring')[0]
-        fdir = '{}/CMSMonitoring/schemas'.format(fname)
-        snames = []
-        try:
-            snames = os.listdir(fdir)
-        except OSError:
-            raise Exception('Invalid CMSMonitoring schemas area: {}'.format(fdir))
-        except Exception as exp:
-            raise Exception('Invalid CMSMonitoring schemas area: {}, error={}'.format(fdir, str(exp)))
-        for sname in snames:
-            self.sdict[sname] = json.load(open(os.path.join(fdir, sname)))
-        return self.sdict
+from CMSMonitoring.Validator import validate_schema, Schemas
 
 # global object which holds CMS Monitoring schemas
-_schemas = Schemas()
+_schemas = Schemas(update=3600, jsonschemas=True)
 
 def validate(data, verbose=False):
     "Helper function to validate given document against CMSMonitoring schemas"
