@@ -35,7 +35,7 @@ def validate(data):
         doc = data['data']
     if 'payload' in data:
         doc = data['payload']
-    for schema in schemas:
+    for schema in schemas():
         if validate_schema(schema, doc):
             return True
     return False
