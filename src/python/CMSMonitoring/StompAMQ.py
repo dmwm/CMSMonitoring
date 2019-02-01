@@ -18,7 +18,7 @@ from uuid import uuid4
 from CMSMonitoring.Validator import validate_schema, Schemas
 
 # global object which holds CMS Monitoring schemas
-_schemas = Schemas(update=3600, jsonschemas=True)
+_schemas = Schemas(update=3600, jsonschemas=False)
 
 def validate(data, verbose=False):
     "Helper function to validate given document against CMSMonitoring schemas"
