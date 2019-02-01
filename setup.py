@@ -44,7 +44,10 @@ def main():
         install_requires     = ['jsonschema>=2.6.0', 'genson>=1.0.2', 'stomp.py==4.1.21'],
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         url                  = 'https://github.com/dmwm/CMSMonitoring',
-        data_files           = [('CMSMonitoring/schemas', datafiles('schemas', '*.json'))],
+        data_files           = [
+            ('CMSMonitoring/schemas', datafiles('schemas', '*.json')),
+            ('CMSMonitoring/jsonschemas', datafiles('jsonschemas', '*.schema')),
+            ],
         classifiers          = [
             "Programming Language :: Python",
             "Operating System :: OS Independent",
