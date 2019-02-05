@@ -12,7 +12,7 @@ import os
 import sys
 import unittest
 
-from CMSMonitoring.Validator import Validator, ClassAdsValidator, validate_schema
+from CMSMonitoring.Validator import Validator, ClassAdsValidator, _validate_schema
 
 class testDASCore(unittest.TestCase):
     def setUp(self):
@@ -32,21 +32,21 @@ class testDASCore(unittest.TestCase):
         self.assertEqual(result, False)
 
     def testValidateSchema(self):
-        "Test validate_schema function"
+        "Test _validate_schema function"
         schema = {'s':'s', 'i':1, 'd':{'ds':'s', 'di':1}, 'l':[1,2]}
-        result = validate_schema(schema, schema)
+        result = _validate_schema(schema, schema)
         self.assertEqual(result, True)
 
         doc = {'s': 1}
-        result = validate_schema(doc, schema)
+        result = _validate_schema(schema, doc)
         self.assertEqual(result, False)
 
         doc = {'s':'s', 'i':1, 'd':{'ds':'s', 'di':1}, 'l':[1,'2']}
-        result = validate_schema(doc, schema)
+        result = _validate_schema(schema, doc)
         self.assertEqual(result, False)
 
         doc = {'s':'s', 'i':1, 'd':{'ds':1, 'di':1}, 'l':[1,2]}
-        result = validate_schema(doc, schema)
+        result = _validate_schema(schema, doc)
         self.assertEqual(result, False)
 
 if __name__ == '__main__':
