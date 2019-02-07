@@ -76,10 +76,24 @@ class Schemas(object):
         "Return all known CMSMonitoring schemas"
         if self.sdict and (time.time()-self.tstamp) < self.update:
             return self.sdict
-        fname = __file__.split('CMSMonitoring/StompAMQ.py')[0].split('CMSMonitoring')[0]
-        fdir = '{}/CMSMonitoring/schemas'.format(fname)
+        if 'CMSMONITORING_SHCEMAS' in os.environ:
+            fdir = os.environ['CMSMONITORING_SHCEMAS']
+        else:
+            code_dir = '/'.join(__file__.split('/')[:-1])
+            if os.path.join(code_dir, 'schemas'):
+                fdir = os.path.join(code_dir, 'schemas')
+            else:
+                fname = __file__.split('CMSMonitoring/Validator.py')[0].split('CMSMonitoring')[0]
+                fdir = '{}/CMSMonitoring/schemas'.format(fname)
         if self.jsonschemas:
-            fdir = '{}/CMSMonitoring/jsonschemas'.format(fname)
+            if 'CMSMONITORING_JSONSHCEMAS' in os.environ:
+                fdir = os.environ['CMSMONITORING_JSONSHCEMAS']
+            else:
+                code_dir = '/'.join(__file__.split('/')[:-1])
+                if os.path.join(code_dir, 'jsonschemas'):
+                    fdir = os.path.join(code_dir, 'jsonschemas')
+                else:
+                    fdir = '{}/CMSMonitoring/jsonschemas'.format(fname)
         snames = []
         try:
             snames = os.listdir(fdir)
