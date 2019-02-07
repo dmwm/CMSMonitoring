@@ -32,6 +32,9 @@ def version():
     return ver if ver else 'development'
 
 def main():
+    ver = sys.version.split(' ')[0]
+    pver = '.'.join(ver.split('.')[:-1])
+    lpath = 'lib/python{}/site-packages'.format(pver)
     dist = setup(
         name                 = 'CMSMonitoring',
         version              = version(),
@@ -45,8 +48,8 @@ def main():
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         url                  = 'https://github.com/dmwm/CMSMonitoring',
         data_files           = [
-            ('CMSMonitoring/schemas', datafiles('schemas', '*.json')),
-            ('CMSMonitoring/jsonschemas', datafiles('jsonschemas', '*.schema')),
+            ('{}/CMSMonitoring/schemas'.format(lpath), datafiles('schemas', '*.json')),
+            ('{}/CMSMonitoring/jsonschemas'.format(lpath), datafiles('jsonschemas', '*.schema')),
             ],
         classifiers          = [
             "Programming Language :: Python",
