@@ -76,8 +76,8 @@ class Schemas(object):
         "Return all known CMSMonitoring schemas"
         if self.sdict and (time.time()-self.tstamp) < self.update:
             return self.sdict
-        if 'CMSMONITORING_SHCEMAS' in os.environ:
-            fdir = os.environ['CMSMONITORING_SHCEMAS']
+        if 'CMSMONITORING_SCHEMAS' in os.environ:
+            fdir = os.environ['CMSMONITORING_SCHEMAS']
         else:
             code_dir = '/'.join(__file__.split('/')[:-1])
             if os.path.join(code_dir, 'schemas'):
@@ -86,8 +86,8 @@ class Schemas(object):
                 fname = __file__.split('CMSMonitoring/Validator.py')[0].split('CMSMonitoring')[0]
                 fdir = '{}/CMSMonitoring/schemas'.format(fname)
         if self.jsonschemas:
-            if 'CMSMONITORING_JSONSHCEMAS' in os.environ:
-                fdir = os.environ['CMSMONITORING_JSONSHCEMAS']
+            if 'CMSMONITORING_JSONSCHEMAS' in os.environ:
+                fdir = os.environ['CMSMONITORING_JSONSCHEMAS']
             else:
                 code_dir = '/'.join(__file__.split('/')[:-1])
                 if os.path.join(code_dir, 'jsonschemas'):
@@ -145,7 +145,7 @@ def _validate_schema(schema, doc, verbose=False):
             types = set([type(x) for x in val])
             if len(types) != 1:
                 if verbose:
-                    print("{}: for key={} val={} has inconsisten data-types".format(base, key, val))
+                    print("{}: for key={} val={} has inconsistent data-types".format(base, key, val))
                 return False
             if list(types)[0] != etype(expect[0]):
                 if verbose:
