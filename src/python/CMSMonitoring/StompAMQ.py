@@ -121,7 +121,7 @@ class StompAMQ(object):
 
         # validate given data
         for doc in data:
-            if not validate(doc):
+            if not validate(doc['body']):
                 raise Exception('Document {} conflicts with all CMSMonitoring schemas'.format(doc))
 
         conn = stomp.Connection(host_and_ports=self._host_and_ports)
