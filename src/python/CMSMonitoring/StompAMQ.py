@@ -19,19 +19,41 @@ from CMSMonitoring.Validator import validate_schema, Schemas
 
 # global object which holds CMS Monitoring schemas
 _schemas = Schemas(update=3600, jsonschemas=False)
+_local_schemas = None
 
-def validate(data, verbose=False):
-    "Helper function to validate given document against CMSMonitoring schemas"
-    doc = data
-    if 'data' in data:
-        doc = data['data']
-    if 'payload' in data:
-        doc = data['payload']
-    for sname, schema in _schemas.schemas().items():
-        if verbose:
-            print('validate document {} against schema {} {}'.format(data, sname, schema))
-        if validate_schema(schema, doc, verbose):
-            return True
+def validate(doc, schema='auto', verbose=False):
+    """
+    Helper function to validate given document against a schema
+
+    Schemas are searched for locally, or within the central CMSMonitoring
+    schemas.
+    """
+    global _local_schemas
+    if schema is None:
+        return False
+
+    if _local_schemas is None:
+        # First time running, try to find the schema locally
+        # Second time, _local_schemas will be a dictionary and this is skipped
+        _local_schemas = {}
+        if os.path.isfile(schema):
+            try:
+                _local_schemas[schema] = json.load(open(schema))
+                logging.warning('Successfully loaded local schema {} for validation'.format(schema))
+            except ValueError:
+                logging.warning('Local schema {} is not json compliant'.format(schema))
+
+    if schema in _local_schemas:
+        return validate_schema(_local_schemas[schema], doc, verbose)
+
+    elif schema in _schemas.schemas():
+        return validate_schema(_schemas.schemas()[schema], doc, verbose)
+
+    else:
+        for sname, sch in _schemas.schemas().items():
+            if validate_schema(sch, doc, verbose):
+                return True
+
     return False
 
 class StompyListener(object):
@@ -85,13 +107,17 @@ class StompAMQ(object):
         E.g.: [('agileinf-mb.cern.ch', 61213)]
     :param cert: path to certificate file
     :param key: path to key file
+    :param schema: schema to use for validation. If 'auto', will attempt to use central
+        CMSMonitoring schemas. If 'None', skip any validation. Look for schema files
+        locally, in 'schemas/' folder in CMSMonitoring package or in folder defined in
+        'CMSMONITORING_SCHEMAS' environmental variable.
     """
 
     # Version number to be added in header
     _version = '0.3'
 
     def __init__(self, username, password, producer, topic,
-                 host_and_ports=None, logger=None, cert=None, key=None):
+                 host_and_ports=None, logger=None, cert=None, key=None, schema='auto'):
         self._username = username
         self._password = password
         self._producer = producer
@@ -104,6 +130,7 @@ class StompAMQ(object):
         # silence the INFO log records from the stomp library, until this issue gets fixed:
         # https://github.com/jasonrbriggs/stomp.py/issues/226
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
+        self.schema = schema
 
     def send(self, data):
         """
@@ -118,11 +145,6 @@ class StompAMQ(object):
         # If only a single notification, put it in a list
         if isinstance(data, dict) and 'body' in data:
             data = [data]
-
-        # validate given data
-        for doc in data:
-            if not validate(doc['body']):
-                raise Exception('Document {} conflicts with all CMSMonitoring schemas'.format(doc))
 
         conn = stomp.Connection(host_and_ports=self._host_and_ports)
 
@@ -180,7 +202,7 @@ class StompAMQ(object):
         return
 
     def make_notification(self, payload, docType, docId=None, producer=None, ts=None, metadata=None,
-                          dataSubfield="data"):
+                          dataSubfield="data", schema=None, returnValidationResult=True):
         """
         Produce a notification from a single payload, adding the necessary
         headers and metadata. Generic metadata is generated to include a
@@ -200,6 +222,13 @@ class StompAMQ(object):
                metadata.)
         :param dataSubfield: field name to use for the actual data. If none, the data
                is put directly in the body. Default is "data"
+        :param schema: Use this schema template to validate the payload. This should be
+               the name of a json file looked for locally, or inside the folder defined
+               in the 'CMSMONITORING_SCHEMAS' environment variable, or one of the defaults
+               provided with the CMSMonitoring package. If 'None', the schema from the 
+               StompAMQ instance is applied.
+        :param returnValidationResult: Toggle whether to return also the result of the
+               validation or just the notification alone.
 
         :return: a single notifications with the proper headers and metadata
         """
@@ -208,6 +237,17 @@ class StompAMQ(object):
         ts = ts or int(time.time())
         uuid = str(uuid4())
         docId = docId or uuid
+
+        # Validate the payload
+        schema = schema or self.schema
+        if schema is None:
+            logging.info('No validation performed for document {}'.format(docId))
+
+        validated = False
+        if schema:
+            validated = validate(payload, schema)
+            if not validated:
+                logging.warning("Document {} conflicts with schema '{}'".format(docId, schema))
 
         headers = {'type': docType,
                    'version': self._version,
@@ -230,4 +270,6 @@ class StompAMQ(object):
         notification.update(headers)
         notification['body'] = body
 
+        if returnValidationResult:
+            return notification, validated
         return notification

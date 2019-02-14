@@ -19,7 +19,9 @@ import os
 import sys
 import json
 import time
+import types
 import hashlib
+import logging
 
 try:
     import jsonschema
@@ -118,9 +120,20 @@ def etype(val):
     "Helper function to deduce type of given value either from python based type or jsonschema"
     if isinstance(val, dict) and 'type' in val:
         return val['type']
+
+    for _type in [types.StringTypes, types.BooleanType]:
+        if isinstance(val, _type):
+            return _type
+
+    if isinstance(val, (types.IntType, types.LongType)):
+        return (types.IntType, types.LongType)
+
+    if isinstance(val, (types.FloatType)):
+        return (types.FloatType, types.IntType, types.LongType)
+
     return type(val)
 
-def _validate_schema(schema, doc, verbose=False):
+def _validate_schema(schema, doc):
     """
     Python based implementation to validate schema of a given document
     :param schema: schema to be used
@@ -129,32 +142,34 @@ def _validate_schema(schema, doc, verbose=False):
     base = 'SCHEMA_VALIDATOR'
     if not isinstance(doc, dict):
         return False
+
     for key, val in doc.items():
         if key not in schema:
-            if verbose:
-                print("{}: key={} is not in a schema".format(base, key))
+            logging.info("{}: unknown key={}, val={}".format(base, key, repr(val)))
             return False
-        if isinstance(val, dict):
+
+        if isinstance(val, types.DictType):
             sub_schema = _validate_schema(schema[key], val)
             if not sub_schema:
-                if verbose:
-                    print("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], val))
+                logging.info("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], repr(val)))
                 return False
+
         expect = schema[key]
-        if isinstance(val, list):
-            types = set([type(x) for x in val])
-            if len(types) != 1:
-                if verbose:
-                    print("{}: for key={} val={} has inconsistent data-types".format(base, key, val))
+        if isinstance(val, types.ListType):
+            if len(set([type(x) for x in val])) != 1:
+                logging.info("{}: for key={} val={} has inconsistent data-types".format(base, key, repr(val)))
                 return False
-            if list(types)[0] != etype(expect[0]):
-                if verbose:
-                    print("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(base, key, val, type(val), etype(expect)))
+
+            if not isinstance(val[0], etype(expect[0])):
+                logging.info("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(
+                             base, key, repr(val), type(val[0]), etype(expect[0])))
                 return False
-        if type(val) != etype(expect):
-            if verbose:
-                print("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, val, type(val), etype(expect)))
+
+        if val != None and not isinstance(val, etype(expect)):
+            logging.info("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(
+                             base, key, repr(val), type(val), etype(expect)))
             return False
+
     return True
 
 def validate_schema(schema, doc, verbose=False):
@@ -164,12 +179,10 @@ def validate_schema(schema, doc, verbose=False):
     :param doc: document to be validated
     """
     if '$schema' in schema:
-        if verbose:
-            print("using jsonschema validator")
+        logging.debug("using jsonschema validator")
         return validate_jsonschema(schema, doc, verbose)
-    if verbose:
-        print("using python based validator")
-    return _validate_schema(schema, doc, verbose)
+    logging.debug("using python based validator")
+    return _validate_schema(schema, doc)
 
 class Validator(object):
     def __init__(self, schema):
