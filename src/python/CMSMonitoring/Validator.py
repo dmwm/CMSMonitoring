@@ -145,28 +145,28 @@ def _validate_schema(schema, doc):
 
     for key, val in doc.items():
         if key not in schema:
-            logging.info("{}: unknown key={}, val={}".format(base, key, repr(val)))
-            return False
+            logging.warning("{}: unknown key={}, val={}".format(base, key, repr(val)))
+            continue
 
         if isinstance(val, types.DictType):
             sub_schema = _validate_schema(schema[key], val)
             if not sub_schema:
-                logging.info("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], repr(val)))
+                logging.warning("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], repr(val)))
                 return False
 
         expect = schema[key]
         if isinstance(val, types.ListType):
             if len(set([type(x) for x in val])) != 1:
-                logging.info("{}: for key={} val={} has inconsistent data-types".format(base, key, repr(val)))
+                logging.warning("{}: for key={} val={} has inconsistent data-types".format(base, key, repr(val)))
                 return False
 
             if not isinstance(val[0], etype(expect[0])):
-                logging.info("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(
+                logging.warning("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(
                              base, key, repr(val), type(val[0]), etype(expect[0])))
                 return False
 
         if val != None and not isinstance(val, etype(expect)):
-            logging.info("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(
+            logging.warning("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(
                              base, key, repr(val), type(val), etype(expect)))
             return False
 
