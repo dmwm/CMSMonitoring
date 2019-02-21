@@ -140,36 +140,44 @@ def _validate_schema(schema, doc, loglevel=logging.WARNING):
     """
     base = 'SCHEMA_VALIDATOR'
     if not isinstance(doc, dict):
-        return False
+        return None, None
+
+    offending_keys = []
+    unknown_keys = []
 
     for key, val in doc.items():
         if key not in schema:
             logging.log(loglevel, "{}: unknown key={}, val={}".format(base, key, repr(val)))
+            unknown_keys.append(key)
             continue
 
         if isinstance(val, types.DictType):
-            sub_schema = _validate_schema(schema[key], val)
-            if not sub_schema:
+            sub_offending, _ = _validate_schema(schema[key], val)
+            if sub_offending:
                 logging.log(loglevel, "{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], repr(val)))
-                return False
+                offending_keys.append(key)
+                continue
 
         expect = schema[key]
         if isinstance(val, types.ListType):
             if len(set([type(x) for x in val])) != 1:
                 logging.log(loglevel, "{}: for key={} val={} has inconsistent data-types".format(base, key, repr(val)))
-                return False
+                offending_keys.append(key)
+                continue
 
             if not isinstance(val[0], etype(expect[0])):
                 logging.log(loglevel, "{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(
                              base, key, repr(val), type(val[0]), etype(expect[0])))
-                return False
+                offending_keys.append(key)
+                continue
 
         if val != None and not isinstance(val, etype(expect)):
             logging.log(loglevel, "{}: for key={} val={} has incorrect data-type, found {} expect {}".format(
                              base, key, repr(val), type(val), etype(expect)))
-            return False
+            offending_keys.append(key)
+            continue
 
-    return True
+    return offending_keys, unknown_keys
 
 def validate_schema(schema, doc, loglevel=logging.WARNING):
     """

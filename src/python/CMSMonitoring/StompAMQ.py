@@ -27,10 +27,13 @@ def validate(doc, schema='auto', loglevel=logging.WARNING):
 
     Schemas are searched for locally, or within the central CMSMonitoring
     schemas.
+
+    Return a list of offending keys and a list of unknown keys, or None, None
+    if no validation has been performed.
     """
     global _local_schemas
     if schema is None:
-        return False
+        return None, None
 
     if _local_schemas is None:
         # First time running, try to find the schema locally
@@ -54,9 +57,9 @@ def validate(doc, schema='auto', loglevel=logging.WARNING):
         with open('auto_schema.json', 'w') as schfile:
             json.dump(doc, schfile, indent=2, sort_keys=True)
         _local_schemas['auto'] = doc
-        return True
+        return [], []
 
-    return False
+    return None, None
 
 class StompyListener(object):
     """
@@ -207,7 +210,8 @@ class StompAMQ(object):
         return
 
     def make_notification(self, payload, docType, docId=None, producer=None, ts=None, metadata=None,
-                          dataSubfield="data", schema=None, returnValidationResult=True):
+                          dataSubfield="data", schema=None, returnOffendingKeys=False,
+                          dropOffendingKeys=False, dropUnknownKeys=False):
         """
         Produce a notification from a single payload, adding the necessary
         headers and metadata. Generic metadata is generated to include a
@@ -232,10 +236,13 @@ class StompAMQ(object):
                in the 'CMSMONITORING_SCHEMAS' environment variable, or one of the defaults
                provided with the CMSMonitoring package. If 'None', the schema from the 
                StompAMQ instance is applied.
-        :param returnValidationResult: Toggle whether to return also the result of the
-               validation or just the notification alone.
+        :param returnOffendingKeys: Toggle whether to return also lists of offending
+               and unknown keys.
+        :param dropOffendingKeys: Drop keys that failed validation from the notification
+        :param dropUnknownKeys: Drop keys not present in schema from the notification
 
-        :return: a single notifications with the proper headers and metadata
+        :return: a single notifications with the proper headers and metadata and lists of
+               offending and unknown keys, if returnOffendingKeys
         """
         producer = producer or self._producer
         umetadata = metadata or {}
@@ -248,11 +255,21 @@ class StompAMQ(object):
         if schema is None:
             logging.info('No validation performed for document {}'.format(docId))
 
-        validated = False
+        offending_keys, unknown_keys = [], []
         if schema:
-            validated = validate(payload, schema, loglevel=self.validation_loglevel)
-            if not validated:
+            offending_keys, unknown_keys = validate(payload, schema, loglevel=self.validation_loglevel)
+            if offending_keys:
                 logging.warning("Document {} conflicts with schema '{}'".format(docId, schema))
+            if unknown_keys:
+                logging.warning("Document {} contains keys not present in schema '{}'".format(docId, schema))
+
+        if dropOffendingKeys:
+            for key in offending_keys:
+                payload.pop(key)
+
+        if dropUnknownKeys:
+            for key in unknown_keys:
+                payload.pop(key)
 
         headers = {'type': docType,
                    'version': self._version,
@@ -275,6 +292,6 @@ class StompAMQ(object):
         notification.update(headers)
         notification['body'] = body
 
-        if returnValidationResult:
-            return notification, validated
+        if returnOffendingKeys:
+            return notification, offending_keys, unknown_keys
         return notification
