@@ -21,7 +21,7 @@ from CMSMonitoring.Validator import validate_schema, Schemas
 _schemas = Schemas(update=3600, jsonschemas=False)
 _local_schemas = None
 
-def validate(doc, schema='auto', verbose=False):
+def validate(doc, schema='auto', loglevel=logging.WARNING):
     """
     Helper function to validate given document against a schema
 
@@ -44,10 +44,10 @@ def validate(doc, schema='auto', verbose=False):
                 logging.warning('Local schema {} is not json compliant'.format(schema))
 
     if schema in _local_schemas:
-        return validate_schema(_local_schemas[schema], doc, verbose)
+        return validate_schema(_local_schemas[schema], doc, loglevel)
 
     elif schema in _schemas.schemas():
-        return validate_schema(_schemas.schemas()[schema], doc, verbose)
+        return validate_schema(_schemas.schemas()[schema], doc, loglevel)
 
     else:
         logging.warning('No validation schema provided, comparing all docs to the first one')
@@ -109,17 +109,19 @@ class StompAMQ(object):
         E.g.: [('agileinf-mb.cern.ch', 61213)]
     :param cert: path to certificate file
     :param key: path to key file
-    :param schema: schema to use for validation. If 'auto', will attempt to use central
-        CMSMonitoring schemas. If 'None', skip any validation. Look for schema files
-        locally, in 'schemas/' folder in CMSMonitoring package or in folder defined in
-        'CMSMONITORING_SCHEMAS' environmental variable.
+    :param validation_schema: schema to use for validation (filename of a valid json file).
+        If 'auto', will compare all docs to the first one provided. If 'None', skip any
+        validation. Look for schema files locally, in 'schemas/' folder in CMSMonitoring
+        package or in folder defined in 'CMSMONITORING_SCHEMAS' environmental variable.
+    :param validation_loglevel: logging level to use for validation feedback
     """
 
     # Version number to be added in header
     _version = '0.3'
 
     def __init__(self, username, password, producer, topic,
-                 host_and_ports=None, logger=None, cert=None, key=None, schema='auto'):
+                 host_and_ports=None, logger=None, cert=None, key=None,
+                 validation_schema='auto', validation_loglevel=logging.WARNING):
         self._username = username
         self._password = password
         self._producer = producer
@@ -132,7 +134,8 @@ class StompAMQ(object):
         # silence the INFO log records from the stomp library, until this issue gets fixed:
         # https://github.com/jasonrbriggs/stomp.py/issues/226
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
-        self.schema = schema
+        self.validation_schema = validation_schema
+        self.validation_loglevel = validation_loglevel
 
     def send(self, data):
         """
@@ -241,13 +244,13 @@ class StompAMQ(object):
         docId = docId or uuid
 
         # Validate the payload
-        schema = schema or self.schema
+        schema = schema or self.validation_schema
         if schema is None:
             logging.info('No validation performed for document {}'.format(docId))
 
         validated = False
         if schema:
-            validated = validate(payload, schema)
+            validated = validate(payload, schema, loglevel=self.validation_loglevel)
             if not validated:
                 logging.warning("Document {} conflicts with schema '{}'".format(docId, schema))
 
