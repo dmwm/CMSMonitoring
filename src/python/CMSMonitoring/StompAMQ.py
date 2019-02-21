@@ -50,9 +50,11 @@ def validate(doc, schema='auto', verbose=False):
         return validate_schema(_schemas.schemas()[schema], doc, verbose)
 
     else:
-        for sname, sch in _schemas.schemas().items():
-            if validate_schema(sch, doc, verbose):
-                return True
+        logging.warning('No validation schema provided, comparing all docs to the first one')
+        with open('auto_schema.json', 'w') as schfile:
+            json.dump(doc, schfile, indent=2, sort_keys=True)
+        _local_schemas['auto'] = doc
+        return True
 
     return False
 
