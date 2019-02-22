@@ -207,8 +207,7 @@ class StompAMQ(object):
         return
 
     def make_notification(self, payload, docType, docId=None, producer=None, ts=None, metadata=None,
-                          dataSubfield="data", schema=None, returnOffendingKeys=False,
-                          dropOffendingKeys=False, dropUnknownKeys=False):
+                          dataSubfield="data", schema=None, dropOffendingKeys=False, dropUnknownKeys=False):
         """
         Produce a notification from a single payload, adding the necessary
         headers and metadata. Generic metadata is generated to include a
