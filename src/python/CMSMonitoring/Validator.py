@@ -48,7 +48,8 @@ VALIDATORS = {}
 
 class JsonSchemaValidator(object):
     "Python 2.X implementation of validator based on jsonschema package"
-    def __init__(self, schema):
+    def __init__(self, schema, loglevel=logging.WARNING):
+        self.loglevel = loglevel
         shash = md5hash(schema)
         if shash in VALIDATORS:
             self.validator = VALIDATORS[shash]
@@ -56,13 +57,11 @@ class JsonSchemaValidator(object):
             self.validator = jsonschema.validators.validator_for(schema)(schema)
             self.validator.check_schema(schema)
             VALIDATORS[shash] = self.validator
-    def validate_schema(self, doc, verbose=False):
+    def validate_schema(self, doc):
         try:
             self.validator.validate(doc)
         except Exception as exp:
-            if verbose:
-                print("Fail schema validation")
-                print(str(exp))
+            logging.log(self.loglevel, "Fail schema validation: {}".format(str(exp)))
             return False
         return True
 
@@ -107,14 +106,14 @@ class Schemas(object):
             self.sdict[sname] = json.load(open(os.path.join(fdir, sname)))
         return self.sdict
 
-def validate_jsonschema(schema, doc, verbose=False):
+def validate_jsonschema(schema, doc, loglevel=logging.WARNING):
     """
     Jsonschema implementation of validate schema of a given document
     :param schema: schema to be used
     :param doc: document to be validated
     """
-    validator = JsonSchemaValidator(schema)
-    return validator.validate_schema(doc, verbose)
+    validator = JsonSchemaValidator(schema, loglevel=loglevel)
+    return validator.validate_schema(doc)
 
 def etype(val):
     "Helper function to deduce type of given value either from python based type or jsonschema"
@@ -133,7 +132,7 @@ def etype(val):
 
     return type(val)
 
-def _validate_schema(schema, doc):
+def _validate_schema(schema, doc, loglevel=logging.WARNING):
     """
     Python based implementation to validate schema of a given document
     :param schema: schema to be used
@@ -141,38 +140,46 @@ def _validate_schema(schema, doc):
     """
     base = 'SCHEMA_VALIDATOR'
     if not isinstance(doc, dict):
-        return False
+        return None, None
+
+    offending_keys = []
+    unknown_keys = []
 
     for key, val in doc.items():
         if key not in schema:
-            logging.warning("{}: unknown key={}, val={}".format(base, key, repr(val)))
+            logging.log(loglevel, "{}: unknown key={}, val={}".format(base, key, repr(val)))
+            unknown_keys.append(key)
             continue
 
         if isinstance(val, types.DictType):
-            sub_schema = _validate_schema(schema[key], val)
-            if not sub_schema:
-                logging.warning("{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], repr(val)))
-                return False
+            sub_offending, _ = _validate_schema(schema[key], val)
+            if sub_offending:
+                logging.log(loglevel, "{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], repr(val)))
+                offending_keys.append(key)
+                continue
 
         expect = schema[key]
         if isinstance(val, types.ListType):
             if len(set([type(x) for x in val])) != 1:
-                logging.warning("{}: for key={} val={} has inconsistent data-types".format(base, key, repr(val)))
-                return False
+                logging.log(loglevel, "{}: for key={} val={} has inconsistent data-types".format(base, key, repr(val)))
+                offending_keys.append(key)
+                continue
 
             if not isinstance(val[0], etype(expect[0])):
-                logging.warning("{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(
+                logging.log(loglevel, "{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(
                              base, key, repr(val), type(val[0]), etype(expect[0])))
-                return False
+                offending_keys.append(key)
+                continue
 
         if val != None and not isinstance(val, etype(expect)):
-            logging.warning("{}: for key={} val={} has incorrect data-type, found {} expect {}".format(
+            logging.log(loglevel, "{}: for key={} val={} has incorrect data-type, found {} expect {}".format(
                              base, key, repr(val), type(val), etype(expect)))
-            return False
+            offending_keys.append(key)
+            continue
 
-    return True
+    return offending_keys, unknown_keys
 
-def validate_schema(schema, doc, verbose=False):
+def validate_schema(schema, doc, loglevel=logging.WARNING):
     """
     validates given document against given shema
     :param schema: schema to be used
@@ -180,9 +187,9 @@ def validate_schema(schema, doc, verbose=False):
     """
     if '$schema' in schema:
         logging.debug("using jsonschema validator")
-        return validate_jsonschema(schema, doc, verbose)
+        return validate_jsonschema(schema, doc, loglevel=loglevel)
     logging.debug("using python based validator")
-    return _validate_schema(schema, doc)
+    return _validate_schema(schema, doc, loglevel=loglevel)
 
 class Validator(object):
     def __init__(self, schema):

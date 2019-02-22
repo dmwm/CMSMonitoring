@@ -21,17 +21,18 @@ from CMSMonitoring.Validator import validate_schema, Schemas
 _schemas = Schemas(update=3600, jsonschemas=False)
 _local_schemas = None
 
-def validate(doc, schema='auto', verbose=False):
+def validate(doc, schema, loglevel=logging.WARNING):
     """
     Helper function to validate given document against a schema
 
     Schemas are searched for locally, or within the central CMSMonitoring
-    schemas.
+    schemas. The provided schema name is compared to full file names and
+    to their base file names (without extension).
+
+    Return a list of offending keys and a list of unknown keys, or None, None
+    if no validation has been performed.
     """
     global _local_schemas
-    if schema is None:
-        return False
-
     if _local_schemas is None:
         # First time running, try to find the schema locally
         # Second time, _local_schemas will be a dictionary and this is skipped
@@ -41,20 +42,18 @@ def validate(doc, schema='auto', verbose=False):
                 _local_schemas[schema] = json.load(open(schema))
                 logging.warning('Successfully loaded local schema {} for validation'.format(schema))
             except ValueError:
-                logging.warning('Local schema {} is not json compliant'.format(schema))
+                logging.error('Local schema {} is not json compliant'.format(schema))
 
     if schema in _local_schemas:
-        return validate_schema(_local_schemas[schema], doc, verbose)
-
-    elif schema in _schemas.schemas():
-        return validate_schema(_schemas.schemas()[schema], doc, verbose)
+        return validate_schema(_local_schemas[schema], doc, loglevel)
 
     else:
-        for sname, sch in _schemas.schemas().items():
-            if validate_schema(sch, doc, verbose):
-                return True
+        for sch in _schemas.schemas():
+            if schema in [sch, os.path.basename(sch).rsplit('.')[0]]:
+                return validate_schema(_schemas.schemas()[sch], doc, loglevel)
 
-    return False
+    logging.error("Schema not found: '{}'".format(schema))
+    return None, None
 
 class StompyListener(object):
     """
@@ -103,21 +102,23 @@ class StompAMQ(object):
     :param password: The password to connect to the broker.
     :param producer: The 'producer' field in the notification header
     :param topic: The topic to be used on the broker
+    :param validation_schema: schema to use for validation (filename of a valid json file).
+        If 'None', skip any validation. Look for schema files locally, then in 'schemas/'
+        folder in CMSMonitoring package or in folder defined in 'CMSMONITORING_SCHEMAS'
+        environmental variable.
     :param host_and_ports: The hosts and ports list of the brokers.
         E.g.: [('agileinf-mb.cern.ch', 61213)]
     :param cert: path to certificate file
     :param key: path to key file
-    :param schema: schema to use for validation. If 'auto', will attempt to use central
-        CMSMonitoring schemas. If 'None', skip any validation. Look for schema files
-        locally, in 'schemas/' folder in CMSMonitoring package or in folder defined in
-        'CMSMONITORING_SCHEMAS' environmental variable.
+    :param validation_loglevel: logging level to use for validation feedback
     """
 
     # Version number to be added in header
     _version = '0.3'
 
-    def __init__(self, username, password, producer, topic,
-                 host_and_ports=None, logger=None, cert=None, key=None, schema='auto'):
+    def __init__(self, username, password, producer, topic, validation_schema, 
+                 host_and_ports=None, logger=None, cert=None, key=None,
+                 validation_loglevel=logging.WARNING):
         self._username = username
         self._password = password
         self._producer = producer
@@ -130,7 +131,11 @@ class StompAMQ(object):
         # silence the INFO log records from the stomp library, until this issue gets fixed:
         # https://github.com/jasonrbriggs/stomp.py/issues/226
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
-        self.schema = schema
+        self.validation_schema = validation_schema
+        self.validation_loglevel = validation_loglevel
+
+        if self.validation_schema is None:
+            logging.warning('No document validation performed!')
 
     def send(self, data):
         """
@@ -202,7 +207,7 @@ class StompAMQ(object):
         return
 
     def make_notification(self, payload, docType, docId=None, producer=None, ts=None, metadata=None,
-                          dataSubfield="data", schema=None, returnValidationResult=True):
+                          dataSubfield="data", schema=None, dropOffendingKeys=False, dropUnknownKeys=False):
         """
         Produce a notification from a single payload, adding the necessary
         headers and metadata. Generic metadata is generated to include a
@@ -226,11 +231,13 @@ class StompAMQ(object):
                the name of a json file looked for locally, or inside the folder defined
                in the 'CMSMONITORING_SCHEMAS' environment variable, or one of the defaults
                provided with the CMSMonitoring package. If 'None', the schema from the 
-               StompAMQ instance is applied.
-        :param returnValidationResult: Toggle whether to return also the result of the
-               validation or just the notification alone.
+               StompAMQ instance is applied. If that is also 'None', no validation is
+               performed.
+        :param dropOffendingKeys: Drop keys that failed validation from the notification
+        :param dropUnknownKeys: Drop keys not present in schema from the notification
 
-        :return: a single notifications with the proper headers and metadata
+        :return: a single notifications with the proper headers and metadata and lists of
+               offending and unknown keys
         """
         producer = producer or self._producer
         umetadata = metadata or {}
@@ -239,15 +246,21 @@ class StompAMQ(object):
         docId = docId or uuid
 
         # Validate the payload
-        schema = schema or self.schema
-        if schema is None:
-            logging.info('No validation performed for document {}'.format(docId))
-
-        validated = False
+        schema = schema or self.validation_schema
+        offending_keys, unknown_keys = [], []
         if schema:
-            validated = validate(payload, schema)
-            if not validated:
+            offending_keys, unknown_keys = validate(payload, schema, loglevel=self.validation_loglevel)
+            if offending_keys:
                 logging.warning("Document {} conflicts with schema '{}'".format(docId, schema))
+                if dropOffendingKeys:
+                    for key in offending_keys:
+                        payload.pop(key)
+
+            if unknown_keys:
+                logging.warning("Document {} contains keys not present in schema '{}'".format(docId, schema))
+                if dropUnknownKeys:
+                    for key in unknown_keys:
+                        payload.pop(key)
 
         headers = {'type': docType,
                    'version': self._version,
@@ -270,6 +283,4 @@ class StompAMQ(object):
         notification.update(headers)
         notification['body'] = body
 
-        if returnValidationResult:
-            return notification, validated
-        return notification
+        return notification, offending_keys, unknown_keys
