@@ -1,0 +1,23 @@
+[
+  {
+    "targets": [ "vocms0136:18250", "vocms0161:18250", "vocms0163:18250", "vocms0165:18250" ],
+    "labels": {
+      "env": "prod",
+      "job": "dbs-prod"
+    }
+  },
+  {
+    "targets": [ "vocms0132:18250", "vocms0731:18250" ],
+    "labels": {
+      "env": "preprod",
+      "job": "dbs-preprod"
+    }
+  },
+  {
+    "targets": [ "vocms0127:18250", "vocms0126:18250" ],
+    "labels": {
+      "env": "dev",
+      "job": "dbs-dev"
+    }
+  }
+]

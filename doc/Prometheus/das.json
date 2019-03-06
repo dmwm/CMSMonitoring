@@ -1,0 +1,23 @@
+[
+  {
+    "targets": [ "vocms0741:18217", "vocms0742:18217" ],
+    "labels": {
+      "env": "prod",
+      "job": "das-prod"
+    }
+  },
+  {
+    "targets": [ "vocms0132:18217", "vocms0731:18217" ],
+    "labels": {
+      "env": "preprod",
+      "job": "das-preprod"
+    }
+  },
+  {
+    "targets": [ "vocms0127:18217", "vocms0126:18217" ],
+    "labels": {
+      "env": "dev",
+      "job": "das-dev"
+    }
+  }
+]

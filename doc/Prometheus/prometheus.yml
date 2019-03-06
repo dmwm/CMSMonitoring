@@ -1,3 +1,6 @@
+# Prometheus configuration is discussed here:
+# https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+#
 global:
   scrape_interval:     15s
   evaluation_interval: 15s
@@ -11,11 +14,22 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['localhost:9090']
-  - job_name: 'das'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['localhost:7200']
   - job_name: 'cmspopdb'
     scrape_interval: 5s
     static_configs:
       - targets: ['localhost:9100']
+  - job_name: 'das'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+        - das.json
+  - job_name: 'frontend'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+        - frontend.json
+  - job_name: 'dbs'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+        - dbs.json
