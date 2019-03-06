@@ -107,7 +107,7 @@ class StompAMQ(object):
         folder in CMSMonitoring package or in folder defined in 'CMSMONITORING_SCHEMAS'
         environmental variable.
     :param host_and_ports: The hosts and ports list of the brokers.
-        E.g.: [('agileinf-mb.cern.ch', 61213)]
+        E.g.: [('cms-test-mb.cern.ch', 61313)]
     :param cert: path to certificate file
     :param key: path to key file
     :param validation_loglevel: logging level to use for validation feedback
@@ -123,7 +123,7 @@ class StompAMQ(object):
         self._password = password
         self._producer = producer
         self._topic = topic
-        self._host_and_ports = host_and_ports or [('agileinf-mb.cern.ch', 61213)]
+        self._host_and_ports = host_and_ports or [('cms-test-mb.cern.ch', 61313)]
         self.logger = logger if logger else logging.getLogger()
         self._cert = cert
         self._key = key
