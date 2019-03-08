@@ -1,5 +1,8 @@
 # Prometheus configuration is discussed here:
 # https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+# Prometheus queries
+# https://prometheus.io/docs/prometheus/latest/querying/basics/
+# https://prometheus.io/docs/prometheus/latest/querying/examples/
 #
 global:
   scrape_interval:     15s
