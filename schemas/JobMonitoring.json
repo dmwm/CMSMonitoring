@@ -56,6 +56,7 @@
   "CRAB_SiteWhitelist": "[]",
   "CRAB_SplitAlgo": "Automatic",
   "CRAB_SubmitterIpAddr": "131.225.190.56",
+  "CRAB_TaskCreationDate": 1549692838,
   "CRAB_TaskEndTime": 1549692838,
   "CRAB_TaskLifetimeDays": 30,
   "CRAB_TaskWorker": "crab-prod-tw01",
