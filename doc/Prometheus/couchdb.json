@@ -1,0 +1,23 @@
+[
+  {
+    "targets": [ "vocms0740:15984", "vocms0741:15984", "vocms0742:15984" ],
+    "labels": {
+      "env": "prod",
+      "job": "couchdb-prod"
+    }
+  },
+  {
+    "targets": [ "vocms0132:15984", "vocms0731:15984" ],
+    "labels": {
+      "env": "preprod",
+      "job": "couchdb-preprod"
+    }
+  },
+  {
+    "targets": [ "vocms0117:15984" ],
+    "labels": {
+      "env": "dev",
+      "job": "couchdb-dev"
+    }
+  }
+]
