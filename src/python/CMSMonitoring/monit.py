@@ -64,10 +64,35 @@ class OptionParser():
             dest="verbose", default=0, help="verbose level, default 0")
 
 DBDICT = {
-    'monit_prod_wmagent': 7617,
-    'monit_production_cmsjm': 7731,
-    'monit_prod_crab': 8978,
-    'monit_prod_condor': 8787
+        'CMSWEB': 8973,
+        'cmsweb-k8s': 8488,
+        'cmsweb-prometheus': 9041,
+        'es-cms': 8983,
+        'es-cms-cmssdt-relvals': 9015,
+        'monit_condor': 7668,
+        'monit_crab': 8978,
+        'monit_eoscmsquotas': 9003,
+        'monit_prod_condor': 8787,
+        'monit_es_condor_2019': 9014,
+        'monit_es_condor_tasks': 9039,
+        'monit_es_toolsandint': 9040,
+        'monit_idb_alarms': 8528,
+        'monit_idb_availability': 9107,
+        'monit_idb_cmsjm': 7731,
+        'monit_idb_databases': 8530,
+        'monit_idb_eos': 8531,
+        'monit_idb_kpis': 8532,
+        'monit_idb_monitoring': 9109,
+        'monit_idb_rebus': 9115,
+        'monit_idb_transfers': 8035,
+        'monit_kpi': 8533,
+        'monit_prod_tier0wmagent': 9113,
+        'monit_prod_wmagent': 7617,
+        'monit_prod_wmagentqa': 8429,
+        'SCHEDD': 8980,
+        'SI-condor': 8993,
+        'TASKWORKER': 8981,
+        'WMArchive': 7572
 }
 def run(url, token, dbid, dbname, query, idx=0, limit=10, verbose=0):
     headers = {'Authorization': 'Bearer {}'.format(token)}
