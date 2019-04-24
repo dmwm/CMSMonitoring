@@ -23,6 +23,11 @@ scrape_configs:
     file_sd_configs:
       - files:
         - das.json
+  - job_name: 'mongodb'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+        - mongodb.json
   - job_name: 'frontend'
     scrape_interval: 5s
     file_sd_configs:
@@ -34,7 +39,7 @@ scrape_configs:
       - files:
         - dbs.json
   - job_name: 'couchdb'
-    scrape_interval: 5s
+    scrape_interval: 60s
     file_sd_configs:
       - files:
         - couchdb.json
