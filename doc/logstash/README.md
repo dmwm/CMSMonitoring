@@ -31,3 +31,9 @@ process.
 #
 bin/logstash -f cmsweb.conf
 ```
+
+#### References
+1. [Logstash](https://www.elastic.co/guide/en/logstash/current/introduction.html)
+2. [Logstash CLI](https://www.elastic.co/guide/en/logstash/current/running-logstash-command-line.html)
+3. [Logstash options](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-file.html)
+4. [Filebeat](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-getting-started.html)
