@@ -37,3 +37,9 @@ bin/logstash -f cmsweb.conf
 2. [Logstash CLI](https://www.elastic.co/guide/en/logstash/current/running-logstash-command-line.html)
 3. [Logstash options](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-file.html)
 4. [Filebeat](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-getting-started.html)
+
+##### Configuration rerefences
+1. [Centralized pipelines](https://www.elastic.co/guide/en/logstash/current/configuring-centralized-pipelines.html)
+2. [logstash.yml](https://www.elastic.co/guide/en/logstash/current/logstash-settings-file.html)
+3. [dir-layout](https://www.elastic.co/guide/en/logstash/current/dir-layout.html)
+4. [Get started](https://www.elastic.co/guide/en/elastic-stack-get-started/7.0/get-started-elastic-stack.html#logstash-setup)
