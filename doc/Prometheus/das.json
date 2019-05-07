@@ -12,12 +12,5 @@
       "env": "preprod",
       "job": "das-preprod"
     }
-  },
-  {
-    "targets": [ "vocms0127:18217", "vocms0126:18217" ],
-    "labels": {
-      "env": "dev",
-      "job": "das-dev"
-    }
   }
 ]
