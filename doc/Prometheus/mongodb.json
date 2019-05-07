@@ -12,12 +12,5 @@
       "env": "preprod",
       "job": "mongodb-preprod"
     }
-  },
-  {
-    "targets": [ "vocms0127:18230", "vocms0126:18230" ],
-    "labels": {
-      "env": "dev",
-      "job": "mongodb-dev"
-    }
   }
 ]
