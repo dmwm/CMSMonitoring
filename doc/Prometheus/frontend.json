@@ -12,12 +12,5 @@
       "env": "preprod",
       "job": "frontend-preprod"
     }
-  },
-  {
-    "targets": [ "vocms0127:18443", "vocms0126:18443" ],
-    "labels": {
-      "env": "dev",
-      "job": "frontend-dev"
-    }
   }
 ]
