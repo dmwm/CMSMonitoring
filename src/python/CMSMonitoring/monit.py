@@ -13,6 +13,7 @@ import sys
 import json
 import argparse
 import requests
+import traceback
 
 try:
     import urllib.request as ulib # python 3.X
@@ -146,7 +147,11 @@ def query_es(base, dbid, query, headers, verbose=0):
     if verbose:
         print("Query ES: uri={} query={}".format(uri, query))
     response = requests.get(uri, data=query, headers=headers)
-    return json.loads(response.text)
+    try:
+        return json.loads(response.text)
+    except:
+        print("response: %s" % response.text)
+        traceback.print_exp()
 
 def main():
     "Main function"
