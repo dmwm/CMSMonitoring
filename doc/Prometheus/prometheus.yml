@@ -33,11 +33,21 @@ scrape_configs:
     file_sd_configs:
       - files:
         - frontend.json
+  - job_name: 'node-fe'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+        - nodes.json
   - job_name: 'dbs'
     scrape_interval: 5s
     file_sd_configs:
       - files:
         - dbs.json
+  - job_name: 'dbs3-test2'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+          - dbs3-test2.json
   - job_name: 'couchdb'
     scrape_interval: 60s
     file_sd_configs:

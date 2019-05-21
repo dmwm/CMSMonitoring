@@ -1,0 +1,37 @@
+[
+  {
+    "targets": [ "dbs3-test2:11002" ],
+    "labels": {
+      "env": "dbs3-test2",
+      "job": "dbs-globalR"
+    }
+  },
+  {
+    "targets": [ "dbs3-test2:11003" ],
+    "labels": {
+      "env": "dbs3-test2",
+      "job": "dbs-globalW"
+    }
+  },
+  {
+    "targets": [ "dbs3-test2:11004" ],
+    "labels": {
+      "env": "dbs3-test2",
+      "job": "dbs-phys03R"
+    }
+  },
+  {
+    "targets": [ "dbs3-test2:11005" ],
+    "labels": {
+      "env": "dbs3-test2",
+      "job": "dbs-phys03W"
+    }
+  },
+  {
+    "targets": [ "dbs3-test2:11001" ],
+    "labels": {
+      "env": "dbs3-test2",
+      "job": "dbs-migration"
+    }
+  }
+]
