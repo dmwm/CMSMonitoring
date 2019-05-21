@@ -483,7 +483,7 @@
     "UNKNOWN"
   ],
   "OutputFiles": 1,
-  "OutputGB": 0,
+  "OutputGB": 1.1,
   "OverflowType": "FrontendOverflow",
   "Owner": "cms1727",
   "PeriodicRemoveReason": "Removed job due to proxy expiration",
@@ -585,8 +585,8 @@
   "WantIOProxy": true,
   "WhenToTransferOutput": "ON_EXIT_OR_EVICT",
   "Workflow": "snorberg_crab_JetHT-Run2017Fver1_17v2",
-  "WriteTimeHrs": 0,
-  "WriteTimeMins": 0,
+  "WriteTimeHrs": 0.1,
+  "WriteTimeMins": 0.1,
   "jobprio": 40,
   "metadata": {
     "spider_git_hash": "4ce12b64cc6201c4dfcf59f1453065a94acc4a76",

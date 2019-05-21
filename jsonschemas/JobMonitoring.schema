@@ -1417,7 +1417,7 @@
       "type": "integer"
     },
     "OutputGB": {
-      "type": "integer"
+      "type": "number"
     },
     "OverflowType": {
       "type": "string"
@@ -1723,10 +1723,10 @@
       "type": "string"
     },
     "WriteTimeHrs": {
-      "type": "integer"
+      "type": "number"
     },
     "WriteTimeMins": {
-      "type": "integer"
+      "type": "number"
     },
     "jobprio": {
       "type": "integer"
