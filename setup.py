@@ -29,7 +29,7 @@ def version():
     "Return git tag version of the package or custom version"
     cmd = 'git tag --list | tail -1'
     ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
-    ver = str(ver).replace('\n', '')
+    ver = str(ver.decode("utf-8")).replace('\n', '')
     ver = ver if ver else 'development'
     print("build version '%s'" % ver)
     return ver
