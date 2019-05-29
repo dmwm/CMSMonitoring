@@ -143,16 +143,16 @@ class StompAMQ(object):
         self._host_and_ports = host_and_ports or [('cms-test-mb.cern.ch', 61313)]
         self.ip_and_ports = []
         try:
-            self.logger.info("host and ports", host_and_ports, type(host_and_ports))
+            self.logger.info("host and ports: %s", repr(host_and_ports))
             if isinstance(host_and_ports, list):
                 for host, port in host_and_ports:
                     for ipaddr in broker_ips(host, port):
                         if (ipaddr, port) not in self.ip_and_ports:
                             self.ip_and_ports.append((ipaddr, port))
-                self.logger.info("### resolver", self.ip_and_ports)
+                self.logger.info("resolver: %s", self.ip_and_ports)
         except Exception as exp:
             traceback.print_exc()
-            self.logger.warn("unable to resolve host_and_ports", str(exp))
+            self.logger.warn("unable to resolve host_and_ports: %s", str(exp))
         self._cert = cert
         self._key = key
         self._use_ssl = True if key and cert else False
@@ -218,7 +218,7 @@ class StompAMQ(object):
 
         # return random connection
         idx = random.randint(0, len(available_connections)-1)
-        self.logger.debug("### available connections %s, con_id %s" % (len(available_connections), idx))
+        self.logger.debug("available connections %s, con_id %s", len(available_connections), idx)
         return available_connections[idx]
 
     def disconnect(self):
