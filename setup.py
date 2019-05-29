@@ -30,7 +30,9 @@ def version():
     cmd = 'git tag --list | tail -1'
     ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     ver = str(ver).replace('\n', '')
-    return ver if ver else 'development'
+    ver = ver if ver else 'development'
+    print("build version '%s'" % ver)
+    return ver
 
 def main():
     ver = sys.version.split(' ')[0]
