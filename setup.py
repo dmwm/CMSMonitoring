@@ -28,7 +28,8 @@ def datafiles(dir, pattern=None):
 def version():
     "Return git tag version of the package or custom version"
     cmd = 'git tag --list | tail -1'
-    ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read().replace('\n', '')
+    ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
+    ver = str(ver).replace('\n', '')
     return ver if ver else 'development'
 
 def main():
