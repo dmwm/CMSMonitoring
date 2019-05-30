@@ -170,9 +170,17 @@ class StompAMQ(object):
             for idx in range(len(self.ip_and_ports)):
                 host_and_ports = [self.ip_and_ports[idx]]
                 conn = stomp.Connection(host_and_ports=host_and_ports)
+                if self._use_ssl:
+                    # This requires stomp >= 4.1.15
+                    conn.set_ssl(for_hosts=host_and_ports,
+                            key_file=self._key, cert_file=self._cert)
                 self.connections.append(conn)
         else:
             conn = stomp.Connection(host_and_ports=self._host_and_ports)
+            if self._use_ssl:
+                # This requires stomp >= 4.1.15
+                conn.set_ssl(for_hosts=self._host_and_ports,
+                        key_file=self._key, cert_file=self._cert)
             self.connections.append(conn)
         self.timeouts = {}
         self.timeout_interval = timeout_interval
@@ -186,10 +194,6 @@ class StompAMQ(object):
                 available_connections.append(conn)
                 continue
 
-            # perform connection to the broker
-            if self._use_ssl:
-                # This requires stomp >= 4.1.15
-                conn.set_ssl(for_hosts=self._host_and_ports, key_file=self._key, cert_file=self._cert)
             conn.set_listener('StompyListener', StompyListener(self.logger))
             # check if our connection failed before
             # if so we'll wait until timeout_interval is passed
