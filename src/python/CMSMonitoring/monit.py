@@ -166,6 +166,8 @@ def main():
     query = opts.query
     token = open(opts.token).read().replace('\n', '') \
             if os.path.exists(opts.token) else opts.token
+    if dbname == 'es-cms':
+        dbname = 'cms'  #  https://github.com/dmwm/CMSMonitoring/issues/21
     results = run(opts.url, token, dbid, dbname, query, idx, limit, verbose)
     print(json.dumps(results))
 
