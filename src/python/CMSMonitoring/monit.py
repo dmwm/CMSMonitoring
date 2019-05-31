@@ -69,6 +69,7 @@ DBDICT = {
         'cmsweb-k8s': 8488,
         'cmsweb-prometheus': 9041,
         'es-cms': 8983,
+        'cms': 8983,
         'es-cms-cmssdt-relvals': 9015,
         'monit_condor': 7668,
         'monit_crab': 8978,
@@ -151,7 +152,7 @@ def query_es(base, dbid, query, headers, verbose=0):
         return json.loads(response.text)
     except:
         print("response: %s" % response.text)
-        traceback.print_exp()
+        traceback.print_exc()
 
 def main():
     "Main function"
