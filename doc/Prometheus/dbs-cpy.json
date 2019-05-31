@@ -1,0 +1,9 @@
+[
+  {
+    "targets": [ "vocms0132:19254", "vocms0731:19254" ],
+    "labels": {
+      "env": "preprod",
+      "job": "dbs-phys03R-preprod"
+    }
+  }
+]
