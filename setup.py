@@ -43,6 +43,7 @@ def main():
         version              = version(),
         author               = 'Valentin Kuznetsov',
         author_email         = 'vkuznet@gmail.com',
+        license              = 'MIT',
         description          = 'CMS Monitoring utilities',
         long_description     = 'CMS Monitoring utilities',
         packages             = ['CMSMonitoring'],
