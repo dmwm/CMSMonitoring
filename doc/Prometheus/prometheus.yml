@@ -43,6 +43,11 @@ scrape_configs:
     file_sd_configs:
       - files:
         - dbs.json
+  - job_name: 'dbs-cpy'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+          - dbs-cpy.json
   - job_name: 'dbs3-test2'
     scrape_interval: 5s
     file_sd_configs:
