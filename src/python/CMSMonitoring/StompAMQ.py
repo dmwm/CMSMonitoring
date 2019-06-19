@@ -169,19 +169,29 @@ class StompAMQ(object):
         if self.ip_and_ports:
             for idx in range(len(self.ip_and_ports)):
                 host_and_ports = [self.ip_and_ports[idx]]
-                conn = stomp.Connection(host_and_ports=host_and_ports)
+                try:
+                    conn = stomp.Connection(host_and_ports=host_and_ports)
+                    if self._use_ssl:
+                        # This requires stomp >= 4.1.15
+                        conn.set_ssl(for_hosts=host_and_ports,
+                                key_file=self._key, cert_file=self._cert)
+                    self.connections.append(conn)
+                except Exception as exp:
+                    msg = 'Fail to connect to message broker, error: %s' \
+                            % str(exp)
+                    self.logger.warn(msg)
+        else:
+            try:
+                conn = stomp.Connection(host_and_ports=self._host_and_ports)
                 if self._use_ssl:
                     # This requires stomp >= 4.1.15
-                    conn.set_ssl(for_hosts=host_and_ports,
+                    conn.set_ssl(for_hosts=self._host_and_ports,
                             key_file=self._key, cert_file=self._cert)
                 self.connections.append(conn)
-        else:
-            conn = stomp.Connection(host_and_ports=self._host_and_ports)
-            if self._use_ssl:
-                # This requires stomp >= 4.1.15
-                conn.set_ssl(for_hosts=self._host_and_ports,
-                        key_file=self._key, cert_file=self._cert)
-            self.connections.append(conn)
+            except Exception as exp:
+                msg = 'Fail to connect to message broker, error: %s' \
+                        % str(exp)
+                self.logger.warn(msg)
         self.timeouts = {}
         self.timeout_interval = timeout_interval
 
