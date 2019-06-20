@@ -3,7 +3,7 @@
     "targets": [ "vocms0132:18270", "vocms0731:18270" ],
     "labels": {
       "env": "preprod",
-      "job": "reqmgr2-preprod"
+      "job": "crabserver-preprod"
     }
   }
 ]
