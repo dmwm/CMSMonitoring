@@ -223,7 +223,10 @@ class StompAMQ(object):
                     del self.timeouts[conn]
                 self.logger.debug("Connection to %s is successful", repr(self._host_and_ports))
             except stomp.exception.ConnectFailedException as exc:
-                self.logger.error("Connection to %s failed %s", repr(self._host_and_ports), str(exc))
+                tstamp = time.strftime("%b %d %Y %H:%M:%S", time.gmtime())
+                msg = "%s, connection to %s failed\n%s", tstamp, repr(self._host_and_ports), str(exc)
+                msg += 'Available hosts: %s' % self._ip_and_ports
+                self.logger.error(msg)
                 # record that our connection has failed
                 self.timeouts[conn] = time.time()
 
