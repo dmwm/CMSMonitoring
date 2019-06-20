@@ -38,6 +38,16 @@ scrape_configs:
     file_sd_configs:
       - files:
         - nodes.json
+  - job_name: 'reqmgr2'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+        - reqmgr2.json
+  - job_name: 'crabserver'
+    scrape_interval: 5s
+    file_sd_configs:
+      - files:
+        - crabserver.json
   - job_name: 'dbs'
     scrape_interval: 5s
     file_sd_configs:
