@@ -121,8 +121,17 @@
     "CRAB_AsyncDest": {
       "type": "string"
     },
+    "CRAB_Attempt": {
+      "type": "integer"
+    },
+    "CRAB_DashboardTaskType": {
+      "type": "string"
+    },
     "CRAB_DataBlock": {
       "type": "string"
+    },
+    "CRAB_FailedNodeLimit": {
+      "type": "integer"
     },
     "CRAB_HC": {
       "type": "boolean"
@@ -136,6 +145,12 @@
     "CRAB_JobArch": {
       "type": "string"
     },
+    "CRAB_JobCount": {
+      "type": "integer"
+    },
+    "CRAB_JobLogURL": {
+      "type": "string"
+    },
     "CRAB_JobReleaseTimeout": {
       "type": "integer"
     },
@@ -145,10 +160,22 @@
     "CRAB_JobType": {
       "type": "string"
     },
+    "CRAB_LumiMask": {
+      "type": "string"
+    },
+    "CRAB_MaxPost": {
+      "type": "integer"
+    },
     "CRAB_NoWNStageout": {
       "type": "integer"
     },
     "CRAB_OutLFNDir": {
+      "type": "string"
+    },
+    "CRAB_PostJobLogURL": {
+      "type": "string"
+    },
+    "CRAB_PostJobStatus": {
       "type": "string"
     },
     "CRAB_PrimaryDataset": {
@@ -187,6 +214,9 @@
     "CRAB_TaskLifetimeDays": {
       "type": "integer"
     },
+    "CRAB_TaskSubmitTime": {
+      "type": "integer"
+    },
     "CRAB_TaskWorker": {
       "type": "string"
     },
@@ -200,6 +230,9 @@
       "type": "string"
     },
     "CRAB_UserRole": {
+      "type": "string"
+    },
+    "CRAB_UserVO": {
       "type": "string"
     },
     "CRAB_Workflow": {
@@ -745,10 +778,10 @@
       "type": "string"
     },
     "CumulativeRemoteSysCpu": {
-      "type": "integer"
+      "type": "number"
     },
     "CumulativeRemoteUserCpu": {
-      "type": "integer"
+      "type": "number"
     },
     "CumulativeSlotTime": {
       "type": "integer"
@@ -764,6 +797,36 @@
     },
     "DAGParentNodeNames": {
       "type": "string"
+    },
+    "DAG_InRecovery": {
+      "type": "integer"
+    },
+    "DAG_NodesDone": {
+      "type": "integer"
+    },
+    "DAG_NodesFailed": {
+      "type": "integer"
+    },
+    "DAG_NodesPostrun": {
+      "type": "integer"
+    },
+    "DAG_NodesPrerun": {
+      "type": "integer"
+    },
+    "DAG_NodesQueued": {
+      "type": "integer"
+    },
+    "DAG_NodesReady": {
+      "type": "integer"
+    },
+    "DAG_NodesTotal": {
+      "type": "integer"
+    },
+    "DAG_NodesUnready": {
+      "type": "integer"
+    },
+    "DAG_Status": {
+      "type": "integer"
     },
     "DB12CommittedCoreHr": {
       "type": "number"
@@ -890,6 +953,9 @@
     },
     "EventRate": {
       "type": "number"
+    },
+    "ExeExitCode": {
+      "type": "integer"
     },
     "ExecutableSize": {
       "type": "integer"
@@ -1023,6 +1089,9 @@
     "HasSingularity": {
       "type": "boolean"
     },
+    "HoldKillSig": {
+      "type": "string"
+    },
     "HoldReason": {
       "type": "string"
     },
@@ -1094,6 +1163,9 @@
     },
     "JobDuration": {
       "type": "number"
+    },
+    "JobExitCode": {
+      "type": "integer"
     },
     "JobFailed": {
       "type": "integer"
@@ -1332,7 +1404,13 @@
     "MaxWallTimeMins": {
       "type": "integer"
     },
+    "MaxWallTimeMinsProbe": {
+      "type": "integer"
+    },
     "MaxWallTimeMinsRun": {
+      "type": "integer"
+    },
+    "MaxWallTimeMinsTail": {
       "type": "integer"
     },
     "MegaEvents": {
@@ -1412,6 +1490,9 @@
         "type": "string"
       },
       "type": "array"
+    },
+    "OtherJobRemoveRequirements": {
+      "type": "integer"
     },
     "OutputFiles": {
       "type": "integer"
@@ -1497,6 +1578,9 @@
     "ReleaseReason": {
       "type": "string"
     },
+    "RemoteCondorSetup": {
+      "type": "string"
+    },
     "RemoteHost": {
       "type": "string"
     },
@@ -1514,6 +1598,9 @@
     },
     "RemoteWallClockTime": {
       "type": "integer"
+    },
+    "RemoveKillSig": {
+      "type": "string"
     },
     "RemoveReason": {
       "type": "string"
@@ -1558,7 +1645,7 @@
       "type": "boolean"
     },
     "Requirements": {
-      "type": "null"
+      "type": "boolean"
     },
     "ResidentSetSize": {
       "type": "integer"
@@ -1728,6 +1815,9 @@
     "WriteTimeMins": {
       "type": "number"
     },
+    "X509UserProxy": {
+      "type": "string"
+    },
     "jobprio": {
       "type": "integer"
     },
@@ -1820,16 +1910,25 @@
     "CRAB_AlgoArgs",
     "CRAB_AllowOverflow",
     "CRAB_AsyncDest",
+    "CRAB_Attempt",
+    "CRAB_DashboardTaskType",
     "CRAB_DataBlock",
+    "CRAB_FailedNodeLimit",
     "CRAB_HC",
     "CRAB_ISB",
     "CRAB_Id",
     "CRAB_JobArch",
+    "CRAB_JobCount",
+    "CRAB_JobLogURL",
     "CRAB_JobReleaseTimeout",
     "CRAB_JobSW",
     "CRAB_JobType",
+    "CRAB_LumiMask",
+    "CRAB_MaxPost",
     "CRAB_NoWNStageout",
     "CRAB_OutLFNDir",
+    "CRAB_PostJobLogURL",
+    "CRAB_PostJobStatus",
     "CRAB_PrimaryDataset",
     "CRAB_Publish",
     "CRAB_PublishName",
@@ -1842,11 +1941,13 @@
     "CRAB_TaskCreationDate",
     "CRAB_TaskEndTime",
     "CRAB_TaskLifetimeDays",
+    "CRAB_TaskSubmitTime",
     "CRAB_TaskWorker",
     "CRAB_TransferOutputs",
     "CRAB_UserGroup",
     "CRAB_UserHN",
     "CRAB_UserRole",
+    "CRAB_UserVO",
     "CRAB_Workflow",
     "Campaign",
     "ChirpCMSSWCPUModels",
@@ -2027,6 +2128,16 @@
     "CurrentHosts",
     "DAGNodeName",
     "DAGParentNodeNames",
+    "DAG_InRecovery",
+    "DAG_NodesDone",
+    "DAG_NodesFailed",
+    "DAG_NodesPostrun",
+    "DAG_NodesPrerun",
+    "DAG_NodesQueued",
+    "DAG_NodesReady",
+    "DAG_NodesTotal",
+    "DAG_NodesUnready",
+    "DAG_Status",
     "DB12CommittedCoreHr",
     "DB12CoreHr",
     "DB12CpuTimeHr",
@@ -2067,6 +2178,7 @@
     "EstimatedWallTimeJobCount",
     "EstimatedWallTimeMins",
     "EventRate",
+    "ExeExitCode",
     "ExecutableSize",
     "ExitBySignal",
     "ExitCode",
@@ -2111,6 +2223,7 @@
     "HasBeenRouted",
     "HasBeenTimingTuned",
     "HasSingularity",
+    "HoldKillSig",
     "HoldReason",
     "HoldReasonCode",
     "HoldReasonSubCode",
@@ -2135,6 +2248,7 @@
     "JobCurrentStartExecutingDate",
     "JobCurrentStartTransferOutputDate",
     "JobDuration",
+    "JobExitCode",
     "JobFailed",
     "JobFinishedHookDone",
     "JobFlavour",
@@ -2214,7 +2328,9 @@
     "MaxHosts",
     "MaxWallTimeMin_RAWs",
     "MaxWallTimeMins",
+    "MaxWallTimeMinsProbe",
     "MaxWallTimeMinsRun",
+    "MaxWallTimeMinsTail",
     "MegaEvents",
     "MemoryMB",
     "MemoryProvisioned",
@@ -2240,6 +2356,7 @@
     "OriginalMaxWallTimeMins",
     "OriginalMemory",
     "Original_DESIRED_Sites",
+    "OtherJobRemoveRequirements",
     "OutputFiles",
     "OutputGB",
     "OverflowType",
@@ -2268,12 +2385,14 @@
     "RecentStatsLifetimeStarter",
     "RecordTime",
     "ReleaseReason",
+    "RemoteCondorSetup",
     "RemoteHost",
     "RemotePool",
     "RemoteSlotID",
     "RemoteSysCpu",
     "RemoteUserCpu",
     "RemoteWallClockTime",
+    "RemoveKillSig",
     "RemoveReason",
     "RequestCpus",
     "RequestDisk",
@@ -2345,6 +2464,7 @@
     "Workflow",
     "WriteTimeHrs",
     "WriteTimeMins",
+    "X509UserProxy",
     "jobprio",
     "metadata",
     "orig_FERMIHTC_OrigPool",
