@@ -1,6 +1,6 @@
 [
   {
-    "targets": [ "vocms0136:18240", "vocms0161:18240", "vocms0163:18240", "vocms0165:18240", "vocms0466:18240" ],
+    "targets": [ "vocms0136:18240", "vocms0161:18240", "vocms0163:18240", "vocms0165:18240", "vocms0766:18240" ],
     "labels": {
       "env": "prod",
       "job": "reqmgr2-prod"
