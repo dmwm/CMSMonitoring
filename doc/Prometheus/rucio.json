@@ -1,0 +1,9 @@
+[
+  {
+    "targets": [ "cms-rucio-stats-dev" ],
+    "labels": {
+      "env": "dev",
+      "job": "rucio-dev"
+    }
+  }
+]
