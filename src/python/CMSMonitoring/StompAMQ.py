@@ -140,6 +140,7 @@ class StompAMQ(object):
     :param key: path to key file
     :param validation_loglevel: logging level to use for validation feedback
     :param timeout_interval: provides timeout interval to failed broker
+    :param ipv4_only: use ipv4 servers only
     """
 
     # Version number to be added in header
@@ -148,7 +149,7 @@ class StompAMQ(object):
     def __init__(self, username, password, producer, topic, validation_schema,
                  host_and_ports=None, logger=None, cert=None, key=None,
                  validation_loglevel=logging.WARNING,
-                 timeout_interval=600):
+                 timeout_interval=600, ipv4_only=False):
         self._username = username
         self._password = password
         self._producer = producer
@@ -163,7 +164,11 @@ class StompAMQ(object):
                 for host, port in host_and_ports:
                     for ipaddr in broker_ips(host, port):
                         if (ipaddr, port) not in self.ip_and_ports:
-                            self.ip_and_ports.append((ipaddr, port))
+                            if ipv4_only:
+                                if ipaddr.find(':') == -1:
+                                    self.ip_and_ports.append((ipaddr, port))
+                            else:
+                                self.ip_and_ports.append((ipaddr, port))
                 self.logger.info("resolver: %s", self.ip_and_ports)
         except Exception as exp:
             self.logger.warn("unable to resolve host_and_ports: %s", str(exp))
