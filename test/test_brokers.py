@@ -48,20 +48,32 @@ def test(fname, ipv4, ckey, cert, verbose):
     creds = credentials(fname)
     host, port = creds['host_and_ports'].split(':')
     port = int(port)
-    amq = StompAMQ(creds['username'], creds['password'],
+    amq1 = StompAMQ(creds['username'], creds['password'],
+            creds['producer'], creds['topic'],
+            validation_schema = None,
+            logger = logger, ipv4_only=ipv4,
+            host_and_ports = [('cms-test-mb.cern.ch', 61313)])
+    amq2 = StompAMQ(creds['username'], creds['password'],
             creds['producer'], creds['topic'],
             validation_schema = None,
             logger = logger,
-            host_and_ports = [('cms-test-mb.cern.ch', 61313)],
+            host_and_ports = [('cms-test-mb.cern.ch', 61323)],
             cert=cert, key=ckey, ipv4_only=ipv4)
     docs = [{'test':i, 'hash': i} for i in range(10)]
     data = []
     for doc in docs:
         doc_type = 'test'
-        notification, okeys, ukeys = amq.make_notification(doc, doc_type)
+        notification, okeys, ukeys = amq1.make_notification(doc, doc_type)
         data.append(notification)
-    print("### data to send: %s" % data)
-    results = amq.send(data)
+    print("### Sending data with AMQ (user/pswd)")
+    results = amq1.send(data)
+    if results:
+        print("### failed docs from AMQ %s" % len(results))
+        if verbose:
+            for doc in results:
+                print(doc)
+    print("### Sending data with AMQ (ckey/cert)")
+    results = amq2.send(data)
     if results:
         print("### failed docs from AMQ %s" % len(results))
         if verbose:
