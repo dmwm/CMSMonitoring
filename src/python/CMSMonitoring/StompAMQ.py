@@ -71,17 +71,27 @@ class StompyListener(object):
         logging.basicConfig(level=logging.debug)
         self.logger = logger if logger else logging.getLogger('StompyListener')
 
+    def safe_headers(self, headers):
+        "Return stripped headers"
+        hdrs = dict(headers)
+        for key in ['username', 'password', 'login', 'passcode']:
+            if key in hdrs:
+                hdrs[key] = 'xxx'
+        return hdrs
+
     def on_connecting(self, host_and_port):
         "print debug message on_connecting"
         self.logger.debug('on_connecting %s', str(host_and_port))
 
     def on_error(self, headers, message):
         "print debug message on_error"
-        self.logger.debug('received an error %s %s', str(headers), str(message))
+        self.logger.debug('received an error HEADERS: %s, MESSAGE: %s', \
+                str(self.safe_headers(headers)), str(message))
 
     def on_message(self, headers, body):
         "print debug message on_message"
-        self.logger.debug('on_message %s %s', str(headers), str(body))
+        self.logger.debug('on_message HEADERS: %s BODY: %s', \
+                str(self.safe_headers(headers)), str(body))
 
     def on_heartbeat(self):
         "print debug message on_heartbeat"
@@ -89,11 +99,13 @@ class StompyListener(object):
 
     def on_send(self, frame):
         "print debug message on_send"
-        self.logger.debug('on_send HEADERS: %s, BODY: %s ...', str(frame.headers), str(frame.body)[:160])
+        self.logger.debug('on_send HEADERS: %s, BODY: %s ...', \
+                str(self.safe_headers(frame.headers)), str(frame.body)[:160])
 
     def on_connected(self, headers, body):
         "print debug message on_connected"
-        self.logger.debug('on_connected %s %s', str(headers), str(body))
+        self.logger.debug('on_connected HEADERS: %s, BODY: %s', \
+                str(self.safe_headers(headers)), str(body))
 
     def on_disconnected(self):
         "print debug message on_disconnected"
@@ -105,7 +117,8 @@ class StompyListener(object):
 
     def on_before_message(self, headers, body):
         "print debug message on_before_message"
-        self.logger.debug('on_before_message %s %s', str(headers), str(body))
+        self.logger.debug('on_before_message HEADERS: %s, BODY: %s', \
+                str(self.safe_headers(headers)), str(body))
 
         return (headers, body)
 
