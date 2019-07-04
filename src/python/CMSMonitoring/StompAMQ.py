@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#-*- coding: utf-8 -*-
+#pylint: disable=C0301,R0903,R0912,W0703,C0103,R0914,W0603,R0902,R0913
 """
 Basic interface to CERN ActiveMQ via stomp
 """
@@ -11,7 +13,6 @@ import time
 import socket
 import random
 import logging
-import traceback
 try:
     import stomp
 except ImportError:
@@ -24,7 +25,7 @@ from CMSMonitoring.Validator import validate_schema, Schemas
 _schemas = Schemas(update=3600, jsonschemas=False)
 _local_schemas = None
 
-def validate(doc, schema, loglevel=logging.WARNING):
+def validate(doc, schema, logger):
     """
     Helper function to validate given document against a schema
 
@@ -43,19 +44,22 @@ def validate(doc, schema, loglevel=logging.WARNING):
         if os.path.isfile(schema):
             try:
                 _local_schemas[schema] = json.load(open(schema))
-                logging.warning('Successfully loaded local schema {} for validation'.format(schema))
+                msg = 'Successfully loaded local schema {} for validation'.format(schema)
+                logger.warn(msg)
             except ValueError:
-                logging.error('Local schema {} is not json compliant'.format(schema))
+                msg = 'Local schema {} is not json compliant'.format(schema)
+                logger.error(msg)
 
     if schema in _local_schemas:
-        return validate_schema(_local_schemas[schema], doc, loglevel)
+        return validate_schema(_local_schemas[schema], doc, logger)
 
     else:
         for sch in _schemas.schemas():
             if schema in [sch, os.path.basename(sch).rsplit('.')[0]]:
-                return validate_schema(_schemas.schemas()[sch], doc, loglevel)
+                return validate_schema(_schemas.schemas()[sch], doc, logger)
 
-    logging.error("Schema not found: '{}'".format(schema))
+    msg = "Schema not found: '{}'".format(schema)
+    logger.error(msg)
     return None, None
 
 class StompyListener(object):
@@ -64,34 +68,57 @@ class StompyListener(object):
     connection.
     """
     def __init__(self, logger=None):
-        self.logger = logger if logger else logging.getLogger()
+        logging.basicConfig(level=logging.debug)
+        self.logger = logger if logger else logging.getLogger('StompyListener')
+
+    def safe_headers(self, headers):
+        "Return stripped headers"
+        hdrs = dict(headers)
+        for key in ['username', 'password', 'login', 'passcode']:
+            if key in hdrs:
+                hdrs[key] = 'xxx'
+        return hdrs
 
     def on_connecting(self, host_and_port):
+        "print debug message on_connecting"
         self.logger.debug('on_connecting %s', str(host_and_port))
 
     def on_error(self, headers, message):
-        self.logger.debug('received an error %s %s', str(headers), str(message))
+        "print debug message on_error"
+        self.logger.debug('received an error HEADERS: %s, MESSAGE: %s', \
+                str(self.safe_headers(headers)), str(message))
 
     def on_message(self, headers, body):
-        self.logger.debug('on_message %s %s', str(headers), str(body))
+        "print debug message on_message"
+        self.logger.debug('on_message HEADERS: %s BODY: %s', \
+                str(self.safe_headers(headers)), str(body))
 
     def on_heartbeat(self):
+        "print debug message on_heartbeat"
         self.logger.debug('on_heartbeat')
 
     def on_send(self, frame):
-        self.logger.debug('on_send HEADERS: %s, BODY: %s ...', str(frame.headers), str(frame.body)[:160])
+        "print debug message on_send"
+        self.logger.debug('on_send HEADERS: %s, BODY: %s ...', \
+                str(self.safe_headers(frame.headers)), str(frame.body)[:160])
 
     def on_connected(self, headers, body):
-        self.logger.debug('on_connected %s %s', str(headers), str(body))
+        "print debug message on_connected"
+        self.logger.debug('on_connected HEADERS: %s, BODY: %s', \
+                str(self.safe_headers(headers)), str(body))
 
     def on_disconnected(self):
+        "print debug message on_disconnected"
         self.logger.debug('on_disconnected')
 
     def on_heartbeat_timeout(self):
+        "print debug message on_heartbeat_timeout"
         self.logger.debug('on_heartbeat_timeout')
 
     def on_before_message(self, headers, body):
-        self.logger.debug('on_before_message %s %s', str(headers), str(body))
+        "print debug message on_before_message"
+        self.logger.debug('on_before_message HEADERS: %s, BODY: %s', \
+                str(self.safe_headers(headers)), str(body))
 
         return (headers, body)
 
@@ -102,7 +129,7 @@ def broker_ips(host, port):
         # each item is (family, socktype, proto, canonname, sockaddr) tuple
         # so we tack 4th element sockaddr
         # for IPv4 sockaddr is (address, port)
-        # for IPv6 sockaddr is (address, port, flow info, scope id) 
+        # for IPv6 sockaddr is (address, port, flow info, scope id)
         # we are interested only in address
         addr.append(item[4][0])
     return addr
@@ -126,20 +153,22 @@ class StompAMQ(object):
     :param key: path to key file
     :param validation_loglevel: logging level to use for validation feedback
     :param timeout_interval: provides timeout interval to failed broker
+    :param ipv4_only: use ipv4 servers only
     """
 
     # Version number to be added in header
     _version = '0.3'
 
-    def __init__(self, username, password, producer, topic, validation_schema, 
+    def __init__(self, username, password, producer, topic, validation_schema,
                  host_and_ports=None, logger=None, cert=None, key=None,
                  validation_loglevel=logging.WARNING,
-                 timeout_interval=600):
+                 timeout_interval=600, ipv4_only=False):
         self._username = username
         self._password = password
         self._producer = producer
         self._topic = topic
-        self.logger = logger if logger else logging.getLogger()
+        logging.basicConfig(level=validation_loglevel)
+        self.logger = logger if logger else logging.getLogger('StompAMQ')
         self._host_and_ports = host_and_ports or [('cms-test-mb.cern.ch', 61313)]
         self.ip_and_ports = []
         try:
@@ -148,10 +177,13 @@ class StompAMQ(object):
                 for host, port in host_and_ports:
                     for ipaddr in broker_ips(host, port):
                         if (ipaddr, port) not in self.ip_and_ports:
-                            self.ip_and_ports.append((ipaddr, port))
+                            if ipv4_only:
+                                if ipaddr.find(':') == -1:
+                                    self.ip_and_ports.append((ipaddr, port))
+                            else:
+                                self.ip_and_ports.append((ipaddr, port))
                 self.logger.info("resolver: %s", self.ip_and_ports)
         except Exception as exp:
-            traceback.print_exc()
             self.logger.warn("unable to resolve host_and_ports: %s", str(exp))
         self._cert = cert
         self._key = key
@@ -163,7 +195,7 @@ class StompAMQ(object):
         self.validation_loglevel = validation_loglevel
 
         if self.validation_schema is None:
-            logging.warning('No document validation performed!')
+            self.logger.warn('No document validation performed!')
 
         self.connections = []
         if self.ip_and_ports:
@@ -173,7 +205,7 @@ class StompAMQ(object):
                     conn = stomp.Connection(host_and_ports=host_and_ports)
                     if self._use_ssl:
                         # This requires stomp >= 4.1.15
-                        conn.set_ssl(for_hosts=host_and_ports,
+                        conn.set_ssl(for_hosts=host_and_ports, \
                                 key_file=self._key, cert_file=self._cert)
                     self.connections.append(conn)
                 except Exception as exp:
@@ -185,7 +217,7 @@ class StompAMQ(object):
                 conn = stomp.Connection(host_and_ports=self._host_and_ports)
                 if self._use_ssl:
                     # This requires stomp >= 4.1.15
-                    conn.set_ssl(for_hosts=self._host_and_ports,
+                    conn.set_ssl(for_hosts=self._host_and_ports, \
                             key_file=self._key, cert_file=self._cert)
                 self.connections.append(conn)
             except Exception as exp:
@@ -296,8 +328,10 @@ class StompAMQ(object):
                     str(notification), type(notification), str(exc))
         return
 
-    def make_notification(self, payload, docType, docId=None, producer=None, ts=None, metadata=None,
-                          dataSubfield="data", schema=None, dropOffendingKeys=False, dropUnknownKeys=False):
+    def make_notification(self, payload, docType, docId=None, \
+            producer=None, ts=None, metadata=None, \
+            dataSubfield="data", schema=None, \
+            dropOffendingKeys=False, dropUnknownKeys=False):
         """
         Produce a notification from a single payload, adding the necessary
         headers and metadata. Generic metadata is generated to include a
@@ -320,7 +354,7 @@ class StompAMQ(object):
         :param schema: Use this schema template to validate the payload. This should be
                the name of a json file looked for locally, or inside the folder defined
                in the 'CMSMONITORING_SCHEMAS' environment variable, or one of the defaults
-               provided with the CMSMonitoring package. If 'None', the schema from the 
+               provided with the CMSMonitoring package. If 'None', the schema from the
                StompAMQ instance is applied. If that is also 'None', no validation is
                performed.
         :param dropOffendingKeys: Drop keys that failed validation from the notification
@@ -339,15 +373,17 @@ class StompAMQ(object):
         schema = schema or self.validation_schema
         offending_keys, unknown_keys = [], []
         if schema:
-            offending_keys, unknown_keys = validate(payload, schema, loglevel=self.validation_loglevel)
+            offending_keys, unknown_keys = validate(payload, schema, self.logger)
             if offending_keys:
-                logging.warning("Document {} conflicts with schema '{}'".format(docId, schema))
+                msg = "Document {} conflicts with schema '{}'".format(docId, schema)
+                self.logger.warn(msg)
                 if dropOffendingKeys:
                     for key in offending_keys:
                         payload.pop(key)
 
             if unknown_keys:
-                logging.warning("Document {} contains keys not present in schema '{}'".format(docId, schema))
+                msg = "Document {} contains keys not present in schema '{}'".format(docId, schema)
+                self.logger.warn(msg)
                 if dropUnknownKeys:
                     for key in unknown_keys:
                         payload.pop(key)
