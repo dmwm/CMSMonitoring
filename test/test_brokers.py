@@ -22,8 +22,8 @@ class OptionParser():
         self.parser = argparse.ArgumentParser(prog='PROG')
         self.parser.add_argument("--broker-params", action="store",
             dest="broker_params", default="", help="Input file with broker params credentions")
-        self.parser.add_argument("--ipv4", action="store_true",
-            dest="ipv4", default=False, help="Use ipv4")
+        self.parser.add_argument("--ipv4", action="store",
+            dest="ipv4", default="", help="ipv4 flag")
         self.parser.add_argument("--ckey", action="store",
             dest="ckey", default="", help="ckey")
         self.parser.add_argument("--cert", action="store",
@@ -59,26 +59,23 @@ def test(fname, ipv4, ckey, cert, verbose):
             logger = logger,
             host_and_ports = [('cms-test-mb.cern.ch', 61323)],
             cert=cert, key=ckey, ipv4_only=ipv4)
-    docs = [{'test':i, 'hash': i} for i in range(10)]
-    data = []
-    for doc in docs:
-        doc_type = 'test'
-        notification, okeys, ukeys = amq1.make_notification(doc, doc_type)
-        data.append(notification)
-    print("### Sending data with AMQ (user/pswd)")
-    results = amq1.send(data)
-    if results:
-        print("### failed docs from AMQ %s" % len(results))
-        if verbose:
-            for doc in results:
-                print(doc)
-    print("### Sending data with AMQ (ckey/cert)")
-    results = amq2.send(data)
-    if results:
-        print("### failed docs from AMQ %s" % len(results))
-        if verbose:
-            for doc in results:
-                print(doc)
+    for amq in [amq1, amq2]:
+        docs = [{'test':i, 'hash': i} for i in range(10)]
+        data = []
+        for doc in docs:
+            doc_type = 'test'
+            notification, okeys, ukeys = amq1.make_notification(doc, doc_type)
+            data.append(notification)
+        if amq == amq1:
+            print("### Sending data with AMQ (user/pswd)")
+        else:
+            print("### Sending data with AMQ (ckey/cert)")
+        results = amq1.send(data)
+        if results:
+            print("### failed docs from AMQ %s" % len(results))
+            if verbose:
+                for doc in results:
+                    print(doc)
 
 def main():
     "Main function"
