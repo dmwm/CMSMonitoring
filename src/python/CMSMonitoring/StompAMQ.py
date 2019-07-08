@@ -162,7 +162,7 @@ class StompAMQ(object):
     def __init__(self, username, password, producer, topic, validation_schema,
                  host_and_ports=None, logger=None, cert=None, key=None,
                  validation_loglevel=logging.WARNING,
-                 timeout_interval=600, ipv4_only=False):
+                 timeout_interval=600, ipv4_only=True):
         self._username = username
         self._password = password
         self._producer = producer
@@ -209,8 +209,9 @@ class StompAMQ(object):
                                 key_file=self._key, cert_file=self._cert)
                     self.connections.append(conn)
                 except Exception as exp:
-                    msg = 'Fail to connect to message broker, error: %s' \
-                            % str(exp)
+                    msg = 'Fail to connect to message broker\n'
+                    msg += 'Host: %s\n' % str(host_and_ports)
+                    msg += 'Error: %s' % str(exp)
                     self.logger.warn(msg)
         else:
             try:
@@ -221,8 +222,9 @@ class StompAMQ(object):
                             key_file=self._key, cert_file=self._cert)
                 self.connections.append(conn)
             except Exception as exp:
-                msg = 'Fail to connect to message broker, error: %s' \
-                        % str(exp)
+                msg = 'Fail to connect to message broker\n'
+                msg += 'Host: %s\n' % str(self._host_and_ports)
+                msg += 'Error: %s' % str(exp)
                 self.logger.warn(msg)
         self.timeouts = {}
         self.timeout_interval = timeout_interval
