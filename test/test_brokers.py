@@ -70,7 +70,7 @@ def test(fname, ipv4, ckey, cert, verbose):
             print("### Sending data with AMQ (user/pswd)")
         else:
             print("### Sending data with AMQ (ckey/cert)")
-        results = amq1.send(data)
+        results = amq.send(data)
         if results:
             print("### failed docs from AMQ %s" % len(results))
             if verbose:
