@@ -203,11 +203,14 @@ class StompAMQ(object):
                 host_and_ports = [self.ip_and_ports[idx]]
                 try:
                     conn = stomp.Connection(host_and_ports=host_and_ports)
+                    desc = 'host: %s' % host_and_ports
                     if self._use_ssl:
                         # This requires stomp >= 4.1.15
                         conn.set_ssl(for_hosts=host_and_ports, \
                                 key_file=self._key, cert_file=self._cert)
-                    self.connections.append(conn)
+                        desc = 'host: %s, ckey: %s, cert: %s' \
+                                % (host_and_ports, self._key, self._cert)
+                    self.connections.append((conn, desc))
                 except Exception as exp:
                     msg = 'Fail to connect to message broker\n'
                     msg += 'Host: %s\n' % str(host_and_ports)
@@ -216,11 +219,14 @@ class StompAMQ(object):
         else:
             try:
                 conn = stomp.Connection(host_and_ports=self._host_and_ports)
+                desc = 'host: %s' % self._host_and_ports
                 if self._use_ssl:
                     # This requires stomp >= 4.1.15
                     conn.set_ssl(for_hosts=self._host_and_ports, \
                             key_file=self._key, cert_file=self._cert)
-                self.connections.append(conn)
+                    desc = 'host: %s, ckey: %s, cert: %s' \
+                            % (self._host_and_ports, self._key, self._cert)
+                self.connections.append((conn, desc))
             except Exception as exp:
                 msg = 'Fail to connect to message broker\n'
                 msg += 'Host: %s\n' % str(self._host_and_ports)
@@ -232,7 +238,7 @@ class StompAMQ(object):
     def connect(self):
         "Connect to the brokers"
         available_connections = []
-        for conn in self.connections:
+        for conn, desc in self.connections:
             # check if we already connected, if so make it available and proceed
             if conn.is_connected():
                 available_connections.append(conn)
@@ -258,9 +264,8 @@ class StompAMQ(object):
                 self.logger.debug("Connection to %s is successful", repr(self._host_and_ports))
             except Exception as exc:
                 tstamp = time.strftime("%b %d %Y %H:%M:%S GMT", time.gmtime())
-                msg = "%s, connection to %s failed\n%s" \
-                        % (tstamp, repr(self._host_and_ports), str(exc))
-                msg += 'Available hosts: %s' % str(self.ip_and_ports)
+                msg = "%s, connection to %s failed, error: %s" \
+                        % (tstamp, desc, str(exc))
                 self.logger.error(msg)
                 # record that our connection has failed
                 self.timeouts[conn] = time.time()
@@ -275,7 +280,7 @@ class StompAMQ(object):
 
     def disconnect(self):
         "Disconnect from brokers"
-        for conn in self.connections:
+        for conn, _ in self.connections:
             if conn.is_connected():
                 conn.disconnect()
 
