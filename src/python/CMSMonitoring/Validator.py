@@ -18,7 +18,6 @@ from __future__ import print_function
 import os
 import json
 import time
-import types
 import hashlib
 import logging
 
@@ -123,15 +122,15 @@ def etype(val):
     if isinstance(val, dict) and 'type' in val:
         return val['type']
 
-    for _type in [types.StringTypes, types.BooleanType]:
+    for _type in [str, bool]:
         if isinstance(val, _type):
             return _type
 
-    if isinstance(val, (types.IntType, types.LongType)):
-        return (types.IntType, types.LongType)
+    if isinstance(val, (int)):
+        return (int)
 
-    if isinstance(val, (types.FloatType)):
-        return (types.FloatType, types.IntType, types.LongType)
+    if isinstance(val, (float)):
+        return (float, int)
 
     return type(val)
 
@@ -155,7 +154,7 @@ def _validate_schema(schema, doc, logger):
             unknown_keys.append(key)
             continue
 
-        if isinstance(val, types.DictType):
+        if isinstance(val, dict):
             sub_offending, _ = _validate_schema(schema[key], val, logger)
             if sub_offending:
                 msg = "{}: for sub schema={} val={} has wrong data-types".format(base, schema[key], repr(val))
@@ -164,7 +163,7 @@ def _validate_schema(schema, doc, logger):
                 continue
 
         expect = schema[key]
-        if isinstance(val, types.ListType):
+        if isinstance(val, list):
             if len(set([type(x) for x in val])) != 1:
                 msg = "{}: for key={} val={} has inconsistent data-types".format(base, key, repr(val))
                 logger.warn(msg)
