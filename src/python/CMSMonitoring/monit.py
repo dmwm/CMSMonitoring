@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-#pylint: disable=
+# -*- coding: utf-8 -*-
+# pylint: disable=
 """
 File       : monit.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
@@ -9,6 +9,7 @@ Description: CMS Monitoring MONIT query tool
 
 # system modules
 import os
+import re
 import sys
 import json
 import argparse
@@ -16,135 +17,169 @@ import requests
 import traceback
 
 try:
-    import urllib.request as ulib # python 3.X
+    import urllib.request as ulib  # python 3.X
     import urllib.parse as parser
 except ImportError:
-    import urllib2 as ulib # python 2.X
+    import urllib2 as ulib  # python 2.X
     import urllib as parser
 
-class OptionParser():
+
+class OptionParser:
     def __init__(self):
         "User based option parser"
         desc = "CMS MONIT query tool to query "
-        desc += 'MONIT datatabases via ES/Influx DB queries or key:val pairs\n'
-        desc += '\n'
-        desc += 'Example of querying ES DB via key:val pairs:\n'
+        desc += "MONIT datatabases via ES/Influx DB queries or key:val pairs\n"
+        desc += "\n"
+        desc += "Example of querying ES DB via key:val pairs:\n"
         desc += '   monit --dbname=monit_prod_wmagent --query="status:Available,sum:35967"\n'
-        desc += '\n'
-        desc += 'Example of querying ES DB via ES query:\n'
-        desc += '   monit --dbname=monit_prod_wmagent --query=query.json\n'
-        desc += '   where query.json is ES query, e.g.\n'
+        desc += "\n"
+        desc += "Example of querying ES DB via ES query:\n"
+        desc += "   monit --dbname=monit_prod_wmagent --query=query.json\n"
+        desc += "   where query.json is ES query, e.g.\n"
         desc += '   {"query":{"match":{"data.payload.status": "Available"}}}\n'
-        desc += '   For ES query syntax see:\n'
-        desc += '   https://www.elastic.co/guide/en/elasticsearch/reference/current/search-template.html\n'
-        desc += '   https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-term-query.html\n'
-        desc += '\n'
-        desc += 'Example of querying InfluxDB:\n'
-        desc += '   monit --dbname=monit_production_condor --query="SHOW TAG KEYS"\n'
-        desc += '\n'
-        desc += 'Token can be obtained at https://monit-grafana.cern.ch/org/apikeys\n'
-        desc += 'For more info see: http://docs.grafana.org/http_api/auth/\n'
-        desc += 'If token is not provided we will use default one'
-        self.parser = argparse.ArgumentParser(prog='PROG', usage=desc)
-        self.parser.add_argument("--dbid", action="store",
-            dest="dbid", default=0, help="DB identifier")
-        self.parser.add_argument("--dbname", action="store",
-            dest="dbname", default="", help="DB name, e.g. monit_prod_wmagent")
-        self.parser.add_argument("--query", action="store",
-            dest="query", default="", help="DB query, JSON for ES and SQL for InfluxDB")
-        token = '/afs/cern.ch/user/l/leggerf/cms/token.txt'
-        self.parser.add_argument("--token", action="store",
-            dest="token", default=token, help="User token")
-        self.parser.add_argument("--url", action="store",
-            dest="url", default="https://monit-grafana.cern.ch", help="MONIT URL")
-        self.parser.add_argument("--idx", action="store",
-            dest="idx", default=0, help="result index, default 0")
-        self.parser.add_argument("--limit", action="store",
-            dest="limit", default=10, help="result limit, default 10")
-        self.parser.add_argument("--verbose", action="store",
-            dest="verbose", default=0, help="verbose level, default 0")
+        desc += "   For ES query syntax see:\n"
+        desc += "   https://www.elastic.co/guide/en/elasticsearch/reference/current/search-template.html\n"
+        desc += "   https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-term-query.html\n"
+        desc += "\n"
+        desc += "Example of querying InfluxDB:\n"
+        desc += '   monit --dbname=monit_condor --query="SHOW TAG KEYS"\n'
+        desc += "\n"
+        desc += "Token can be obtained at https://monit-grafana.cern.ch/org/apikeys\n"
+        desc += "For more info see: http://docs.grafana.org/http_api/auth/\n"
+        desc += "If token is not provided we will use default one"
+        self.parser = argparse.ArgumentParser(prog="PROG", usage=desc)
+        self.parser.add_argument(
+            "--dbid", action="store", dest="dbid", default=0, help="DB identifier"
+        )
+        self.parser.add_argument(
+            "--dbname",
+            action="store",
+            dest="dbname",
+            default="",
+            help="Name of the datasource in grafana, e.g. monit_condor, you can list the datasources using the option --list_dbs",
+        )
+        self.parser.add_argument(
+            "--query",
+            action="store",
+            dest="query",
+            default="",
+            help="DB query, JSON for ES and SQL for InfluxDB",
+        )
+        token = "/afs/cern.ch/user/l/leggerf/cms/token.txt"
+        self.parser.add_argument(
+            "--token", action="store", dest="token", default=token, help="User token"
+        )
+        self.parser.add_argument(
+            "--url",
+            action="store",
+            dest="url",
+            default="https://monit-grafana.cern.ch",
+            help="MONIT URL",
+        )
+        self.parser.add_argument(
+            "--idx",
+            action="store",
+            dest="idx",
+            default=0,
+            help="result index, default 0",
+        )
+        self.parser.add_argument(
+            "--limit",
+            action="store",
+            dest="limit",
+            default=10,
+            help="result limit, default 10",
+        )
+        self.parser.add_argument(
+            "--verbose",
+            action="store",
+            dest="verbose",
+            default=0,
+            help="verbose level, default 0",
+        )
+        self.parser.add_argument(
+            "--list_dbs",
+            action="store_true",
+            dest="list_dbs",
+            default=False,
+            help="Prints the dbs list and exit",
+        )
 
-DBDICT = {
-        'CMSWEB': 8973,
-        'cmsweb-k8s': 8488,
-        'cmsweb-prometheus': 9041,
-        'es-cms': 8983,
-        'cms': 8983,
-        'es-cms-cmssdt-relvals': 9015,
-        'monit_condor': 7668,
-        'monit_crab': 8978,
-        'monit_eoscmsquotas': 9003,
-        'monit_prod_condor': 8787,
-        'monit_es_condor_2019': 9014,
-        'monit_es_condor_tasks': 9039,
-        'monit_es_toolsandint': 9040,
-        'monit_idb_alarms': 8528,
-        'monit_idb_availability': 9107,
-        'monit_idb_cmsjm': 7731,
-        'monit_idb_databases': 8530,
-        'monit_idb_eos': 8531,
-        'monit_idb_kpis': 8532,
-        'monit_idb_monitoring': 9109,
-        'monit_idb_rebus': 9115,
-        'monit_idb_transfers': 8035,
-        'monit_kpi': 8533,
-        'monit_prod_tier0wmagent': 9113,
-        'monit_prod_wmagent': 7617,
-        'monit_prod_wmagentqa': 8429,
-        'SCHEDD': 8980,
-        'SI-condor': 8993,
-        'TASKWORKER': 8981,
-        'WMArchive': 7572
-}
+
 def run(url, token, dbid, dbname, query, idx=0, limit=10, verbose=0):
-    headers = {'Authorization': 'Bearer {}'.format(token)}
-    dbid = dbid if dbid else DBDICT.get(dbname, 0)
-    if not dbid:
-        print('No dbid found, please provide either valid db name or dbid')
+    if not query:
+        print(
+            "You need to specify the query (either a query string or a path to a file)"
+        )
         sys.exit(1)
-    if os.path.exists(query) or query.find(':') != -1: # ES query
-        if not dbname.endswith('*'):
-            dbname += '*'
+    headers = {"Authorization": "Bearer {}".format(token)}
+    _db = None
+    _tmp_dir = __get_db_dict()
+    if not dbid:
+        _db = _tmp_dir.get(dbname, {})
+        dbid = _db.get("id")
+    else:
+        for key in _tmp_dir:
+            if _tmp_dir[key].get("id") == dbid:
+                _db = _tmp_dir[key]
+                break
+    if not dbid:
+        print("No dbid found, please provide either valid db name or dbid")
+        sys.exit(1)
+    if os.path.exists(query) or (
+        _db and query and _db.get("type") == "elasticsearch"
+    ):  # ES query
         if os.path.isfile(query):
             ustr = open(query).read()
         else:
             ustr = query
-        if query.find('search_type') == -1:
-            qstr = {"search_type": "query_then_fetch", "ignore_unavailable": True, "index": [dbname]}
+        if query.find("search_type") == -1:
+            qstr = {
+                "search_type": "query_then_fetch",
+                "ignore_unavailable": True,
+                "index": __infer_index(_db, dbname),
+            }
             try:
                 qdict = json.loads(ustr)
             except ValueError:
                 mlist = []
-                for pair in ustr.split(','):
-                    key, val = pair.split(':')
+                for pair in ustr.split(","):
+                    key, val = pair.split(":")
                     key = key.strip()
                     val = val.strip()
-                    if not key.startswith('data.payload'):
-                        key = 'data.payload.{}'.format(key)
-                    mlist.append({'match':{key:val}})
-                qdict = {"query":{"bool":{"must":mlist}}}
-            if 'from' not in qdict:
-                qdict.update({'from': idx})
-            if 'size' not in qdict:
-                qdict.update({'size': limit})
-            query = '{}\n{}\n'.format(json.dumps(qstr), json.dumps(qdict))
+                    if not key.startswith("data.payload"):
+                        key = "data.payload.{}".format(key)
+                    mlist.append({"match": {key: val}})
+                qdict = {"query": {"bool": {"must": mlist}}}
+            if "from" not in qdict:
+                qdict.update({"from": idx})
+            if "size" not in qdict:
+                qdict.update({"size": limit})
+            query = "{}\n{}\n".format(json.dumps(qstr), json.dumps(qdict))
         else:
             query = ustr
         return query_es(url, dbid, query, headers, verbose)
     # influxDB query
-    return query_idb(url, dbid, dbname, query, headers, verbose)
+    _db_name = _db.get("database") if _db else dbname
+    return query_idb(url, dbid, _db_name, query, headers, verbose)
+
 
 def query_idb(base, dbid, dbname, query, headers, verbose=0):
     "Method to query InfluxDB"
-    uri = base + '/api/datasources/proxy/{}/query?db={}&q={}'.format(dbid, dbname, query)
+    uri = base + "/api/datasources/proxy/{}/query?db={}&q={}".format(
+        dbid, dbname, query
+    )
     response = requests.get(uri, headers=headers)
     return json.loads(response.text)
+
 
 def query_es(base, dbid, query, headers, verbose=0):
     "Method to query ES DB"
     # see https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
-    headers.update({'Content-type': 'application/x-ndjson', 'Accept': 'application/json'})
-    uri = base + '/api/datasources/proxy/{}/_msearch'.format(dbid)
+    headers.update(
+        {"Content-type": "application/x-ndjson", "Accept": "application/json"}
+    )
+    uri = base + "/api/datasources/proxy/{}/_msearch".format(dbid)
     if verbose:
         print("Query ES: uri={} query={}".format(uri, query))
     response = requests.get(uri, data=query, headers=headers)
@@ -154,22 +189,70 @@ def query_es(base, dbid, query, headers, verbose=0):
         print("response: %s" % response.text)
         traceback.print_exc()
 
+
+def __get_db_dict():
+    """
+    Get the list of sources as a json, e.g:
+    
+    {
+        "monit_idb_monitoring": {
+            "type": "influxdb", 
+            "id": 9109, 
+            "database": "monit_production_monitoring"
+        }, 
+        "monit_idb_cmsjm_old": {
+            "type": "influxdb", 
+            "id": 8991, 
+            "database": "monit_production_condor"
+        }
+    }
+    """
+    _default_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "../../../static/datasources.json"
+    )
+    _path = os.getenv("MONIT_DB_DICT_FILE", _default_path)
+    try:
+        print(_path)
+        with open(_path, "r") as dir_file:
+            return json.load(dir_file)
+    except (ValueError, OSError):
+        print("Failed to load the datasources directory")
+        return None
+
+
+def __infer_index(_db, dbname):
+    _name_str = (
+        re.match(r"\[{0,1}([^\]]*)\]{0,1}", _db.get("database")).group(1) if _db else dbname
+    )
+    values = [
+        index + "*" if not "*" in index else index for index in _name_str.split(",")
+    ]
+    return values
+
+
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
+    if opts.list_dbs:
+        print(json.dumps(__get_db_dict(), indent=2))
+        sys.exit(0)
     dbid = int(opts.dbid)
     idx = int(opts.idx)
     limit = int(opts.limit)
     verbose = int(opts.verbose)
     dbname = opts.dbname
     query = opts.query
-    token = open(opts.token).read().replace('\n', '') \
-            if os.path.exists(opts.token) else opts.token
-    if dbname == 'es-cms':
-        dbname = 'cms'  #  https://github.com/dmwm/CMSMonitoring/issues/21
+    token = (
+        open(opts.token).read().replace("\n", "")
+        if os.path.exists(opts.token)
+        else opts.token
+    )
+    if dbname == "cms":
+        dbname = "es-cms"  # Now we use the actual name in the dictionary.
     results = run(opts.url, token, dbid, dbname, query, idx, limit, verbose)
     print(json.dumps(results))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
