@@ -20,7 +20,8 @@ class OptionParser:
         "User based option parser"
         desc = """
 This app creates a json file with the name, id, and type of datasource in the user organization. 
-It requires a admin token from grafana. 
+It requires a admin token from grafana. The token can be set either using the --token option 
+or through the GRAFANA_ADMIN_TOKEN environment variable. 
                """
         self.parser = argparse.ArgumentParser(prog="PROG", usage=desc)
         self.parser.add_argument(

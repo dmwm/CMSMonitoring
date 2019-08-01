@@ -29,6 +29,9 @@ class OptionParser:
         "User based option parser"
         desc = "CMS MONIT query tool to query "
         desc += "MONIT datatabases via ES/Influx DB queries or key:val pairs\n"
+        desc += "The file containing the definition of the datasources is set using "
+        desc += "the MONIT_DB_DICT_FILE environment variable\n"
+        desc += "It will use by default the static/datasources.json file\n"
         desc += "\n"
         desc += "Example of querying ES DB via key:val pairs:\n"
         desc += '   monit --dbname=monit_prod_wmagent --query="status:Available,sum:35967"\n'
@@ -222,7 +225,9 @@ def __get_db_dict():
 
 def __infer_index(_db, dbname):
     _name_str = (
-        re.match(r"\[{0,1}([^\]]*)\]{0,1}", _db.get("database")).group(1) if _db else dbname
+        re.match(r"\[{0,1}([^\]]*)\]{0,1}", _db.get("database")).group(1)
+        if _db
+        else dbname
     )
     values = [
         index + "*" if not "*" in index else index for index in _name_str.split(",")
