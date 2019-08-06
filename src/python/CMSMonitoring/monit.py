@@ -136,7 +136,7 @@ def run(url, token, dbid, dbname, query, idx=0, limit=10, verbose=0):
             ustr = open(query).read()
         else:
             ustr = query
-        if query.find("search_type") == -1:
+        if ustr.find("search_type") == -1:
             qstr = {
                 "search_type": "query_then_fetch",
                 "ignore_unavailable": True,
@@ -215,7 +215,6 @@ def __get_db_dict():
     )
     _path = os.getenv("MONIT_DB_DICT_FILE", _default_path)
     try:
-        print(_path)
         with open(_path, "r") as dir_file:
             return json.load(dir_file)
     except (ValueError, OSError):
