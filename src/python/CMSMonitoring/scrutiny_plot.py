@@ -60,6 +60,7 @@ based on phedex and dbs hdfs data.
         self.parser.add_argument(
             "end_date",
             help="Date in yyyyMMdd format.",
+            nargs='?',
             type=str,
             default=datetime.strftime(datetime.now() - relativedelta(days=1), "%Y%m%d"),
         )
