@@ -6,7 +6,8 @@ import requests
 import json
 import argparse
 import traceback
-
+import logging
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
 
 class OptionParser:
     def __init__(self):
@@ -73,12 +74,12 @@ you can use several values using --datasource_replacement "cmsweb-k8s" "cmsweb-k
             "--store_only",
             action="store_true",
             help="Only backup the matching dashboards with the specified changes, if any",
-            default="False",
+            default=False,
         )
 
 
 class grafana_manager:
-    def __init__(self, grafana_url=None, grafana_token=None):
+    def __init__(self, grafana_url=None, grafana_token=None, output_folder="./output"):
         assert (
             grafana_token and grafana_url
         ), "both grafana_token and grafana_url are required."
@@ -86,6 +87,7 @@ class grafana_manager:
         self.GRAFANA_URL = (
             grafana_url[:-1] if grafana_url.endswith("/") else grafana_url
         )
+        self.OUTPUT_FOLDER = output_folder
 
     def dashboard_duplicator(
         self,
@@ -93,7 +95,6 @@ class grafana_manager:
         dashboards_query=None,
         datasources_replacements=None,
         title=None,
-        output_folder="./output",
         store_only=False,
     ):
         assert (
@@ -112,12 +113,13 @@ class grafana_manager:
         if dashboard_uid:
             dashboards.append(self.get_dashboard(dashboard_uid))
         # print(json.dumps(dashboards, indent=4))
+        replacements = (
+            dict(datasources_replacements) if datasources_replacements else {}
+        )
+        logging.debug('replacements {}', replacements)
         for d in dashboards:
             # Save a backup
-            filename = os.path.join(output_folder, "backup", "{uid}_{title}.json".format(**d["dashboard"]))
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            with open(filename, "w") as f:
-                json.dump(d, f)
+            self.__save("backup", d)
             # Create the new dashboard
             new_dashboard = {
                 "dashboard": d["dashboard"],
@@ -126,6 +128,7 @@ class grafana_manager:
             }
             new_dashboard["dashboard"]["id"] = None
             new_dashboard["dashboard"]["uid"] = None
+            new_dashboard
             new_title = (
                 title
                 if replace_title
@@ -134,7 +137,12 @@ class grafana_manager:
                 else new_dashboard["dashboard"]["title"]
             )
             new_dashboard["dashboard"]["title"] = new_title
-            print(json.dumps(new_dashboard))
+            self.__replace_dataset(new_dashboard, replacements)
+            self.__save("new", new_dashboard)
+            if not store_only:
+                logging.info("Try to create the dashboards in grafana")
+                logging.info(new_title)
+                logging.info(self.post_dashboard(new_dashboard))
 
     def search_dasboards(self, query=None, uid=None):
         params = {}
@@ -151,17 +159,51 @@ class grafana_manager:
         )
         return self.__make_request(request_uri, params=None)
 
-    def __make_request(self, uri, params):
+    def post_dashboard(self, dashboard):
+        request_uri = "{uri}/api/dashboards/db".format(uri=self.GRAFANA_URL)
+        return self.__make_request(request_uri, params=dashboard, type="post")
+
+    def __make_request(self, uri, params, type="get"):
         headers = {"Authorization": "Bearer {}".format(self.GRAFANA_TOKEN)}
         verify = True
+        # The monit-grafana-dev uses an invalid certificate
         if "-dev" in uri:
             verify = False
-        response = requests.get(uri, params=params, headers=headers, verify=verify)
+        response = None
+        if type == "get":
+            response = requests.get(uri, params=params, headers=headers, verify=verify)
+        elif type == "post":
+            response = requests.post(uri, json=params, headers=headers, verify=verify)
         if response:
             return json.loads(response.content)
         else:
             raise Exception("Something happen with the request, {}".format(response))
 
+    def __save(self, subfolder, d):
+        _folderId = (
+            d["meta"]["folderId"] if "meta" in d else d.get("folderId", "unknown")
+        )
+        filename = os.path.join(
+            self.OUTPUT_FOLDER,
+            subfolder,
+            "{folderId}_{title}.json".format(
+                folderId=_folderId, title=d["dashboard"].get("title", "unknown")
+            ),
+        )
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, "w") as f:
+            json.dump(d, f, indent=4)
+
+    def __replace_dataset(self, element, replacements):
+        if isinstance(element, list):
+            for e in element:
+                self.__replace_dataset(e, replacements)
+        elif isinstance(element, dict):
+            for key in element:
+                if key == "datasource":
+                    element[key] = replacements.get(element[key], element[key])
+                elif isinstance(element[key], (dict, list)):
+                    self.__replace_dataset(element[key], replacements)
 
 def main():
     """
@@ -178,14 +220,15 @@ def main():
         print("You need to set either --uid or --query")
         sys.exit(1)
     try:
-        #print(opts)
-        mgr = grafana_manager(grafana_url=opts.url, grafana_token=opts.token)
+        # print(opts)
+        mgr = grafana_manager(
+            grafana_url=opts.url, grafana_token=opts.token, output_folder=opts.output
+        )
         mgr.dashboard_duplicator(
             dashboard_uid=opts.dashboard_uid,
             dashboards_query=opts.dashboards_query,
             datasources_replacements=opts.replacements,
             title=opts.new_title,
-            output_folder=opts.output,
             store_only=opts.store_only,
         )
     except Exception as e:
