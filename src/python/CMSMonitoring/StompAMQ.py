@@ -323,6 +323,7 @@ class StompAMQ(object):
 
         :return: The notification body in case of failure, or else None
         """
+        failedNotification = None
         try:
             body = notification.pop('body')
             conn.send(destination=self._topic,
@@ -333,7 +334,8 @@ class StompAMQ(object):
         except Exception as exc:
             self.logger.error('Notification: %s (type=%s) not send, error: %s', \
                     str(notification), type(notification), str(exc))
-        return
+            failedNotification = body
+        return failedNotification
 
     def make_notification(self, payload, docType, docId=None, \
             producer=None, ts=None, metadata=None, \
