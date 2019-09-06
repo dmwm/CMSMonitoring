@@ -7,6 +7,13 @@
     }
   },
   {
+    "targets": [ "cms-rucio-stats-testbed.cern.ch" ],
+    "labels": {
+      "env": "dev",
+      "job": "rucio-testbed"
+    }
+  },
+  {
     "targets": [ "cms-rucio-stats-int.cern.ch" ],
     "labels": {
       "env": "int",
