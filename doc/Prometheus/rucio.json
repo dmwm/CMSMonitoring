@@ -14,6 +14,13 @@
     }
   },
   {
+    "targets": [ "http://cms-rucio-stats-sync.cern.ch" ],
+    "labels": {
+      "env": "dev",
+      "job": "rucio-sync"
+    }
+  },
+  {
     "targets": [ "cms-rucio-stats-int.cern.ch" ],
     "labels": {
       "env": "int",
