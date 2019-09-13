@@ -9,14 +9,14 @@
   {
     "targets": [ "cms-rucio-stats-testbed.cern.ch" ],
     "labels": {
-      "env": "dev",
+      "env": "testbed",
       "job": "rucio-testbed"
     }
   },
   {
     "targets": [ "http://cms-rucio-stats-sync.cern.ch" ],
     "labels": {
-      "env": "dev",
+      "env": "sync",
       "job": "rucio-sync"
     }
   },
