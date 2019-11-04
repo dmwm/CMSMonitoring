@@ -1,9 +1,30 @@
 [
   {
-    "targets": [ "cms-rucio-stats-dev" ],
+    "targets": [ "cms-rucio-stats-dev.cern.ch" ],
     "labels": {
       "env": "dev",
       "job": "rucio-dev"
+    }
+  },
+  {
+    "targets": [ "cms-rucio-stats-testbed.cern.ch" ],
+    "labels": {
+      "env": "testbed",
+      "job": "rucio-testbed"
+    }
+  },
+  {
+    "targets": [ "cms-rucio-stats-sync.cern.ch" ],
+    "labels": {
+      "env": "sync",
+      "job": "rucio-sync"
+    }
+  },
+  {
+    "targets": [ "cms-rucio-stats-int.cern.ch" ],
+    "labels": {
+      "env": "int",
+      "job": "rucio-int"
     }
   }
 ]

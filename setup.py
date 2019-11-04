@@ -61,6 +61,7 @@ def main():
         data_files           = [
             ('{}/CMSMonitoring/schemas'.format(lpath), datafiles('schemas', '*.json')),
             ('{}/CMSMonitoring/jsonschemas'.format(lpath), datafiles('jsonschemas', '*.schema')),
+            ('{}/CMSMonitoring/static'.format(lpath), datafiles('static', '*.json')),
             ],
         classifiers          = [
             "Programming Language :: Python",
