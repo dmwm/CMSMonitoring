@@ -10,25 +10,24 @@ Description: This script generate a data popularity plot based on dbs and
 
 import os
 import sys
-import re
 import argparse
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 import pandas as pd
 import numpy as np
-import matplotlib
-
-matplotlib.use("Agg")
-from matplotlib import pyplot
-import seaborn as sns
 
 
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import input_file_name, regexp_extract, concat
-from pyspark.sql.functions import udf, col, coalesce, when, lit, lag, last
 from pyspark.sql.functions import (
+    input_file_name,
+    regexp_extract,
+    concat,
+    col,
+    when,
+    lit,
+    last,
     max as _max,
     min as _min,
     datediff,
@@ -42,25 +41,29 @@ from pyspark.sql.types import (
     StructField,
     StructType,
     LongType,
-    DateType,
     IntegerType,
     DoubleType,
 )
 from pyspark.sql import Window
+import matplotlib
+
+matplotlib.use("Agg")
+from matplotlib import pyplot
+import seaborn as sns
 
 
 class OptionParser:
     def __init__(self):
         "User based option parser"
         desc = """
-This app create a data popularity plot (scrutiny plot) 
-based on phedex and dbs hdfs data. 
+This app create a data popularity plot (scrutiny plot)
+based on phedex and dbs hdfs data.
                """
         self.parser = argparse.ArgumentParser("Scrutiny Plot", usage=desc)
         self.parser.add_argument(
             "end_date",
             help="Date in yyyyMMdd format.",
-            nargs='?',
+            nargs="?",
             type=str,
             default=datetime.strftime(datetime.now() - relativedelta(days=1), "%Y%m%d"),
         )
@@ -79,6 +82,14 @@ based on phedex and dbs hdfs data.
 
 
 def fill_nulls(df):
+    """
+    This script tries to fill the gid column, replacing the -1 values.
+
+        1. if gid is -1 is replaced with None.
+        2. if all columns in the row are null, then drop the row.
+        3. If the gid is none then replace it with the last gid
+            for that dataset in the same site.
+    """
     df_na = df.na.replace(-1, None, ["gid"]).na.drop(how="all")
     ff = df_na.withColumn(
         "gid",
@@ -260,7 +271,7 @@ def generate_scrutiny_plot(
     dbs_df = (
         spark.read.option("basePath", basePath_dbs)
         .csv(dbsInput, header=True)
-        .select(u"dataset", "sum_evts")
+        .select("dataset", "sum_evts")
         .withColumn("filename", input_file_name())
     )
     # ## Filter the dataset
@@ -277,15 +288,9 @@ def generate_scrutiny_plot(
     dbs_df = dbs_df.withColumn(
         "days",
         concat(
-            regexp_extract(
-                dbs_df.filename, ".*\/([0-9]{4})\/([0-9]{2})\/([0-9]{2})", 1
-            ),
-            regexp_extract(
-                dbs_df.filename, ".*\/([0-9]{4})\/([0-9]{2})\/([0-9]{2})", 2
-            ),
-            regexp_extract(
-                dbs_df.filename, ".*\/([0-9]{4})\/([0-9]{2})\/([0-9]{2})", 3
-            ),
+            regexp_extract(dbs_df.filename, ".*/([0-9]{4})/([0-9]{2})/([0-9]{2})", 1),
+            regexp_extract(dbs_df.filename, ".*/([0-9]{4})/([0-9]{2})/([0-9]{2})", 2),
+            regexp_extract(dbs_df.filename, ".*/([0-9]{4})/([0-9]{2})/([0-9]{2})", 3),
         ),
     )
 
@@ -296,7 +301,7 @@ def generate_scrutiny_plot(
     _df_agg = (
         dbs_df.groupBy("dataset", "days").sum("events").alias("sum_events").toPandas()
     )
-    _plain = _df_agg.rename(columns={u"days": "day", u"sum(events)": "sum_events"})
+    _plain = _df_agg.rename(columns={"days": "day", "sum(events)": "sum_events"})
 
     del dbs_df
     del _df_agg
@@ -315,7 +320,7 @@ def generate_scrutiny_plot(
             "sum(weighted_size_6Month)": "size6month",
             "max(max_date)": "end",
             "min(min_date)": "begin",
-            u"nevents": "nEvents",
+            "nevents": "nEvents",
         }
     )
 
@@ -355,7 +360,7 @@ def generate_scrutiny_plot(
     }
     bdates = {"3 months": lastQuarter, "6 months": midterm, "full year": start_date}
     gp = None
-    for _type in types.keys():
+    for _type in list(types.keys()):
         _sum = types[_type].reset_index()
 
         # positive values <1 belong to the first bin  (one accesss).
