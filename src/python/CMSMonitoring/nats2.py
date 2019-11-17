@@ -1,5 +1,5 @@
+import traceback
 # python2 NATS implementation via tornado module
-import tornado.ioloop
 import tornado.gen
 from nats.io.client import Client as NATS
 
@@ -12,7 +12,12 @@ def nats(server, subject, msg):
     https://github.com/nats-io/nats.py2
     """
     nc = NATS()
-    yield nc.connect(server)
+    try:
+        yield nc.connect(server, max_reconnect_attempts=3)
+    except Exception as exp:
+        print("failed to connect to server: error {}".format(str(exp)))
+        traceback.print_exc()
+        return
     if isinstance(msg, list):
         for item in msg:
             yield nc.publish(subject, item)

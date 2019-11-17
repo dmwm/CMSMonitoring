@@ -36,9 +36,13 @@ try:
     # python3 NATS implemenation via asyncio module
     import asyncio
     from CMSMonitoring.nats3 import nats
+    NATS2 = False
 except ImportError:
     # python2 NATS implemenation via tornado module
+    import tornado.ioloop
+    import tornado.gen
     from CMSMonitoring.nats2 import nats
+    NATS2 = True
 
 def nats_encoder(doc, sep='   '):
     "CMS NATS message encoder"
@@ -64,6 +68,7 @@ def def_filter(doc, attrs=None):
         if attr in doc:
             rec[attr] = doc[attr]
     yield rec
+
 
 class NATSManager(object):
     """
@@ -154,16 +159,16 @@ class NATSManager(object):
             else:
                 server = self.server[0]
             try:
-                tornado.ioloop.IOLoop.current().run_sync(lambda: nats(server, subject, msg))
+                if NATS2:
+                    tornado.ioloop.IOLoop.current().run_sync(lambda: nats(server, subject, msg))
+                else:
+                    # VK: we need to test initializing asyncio loop in ctor
+                    # and potentially avoid loop creation here
+                    loop = asyncio.get_event_loop()
+                    loop.run_until_complete(nats(server, subject, msg, self.loop))
+                    loop.close()
             except Exception as exp:
                 print("Failed to send docs to NATS, error: {}".format(str(exp)))
-            # python3 implementation
-#             try:
-#                 loop = asyncio.get_event_loop()
-#                 loop.run_until_complete(nats(server, subject, msg, self.loop))
-#                 loop.close()
-#             except Exception as exp:
-#                 print("Failed to send docs to NATS, error: {}".format(str(exp)))
 
 
 def nats_pub(subject, msg, server=None, pub=None):
@@ -250,6 +255,12 @@ def test():
         rec['enriched'] = True
         yield rec
     mgr = NATSManager(server, topics=topics, attrs=attrs, cms_filter=custom_filter, stdout=True)
+    print("Test NATSManager", mgr)
+    mgr.publish(data)
+
+    # test with real server
+    server = 'test:test@127.0.0.1:4222'
+    mgr = NATSManager(server, topics=topics, attrs=attrs)
     print("Test NATSManager", mgr)
     mgr.publish(data)
 
