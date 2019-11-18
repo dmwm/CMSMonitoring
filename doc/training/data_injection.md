@@ -1,9 +1,9 @@
 ### CMSMonitoring training
-This document describe necessary steps to inject your data into CERN MONIT
+This document describes the necessary steps to inject your data into the CERN MONIT
 infrastructure. To do that you need to have the following items:
 - a copy of CMSMonitoring codebase
 - prepare your documents in JSON data-format
-  - it is advisiable to have a flat
+  - it is advisable to have a flat
     key-value structure of your documents rather then nesting one. 
   - all documents should contain an identical set of keys, i.e. you
   cannot have one document with `key1` and `key2`, while another document
@@ -12,7 +12,7 @@ infrastructure. To do that you need to have the following items:
   possible that you may omit a certain keys, in this case a default value
   may be used in MONIT for them
   - always try to add your own timestamp in your JSON document, the timestamp
-  data-format should be in UNIX since epoch since it is easy to parse and
+  data-format should be in UNIX epoch since it is easy to parse and
   convert into different time zones if necessary
   - try to stick with proper data-types, e.g. if you supply a run number
   make sure it is an integer and not a string data-type. This will simplify
@@ -23,13 +23,13 @@ infrastructure. To do that you need to have the following items:
   The former will be directed to CMS Monitoring group and we'll coordinate
   its progress with CERN MONIT team, the later will go directly to
   CERN MONIT line of support and bypass CMS Monitoring. Please choose
-  accordingly. In a ticket you should specify the following **mandatory** items:
+  accordingly. In the ticket you should specify the following **mandatory** items:
   - a data volume you foresee from your data-provider to CERN MONIT, an
   approximate numbers are sufficient, e.g. size of JSON document times
   number of docs per certain time
   - an approximate injection rate, e.g. 1K docs per day
   - you should provide desired topic name where your docs will appear, e.g.
-  cms-my-topic (try always use cms prefix followed by your topic name)
+  cms-my-topic (try always to use the cms prefix followed by your topic name)
   - your preference for authentication, password based or X509 certificate
   - provide an e-group which will be used for communication between your
   team and CERN MONIT
@@ -37,9 +37,9 @@ infrastructure. To do that you need to have the following items:
 #### CMS Monitoring setup
 Due to authentication policy at CERN MONIT infrastructure
 we should either proceed with training from
-`vocms092` node and or user must request a new end-point
-with proper credentials from CERN MONIT froup. For that purpose
-please open up [SNOW
+`vocms092` node and/or user must request a new end-point
+with proper credentials from the CERN MONIT group. For that purpose
+please open up a [SNOW
 ticket](https://cern.service-now.com/service-portal/home.do).
 
 Otherwise please login to `vocms092` and proceed with example
