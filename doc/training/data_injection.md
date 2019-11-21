@@ -75,7 +75,7 @@ from CMSMonitoring.StompAMQ import StompAMQ
 
 def records():
     "example of function which can generate JSON records"
-    for i in range(1000):
+    for i in range(100):
         doc = {"key":i, "data":"data-{}".format(i) }
         yield doc
 
@@ -105,13 +105,8 @@ port = int(port)
 # therefore we'll use empty strings for them
 username = ""
 password = ""
-proxy = os.getenv('X509_USER_PROXY')
-if proxy and os.path.exists(proxy):
-    ckey = proxy
-    cert = proxy
-else:
-    ckey = os.path.join(os.getenv('HOME'), '.globus/userkey.pem')
-    cert = os.path.join(os.getenv('HOME'), '.globus/usercert.pem')
+ckey = os.path.join(os.getenv('HOME'), '.globus/robot-training-key.pem')
+cert = os.path.join(os.getenv('HOME'), '.globus/robot-training-cert.pem')
 producer = creds['producer']
 topic = creds['topic']
 print("producer: {}, topic {}".format(producer, topic))
