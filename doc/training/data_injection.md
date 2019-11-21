@@ -58,6 +58,19 @@ cd CMSMonitoring/src/python
 
 # export PYTHONPATH
 export PYTHONPATH=$PWD
+
+# we also need to setup our broker credentials
+# for that we'll use a dedicated file, training.json
+# please create it with the following content (for production needs you'll have similar file)
+cat training.json
+{
+    "producer":"cms-training",
+    "topic":"/topic/cms.training",
+    "host_and_ports":"cms-test-mb.cern.ch:61323"
+}
+
+# once this file is in place you'll need to setup an environment variable
+export MONIT_BROKER=/path/training.json
 ```
 
 #### Data injection
