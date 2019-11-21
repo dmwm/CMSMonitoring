@@ -13,6 +13,7 @@ import time
 import socket
 import random
 import logging
+import traceback
 try:
     import stomp
 except ImportError:
@@ -263,6 +264,7 @@ class StompAMQ(object):
                     del self.timeouts[conn]
                 self.logger.debug("Connection to %s is successful", repr(self._host_and_ports))
             except Exception as exc:
+                traceback.print_exc()
                 tstamp = time.strftime("%b %d %Y %H:%M:%S GMT", time.gmtime())
                 msg = "%s, connection to %s failed, error: %s" \
                         % (tstamp, desc, str(exc))
