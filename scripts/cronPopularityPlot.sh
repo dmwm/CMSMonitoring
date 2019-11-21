@@ -38,9 +38,11 @@ then
     (>&2 echo "This script requires a java version with AES enabled") 
     exit 1
 fi
-cd "$SCRIPT_DIR" || exit
 
 # Run the script
-spark-submit --master yarn --driver-memory 10g --num-executors 48  --executor-memory 6g\
+FILENAME=$(spark-submit --master yarn --driver-memory 10g --num-executors 48  --executor-memory 6g\
  --conf spark.driver.extraClassPath="$HADOOP_CLIENT_JAR"\
- "$SCRIPT_DIR/../src/python/CMSMonitoring/scrutiny_plot.py" "$@"
+ "$SCRIPT_DIR/../src/python/CMSMonitoring/scrutiny_plot.py" "$@" |tail -1)
+DIRNAME=$(dirname "$FILENAME")
+BASENAME=$(basename -- "$FILENAME")
+ln -s -f "$FILENAME" "$DIRNAME/scrutiny_plot_latest.${BASENAME##*.}"
