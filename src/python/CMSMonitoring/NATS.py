@@ -19,7 +19,7 @@ Basic usage instructions:
 ..doctest:
 
     data = [...]   # list of dicts
-    topics = [...] # list of publisher topics, e.g. cms-wma, T2
+    topics = [...] # list of publisher topics, e.g. cms, T2
     attrs = [...]  # list of attributes to filter from data
     # server can be in a form of 'nats://host:port' or
     # nats with user/passwords 'nats://user:password@host:port'
@@ -80,11 +80,11 @@ class NATSManager(object):
     :param server: server name
     :param topics: list of topics, i.e. where messages will be published
     :param attrs: list of attributes to select for publishing
-    :param default_topic: default topic 'cms-wma'
+    :param default_topic: default topic 'cms'
     :param stdout: instead of piblishing print all messages on stdout, boolean
     :param cms_filter: name of cms filter function, by default `def_filter` will be used
     """
-    def __init__(self, server=None, topics=None, attrs=None, sep='   ', default_topic='cms-wma', stdout=False, cms_filter=None):
+    def __init__(self, server=None, topics=None, attrs=None, sep='   ', default_topic='cms', stdout=False, cms_filter=None):
         self.topics = topics
         self.server = []
         self.sep = sep
@@ -100,7 +100,7 @@ class NATSManager(object):
         self.cms_filter = cms_filter if cms_filter else def_filter
 
     def __repr__(self):
-        return 'NATSManager@{}, servers={} topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)), self.server, self.topics, self.def_topic, self.attrs, self.cms_filter, self.stdout)
+        return 'NATSManager@{}, topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)), self.topics, self.def_topic, self.attrs, self.cms_filter, self.stdout)
 
     def publish(self, data):
         "Publish given set of docs to topics"
@@ -144,7 +144,7 @@ class NATSManager(object):
                     msg = nats_encoder(rec, self.sep)
                     if msg.find(topic) != -1 or pat.match(msg):
                         top_msgs.append(msg) # topic specific messages
-                    cms_msgs.append(msg) # cms-wma messages
+                    cms_msgs.append(msg) # cms messages
             self.send(topic, top_msgs)
         # always send all messages to default topic
         self.send(self.def_topic, cms_msgs)
@@ -203,12 +203,12 @@ def nats_cmd(cmd, server, subject, msg):
 
 class NATSManagerCmd(NATSManager):
     "NATS manager based on external publisher tool"
-    def __init__(self, cmd, server=None, topics=None, attrs=None, sep='   ', default_topic='cms-wma', stdout=False, cms_filter=None):
+    def __init__(self, cmd, server=None, topics=None, attrs=None, sep='   ', default_topic='cms', stdout=False, cms_filter=None):
         self.pub = cmd
         super(NATSManagerCmd, self).__init__(server, topics, attrs, sep, default_topic, stdout, cms_filter)
 
     def __repr__(self):
-        return 'NATSManagerCmd@{}, servers={} topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)), self.server, self.topics, self.def_topic, self.attrs, self.cms_filter, self.stdout)
+        return 'NATSManagerCmd@{}, topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)), self.topics, self.def_topic, self.attrs, self.cms_filter, self.stdout)
 
     def send(self, subject, msg):
         "Call NATS function, user can pass either single message or list of messages"
@@ -220,7 +220,7 @@ class NATSManagerCmd(NATSManager):
 
 def test():
     "Test function"
-    subject = 'cms-wma'
+    subject = 'cms'
     msg = 'test from python'
     doc = {'site':'1', 'attr':'1'}
     sep = '   '
