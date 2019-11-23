@@ -48,22 +48,42 @@ below:
 # create a working directory
 cd workdir
 
-git clone git@github.com:dmwm/CMSMonitoring.git
+git clone https://github.com/dmwm/CMSMonitoring.git
 
 # install all dependencies
-pip install -r requirements.txt
+pip install -r CMSMonitoring/requirements.txt
 
 # go to python codebase area
 cd CMSMonitoring/src/python
 
 # export PYTHONPATH
-export PYTHONPATH=$PWD
+export PYTHONPATH="$PWD:$PYTHONPATH"
+```
+we also need to setup our broker credentials for that we'll use a dedicated file, training.json.  Please create it with the following content (for production needs you'll have similar file), in your working folder.
+```json
+{
+    "producer":"cms-training",
+    "topic":"/topic/cms.training",
+    "host_and_ports":"cms-test-mb.cern.ch:61323"
+}
+```
+You can use this instructions to do so and set the `MONIT_BROKER` environment variable.
+```bash
+cat <<EOF > training.json
+{
+    "producer":"cms-training",
+    "topic":"/topic/cms.training",
+    "host_and_ports":"cms-test-mb.cern.ch:61323"
+}
+EOF
+# once this file is in place you'll need to setup an environment variable
+export MONIT_BROKER=$PWD/training.json
 ```
 
 #### Data injection
 At this point your environment is set to inject data into CERN MONIT.
 Next, we'll show how to write a simple code to do that:
-```
+```python
 #!/usr/bin/env python
 
 # system modules
@@ -75,7 +95,7 @@ from CMSMonitoring.StompAMQ import StompAMQ
 
 def records():
     "example of function which can generate JSON records"
-    for i in range(1000):
+    for i in range(100):
         doc = {"key":i, "data":"data-{}".format(i) }
         yield doc
 
@@ -105,13 +125,8 @@ port = int(port)
 # therefore we'll use empty strings for them
 username = ""
 password = ""
-proxy = os.getenv('X509_USER_PROXY')
-if proxy and os.path.exists(proxy):
-    ckey = proxy
-    cert = proxy
-else:
-    ckey = os.path.join(os.getenv('HOME'), '.globus/userkey.pem')
-    cert = os.path.join(os.getenv('HOME'), '.globus/usercert.pem')
+ckey = os.path.join("/data/cms/", '.globus/robot-training-key.pem')
+cert = os.path.join("/data/cms/", '.globus/robot-training-cert.pem')
 producer = creds['producer']
 topic = creds['topic']
 print("producer: {}, topic {}".format(producer, topic))

@@ -145,13 +145,11 @@ def merge_phedex(start_date, end_date, spark_session, base="hdfs:///cms/phedex")
     )
     _df = fill_nulls(_df)
     _grouped = (
-        _df.groupby("site", "dataset", "rdate", "gid")
-        .agg(
+        _df.groupby("site", "dataset", "rdate", "gid").agg(
             avg("size"),
             countDistinct("date"),
             *[fn(c) for c in _agg_fields for fn in _agg_func]
         )
-        .cache()
     ).withColumnRenamed("count(DISTINCT date)", "days")
     _grouped = _grouped.selectExpr(
         *[
@@ -216,7 +214,6 @@ def generate_scrutiny_plot(
         phedex_df = phedex_df.filter(
             col("site").startswith("T1_") | col("site").startswith("T2_")
         )
-
     # ## Calculate the effective average size of each dataset in the given periods
     #  size of each dataset in each of the time periods
     phedex_df = phedex_df.withColumn(
@@ -427,7 +424,6 @@ def generate_scrutiny_plot(
             gp = _gp
         else:
             gp = pd.concat([gp, _gp], ignore_index=True)
-
     values = gp.type.unique()
     values.sort()
 
@@ -456,12 +452,13 @@ def generate_scrutiny_plot(
     _directory = output_folder
     if not os.path.exists(_directory):
         os.makedirs(_directory)
-    fig.savefig(
-        os.path.join(
-            _directory, "scrutiny{}-{}.{}".format(start_date, end_date, output_format)
-        ),
-        format=output_format,
+    _filename = os.path.join(
+        _directory, "scrutiny{}-{}.{}".format(start_date, end_date, output_format)
     )
+    fig.savefig(
+        _filename, format=output_format,
+    )
+    return _filename
 
 
 def main():
@@ -470,9 +467,10 @@ def main():
     """
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
-    generate_scrutiny_plot(
+    filename = generate_scrutiny_plot(
         opts.end_date, output_format=opts.outputFormat, output_folder=opts.outputFolder
     )
+    print(filename)
 
 
 if __name__ == "__main__":
