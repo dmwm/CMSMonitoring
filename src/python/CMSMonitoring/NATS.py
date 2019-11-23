@@ -89,10 +89,6 @@ class NATSManager(object):
         self.server = []
         self.sep = sep
         for srv in server.split(','):
-            if not srv.startswith('nats://') or not srv.startswith('tls://'):
-                srv = 'nats://{}'.format(srv)
-            if not srv.endswith(':4222'):
-                srv = '{}:4222'.format(srv)
             self.server.append(srv)
         self.def_topic = default_topic
         self.stdout = stdout
