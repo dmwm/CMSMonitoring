@@ -43,6 +43,9 @@ func main() {
 	var creds = flag.String("creds", "", "User NSC credentials")
 	var cmsAuth = flag.String("cmsAuth", "", "User cms auth file")
 	var showHelp = flag.Bool("h", false, "Show help message")
+	var rootCAs = flag.String("rootCAs", "", "Comma separated list of CERN Root CAs files")
+	var userKey = flag.String("userKey", "", "x509 user key file")
+	var userCert = flag.String("userCert", "", "x509 user certificate")
 
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -102,6 +105,17 @@ func main() {
 			srv = fmt.Sprintf("nats://%s:4222", v)
 		}
 		servers = append(servers, srv)
+	}
+	// handle user certificates
+	if *userKey != "" && *userCert != "" {
+		opts = append(opts, nats.ClientCert(*userCert, *userKey))
+	}
+	// handle root CAs
+	if *rootCAs != "" {
+		for _, v := range strings.Split(*rootCAs, ",") {
+			f := strings.Trim(v, " ")
+			opts = append(opts, nats.RootCAs(f))
+		}
 	}
 
 	// Connect to NATS

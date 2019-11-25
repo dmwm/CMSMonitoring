@@ -20,9 +20,11 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/codesuki/go-time-series"
 	"github.com/nats-io/nats.go"
 )
 
@@ -71,6 +73,17 @@ func printCMSMsg(m *nats.Msg, attributes []string, sep string) {
 	log.Printf(strings.Join(vals, " "))
 }
 
+func printStats(s, e int64, ts *timeseries.TimeSeries) {
+	start := time.Now().Add(-time.Duration(e) * time.Second)
+	end := time.Now().Add(-time.Duration(s) * time.Second)
+	v, err := ts.Range(start, end)
+	if err == nil {
+		log.Printf("[%v, %v]: %f\n", start, end, v)
+	} else {
+		log.Println("TimeSeries error:", err)
+	}
+}
+
 func main() {
 	var urls = flag.String("s", "cms-nats.cern.ch", "The nats server URLs (separated by comma)")
 	var creds = flag.String("creds", "", "User NSC credentials")
@@ -80,6 +93,10 @@ func main() {
 	var attrs = flag.String("attrs", "", "comma separated list of attributes to show, e.g. campaign,dataset")
 	var sep = flag.String("sep", "   ", "message attribute separator, default 3 spaces")
 	var raw = flag.Bool("raw", false, "Show raw messages")
+	var stats = flag.String("stats", "", "Show stats for given interval")
+	var rootCAs = flag.String("rootCAs", "", "Comma separated list of CERN Root CAs files")
+	var userKey = flag.String("userKey", "", "x509 user key file")
+	var userCert = flag.String("userCert", "", "x509 user certificate")
 
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -141,6 +158,17 @@ func main() {
 		}
 		servers = append(servers, srv)
 	}
+	// handle user certificates
+	if *userKey != "" && *userCert != "" {
+		opts = append(opts, nats.ClientCert(*userCert, *userKey))
+	}
+	// handle root CAs
+	if *rootCAs != "" {
+		for _, v := range strings.Split(*rootCAs, ",") {
+			f := strings.Trim(v, " ")
+			opts = append(opts, nats.RootCAs(f))
+		}
+	}
 
 	// Connect to NATS
 	//nc, err := nats.Connect(*urls, opts...)
@@ -155,10 +183,23 @@ func main() {
 		attributes = strings.Split(*attrs, ",")
 	}
 
+	// add timeseries object
+	ts, err := timeseries.NewTimeSeries()
+	if err != nil {
+		log.Println("Unable to create time series", err)
+	}
+
 	nc.Subscribe(subj, func(msg *nats.Msg) {
 		i += 1
+		// add entry to timeseries object at a given time
+		ts.Increase(1)
 		if *raw {
 			printMsg(msg, i)
+		} else if *stats != "" {
+			arr := strings.Split(*stats, ",")
+			start, _ := strconv.ParseInt(strings.Trim(arr[0], " "), 10, 64)
+			end, _ := strconv.ParseInt(strings.Trim(arr[1], " "), 10, 64)
+			printStats(start, end, ts)
 		} else {
 			printCMSMsg(msg, attributes, *sep)
 		}
