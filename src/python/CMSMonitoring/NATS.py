@@ -31,7 +31,6 @@ Basic usage instructions:
 
 # system modules
 import os
-import re
 import sys
 import random
 import subprocess
@@ -134,12 +133,10 @@ class NATSManager(object):
         cms_msgs = []
         for topic in self.topics:
             top_msgs = []
-            pat = re.compile(topic)
             for doc in data:
                 for rec in self.cms_filter(doc, self.attrs):
                     msg = nats_encoder(rec, self.sep)
-                    if msg.find(topic) != -1 or pat.match(msg):
-                        top_msgs.append(msg) # topic specific messages
+                    top_msgs.append(msg) # topic specific messages
                     cms_msgs.append(msg) # cms messages
             self.send(topic, top_msgs)
         # always send all messages to default topic
