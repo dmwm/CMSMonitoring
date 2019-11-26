@@ -251,7 +251,7 @@ def test():
     print('--- encoding test OK ---')
 
     data = [{'site':'T3_US_Test', 'campaign':'campaign-%s' % str(i),
-        'task':'/task%s/part%s' % (i, i),
+        'task':'/task%s/part%s' % (i, i), 'system': 'system',
         'exitCode': i} for i in range(2)]
     print('input data: {}'.format(data))
     server = '127.0.0.1'
@@ -260,6 +260,13 @@ def test():
     print('\n--- no topic test ---')
     print(mgr)
     mgr.publish(data)
+
+    # check new default end-point
+    mgr = NATSManager(server, default_topic='cms.dbs', attrs=attrs, stdout=True)
+    print('\n--- custom default end-point test ---')
+    print(mgr)
+    mgr.publish(data)
+
     # create new manager with topics
     topics = ['test-topic']
     mgr = NATSManager(server, topics=topics, attrs=attrs, stdout=True)
