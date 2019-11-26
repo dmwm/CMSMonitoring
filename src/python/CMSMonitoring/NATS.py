@@ -72,6 +72,18 @@ def def_filter(doc, attrs=None):
             rec[attr] = doc[attr]
     yield rec
 
+def gen_topic(def_topic, key, val, sep=None):
+    "Create proper subject topic for NATS"
+    if sep:
+        val = str(val).replace(sep, '.')
+        if val.startswith('.'):
+            val = val[1:]
+    else:
+        val = str(val)
+    topic = '{}.{}.{}'.format(def_topic, key, val)
+    return topic
+
+
 
 class NATSManager(object):
     """
@@ -98,49 +110,65 @@ class NATSManager(object):
         return 'NATSManager@{}, topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)), self.topics, self.def_topic, self.attrs, self.cms_filter, self.stdout)
 
     def publish(self, data):
-        "Publish given set of docs to topics"
+        """
+        Publish given set of docs to specific topics.
+
+        We use the following logic to publish messages. If this class is instantiated
+        with set of topics the messages will be send to those topics, otherwise
+        we compose nested structure of topics starting from default_topic root (cms),
+        e.g. cms.site.T3.US.Cornell, cms.task.taskName, cms.exitCode.123
+        The sub-topics are based on given document attributes. Moreover, if
+        document carry on system attribute key its value will be used as
+        sub-root topic, e.g. if document has the form {..., "system":"dbs"},
+        then topics will start from cms.dbs root where cms represents
+        root topic, and dbs represents sub-root topic, respectively.
+        """
         all_msgs = []
         mdict = {}
+        subject = self.def_topic
         if not self.topics:
             for doc in data:
+                srv = doc.get('system', '')
+                if srv:
+                    subject += '.' + srv
+                    del doc['system']
                 for rec in self.cms_filter(doc, self.attrs):
                     msg = nats_encoder(rec, self.sep)
                     for key, val in rec.items():
-                        if key == 'exitCode' and val != "":
-                            mdict.setdefault(key, []).append(msg)
-                            mdict.setdefault(str(val), []).append(msg)
+                        if key == 'exitCode' and str(val):
+                            # be sure exitCode is converted to str
+                            topic = gen_topic(subject, key, str(val))
                         elif key == 'site' and val != "":
-                            # collect site wilcards, use NATS '.' wildcard
-                            subject = val.replace('_', '.')
-                            mdict.setdefault(subject, []).append(msg)
+                            # replace sites separator '_'
+                            topic = gen_topic(subject, key, val, '_')
                         elif key == 'task' and val != "":
-                            # collect task wilcards, use NATS '.' wildcard
-                            subject = val.replace('/', '.')
-                            if subject.startswith('.'):
-                                subject = subject[1:]
-                            mdict.setdefault(subject, []).append(msg)
+                            # replace task separator '/'
+                            topic = gen_topic(subject, key, val, '/')
+                        elif key == 'dataset' and val != "":
+                            # replace task separator '/'
+                            topic = gen_topic(subject, key, val, '/')
                         else:
-                            if val != "":
+                            if str(val):
                                 # collect messages on invidual topics
-                                mdict.setdefault(str(val), []).append(msg)
+                                topic = gen_topic(subject, key, val)
+                            else:
+                                topic = ''
+                        if topic:
+                            mdict.setdefault(topic, []).append(msg)
                     all_msgs.append(msg)
             # send all messages from collected mdict
             for key, msgs in mdict.items():
                 self.send(key, msgs)
-            # send message to default topic
-            self.send(self.def_topic, all_msgs)
+            if not mdict:
+                # send message to default topic
+                self.send(self.def_topic, all_msgs)
             return
-        cms_msgs = []
         for topic in self.topics:
-            top_msgs = []
+            msgs = []
             for doc in data:
                 for rec in self.cms_filter(doc, self.attrs):
-                    msg = nats_encoder(rec, self.sep)
-                    top_msgs.append(msg) # topic specific messages
-                    cms_msgs.append(msg) # cms messages
-            self.send(topic, top_msgs)
-        # always send all messages to default topic
-        self.send(self.def_topic, cms_msgs)
+                    msgs.append(nats_encoder(rec, self.sep))
+            self.send(topic, msgs)
 
     def send_stdout(self, subject, msg):
         "send subject/msg to stdout"
@@ -214,24 +242,29 @@ class NATSManagerCmd(NATSManager):
 def test():
     "Test function"
     subject = 'cms'
-    msg = 'test from python'
     doc = {'site':'1', 'attr':'1'}
     sep = '   '
     msg = nats_encoder(doc, sep)
-    print(msg)
     rec = nats_decoder(msg)
-    print(doc, rec)
+    nmsg = nats_encoder(rec)
+    assert msg == nmsg
+    print('--- encoding test OK ---')
 
-    data = [{'site':'Site_TEST', 'attr':str(i), 'task':'task-%s'%i} for i in range(10)]
-    server = '127.0.0.1,127.0.0.2'
-    attrs = ['site', 'attr', 'task']
+    data = [{'site':'T3_US_Test', 'campaign':'campaign-%s' % str(i),
+        'task':'/task%s/part%s' % (i, i),
+        'exitCode': i} for i in range(2)]
+    print('input data: {}'.format(data))
+    server = '127.0.0.1'
+    attrs = ['site', 'campaign', 'task', 'exitCode']
     mgr = NATSManager(server, attrs=attrs, stdout=True)
-    print("Test NATSManager", mgr)
+    print('\n--- no topic test ---')
+    print(mgr)
     mgr.publish(data)
     # create new manager with topics
-    topics = ['attr']
+    topics = ['test-topic']
     mgr = NATSManager(server, topics=topics, attrs=attrs, stdout=True)
-    print("Test NATSManager", mgr)
+    print('\n--- topics test ---')
+    print(mgr)
     mgr.publish(data)
 
     # create new manager with custom filter and topics
@@ -244,13 +277,8 @@ def test():
         rec['enriched'] = True
         yield rec
     mgr = NATSManager(server, topics=topics, attrs=attrs, cms_filter=custom_filter, stdout=True)
-    print("Test NATSManager", mgr)
-    mgr.publish(data)
-
-    # test with real server
-    server = 'test:test@127.0.0.1:4222'
-    mgr = NATSManager(server, topics=topics, attrs=attrs)
-    print("Test NATSManager", mgr)
+    print('\n--- custom filter test ---')
+    print(mgr)
     mgr.publish(data)
 
 if __name__ == '__main__':
