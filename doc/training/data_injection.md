@@ -48,6 +48,11 @@ below:
 # create a working directory
 cd workdir
 
+# Create and activate a python virtual environment
+virtualenv venv
+source ./venv/bin/activate
+
+# Clone the CMSMonitoring repository
 git clone https://github.com/dmwm/CMSMonitoring.git
 
 # install all dependencies
