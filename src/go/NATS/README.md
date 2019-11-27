@@ -39,3 +39,31 @@ of datasets, tasks it is `/`. These separatrs in NATS are replaced by periods
 end-point `cms.wmarchive.site.T3.US.Cornell`, if you want to listen to
 all T3 sites you can use `>` placeholder on end-point, e.g.
 `cms.wmarchive.site.T3.>`.
+
+### How to start local NATS server
+Sometimes we need to experiment/test our clients with local NATS server.
+It is trivial to do. Please follow these steps:
+```
+# get nats server code
+go get github.com/nats-io/nats-server
+
+# create area with certificates
+mkdir ~/certificates
+
+# generate certificates for localhost
+echo "### generate localhost-rootCA.key"
+openssl genrsa -des3 -out localhost-rootCA.key 4096
+echo "### generate localhost-rootCA.crt"
+openssl req -x509 -new -nodes -key localhost-rootCA.key -sha256 -days 1024 -out localhost-rootCA.crt
+echo "### generate localhost.key"
+openssl genrsa -out localhost.key 2048
+echo "### generate localhost.csr (Certificate Signing Request)"
+openssl req -new -key localhost.key -out localhost.csr
+echo "### verify localhost.csr"
+openssl req -in localhost.csr -noout -text
+echo "### generate localhost.crt"
+openssl x509 -req -in localhost.csr -CA localhost-rootCA.crt -CAkey localhost-rootCA.key -CAcreateserial -out localhost.crt -days 500 -sha256
+
+# start NATS server
+nats-server --tls --tlscert ~/certificates/localhost.crt --tlskey ~/certificates/localhost.key --tlscacert ~/certificates/localhost-rootCA.crt --user <USER> --pass <PASSWORD> -DV
+```
