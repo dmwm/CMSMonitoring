@@ -37,12 +37,12 @@ infrastructure. To do that you need to have the following items:
 #### CMS Monitoring setup
 Due to authentication policy at CERN MONIT infrastructure
 we should either proceed with training from
-`vocms092` node and/or user must request a new end-point
+`lxplus` node and/or user must request a new end-point
 with proper credentials from the CERN MONIT group. For that purpose
 please open up a [SNOW
 ticket](https://cern.service-now.com/service-portal/home.do).
 
-Otherwise please login to `vocms092` and proceed with example
+Otherwise please login to `lxplus` and proceed with example
 below:
 ```
 # create a working directory
@@ -101,7 +101,7 @@ from CMSMonitoring.StompAMQ import StompAMQ
 def records():
     "example of function which can generate JSON records"
     for i in range(100):
-        doc = {"key":i, "data":"data-{}".format(i) }
+        doc = {"key":i, "data":"data-{}".format(i), "user":os.getenv("USER")}
         yield doc
 
 def credentials(fname=None):
@@ -130,8 +130,9 @@ port = int(port)
 # therefore we'll use empty strings for them
 username = ""
 password = ""
-ckey = os.path.join("/data/cms/", '.globus/robot-training-key.pem')
-cert = os.path.join("/data/cms/", '.globus/robot-training-cert.pem')
+# please do not copy certificates anywhere, they are only valid for training
+ckey = '/eos/user/v/valya/monitoring/training/robot-training-key.pem'
+ckey = '/eos/user/v/valya/monitoring/training/robot-training-cert.pem'
 producer = creds['producer']
 topic = creds['topic']
 print("producer: {}, topic {}".format(producer, topic))
