@@ -131,8 +131,8 @@ port = int(port)
 username = ""
 password = ""
 # please do not copy certificates anywhere, they are only valid for training
-ckey = '/eos/user/v/valya/monitoring/training/robot-training-key.pem'
-ckey = '/eos/user/v/valya/monitoring/training/robot-training-cert.pem'
+ckey = '/afs/cern.ch/user/c/cmsmonit/public/.globus/robot-training-key.pem'
+cert = '/afs/cern.ch/user/c/cmsmonit/public/.globus/robot-training-cert.pem'
 producer = creds['producer']
 topic = creds['topic']
 print("producer: {}, topic {}".format(producer, topic))
@@ -183,3 +183,21 @@ either create a new dashboard with
 data-source or 
 just visit [CMS training](https://monit-grafana.cern.ch/d/Cp1mIXJWk/cms-training?orgId=11)
 dashboard and play around with it.
+
+#### How to check the data in HDFS
+
+From a lxplus machine setup the environment to use HADOOP:
+```bash
+ source "/cvmfs/sft.cern.ch/lcg/views/LCG_96python3/x86_64-centos7-gcc8-opt/setup.sh"
+ source "/cvmfs/sft.cern.ch/lcg/etc/hadoop-confext/hadoop-swan-setconf.sh" analytix
+```
+Now you can list the files for this topic. The folder structure is: `/project/monitoring/archive/<producer>/raw/metric/<yyyy>/<MM>/<dd>`. 
+The MonIT data flow will use a tmp folder for the last day, as they have a compaction process daily.
+So, to list the files created for today, using the cms-training producer, you can use:
+```bash
+hadoop fs -ls /project/monitoring/archive/cms-training/raw/metric/$(date +%Y/%m/%d).tmp
+```
+And see the content using cat:
+```bash
+hadoop fs -cat /project/monitoring/archive/cms-training/raw/metric/$(date +%Y/%m/%d).tmp/*
+```
