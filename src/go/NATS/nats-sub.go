@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -40,9 +41,19 @@ func showUsageAndExit(exitcode int) {
 	os.Exit(exitcode)
 }
 
-func printMsg(m *nats.Msg, i int) {
-	log.Printf("[#%d] [%s] '%s'", i, m.Subject, string(m.Data))
-}
+// StringList implement sort for []string type
+type StringList []string
+
+// Len provides length of the []int type
+func (s StringList) Len() int { return len(s) }
+
+// Swap implements swap function for []int type
+func (s StringList) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+
+// Less implements less function for []int type
+func (s StringList) Less(i, j int) bool { return s[i] < s[j] }
+
+// inList helper function to find an element in a list
 func inList(a string, list []string) bool {
 	check := 0
 	for _, b := range list {
@@ -54,6 +65,11 @@ func inList(a string, list []string) bool {
 		return true
 	}
 	return false
+}
+
+// print helper functions
+func printMsg(m *nats.Msg, i int) {
+	log.Printf("[#%d] [%s] '%s'", i, m.Subject, string(m.Data))
 }
 func printCMSMsg(m *nats.Msg, attributes []string, sep string) {
 	msg := string(m.Data)
@@ -71,6 +87,18 @@ func printCMSMsg(m *nats.Msg, attributes []string, sep string) {
 	log.Printf(strings.Join(vals, " "))
 }
 
+// decode NATS message and extract value of given key
+func decodeMsg(m *nats.Msg, sep, key string) string {
+	msg := string(m.Data)
+	for _, v := range strings.Split(msg, sep) {
+		arr := strings.Split(v, ":")
+		if key == arr[0] {
+			return arr[1]
+		}
+	}
+	return ""
+}
+
 func main() {
 	var urls = flag.String("s", "cms-nats.cern.ch", "The nats server URLs (separated by comma)")
 	var creds = flag.String("creds", "", "User NSC credentials")
@@ -81,6 +109,7 @@ func main() {
 	var sep = flag.String("sep", "   ", "message attribute separator, default 3 spaces")
 	var raw = flag.Bool("raw", false, "Show raw messages")
 	var showStats = flag.Bool("showStats", false, "Show stats instead of messages")
+	var statsBy = flag.String("statsBy", "", "Show stats by given attribute")
 	var statsInterval = flag.Int("statsInterval", 10, "stats collect interval in seconds")
 	var rootCAs = flag.String("rootCAs", "", "Comma separated list of CERN Root CAs files")
 	var userKey = flag.String("userKey", "", "x509 user key file")
@@ -174,6 +203,7 @@ func main() {
 	// start the counter for stats
 	start := time.Now().Unix()
 	counter := 0
+	statsDict := make(map[string]int)
 
 	nc.Subscribe(subj, func(msg *nats.Msg) {
 		i += 1
@@ -182,12 +212,32 @@ func main() {
 			if *showStats {
 				log.Printf("count(%s) %d\n", subj, counter)
 			}
+			if *statsBy != "" {
+				var sKeys []string
+				for k, _ := range statsDict {
+					sKeys = append(sKeys, k)
+				}
+				sort.Sort(StringList(sKeys))
+				for _, k := range sKeys {
+					if v, ok := statsDict[k]; ok {
+						fmt.Printf("%s: %d\n", k, v)
+					}
+				}
+			}
 			// reset start counter
 			start = time.Now().Unix()
 			counter = 0
 		} else {
 			// update the counter of docs on given topic
 			counter += 1
+			if *statsBy != "" {
+				key := decodeMsg(msg, *sep, *statsBy)
+				if v, ok := statsDict[key]; ok {
+					statsDict[key] = v + 1
+				} else {
+					statsDict[key] = 1
+				}
+			}
 		}
 		if !*showStats {
 			if *raw {
