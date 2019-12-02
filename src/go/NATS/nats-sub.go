@@ -227,6 +227,8 @@ func main() {
 			// reset start counter
 			start = time.Now().Unix()
 			counter = 0
+			// reset stats dict
+			statsDict = make(map[string]int)
 		} else {
 			// update the counter of docs on given topic
 			counter += 1
@@ -271,7 +273,7 @@ func setupConnOptions(opts []nats.Option) []nats.Option {
 		log.Printf("Disconnected: will attempt reconnects for %.0fm", totalWait.Minutes())
 	}))
 	opts = append(opts, nats.ReconnectHandler(func(nc *nats.Conn) {
-		log.Printf("Reconnected [%s]", nc.ConnectedUrl())
+		log.Printf("Reconnected")
 	}))
 	opts = append(opts, nats.ClosedHandler(func(nc *nats.Conn) {
 		log.Fatalf("Exiting: %v", nc.LastError())
