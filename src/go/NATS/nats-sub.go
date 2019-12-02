@@ -14,10 +14,12 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"runtime"
 	"sort"
@@ -99,6 +101,35 @@ func decodeMsg(m *nats.Msg, sep, key string) string {
 	return ""
 }
 
+// helper function to send stats to pushgateway server
+func sendToPushGateway(uri, job, inst string, statsDict map[string]int) {
+	job = strings.Replace(job, ".", "_", -1)
+	job = strings.Replace(job, ">", "metric", -1)
+	url := fmt.Sprintf("%s/metrics/job/%s", uri, job)
+	if inst != "" {
+		url = fmt.Sprintf("%s/instance/%s", url, inst)
+	}
+	client := &http.Client{}
+	for k, v := range statsDict {
+		// message should end with '\n' when we send it to pushgateway
+		msg := fmt.Sprintf("%s_%s %d\n", job, k, v)
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(msg)))
+		req.Header.Set("Content-Type", "application/octet-stream")
+		if err == nil {
+			go func() {
+				resp, err := client.Do(req)
+				defer resp.Body.Close()
+				if err != nil {
+					fmt.Println(url, msg, "response:", resp.Status)
+					fmt.Println("response Headers:", resp.Header)
+					body, _ := ioutil.ReadAll(resp.Body)
+					fmt.Println("response Body:", string(body))
+				}
+			}()
+		}
+	}
+}
+
 func main() {
 	var urls = flag.String("s", "cms-nats.cern.ch", "The nats server URLs (separated by comma)")
 	var creds = flag.String("creds", "", "User NSC credentials")
@@ -114,6 +145,9 @@ func main() {
 	var rootCAs = flag.String("rootCAs", "", "Comma separated list of CERN Root CAs files")
 	var userKey = flag.String("userKey", "", "x509 user key file")
 	var userCert = flag.String("userCert", "", "x509 user certificate")
+	var gatewayUri = flag.String("gatewayUri", "", "URI of gateway server")
+	var gatewayJob = flag.String("gatewayJob", "", "gateway job name")
+	var gatewayInstance = flag.String("gatewayInstance", "", "gateway instance name")
 
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -223,6 +257,15 @@ func main() {
 						fmt.Printf("%s: %d\n", k, v)
 					}
 				}
+			}
+			// send stats to pushgateway server
+			if *gatewayUri != "" {
+				job := *gatewayJob
+				inst := *gatewayInstance
+				if job == "" {
+					job = subj
+				}
+				sendToPushGateway(*gatewayUri, job, inst, statsDict)
 			}
 			// reset start counter
 			start = time.Now().Unix()
