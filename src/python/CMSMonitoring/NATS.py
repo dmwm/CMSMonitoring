@@ -123,6 +123,10 @@ class NATSManager(object):
         then topics will start from cms.dbs root where cms represents
         root topic, and dbs represents sub-root topic, respectively.
         """
+        if isinstance(data, dict):
+            data = [data]
+        if not isinstance(data, list):
+            print("NATS: invalid data type '%s', expect dict ot list of dicts" % type(data))
         all_msgs = []
         mdict = {}
         subject = self.def_topic
