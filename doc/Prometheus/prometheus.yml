@@ -18,6 +18,10 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['localhost:9100']
+  - job_name: 'pushgateway'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9091']
   - job_name: 'das'
     scrape_interval: 5s
     file_sd_configs:
@@ -65,6 +69,7 @@ scrape_configs:
           - dbs-cpy.json
   - job_name: 'couchdb'
     scrape_interval: 60s
+    scrape_timeout: 10s
     file_sd_configs:
       - files:
         - couchdb.json
