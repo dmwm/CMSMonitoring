@@ -15,6 +15,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -130,6 +131,58 @@ func sendToPushGateway(uri, job, inst string, statsDict map[string]int) {
 	}
 }
 
+// VMRecord represents VictoriaMetrics record
+type VMRecord struct {
+	Metric string            `json:"metric"`
+	Value  string            `json:"value"`
+	Tags   map[string]string `json:"tags"`
+}
+
+// helper function to convert message to VMRecord
+func msg2VMRecord(msg, topic, key, sep string) VMRecord {
+	var rec VMRecord
+	metric := strings.Replace(topic, ".>", "", -1)
+	metric = strings.Replace(metric, "*", "", -1)
+	rec.Metric = metric
+	rdict := make(map[string]string)
+	for _, v := range strings.Split(msg, sep) {
+		arr := strings.Split(v, ":")
+		if arr[0] == key {
+			rec.Value = arr[1]
+		} else {
+			rdict[arr[0]] = arr[1]
+		}
+	}
+	rec.Tags = rdict
+	return rec
+}
+
+// helper function to send stats to VictoriaMetrics server
+func sendToVictoriaMetrics(vmUri, vmKey string, m *nats.Msg, topic, sep string) {
+	msg := string(m.Data)
+	url := fmt.Sprintf("%s/api/put", vmUri)
+	client := &http.Client{}
+	rec := msg2VMRecord(msg, topic, vmKey, sep)
+	recBytes, err := json.Marshal(rec)
+	if err != nil {
+		log.Println("Unable to marshal VMRecord", rec, err)
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(recBytes))
+	req.Header.Set("Content-Type", "application/json")
+	if err == nil {
+		go func() {
+			resp, err := client.Do(req)
+			defer resp.Body.Close()
+			if err != nil {
+				fmt.Println(url, msg, "response:", resp.Status)
+				fmt.Println("response Headers:", resp.Header)
+				body, _ := ioutil.ReadAll(resp.Body)
+				fmt.Println("response Body:", string(body))
+			}
+		}()
+	}
+}
+
 func main() {
 	var urls = flag.String("s", "cms-nats.cern.ch", "The nats server URLs (separated by comma)")
 	var creds = flag.String("creds", "", "User NSC credentials")
@@ -148,6 +201,8 @@ func main() {
 	var gatewayUri = flag.String("gatewayUri", "", "URI of gateway server")
 	var gatewayJob = flag.String("gatewayJob", "", "gateway job name")
 	var gatewayInstance = flag.String("gatewayInstance", "", "gateway instance name")
+	var vmUri = flag.String("vmUri", "", "VictoriaMetrics URI")
+	var vmKey = flag.String("vmKey", "", "VictoriaMetrics key value to use")
 
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -289,6 +344,9 @@ func main() {
 				printMsg(msg, i)
 			} else {
 				printCMSMsg(msg, attributes, *sep)
+			}
+			if *vmUri != "" {
+				sendToVictoriaMetrics(*vmUri, *vmKey, msg, subj, *sep)
 			}
 		}
 	})
