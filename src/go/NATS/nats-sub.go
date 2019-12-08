@@ -134,12 +134,12 @@ func sendToPushGateway(uri, job, inst string, statsDict map[string]int) {
 // VMRecord represents VictoriaMetrics record
 type VMRecord struct {
 	Metric string            `json:"metric"`
-	Value  string            `json:"value"`
+	Value  int               `json:"value"`
 	Tags   map[string]string `json:"tags"`
 }
 
 // helper function to convert message to VMRecord
-func msg2VMRecord(msg, topic, key, sep string) VMRecord {
+func msg2VMRecord(msg, topic, sep string) VMRecord {
 	var rec VMRecord
 	metric := strings.Replace(topic, ".>", "", -1)
 	metric = strings.Replace(metric, "*", "", -1)
@@ -147,22 +147,19 @@ func msg2VMRecord(msg, topic, key, sep string) VMRecord {
 	rdict := make(map[string]string)
 	for _, v := range strings.Split(msg, sep) {
 		arr := strings.Split(v, ":")
-		if arr[0] == key {
-			rec.Value = arr[1]
-		} else {
-			rdict[arr[0]] = arr[1]
-		}
+		rdict[arr[0]] = arr[1]
 	}
 	rec.Tags = rdict
+	rec.Value = 1
 	return rec
 }
 
 // helper function to send stats to VictoriaMetrics server
-func sendToVictoriaMetrics(vmUri, vmKey string, m *nats.Msg, topic, sep string) {
+func sendToVictoriaMetrics(vmUri string, m *nats.Msg, topic, sep string) {
 	msg := string(m.Data)
 	url := fmt.Sprintf("%s/api/put", vmUri)
 	client := &http.Client{}
-	rec := msg2VMRecord(msg, topic, vmKey, sep)
+	rec := msg2VMRecord(msg, topic, sep)
 	recBytes, err := json.Marshal(rec)
 	if err != nil {
 		log.Println("Unable to marshal VMRecord", rec, err)
@@ -202,7 +199,6 @@ func main() {
 	var gatewayJob = flag.String("gatewayJob", "", "gateway job name")
 	var gatewayInstance = flag.String("gatewayInstance", "", "gateway instance name")
 	var vmUri = flag.String("vmUri", "", "VictoriaMetrics URI")
-	var vmKey = flag.String("vmKey", "", "VictoriaMetrics key value to use")
 
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -346,7 +342,7 @@ func main() {
 				printCMSMsg(msg, attributes, *sep)
 			}
 			if *vmUri != "" {
-				sendToVictoriaMetrics(*vmUri, *vmKey, msg, subj, *sep)
+				sendToVictoriaMetrics(*vmUri, msg, subj, *sep)
 			}
 		}
 	})
