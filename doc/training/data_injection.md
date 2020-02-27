@@ -149,7 +149,7 @@ data = []
 for doc in documents:
     # every document should be hash id
     hid = doc.get("hash", 1) # replace this line with your hash id generation
-    notification, _, _ = amq.make_notification(doc, hid)
+    notification, _, _ = amq.make_notification(doc,"training_document", docId=hid)
     data.append(notification)
 
 # send our data to MONIT
