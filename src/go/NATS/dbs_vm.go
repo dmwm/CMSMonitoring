@@ -1,3 +1,16 @@
+// Copyright 2020 Valentin Kuznetsov <vkuzent AT gmail DOT com>
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -60,13 +73,14 @@ func tFormat(ts int64) string {
 	return t.In(time.UTC).Format(layout)
 }
 
+// String method provides string representation of Record
 func (r *Record) String() string {
 	var s string
 	for _, t := range r.TimeStamps {
 		if s == "" {
 			s = fmt.Sprintf("%s %s %s", time.Unix(t, 0), r.Dataset, r.DatasetType)
 		} else {
-			s = fmt.Sprintf("%s\n%s %s %s", s, t, time.Unix(t, 0), r.Dataset, r.DatasetType)
+			s = fmt.Sprintf("%s\n%s %s %s", s, time.Unix(t, 0), r.Dataset, r.DatasetType)
 		}
 	}
 	return s
@@ -123,6 +137,23 @@ func parseExportResults(r io.Reader) []Record {
 	return records
 }
 
+// helper function to convert YYYYMMDD time stamp into Unix since epoch
+func convert2Unix(tstamp int64) int64 {
+	if tstamp == 0 {
+		return 0
+	}
+	ts := fmt.Sprintf("%d", tstamp)
+	if len(ts) == 10 { // unix time sec seconds since epoch
+		return tstamp
+	}
+	const layout = "20060102"
+	t, err := time.Parse(layout, ts)
+	if err != nil {
+		log.Println(err)
+	}
+	return int64(t.Unix())
+}
+
 // helper function to fetch data from VM
 func fetch(action, rurl, dtype string, start, end int64, verbose bool) []Record {
 	client := http.Client{}
@@ -165,9 +196,9 @@ func main() {
 	var datasetType string
 	flag.StringVar(&datasetType, "datasetType", "VALID", "DAS datasetType to use")
 	var start int64
-	flag.Int64Var(&start, "start", 0, "timestamp since you want to start fetching the data")
+	flag.Int64Var(&start, "start", 0, "start time, either YYYYMMDD or Unix sec since epoch format")
 	var end int64
-	flag.Int64Var(&end, "end", 0, "timestamp since you want to end fetching the data")
+	flag.Int64Var(&end, "end", 0, "end time, either YYYYMMDD or Unix sec since epoch format")
 	var verbose bool
 	flag.BoolVar(&verbose, "verbose", false, "verbose mode")
 	flag.Parse()
@@ -181,6 +212,8 @@ func main() {
 	} else {
 		log.Fatalf("Wrong action: %s", action)
 	}
+	start = convert2Unix(start)
+	end = convert2Unix(end)
 	// log time, filename, and line number
 	log.SetFlags(log.Ltime | log.Lshortfile)
 	for _, r := range fetch(action, rurl, datasetType, start, end, verbose) {
