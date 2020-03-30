@@ -301,14 +301,15 @@ class StompAMQ(object):
             data = [data]
 
         failedNotifications = []
-        for notification in data:
-            conn = self.connect() # provide random connection to brokers
-            if conn:
-                result = self._send_single(conn, notification)
-                if result:
-                    failedNotifications.append(result)
-
-        self.disconnect() # disconnect all available connections to brokers
+        try:
+            for notification in data:
+                conn = self.connect() # provide random connection to brokers
+                if conn:
+                    result = self._send_single(conn, notification)
+                    if result:
+                        failedNotifications.append(result)
+        finally:
+            self.disconnect() # disconnect all available connections to brokers
 
         if failedNotifications:
             self.logger.warning('Failed to send to %s %i docs out of %i', repr(self._host_and_ports),
