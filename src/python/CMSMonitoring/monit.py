@@ -173,7 +173,11 @@ def query_idb(base, dbid, dbname, query, headers, verbose=0):
         dbid, dbname, query
     )
     response = requests.get(uri, headers=headers)
-    return json.loads(response.text)
+    try:
+        return json.loads(response.text)
+    except:
+        print(response.text)
+        sys.exit(1)
 
 
 def query_es(base, dbid, query, headers, verbose=0):
