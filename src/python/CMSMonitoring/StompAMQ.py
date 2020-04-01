@@ -310,9 +310,9 @@ class StompAMQ(object):
 
         failedNotifications = []
         try:
-            for notification in data:
-                conn = self.connect() # provide random connection to brokers
-                if conn:
+            conn = self.connect() # provide random connection to brokers
+            if conn:
+                for notification in data:
                     result = self._send_single(conn, notification)
                     if result:
                         failedNotifications.append(result)
