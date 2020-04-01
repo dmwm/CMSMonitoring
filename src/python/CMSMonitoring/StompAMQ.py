@@ -271,6 +271,11 @@ class StompAMQ(object):
                 self.logger.error(msg)
                 # record that our connection has failed
                 self.timeouts[conn] = time.time()
+                if conn.is_connected():
+                    try:
+                        conn.disconnect()
+                    except:
+                        traceback.print_exc()
 
         if not available_connections:
             return None
@@ -284,7 +289,10 @@ class StompAMQ(object):
         "Disconnect from brokers"
         for conn, _ in self.connections:
             if conn.is_connected():
-                conn.disconnect()
+                try:
+                    conn.disconnect()
+                except:
+                    traceback.print_exc()
 
     def send(self, data):
         """
