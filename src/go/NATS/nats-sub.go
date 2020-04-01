@@ -71,20 +71,21 @@ func inList(a string, list []string) bool {
 }
 
 // print helper functions
-func printMsg(m *nats.Msg, i int) {
-	log.Printf("[#%d] [%s] '%s'", i, m.Subject, string(m.Data))
+func printMsg(subject, msg string, i int) {
+	log.Printf("[#%d] [%s] '%s'", i, subject, msg)
 }
-func printCMSMsg(m *nats.Msg, attributes []string, sep string) {
-	msg := string(m.Data)
+func printCMSMsg(msg string, attributes []string, sep string) {
 	var vals []string
 	for _, v := range strings.Split(msg, sep) {
 		arr := strings.Split(v, ":")
 		if len(attributes) > 0 {
 			if inList(arr[0], attributes) {
-				vals = append(vals, arr[1])
+				vvv := strings.Join(arr[1:], ":")
+				vals = append(vals, vvv)
 			}
 		} else { // show all attributes
-			vals = append(vals, arr[1])
+			vvv := strings.Join(arr[1:], ":")
+			vals = append(vals, vvv)
 		}
 	}
 	log.Printf(strings.Join(vals, " "))
@@ -337,9 +338,9 @@ func main() {
 		}
 		if !*showStats {
 			if *raw {
-				printMsg(msg, i)
+				printMsg(string(msg.Subject), string(msg.Data), i)
 			} else {
-				printCMSMsg(msg, attributes, *sep)
+				printCMSMsg(string(msg.Data), attributes, *sep)
 			}
 			if *vmUri != "" {
 				sendToVictoriaMetrics(*vmUri, msg, subj, *sep)
