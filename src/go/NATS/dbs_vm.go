@@ -59,10 +59,12 @@ type ExportRecord struct {
 
 // Record represents DBS record
 type Record struct {
-	Metric      string `json:"__name__"`
-	Dataset     string `json:"dataset"`
-	DatasetType string `json:"dataset_type"`
-	TimeStamps  []int64
+	Metric      string  `json:"__name__"`     //  metric name, e.g. cms.dbs
+	Dataset     string  `json:"dataset"`      // dataset name
+	DatasetType string  `json:"dataset_type"` // dataset type
+	Events      int64   `json:"evts"`         // dataset number of events
+	Size        int64   `json:"size"`         // dataset size
+	TimeStamps  []int64 // timestamps in VM
 }
 
 // tFormat helper function to convert given time into Unix timestamp
