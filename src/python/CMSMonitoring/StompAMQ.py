@@ -196,7 +196,7 @@ class StompAMQ(object):
         self.validation_loglevel = validation_loglevel
 
         if self.validation_schema is None:
-            self.logger.warn('No document validation performed!')
+            self.logger.debug('No document validation performed!')
 
         self.connections = []
         if self.ip_and_ports:
