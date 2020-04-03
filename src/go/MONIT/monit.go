@@ -80,9 +80,6 @@ func queryES(base, dbid, dbname, query string, headers [][]string, verbose int) 
 	if verbose > 0 {
 		log.Println(rurl, q)
 	}
-	/*
-		send: 'GET /api/datasources/proxy/7617/_msearch HTTP/1.1\r\nHost: monit-grafana.cern.ch\r\nConnection: keep-alive\r\nAccept-Encoding: gzip, deflate\r\nAccept: application/json\r\nUser-Agent: python-requests/2.23.0\r\nContent-type: application/x-ndjson\r\nAuthorization: Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=\r\nContent-Length: 181\r\n\r\n{"search_type": "query_then_fetch", "index": ["monit_prod_wmagent_*"], "ignore_unavailable": true}\n{"query": {"match": {"data.payload.status": "Available"}}, "from": 0, "size": 10}\n'
-	*/
 	req, err := http.NewRequest("GET", rurl, strings.NewReader(q))
 	if err != nil {
 		log.Fatalf("Unable to make request to %s, error: %s", rurl, err)
