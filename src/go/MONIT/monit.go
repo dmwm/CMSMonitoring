@@ -17,9 +17,8 @@ import (
 	"strings"
 )
 
-type Record struct {
-	Record map[string]interface{}
-}
+// Record represents MONIT return record {"response":...}
+type Record map[string]interface{}
 
 func read(r string) string {
 	if _, err := os.Stat(r); err == nil {
@@ -32,7 +31,7 @@ func read(r string) string {
 	return r
 }
 
-func queryIDB(base, dbid, dbname, query string, headers [][]string, verbose int) []Record {
+func queryIDB(base, dbid, dbname, query string, headers [][]string, verbose int) Record {
 	rurl := fmt.Sprintf("%s/api/datasources/proxy/%s/query?db=%s&q=%s", base, dbid, dbname, query)
 	if verbose > 0 {
 		log.Println(rurl)
@@ -63,7 +62,7 @@ func queryIDB(base, dbid, dbname, query string, headers [][]string, verbose int)
 			log.Println("response:", string(dump))
 		}
 	}
-	var data []Record
+	var data Record
 	defer resp.Body.Close()
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
@@ -72,7 +71,7 @@ func queryIDB(base, dbid, dbname, query string, headers [][]string, verbose int)
 	return data
 }
 
-func queryES(base, dbid, dbname, query string, headers [][]string, verbose int) []Record {
+func queryES(base, dbid, dbname, query string, headers [][]string, verbose int) Record {
 	// Method to query ES DB
 	// https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
 	rurl := fmt.Sprintf("%s/api/datasources/proxy/%s/_msearch", base, dbid)
@@ -90,7 +89,6 @@ func queryES(base, dbid, dbname, query string, headers [][]string, verbose int) 
 		}
 	}
 	req.Header.Add("Content-type", "application/x-ndjson")
-	req.Header.Add("Accept", "application/json")
 	if verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
@@ -109,7 +107,7 @@ func queryES(base, dbid, dbname, query string, headers [][]string, verbose int) 
 		}
 	}
 	defer resp.Body.Close()
-	var data []Record
+	var data Record
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
@@ -117,7 +115,7 @@ func queryES(base, dbid, dbname, query string, headers [][]string, verbose int) 
 	return data
 }
 
-func queryURL(rurl string, headers [][]string, verbose int) []Record {
+func queryURL(rurl string, headers [][]string, verbose int) Record {
 	if verbose > 0 {
 		log.Println(rurl)
 	}
@@ -130,7 +128,6 @@ func queryURL(rurl string, headers [][]string, verbose int) []Record {
 			req.Header.Add(v[0], v[1])
 		}
 	}
-	req.Header.Add("Accept", "application/json")
 	if verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
@@ -149,7 +146,7 @@ func queryURL(rurl string, headers [][]string, verbose int) []Record {
 		}
 	}
 	defer resp.Body.Close()
-	var data []Record
+	var data Record
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
@@ -157,14 +154,12 @@ func queryURL(rurl string, headers [][]string, verbose int) []Record {
 	return data
 }
 
-func run(rurl, token, dbid, dbname, query string, idx, limit, verbose int) []Record {
+func run(rurl, token, dbid, dbname, query string, idx, limit, verbose int) Record {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", token)
 	h := []string{"Authorization", bearer}
 	headers = append(headers, h)
-	h = []string{"Connection", "keep-alive"}
-	headers = append(headers, h)
-	h = []string{"Accept-Encoding", "gzip, deflate"}
+	h = []string{"Accept", "application/json"}
 	headers = append(headers, h)
 
 	q := strings.ToLower(query)
@@ -224,5 +219,11 @@ func main() {
 		log.Println("dbname", dbname)
 		log.Println("dbid  ", dbid)
 	}
-	run(url, t, dbid, dbname, q, idx, limit, verbose)
+	data := run(url, t, dbid, dbname, q, idx, limit, verbose)
+	d, e := json.Marshal(data)
+	if e == nil {
+		fmt.Println(string(d))
+	} else {
+		log.Fatal(e)
+	}
 }
