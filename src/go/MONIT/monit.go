@@ -19,7 +19,12 @@ import (
 
 // Record represents MONIT return record {"response":...}
 type Record map[string]interface{}
+type DSRecord map[string]Record
 
+// DataSources keeps global map of MONIT datasources
+var DataSources DSRecord
+
+// helper function to either read file content or return given string
 func read(r string) string {
 	if _, err := os.Stat(r); err == nil {
 		b, e := ioutil.ReadFile(r)
@@ -31,8 +36,47 @@ func read(r string) string {
 	return r
 }
 
-func queryIDB(base, dbid, dbname, query string, headers [][]string, verbose int) Record {
-	rurl := fmt.Sprintf("%s/api/datasources/proxy/%s/query?db=%s&q=%s", base, dbid, dbname, query)
+// return CMS Monitoring datasources
+func datasources() (DSRecord, error) {
+	rurl := "https://raw.githubusercontent.com/dmwm/CMSMonitoring/master/static/datasources.json"
+	resp, err := http.Get(rurl)
+	if err != nil {
+		log.Printf("Unable to fetch datasources from %s, error %v\n", rurl, err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Unable to read, url: %s, error: %v\n", rurl, err)
+		return nil, err
+	}
+	var rec DSRecord
+	err = json.Unmarshal(data, &rec)
+	if err != nil {
+		log.Printf("Unable to parse, url: %s, error: %v\n", rurl, err)
+		return nil, err
+	}
+	return rec, nil
+}
+
+// helper function to find MONIT datasource id
+func findDataSourceID(pat string) int {
+	for _, d := range DataSources {
+		if v, ok := d["database"]; ok {
+			db := v.(string)
+			if strings.Contains(db, pat) {
+				if did, ok := d["id"]; ok {
+					return int(did.(float64))
+				}
+			}
+		}
+	}
+	return 0
+}
+
+// helper function to query InfluxDB
+func queryIDB(base string, dbid int, dbname, query string, headers [][]string, verbose int) Record {
+	rurl := fmt.Sprintf("%s/api/datasources/proxy/%d/query?db=%s&q=%s", base, dbid, dbname, query)
 	if verbose > 0 {
 		log.Println(rurl)
 	}
@@ -71,10 +115,10 @@ func queryIDB(base, dbid, dbname, query string, headers [][]string, verbose int)
 	return data
 }
 
-func queryES(base, dbid, dbname, query string, headers [][]string, verbose int) Record {
+func queryES(base string, dbid int, dbname, query string, headers [][]string, verbose int) Record {
 	// Method to query ES DB
 	// https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
-	rurl := fmt.Sprintf("%s/api/datasources/proxy/%s/_msearch", base, dbid)
+	rurl := fmt.Sprintf("%s/api/datasources/proxy/%d/_msearch", base, dbid)
 	q := fmt.Sprintf("{\"search_type\": \"query_then_fetch\", \"index\": [\"%s_*\"], \"ignore_unavailable\": true}\n%s\n", dbname, query)
 	if verbose > 0 {
 		log.Println(rurl, q)
@@ -154,7 +198,7 @@ func queryURL(rurl string, headers [][]string, verbose int) Record {
 	return data
 }
 
-func run(rurl, token, dbid, dbname, query string, idx, limit, verbose int) Record {
+func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose int) Record {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", token)
 	h := []string{"Authorization", bearer}
@@ -184,8 +228,8 @@ func main() {
 	flag.StringVar(&url, "url", defaultUrl, "MONIT URL")
 	var token string
 	flag.StringVar(&token, "token", "", "MONIT token or token file")
-	var dbid string
-	flag.StringVar(&dbid, "dbid", "", "MONIT db identified")
+	var dbid int
+	flag.IntVar(&dbid, "dbid", 0, "MONIT db identified")
 	var dbname string
 	flag.StringVar(&dbname, "dbname", "", "MONIT dbname")
 	var query string
@@ -194,6 +238,8 @@ func main() {
 	flag.IntVar(&idx, "idx", 0, "verbosity level")
 	var limit int
 	flag.IntVar(&limit, "limit", 0, "verbosity level")
+	var listDataSources bool
+	flag.BoolVar(&listDataSources, "datasources", false, "List MONIT datasources")
 	flag.Parse()
 
 	if verbose > 0 {
@@ -201,13 +247,25 @@ func main() {
 	} else {
 		log.SetFlags(log.LstdFlags)
 	}
+	var e error
+	DataSources, e = datasources()
+	if listDataSources {
+		data, err := json.Marshal(DataSources)
+		if err == nil {
+			fmt.Println(string(data))
+			os.Exit(0)
+		}
+	}
 	t := read(token)
 	q := read(query)
-	if dbid == "" && url == defaultUrl {
-		log.Fatalf("Please provide valid dbid")
-	}
 	if dbname == "" && url == defaultUrl {
 		log.Fatalf("Please provide valid dbname")
+	}
+	if dbid == 0 && url == defaultUrl {
+		dbid = findDataSourceID(dbname)
+		if dbid == 0 {
+			log.Fatalf("Please provide valid dbid")
+		}
 	}
 	if token == "" {
 		log.Fatalf("Please provide valid token")
