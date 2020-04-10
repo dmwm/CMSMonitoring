@@ -293,5 +293,10 @@
         "id": 7572,
         "type": "elasticsearch",
         "database": "[monit_prod_wmarchive_*]"
+    },
+    "cms-training": {
+        "id": 9411,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-training*]"
     }
 }
