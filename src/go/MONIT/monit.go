@@ -60,18 +60,19 @@ func datasources() (DSRecord, error) {
 }
 
 // helper function to find MONIT datasource id
-func findDataSourceID(pat string) int {
-	for _, d := range DataSources {
+func findDataSource(pat string) (int, string, string) {
+	for src, d := range DataSources {
 		if v, ok := d["database"]; ok {
 			db := v.(string)
-			if strings.Contains(db, pat) {
+			if db == pat || src == pat || (strings.Contains(pat, "*") && strings.Contains(db, pat)) {
 				if did, ok := d["id"]; ok {
-					return int(did.(float64))
+					t, _ := d["type"]
+					return int(did.(float64)), v.(string), t.(string)
 				}
 			}
 		}
 	}
-	return 0
+	return 0, "", ""
 }
 
 // helper function to query InfluxDB
@@ -119,7 +120,11 @@ func queryES(base string, dbid int, dbname, query string, headers [][]string, ve
 	// Method to query ES DB
 	// https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
 	rurl := fmt.Sprintf("%s/api/datasources/proxy/%d/_msearch", base, dbid)
-	q := fmt.Sprintf("{\"search_type\": \"query_then_fetch\", \"index\": [\"%s_*\"], \"ignore_unavailable\": true}\n%s\n", dbname, query)
+	dbname = strings.Replace(dbname, "[", "", -1)
+	dbname = strings.Replace(dbname, "]", "", -1)
+	dbname = strings.Replace(dbname, "_*", "", -1)
+	dbname = strings.Replace(dbname, "*", "", -1)
+	q := fmt.Sprintf("{\"search_type\": \"query_then_fetch\", \"index\": [\"%s*\"], \"ignore_unavailable\": true}\n%s\n", dbname, query)
 	if verbose > 0 {
 		log.Println(rurl, q)
 	}
@@ -261,11 +266,10 @@ func main() {
 	if dbname == "" && url == defaultUrl {
 		log.Fatalf("Please provide valid dbname")
 	}
-	if dbid == 0 && url == defaultUrl {
-		dbid = findDataSourceID(dbname)
-		if dbid == 0 {
-			log.Fatalf("Please provide valid dbid")
-		}
+	var database, dbtype string
+	dbid, database, dbtype = findDataSource(dbname)
+	if dbid == 0 {
+		log.Fatalf("No valid dbid found for %s", dbname)
 	}
 	if token == "" {
 		log.Fatalf("Please provide valid token")
@@ -276,8 +280,10 @@ func main() {
 		log.Println("query ", q)
 		log.Println("dbname", dbname)
 		log.Println("dbid  ", dbid)
+		log.Println("database", database)
+		log.Println("dbtype  ", dbtype)
 	}
-	data := run(url, t, dbid, dbname, q, idx, limit, verbose)
+	data := run(url, t, dbid, database, q, idx, limit, verbose)
 	d, e := json.Marshal(data)
 	if e == nil {
 		fmt.Println(string(d))
