@@ -47,7 +47,12 @@ def get_datasources(token, base="https://monit-grafana.cern.ch"):
     }
     uri = base + "/api/datasources"
     response = requests.get(uri, headers=headers)
-    fullResponse = json.loads(response.text)
+    try:
+        fullResponse = json.loads(response.text)
+    except:
+        print("Fail to load HTTP response as JSON")
+        print(response.text)
+        sys.exit(1)
     return {
         x["name"]: {"id": x["id"], "type": x["type"], "database": x["database"]}
         for x in fullResponse
