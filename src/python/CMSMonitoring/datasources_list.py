@@ -25,7 +25,8 @@ or through the GRAFANA_ADMIN_TOKEN environment variable.
                """
         self.parser = argparse.ArgumentParser(prog="PROG", usage=desc)
         self.parser.add_argument(
-            "--token", action="store", dest="token", default=None, help="Admin token"
+            "--token", action="store", dest="token", default=None,
+            help="Admin token: either file with token or token string"
         )
         self.parser.add_argument(
             "--url",
@@ -64,6 +65,8 @@ def main():
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     token = os.getenv("GRAFANA_ADMIN_TOKEN", opts.token)
+    if os.path.exists(token): # if token is a file
+        token = open(token).readline().replace('\n','')
     output = opts.output
     base = opts.url
     if not token:
