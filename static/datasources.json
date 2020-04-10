@@ -1,4 +1,14 @@
 {
+    "cmsmonitoring-prometheus": {
+        "id": 9454,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-victoriametrics": {
+        "id": 9455,
+        "type": "prometheus",
+        "database": ""
+    },
     "cmssdt-apache-cmssdt": {
         "id": 9283,
         "type": "elasticsearch",
@@ -39,6 +49,11 @@
         "type": "elasticsearch",
         "database": "cmssdt-scram-access*"
     },
+    "cmstest-victoriametrics": {
+        "id": 9472,
+        "type": "prometheus",
+        "database": ""
+    },
     "CMSWEB": {
         "id": 8973,
         "type": "graphite",
@@ -49,9 +64,44 @@
         "type": "prometheus",
         "database": ""
     },
+    "cmsweb-k8s-frontend": {
+        "id": 9462,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-test6-frontend": {
+        "id": 9481,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-test6-services": {
+        "id": 9482,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-testbed-frontend": {
+        "id": 9483,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-testbed-services": {
+        "id": 9484,
+        "type": "prometheus",
+        "database": ""
+    },
     "cmsweb-prometheus": {
         "id": 9041,
         "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-prometheus-vm": {
+        "id": 9463,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Elasticsearch": {
+        "id": 9322,
+        "type": "elasticsearch",
         "database": ""
     },
     "es-cms": {
@@ -69,10 +119,20 @@
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_raw_events_*]"
     },
+    "monit-central-prometheus": {
+        "id": 9540,
+        "type": "prometheus",
+        "database": ""
+    },
     "monit-timber-cms-apache": {
         "id": 9229,
         "type": "elasticsearch",
         "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
+    },
+    "monit_aaa_subscription": {
+        "id": 9466,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_aaa_subscription_raw_metric_*]"
     },
     "monit_condor": {
         "id": 7668,
@@ -89,10 +149,20 @@
         "type": "elasticsearch",
         "database": "[monit_prod_eoscmsquotas_*]"
     },
+    "monit_es_cmssst": {
+        "id": 9475,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmssst_*]"
+    },
     "monit_es_condor": {
         "id": 8787,
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_metric_v002-]YYYY-MM-DD"
+    },
+    "monit_es_condor-test": {
+        "id": 9307,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor-test_raw_metric_*]"
     },
     "monit_es_condor_2019": {
         "id": 9014,
@@ -109,10 +179,25 @@
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_task_v002-*]"
     },
+    "monit_es_factory_rdd": {
+        "id": 9509,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-test_raw_factory_rrd_data_*]"
+    },
     "monit_es_toolsandint": {
         "id": 9040,
         "type": "elasticsearch",
         "database": "[monit_prod_toolsandint*]"
+    },
+    "monit_es_xcache_classads": {
+        "id": 9331,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmsxcache_raw_classads_v001-*]"
+    },
+    "monit_es_xcache_xrootd": {
+        "id": 9332,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmsxcache_raw_xrootd_v001-*]"
     },
     "monit_idb_alarms": {
         "id": 8528,
@@ -163,6 +248,11 @@
         "id": 9092,
         "type": "influxdb",
         "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_mig": {
+        "id": 9534,
+        "type": "influxdb",
+        "database": "monit_production_mig"
     },
     "monit_idb_collectd_processes": {
         "id": 9093,
@@ -224,6 +314,16 @@
         "type": "influxdb",
         "database": "monit_production_rebus"
     },
+    "monit_idb_sam": {
+        "id": 9364,
+        "type": "influxdb",
+        "database": "monit_production_availability"
+    },
+    "monit_idb_ssb_outages": {
+        "id": 9474,
+        "type": "influxdb",
+        "database": "monit_production_ssb_otgs"
+    },
     "monit_idb_transfers": {
         "id": 8035,
         "type": "influxdb",
@@ -238,6 +338,11 @@
         "id": 8533,
         "type": "elasticsearch",
         "database": "[monit_prod_kpi*]"
+    },
+    "monit_prod_cms-training": {
+        "id": 9411,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-training*]"
     },
     "monit_prod_cms_aaa-ng": {
         "id": 9231,
@@ -269,6 +374,21 @@
         "type": "elasticsearch",
         "database": "[monit_prod_wmagentqa_*]"
     },
+    "MySQL": {
+        "id": 9485,
+        "type": "mysql",
+        "database": ""
+    },
+    "Prometheus": {
+        "id": 9528,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-1": {
+        "id": 9537,
+        "type": "prometheus",
+        "database": ""
+    },
     "Rucio-graphite-dev": {
         "id": 9259,
         "type": "graphite",
@@ -279,24 +399,34 @@
         "type": "elasticsearch",
         "database": "[monit_prod_crab_raw_schedd-*]"
     },
+    "SI-codor-test": {
+        "id": 9480,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-test_raw_si_condor_*]"
+    },
     "SI-condor": {
         "id": 8993,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_raw_si_condor_*]"
+    },
+    "Stackdriver": {
+        "id": 9527,
+        "type": "stackdriver",
+        "database": ""
     },
     "TASKWORKER": {
         "id": 8981,
         "type": "elasticsearch",
         "database": "[monit_prod_crab_raw_taskworker-*]"
     },
+    "Timelion": {
+        "id": 9526,
+        "type": "grafana-timelion-datasource",
+        "database": ""
+    },
     "WMArchive": {
         "id": 7572,
         "type": "elasticsearch",
         "database": "[monit_prod_wmarchive_*]"
-    },
-    "cms-training": {
-        "id": 9411,
-        "type": "elasticsearch",
-        "database": "[monit_prod_cms-training*]"
     }
 }
