@@ -168,6 +168,13 @@ And, the data will appear in ElasticSearch under
 [monit_prod_cms-training](https://es-monit.cern.ch/kibana/goto/67aafadf62076462a8c2c7b5bfdf1a5b)
 index.
 
+#### How to update your documents in MONIT/ES
+It is possible to update document(s) in MONIT ES. For that user need to re-run
+injection with StompAMQ (as shown in section above), but this time the updated
+document should contain an additional `_id` key-value along with actual data.
+The value of `_id` attributed will be used by ES to create a new version
+of the document.
+
 #### How to visualize your data
 The injected data can be visualized either in ES/Kibana
 or grafana. For former, you need to visit `Visualize` section
