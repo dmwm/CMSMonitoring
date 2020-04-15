@@ -6,7 +6,6 @@ package main
 // Description: client for CERN MONIT infrastructure
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -80,10 +79,10 @@ func findDataSource(pat string) (int, string, string) {
 
 // StompConfig represents stomp configuration
 type StompConfig struct {
+	Producer string `json:"producer"`
 	URI      string `json:"host_and_ports"`
 	Login    string `json:"username"`
 	Password string `json:"password"`
-	Producer string `json:"producer"`
 	Topic    string `json:"topic"`
 }
 
@@ -108,6 +107,9 @@ func sendDataToStomp(config StompConfig, data []byte, verbose int) {
 		if err != nil {
 			log.Printf("unable to send data to %s, error %v", config.Topic, err)
 		}
+		if verbose > 0 {
+			log.Println("Send data to MONIT", err, conn, string(data))
+		}
 	}
 }
 
@@ -130,77 +132,6 @@ func injectToMonit(creds, fname string, verbose int) {
 		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
 	}
 	sendDataToStomp(config, data, verbose)
-}
-
-// helper function to update doc in MONIT
-func updateDoc(base, token string, dbid int, dbname, dtype, fname string, verbose int) {
-	if _, err := os.Stat(fname); err != nil {
-		return
-	}
-	var headers [][]string
-	bearer := fmt.Sprintf("Bearer %s", token)
-	h := []string{"Authorization", bearer}
-	headers = append(headers, h)
-	h = []string{"Content-Type", "application/json"}
-	headers = append(headers, h)
-	h = []string{"Accept", "application/json"}
-	headers = append(headers, h)
-	data, err := ioutil.ReadFile(fname)
-	if err != nil {
-		log.Printf("Unable to read, file: %s, error: %v\n", fname, err)
-		return
-	}
-	var rec Record
-	err = json.Unmarshal(data, &rec)
-	if err != nil {
-		log.Printf("Unable to parse, file: %s, error: %v\n", fname, err)
-		return
-	}
-	var rurl string
-	if dtype == "elasticsearch" {
-		docid, ok := rec["id"]
-		if !ok {
-			log.Printf("Unable to find id in doc: %v\n", string(data))
-			return
-		}
-		did := int(docid.(float64))
-		rurl = fmt.Sprintf("%s/api/datasources/proxy/%d/%d", base, dbid, did)
-		rurl = fmt.Sprintf("%s/api/datasources/proxy/%d", base, dbid)
-	} else if dtype == "influxdb" {
-		rurl = fmt.Sprintf("%s/api/datasources/proxy/%d/query?db=%s", base, dbid, dbname)
-	} else {
-		log.Println("Unsupported datasource '%s' for POST request", dtype)
-	}
-	req, err := http.NewRequest("PUT", rurl, bytes.NewBuffer(data))
-	if err != nil {
-		log.Fatalf("Unable to make POST request to %s, error: %s", rurl, err)
-	}
-	if verbose > 1 {
-		dump, err := httputil.DumpRequestOut(req, true)
-		if err == nil {
-			log.Println("request: ", string(dump))
-		}
-	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("Unable to get response from %s, error: %s", rurl, err)
-	}
-	if verbose > 1 {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err == nil {
-			log.Println("response:", string(dump))
-		}
-	}
-	defer resp.Body.Close()
-	// Deserialize the response into a map.
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		log.Fatalf("Unable to parse HTTP response from %s\nerror: %s", rurl, err)
-	}
-	if verbose > 0 {
-		log.Println("Received data\n", data)
-	}
-	return
 }
 
 // helper function to query InfluxDB
@@ -367,8 +298,6 @@ func main() {
 	flag.StringVar(&dbname, "dbname", "", "MONIT dbname")
 	var query string
 	flag.StringVar(&query, "query", "", "query string or query json file")
-	var post string
-	flag.StringVar(&post, "post", "", "POST given json document to MONIT")
 	var inject string
 	flag.StringVar(&inject, "inject", "", "inject given json document to MONIT")
 	var creds string
@@ -383,10 +312,12 @@ func main() {
 		fmt.Println("Usage: monit [options]")
 		flag.PrintDefaults()
 		fmt.Println("Examples:")
-		fmt.Println("   #inject data into MONIT")
+		fmt.Println("   # inject data into MONIT")
 		fmt.Println("   monit -creds=creds_udp.json -inject=cmssw.json -verbose 1")
+		fmt.Println("")
 		fmt.Println("   # look-up data from MONIT")
 		fmt.Println("   monit -token token -query=query.json -dbname=monit_prod_wmagent")
+		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources")
 	}
@@ -431,10 +362,6 @@ func main() {
 		log.Println("dbid  ", dbid)
 		log.Println("database", database)
 		log.Println("dbtype  ", dbtype)
-	}
-	if post != "" {
-		updateDoc(url, t, dbid, database, dbtype, post, verbose)
-		return
 	}
 	data := run(url, t, dbid, database, q, idx, limit, verbose)
 	d, e := json.Marshal(data)
