@@ -313,7 +313,7 @@ func main() {
 		flag.PrintDefaults()
 		fmt.Println("Examples:")
 		fmt.Println("   # inject data into MONIT")
-		fmt.Println("   monit -creds=creds_udp.json -inject=cmssw.json -verbose 1")
+		fmt.Println("   monit -creds=creds.json -inject=doc.json -verbose 1")
 		fmt.Println("")
 		fmt.Println("   # look-up data from MONIT")
 		fmt.Println("   monit -token token -query=query.json -dbname=monit_prod_wmagent")
