@@ -168,6 +168,40 @@ And, the data will appear in ElasticSearch under
 [monit_prod_cms-training](https://es-monit.cern.ch/kibana/goto/67aafadf62076462a8c2c7b5bfdf1a5b)
 index.
 
+##### Data injection and look-up using monit Go-tool
+We also provide Go tool `monit` which can be used for data injection and data
+look-up. This section provides basic steps how to use it. You may get it either
+under `/cvmfs/cms.cern.ch/cmsmonit-tools` area or build it on your own.
+```
+# to inject data to MONIT you need
+
+# a file with your data, e.g. doc.json
+{"country":"XYZ","id":1,"metadata":{"uuid":"77ae63ce-a648-425f-a09d-cb7ed6f1457f"},"requestedCores":3.39,"requestedMB":1054,"siteName":"T3_US_XXX","tier":"T0","training_username":"test-user","usedMB":1156}
+
+# credential file, e.g. cat creds.json
+{
+    "producer":"cms-training",
+    "topic":"/topic/cms.training",
+    "key": "/path/robot-training-key.pem",
+    "cert": "/path/robot-training-cert.pem",
+    "host_and_ports":"cms-test-mb.cern.ch:61323"
+}
+
+# run the following command
+monit -creds=creds_training.json -inject=doc.json
+```
+And, if you want to look-up the data use the following:
+```
+# a file with your ES query, e.g. cat query.json
+{"query":{"match":{"data.payload.status": "Available"}}, "from": 0, "size": 10}
+
+# run the following command, here you should specify the dbname to use for your query
+monit -token token -query=query.json -dbname=monit_prod_wmagent
+
+# all datasources (databases) can be found by using this command
+monit -datasources
+```
+
 #### How to update your documents in MONIT/ES
 It is possible to update document(s) in MONIT ES. For that user need to re-run
 injection with StompAMQ (as shown in section above), but this time the updated
