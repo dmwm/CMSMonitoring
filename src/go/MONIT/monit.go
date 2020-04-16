@@ -6,6 +6,7 @@ package main
 // Description: client for CERN MONIT infrastructure
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -77,17 +78,52 @@ func findDataSource(pat string) (int, string, string) {
 	return 0, "", ""
 }
 
-// StompConfig represents stomp configuration
+// StompConfig represents stomp configuration. The configuration should contains
+// either Login/Password or Key/Cert pair
 type StompConfig struct {
-	Producer string `json:"producer"`
-	URI      string `json:"host_and_ports"`
-	Login    string `json:"username"`
-	Password string `json:"password"`
-	Topic    string `json:"topic"`
+	Producer string `json:"producer"`       // stomp producer name
+	URI      string `json:"host_and_ports"` // stomp URI host:port
+	Login    string `json:"username"`       // stomp user name (optional)
+	Password string `json:"password"`       // stomp password (optional)
+	Key      string `json:"key"`            // stomp user key (optional)
+	Cert     string `json:"cert"`           // stomp user certification (optional)
+	Topic    string `json:"topic"`          // stomp topic path
 }
 
 func (c *StompConfig) String() string {
 	return fmt.Sprintf("<StompConfig uri=%s producer=%s topic=%s>", c.URI, c.Producer, c.Topic)
+}
+
+func sendDataToStompTLS(config StompConfig, data []byte, verbose int) {
+	contentType := "application/json"
+	x509cert, err := tls.LoadX509KeyPair(config.Cert, config.Key)
+	if err != nil {
+		log.Fatalf("failed to parse user certificates: %v", err)
+	}
+	certs := []tls.Certificate{x509cert}
+	conf := &tls.Config{Certificates: certs, InsecureSkipVerify: true}
+	conn, err := tls.Dial("tcp", config.URI, conf)
+	defer conn.Close()
+	if err != nil {
+		log.Fatalf("Unable to dial to %s, error %v", config.URI, err)
+	}
+	if verbose > 0 {
+		log.Printf("connected to StompAMQ server %s", config.URI)
+	}
+	stompConn, err := stomp.Connect(conn)
+	if err != nil {
+		log.Fatalf("Unable to connect to %s, error %v", config.URI, err)
+	}
+	defer stompConn.Disconnect()
+	if stompConn != nil {
+		err = stompConn.Send(config.Topic, contentType, data)
+		if err != nil {
+			log.Printf("unable to send data to %s, error %v", config.Topic, err)
+		}
+		if verbose > 0 {
+			log.Println("Send data to MONIT", err, conn, string(data))
+		}
+	}
 }
 
 func sendDataToStomp(config StompConfig, data []byte, verbose int) {
@@ -131,7 +167,13 @@ func injectToMonit(creds, fname string, verbose int) {
 	if err != nil {
 		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
 	}
-	sendDataToStomp(config, data, verbose)
+	if config.Key != "" && config.Cert != "" {
+		sendDataToStompTLS(config, data, verbose)
+	} else if config.Login != "" && config.Password != "" {
+		sendDataToStomp(config, data, verbose)
+	} else {
+		log.Fatalf("Provided configuration does not contain user credentials")
+	}
 }
 
 // helper function to query InfluxDB
