@@ -121,7 +121,7 @@ func sendDataToStompTLS(config StompConfig, data []byte, verbose int) {
 			log.Printf("unable to send data to %s, error %v", config.Topic, err)
 		}
 		if verbose > 0 {
-			log.Println("Send data to MONIT", err, conn, string(data))
+			log.Println("Send data to MONIT", string(data))
 		}
 	}
 }
@@ -168,8 +168,14 @@ func injectToMonit(creds, fname string, verbose int) {
 		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
 	}
 	if config.Key != "" && config.Cert != "" {
+		if verbose > 0 {
+			log.Println("Use TLS method to conenct to Stomp endpoint")
+		}
 		sendDataToStompTLS(config, data, verbose)
 	} else if config.Login != "" && config.Password != "" {
+		if verbose > 0 {
+			log.Println("Use Login/Password method to connect to Stomp endpoint")
+		}
 		sendDataToStomp(config, data, verbose)
 	} else {
 		log.Fatalf("Provided configuration does not contain user credentials")
