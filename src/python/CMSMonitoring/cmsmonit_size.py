@@ -133,7 +133,11 @@ def hdfs(fin, fout, token, amq, verbose):
         except Exception as exc:
             print("Fail to send data to AMQ", str(exc))
     else:
-        print(json.dumps(out))
+        if fout:
+            with open(fout, 'w') as ostream:
+                output.write(json.dumps(out))
+        else:
+            print(json.dumps(out))
 
 def main():
     "Main function"
