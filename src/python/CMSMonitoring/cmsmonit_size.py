@@ -100,7 +100,7 @@ def hdfs(fin, fout, token, amq, verbose):
             rec['size'] = size
             rec['type'] = 'elasticsearch'
             if verbose:
-                print(desc, path, size, output)
+                print(index, size, output)
             out.append(rec)
     if amq:
         creds = credentials()
