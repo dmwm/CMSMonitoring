@@ -335,6 +335,39 @@ func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose
 	return queryURL(rurl, headers, verbose)
 }
 
+func parseStats(data map[string]interface{}, verbose int) {
+	indices := data["indices"].(map[string]interface{})
+	cmsIndexes := []string{}
+	for _, d := range DataSources {
+		if v, ok := d["database"]; ok {
+			db := v.(string)
+			arr := strings.Split(db, "]")
+			for _, idx := range arr {
+				idx = strings.Replace(idx, "[", "", -1)
+				idx = strings.Replace(idx, "*", "", -1)
+				idx = strings.Trim(idx, " ")
+				if idx != "" {
+					cmsIndexes = append(cmsIndexes, idx)
+				}
+			}
+		}
+	}
+	if verbose > 0 {
+		log.Println("CMS indexes", cmsIndexes)
+	}
+	for k, v := range indices {
+		for _, idx := range cmsIndexes {
+			//             if strings.Contains(k, idx) {
+			if strings.HasPrefix(k, idx) {
+				r := v.(map[string]interface{})
+				t := r["total"].(map[string]interface{})
+				s := t["store"].(map[string]interface{})
+				size := s["size_in_bytes"].(float64)
+				fmt.Println(k, size)
+			}
+		}
+	}
+}
 func main() {
 	defaultUrl := "https://monit-grafana.cern.ch"
 	var verbose int
@@ -424,16 +457,7 @@ func main() {
 	}
 	data := run(url, t, dbid, database, q, idx, limit, verbose)
 	if strings.Contains(q, "stats") {
-		indices := data["indices"].(map[string]interface{})
-		for k, v := range indices {
-			if strings.Contains(k, "monit_prod_cms") {
-				r := v.(map[string]interface{})
-				t := r["total"].(map[string]interface{})
-				s := t["store"].(map[string]interface{})
-				size := s["size_in_bytes"].(float64)
-				fmt.Println(k, size)
-			}
-		}
+		parseStats(data, verbose)
 		return
 	}
 	d, e := json.Marshal(data)
