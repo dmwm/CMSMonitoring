@@ -26,6 +26,8 @@ class OptionParser():
             dest="fin", default="", help="Input file")
         self.parser.add_argument("--fout", action="store",
             dest="fout", default="", help="Output file")
+        self.parser.add_argument("--token", action="store",
+            dest="token", default="", help="Token file to use for contacting ES MONIT")
         self.parser.add_argument("--amq", action="store",
             dest="amq", default="", help="credentials file for StompAMQ injection")
         self.parser.add_argument("--verbose", action="store_true",
@@ -136,7 +138,7 @@ def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
-    hdfs(opts.fin, opts.fout, opts.amq, opts.verbose)
+    hdfs(opts.fin, opts.fout, opts.token, opts.amq, opts.verbose)
 
 if __name__ == '__main__':
     main()
