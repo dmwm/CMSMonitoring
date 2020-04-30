@@ -93,7 +93,7 @@ def hdfs(fin, fout, token, amq, verbose):
     if token and os.path.exists(token):
         cmd = 'monit -token %s -query="stats"' % token
         output = os.popen(cmd).read()
-        for line in output.split('\n', ''):
+        for line in output.split('\n'):
             index, size = line.split()
             rec = {}
             rec['name'] = index
