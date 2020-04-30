@@ -99,6 +99,7 @@ def hdfs(fin, fout, token, amq, verbose):
             rec = {}
             rec['name'] = index
             rec['size'] = size
+            rec['path'] = ''
             rec['type'] = 'elasticsearch'
             if verbose:
                 print(index, size, line)
@@ -126,7 +127,7 @@ def hdfs(fin, fout, token, amq, verbose):
                 # every document should be hash id
                 hid = doc.get("hash", 1) # replace this line with your hash id generation
                 tstamp = int(time.time())*1000
-                producer = "cmsmonit"
+                producer = creds["cmsmonit"]
                 notification, _, _ = \
                         mgr.make_notification(doc, hid, producer=producer, ts=tstamp, dataSubfield="")
                 data.append(notification)
