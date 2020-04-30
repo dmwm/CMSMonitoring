@@ -130,9 +130,9 @@ def hdfs(fin, fout, token, amq, verbose):
             # send our data to MONIT
             results = amq.send(data)
             print("AMQ submission results", results)
-except Exception as exc:
-    print("Fail to send data to AMQ", str(exc))
-    print(json.dumps(out))
+        except Exception as exc:
+            print("Fail to send data to AMQ", str(exc))
+        print(json.dumps(out))
 
 def main():
     "Main function"
