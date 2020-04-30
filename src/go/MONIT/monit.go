@@ -357,13 +357,12 @@ func parseStats(data map[string]interface{}, verbose int) {
 	}
 	for k, v := range indices {
 		for _, idx := range cmsIndexes {
-			//             if strings.Contains(k, idx) {
 			if strings.HasPrefix(k, idx) {
 				r := v.(map[string]interface{})
 				t := r["total"].(map[string]interface{})
 				s := t["store"].(map[string]interface{})
 				size := s["size_in_bytes"].(float64)
-				fmt.Println(k, size)
+				fmt.Printf("%s %d\n", k, int64(size))
 			}
 		}
 	}
