@@ -132,6 +132,7 @@ def hdfs(fin, fout, token, amq, verbose):
             print("AMQ submission results", results)
         except Exception as exc:
             print("Fail to send data to AMQ", str(exc))
+    else:
         print(json.dumps(out))
 
 def main():
