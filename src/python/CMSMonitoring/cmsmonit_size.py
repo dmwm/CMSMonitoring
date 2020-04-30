@@ -108,6 +108,8 @@ def hdfs(fin, fout, token, amq, verbose):
         port = int(port)
         producer = creds['producer']
         topic = creds['topic']
+        username = creds['username']
+        password = creds['password']
         if verbose:
             print("producer: {}, topic {}".format(producer, topic))
             print("ckey: {}, cert: {}".format(ckey, cert))
