@@ -1,0 +1,20 @@
+{
+"CMSWEB logs":"hdfs:///project/monitoring/archive/cmsweb/logs",
+"CMSWEB k8s logs":"hdfs:///project/monitoring/archive/cmswebk8s/logs",
+"EOSCMS logs":"hdfs:///project/monitoring/archive/eos/logs/reports/cms",
+"Xrootd raw":"hdfs:///project/monitoring/archive/xrootd/raw/gled",
+"Xrootd gled":"hdfs:///project/monitoring/archive/xrootd/enr/gled",
+"CMSSW file accesses":"hdfs:///project/awg/cms/cmssw-popularity/avro-snappy",
+"CMS PhEDEx file catalog":"hdfs:///project/awg/cms/phedex/catalog",
+"CMS PhEDEx daily block replica snapshots":"hdfs:///project/awg/cms/phedex/block-replicas-snapshots",
+"CMS DBS3":"hdfs:///project/awg/cms/CMS_DBS3_PROD_GLOBAL/current",
+"CMS Job Monitoring":"hdfs:///project/awg/cms/job-monitoring/avro-snappy",
+"CMS data popularity":"hdfs:///project/awg/cms/jm-data-popularity/avro-snappy",
+"CMS ASO":"hdfs:///project/awg/cms/CMS_ASO/filetransfersdb/full",
+"CMS WMArchive FWJR":"hdfs:///cms/wmarchive/avro/fwjr",
+"CMS WMArchive CRAB":"hdfs:///cms/wmarchive/avro/crab",
+"CMS Rucio":"hdfs:///project/monitoring/archive/cms-rucio",
+"CMSSST":"hdfs:///project/monitoring/archive/cmssst",
+"CMS popularity":"hdfs:///project/monitoring/archive/cmssw_pop",
+"CMS EOS quota":"hdfs:///project/monitoring/archive/eoscmsquotas"
+}
