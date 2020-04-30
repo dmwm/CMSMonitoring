@@ -127,7 +127,8 @@ def hdfs(fin, fout, token, amq, verbose):
                 hid = doc.get("hash", 1) # replace this line with your hash id generation
                 tstamp = int(time.time())*1000
                 producer = "cmsmonit"
-                notification, _, _ = amq.make_notification(doc, hid, producer=producer, ts=tstamp, dataSubfield="")
+                notification, _, _ = \
+                        mgr.make_notification(doc, hid, producer=producer, ts=tstamp, dataSubfield="")
                 data.append(notification)
 
             # send our data to MONIT
