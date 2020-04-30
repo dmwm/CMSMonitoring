@@ -127,7 +127,7 @@ def hdfs(fin, fout, token, amq, verbose):
                 # every document should be hash id
                 hid = doc.get("hash", 1) # replace this line with your hash id generation
                 tstamp = int(time.time())*1000
-                producer = creds["cmsmonit"]
+                producer = creds["producer"]
                 notification, _, _ = \
                         mgr.make_notification(doc, hid, producer=producer, ts=tstamp, dataSubfield="")
                 data.append(notification)
