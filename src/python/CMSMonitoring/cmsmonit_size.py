@@ -103,7 +103,7 @@ def hdfs(fin, fout, token, amq, verbose):
                 print(index, size, line)
             out.append(rec)
     if amq:
-        creds = credentials()
+        creds = credentials(amq)
         host, port = creds['host_and_ports'].split(':')
         port = int(port)
         producer = creds['producer']
