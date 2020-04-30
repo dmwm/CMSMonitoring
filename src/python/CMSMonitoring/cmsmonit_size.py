@@ -93,8 +93,8 @@ def hdfs(fin, fout, token, amq, verbose):
     if token and os.path.exists(token):
         cmd = 'monit -token %s -query="stats"' % token
         output = os.popen(cmd).read()
-        for line in output.splitlines():
-            index, size = line.replace('\n', '').split()
+        for line in output.split('\n', ''):
+            index, size = line.split()
             rec = {}
             rec['name'] = index
             rec['size'] = size
@@ -103,35 +103,35 @@ def hdfs(fin, fout, token, amq, verbose):
                 print(desc, path, size, output)
             out.append(rec)
     if amq:
-	creds = credentials()
-	host, port = creds['host_and_ports'].split(':')
-	port = int(port)
-	producer = creds['producer']
-	topic = creds['topic']
-	if verbose:
-	    print("producer: {}, topic {}".format(producer, topic))
-	    print("ckey: {}, cert: {}".format(ckey, cert))
+        creds = credentials()
+        host, port = creds['host_and_ports'].split(':')
+        port = int(port)
+        producer = creds['producer']
+        topic = creds['topic']
+        if verbose:
+            print("producer: {}, topic {}".format(producer, topic))
+            print("ckey: {}, cert: {}".format(ckey, cert))
         try:
-	    # create instance of StompAMQ object with your credentials
-	    mgr = StompAMQ(username, password,
-			   producer, topic,
-			   validation_schema=None, host_and_ports=[(host, port)])
-	    # loop over your document records and create notification documents
-	    # we will send to MONIT
-	    data = []
-	    for doc in documents:
-		# every document should be hash id
-		hid = doc.get("hash", 1) # replace this line with your hash id generation
-		tstamp = int(time.time())*1000
-		producer = "cmsmonit"
-		notification, _, _ = amq.make_notification(doc, hid, producer=producer, ts=tstamp, dataSubfield="")
-		data.append(notification)
+            # create instance of StompAMQ object with your credentials
+            mgr = StompAMQ(username, password,
+                           producer, topic,
+                           validation_schema=None, host_and_ports=[(host, port)])
+            # loop over your document records and create notification documents
+            # we will send to MONIT
+            data = []
+            for doc in documents:
+                # every document should be hash id
+                hid = doc.get("hash", 1) # replace this line with your hash id generation
+                tstamp = int(time.time())*1000
+                producer = "cmsmonit"
+                notification, _, _ = amq.make_notification(doc, hid, producer=producer, ts=tstamp, dataSubfield="")
+                data.append(notification)
 
-	    # send our data to MONIT
-	    results = amq.send(data)
+            # send our data to MONIT
+            results = amq.send(data)
             print("AMQ submission results", results)
-        except Exception as exc:
-            print("Fail to send data to AMQ", str(exc))
+except Exception as exc:
+    print("Fail to send data to AMQ", str(exc))
     print(json.dumps(out))
 
 def main():
