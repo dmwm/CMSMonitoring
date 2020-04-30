@@ -92,15 +92,15 @@ def hdfs(fin, fout, token, amq, verbose):
     # get monit ES info
     if token and os.path.exists(token):
         cmd = 'monit -token %s -query="stats"' % token
-        output = os.popen(cmd).read()
-        for line in output.split('\n'):
-            index, size = line.split()
+        output = os.popen(cmd).readlines()
+        for line in output:
+            index, size = line.replace('\n', '').split()
             rec = {}
             rec['name'] = index
             rec['size'] = size
             rec['type'] = 'elasticsearch'
             if verbose:
-                print(index, size, output)
+                print(index, size, line)
             out.append(rec)
     if amq:
         creds = credentials()
