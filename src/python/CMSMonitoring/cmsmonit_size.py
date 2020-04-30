@@ -98,7 +98,7 @@ def hdfs(fin, fout, token, amq, verbose):
             index, size = line.replace('\n', '').split()
             rec = {}
             rec['name'] = index
-            rec['size'] = size
+            rec['size'] = float(size)
             rec['path'] = ''
             rec['type'] = 'elasticsearch'
             if verbose:
