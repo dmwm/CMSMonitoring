@@ -135,7 +135,7 @@ def hdfs(fin, fout, token, amq, verbose):
     else:
         if fout:
             with open(fout, 'w') as ostream:
-                output.write(json.dumps(out))
+                ostream.write(json.dumps(out))
         else:
             print(json.dumps(out))
 
