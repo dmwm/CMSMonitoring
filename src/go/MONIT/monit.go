@@ -329,6 +329,9 @@ func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose
 		return queryIDB(rurl, dbid, dbname, query, headers, verbose)
 	}
 	// perform query for given url
+	if verbose > 0 {
+		log.Println("Run query for given URL:", rurl)
+	}
 	return queryURL(rurl, headers, verbose)
 }
 
@@ -366,6 +369,9 @@ func main() {
 		fmt.Println("   # look-up data from MONIT")
 		fmt.Println("   monit -token token -query=query.json -dbname=monit_prod_wmagent")
 		fmt.Println("")
+		fmt.Println("   # provide stats for all cms ES indicies")
+		fmt.Println("   monit -token token -query=\"stats\"")
+		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources")
 	}
@@ -391,13 +397,18 @@ func main() {
 	}
 	t := read(token)
 	q := read(query)
-	if dbname == "" && url == defaultUrl {
-		log.Fatalf("Please provide valid dbname")
-	}
 	var database, dbtype string
-	dbid, database, dbtype = findDataSource(dbname)
-	if dbid == 0 {
-		log.Fatalf("No valid dbid found for %s", dbname)
+	if strings.Contains(q, "stats") {
+		dbid = 0
+		url = fmt.Sprintf("%s/api/datasources/proxy/monit_prod_cms/_stats/store", url)
+	} else {
+		if dbname == "" && url == defaultUrl {
+			log.Fatalf("Please provide valid dbname")
+		}
+		dbid, database, dbtype = findDataSource(dbname)
+		if dbid == 0 {
+			log.Fatalf("No valid dbid found for %s", dbname)
+		}
 	}
 	if token == "" {
 		log.Fatalf("Please provide valid token")
@@ -412,6 +423,19 @@ func main() {
 		log.Println("dbtype  ", dbtype)
 	}
 	data := run(url, t, dbid, database, q, idx, limit, verbose)
+	if strings.Contains(q, "stats") {
+		indices := data["indices"].(map[string]interface{})
+		for k, v := range indices {
+			if strings.Contains(k, "monit_prod_cms") {
+				r := v.(map[string]interface{})
+				t := r["total"].(map[string]interface{})
+				s := t["store"].(map[string]interface{})
+				size := s["size_in_bytes"].(float64)
+				fmt.Println(k, size)
+			}
+		}
+		return
+	}
 	d, e := json.Marshal(data)
 	if e == nil {
 		fmt.Println(string(d))
