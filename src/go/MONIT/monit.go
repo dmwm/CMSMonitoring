@@ -15,6 +15,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/go-stomp/stomp"
@@ -144,41 +146,8 @@ func sendDataToStomp(config StompConfig, data []byte, verbose int) {
 			log.Printf("unable to send data to %s, error %v", config.Topic, err)
 		}
 		if verbose > 0 {
-			log.Println("Send data to MONIT", err, conn, string(data))
+			log.Println("Send data to MONIT", err, string(data))
 		}
-	}
-}
-
-// helper function to update doc in MONIT
-func injectToMonit(creds, fname string, verbose int) {
-	data, err := ioutil.ReadFile(creds)
-	if err != nil {
-		log.Fatalf("Unable to read, file: %s, error: %v\n", creds, err)
-	}
-	var config StompConfig
-	err = json.Unmarshal(data, &config)
-	if err != nil {
-		log.Fatalf("Unable to parse, file: %s, error: %v\n", creds, err)
-	}
-	if verbose > 0 {
-		log.Println("StompConfig:", config.String())
-	}
-	data, err = ioutil.ReadFile(fname)
-	if err != nil {
-		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
-	}
-	if config.Key != "" && config.Cert != "" {
-		if verbose > 0 {
-			log.Println("Use TLS method to conenct to Stomp endpoint")
-		}
-		sendDataToStompTLS(config, data, verbose)
-	} else if config.Login != "" && config.Password != "" {
-		if verbose > 0 {
-			log.Println("Use Login/Password method to connect to Stomp endpoint")
-		}
-		sendDataToStomp(config, data, verbose)
-	} else {
-		log.Fatalf("Provided configuration does not contain user credentials")
 	}
 }
 
@@ -335,7 +304,35 @@ func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose
 	return queryURL(rurl, headers, verbose)
 }
 
-func parseStats(data map[string]interface{}, verbose int) {
+func injectData(creds string, data []byte, verbose int) {
+	raw, err := ioutil.ReadFile(creds)
+	if err != nil {
+		log.Fatalf("Unable to read, file: %s, error: %v\n", creds, err)
+	}
+	var config StompConfig
+	err = json.Unmarshal(raw, &config)
+	if err != nil {
+		log.Fatalf("Unable to parse, file: %s, error: %v\n", creds, err)
+	}
+	if verbose > 0 {
+		log.Println("StompConfig:", config.String())
+	}
+	if config.Key != "" && config.Cert != "" {
+		if verbose > 0 {
+			log.Println("Use TLS method to conenct to Stomp endpoint")
+		}
+		sendDataToStompTLS(config, data, verbose)
+	} else if config.Login != "" && config.Password != "" {
+		if verbose > 0 {
+			log.Println("Use Login/Password method to connect to Stomp endpoint")
+		}
+		sendDataToStomp(config, data, verbose)
+	} else {
+		log.Fatalf("Provided configuration does not contain user credentials")
+	}
+}
+
+func parseStats(data map[string]interface{}, verbose int) []Record {
 	indices := data["indices"].(map[string]interface{})
 	cmsIndexes := []string{}
 	for _, d := range DataSources {
@@ -355,6 +352,7 @@ func parseStats(data map[string]interface{}, verbose int) {
 	if verbose > 0 {
 		log.Println("CMS indexes", cmsIndexes)
 	}
+	var out []Record
 	for k, v := range indices {
 		for _, idx := range cmsIndexes {
 			if strings.HasPrefix(k, idx) {
@@ -363,10 +361,80 @@ func parseStats(data map[string]interface{}, verbose int) {
 				s := t["store"].(map[string]interface{})
 				size := s["size_in_bytes"].(float64)
 				fmt.Printf("%s %d\n", k, int64(size))
+				rec := make(Record)
+				rec["name"] = k
+				rec["size"] = int64(size)
+				rec["type"] = "elasticsearch"
+				rec["path"] = ""
+				out = append(out, rec)
 			}
 		}
 	}
+	return out
 }
+
+func hdfsData(fname string, verbose int) []Record {
+	var out []Record
+	data, err := ioutil.ReadFile(fname)
+	if err != nil {
+		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
+	}
+	var rec Record
+	err = json.Unmarshal(data, &rec)
+	if err != nil {
+		log.Printf("Unable to parse, data: %s, error: %v\n", string(data), err)
+		return out
+	}
+	for k, p := range rec {
+		path := p.(string)
+		size, err := hdfsSize(path, verbose)
+		if err == nil {
+			rec := make(Record)
+			rec["name"] = k
+			rec["size"] = int64(size)
+			rec["type"] = "hdfs"
+			rec["path"] = path
+			fmt.Printf("%s %d\n", path, int64(size))
+			out = append(out, rec)
+		}
+	}
+	return out
+}
+
+func hdfsSize(path string, verbose int) (float64, error) {
+	out, err := exec.Command("hadoop", "fs", "-du", "-s", "-h", path).Output()
+	if err != nil {
+		log.Println("Fail to execute hadoop fs -du -s -h", path, err)
+		return -1, err
+	}
+	// hadoop fs -du -h -s /cms/wmarchive
+	// 3.0 T  9.1 T  /cms/wmarchive
+	arr := strings.Split(string(out), " ")
+	size, err := strconv.ParseFloat(arr[0], 10)
+	if err != nil {
+		log.Printf("Fail to parse hadoop output, %s, %v\n", out, err)
+		return -1, err
+	}
+	metric := strings.Trim(arr[1], " ")
+	switch metric {
+	case "K":
+		size = size * 1024
+	case "M":
+		size = size * 1024 * 1024
+	case "G":
+		size = size * 1024 * 1024 * 1024
+	case "T":
+		size = size * 1024 * 1024 * 1024
+	case "P":
+		size = size * 1024 * 1024 * 1024 * 1024
+	default:
+		if verbose > 0 {
+			log.Println("Unable to find proper size", out)
+		}
+	}
+	return size, nil
+}
+
 func main() {
 	defaultUrl := "https://monit-grafana.cern.ch"
 	var verbose int
@@ -385,6 +453,8 @@ func main() {
 	flag.StringVar(&inject, "inject", "", "inject given json document to MONIT")
 	var creds string
 	flag.StringVar(&creds, "creds", "", "json document with MONIT credentials")
+	var hdfs string
+	flag.StringVar(&hdfs, "hdfs", "", "json document with HDFS paths, see doc/hdfs/hdfs.json")
 	var idx int
 	flag.IntVar(&idx, "idx", 0, "verbosity level")
 	var limit int
@@ -403,6 +473,9 @@ func main() {
 		fmt.Println("")
 		fmt.Println("   # provide stats for all cms ES indicies")
 		fmt.Println("   monit -token token -query=\"stats\"")
+		fmt.Println("")
+		fmt.Println("   # provide stats for all cms ES and hdfs data and inject them to MONIT")
+		fmt.Println("   monit -token token -query=\"stats\" -hdfs hdfs.json -creds=creds.json")
 		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources")
@@ -424,7 +497,11 @@ func main() {
 		}
 	}
 	if inject != "" && creds != "" {
-		injectToMonit(creds, inject, verbose)
+		data, err := ioutil.ReadFile(inject)
+		if err != nil {
+			log.Fatalf("Unable to read, file: %s, error: %v\n", inject, err)
+		}
+		injectData(creds, data, verbose)
 		return
 	}
 	t := read(token)
@@ -446,17 +523,36 @@ func main() {
 		log.Fatalf("Please provide valid token")
 	}
 	if verbose > 1 {
-		log.Println("url   ", url)
-		log.Println("token ", t)
-		log.Println("query ", q)
-		log.Println("dbname", dbname)
-		log.Println("dbid  ", dbid)
+		log.Println("url     ", url)
+		log.Println("token   ", t)
+		log.Println("query   ", q)
+		log.Println("dbname  ", dbname)
+		log.Println("dbid    ", dbid)
 		log.Println("database", database)
 		log.Println("dbtype  ", dbtype)
+		log.Println("hdfs    ", hdfs)
 	}
 	data := run(url, t, dbid, database, q, idx, limit, verbose)
 	if strings.Contains(q, "stats") {
-		parseStats(data, verbose)
+		records := parseStats(data, verbose)
+		if creds != "" {
+			for _, r := range records {
+				raw, err := json.Marshal(r)
+				if err == nil {
+					injectData(creds, raw, verbose)
+				}
+			}
+		}
+		// obtain HDFS records if requested
+		records = hdfsData(hdfs, verbose)
+		if creds != "" {
+			for _, r := range records {
+				raw, err := json.Marshal(r)
+				if err == nil {
+					injectData(creds, raw, verbose)
+				}
+			}
+		}
 		return
 	}
 	d, e := json.Marshal(data)
