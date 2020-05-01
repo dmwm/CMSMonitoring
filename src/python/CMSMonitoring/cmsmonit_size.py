@@ -77,7 +77,7 @@ def hdfs(fin, fout, token, amq, verbose):
     "perform HDFS scan"
     out = []
     data = json.load(open(fin))
-    cmd = "hadoop fs -du -h -s -x %s"
+    cmd = "hadoop fs -du -h -s %s"
     path = "hdfs:///path"
     for desc, path in data.items():
         size, output = run_hdfs(cmd % path)
