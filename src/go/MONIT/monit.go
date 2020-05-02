@@ -24,10 +24,29 @@ import (
 
 // Record represents MONIT return record {"response":...}
 type Record map[string]interface{}
+
+// DSRecord represents map of Record's
 type DSRecord map[string]Record
 
 // DataSources keeps global map of MONIT datasources
 var DataSources DSRecord
+
+// StompConfig represents stomp configuration. The configuration should contains
+// either Login/Password or Key/Cert pair
+type StompConfig struct {
+	Producer string `json:"producer"`       // stomp producer name
+	URI      string `json:"host_and_ports"` // stomp URI host:port
+	Login    string `json:"username"`       // stomp user name (optional)
+	Password string `json:"password"`       // stomp password (optional)
+	Key      string `json:"key"`            // stomp user key (optional)
+	Cert     string `json:"cert"`           // stomp user certification (optional)
+	Topic    string `json:"topic"`          // stomp topic path
+}
+
+// helper function to provide string representation of Stomp Config
+func (c *StompConfig) String() string {
+	return fmt.Sprintf("<StompConfig uri=%s producer=%s topic=%s>", c.URI, c.Producer, c.Topic)
+}
 
 // helper function to either read file content or return given string
 func read(r string) string {
@@ -80,22 +99,7 @@ func findDataSource(pat string) (int, string, string) {
 	return 0, "", ""
 }
 
-// StompConfig represents stomp configuration. The configuration should contains
-// either Login/Password or Key/Cert pair
-type StompConfig struct {
-	Producer string `json:"producer"`       // stomp producer name
-	URI      string `json:"host_and_ports"` // stomp URI host:port
-	Login    string `json:"username"`       // stomp user name (optional)
-	Password string `json:"password"`       // stomp password (optional)
-	Key      string `json:"key"`            // stomp user key (optional)
-	Cert     string `json:"cert"`           // stomp user certification (optional)
-	Topic    string `json:"topic"`          // stomp topic path
-}
-
-func (c *StompConfig) String() string {
-	return fmt.Sprintf("<StompConfig uri=%s producer=%s topic=%s>", c.URI, c.Producer, c.Topic)
-}
-
+// helper function to send data to MONIT via StompAMQ and TLS
 func sendDataToStompTLS(config StompConfig, data []byte, verbose int) {
 	contentType := "application/json"
 	x509cert, err := tls.LoadX509KeyPair(config.Cert, config.Key)
@@ -128,6 +132,7 @@ func sendDataToStompTLS(config StompConfig, data []byte, verbose int) {
 	}
 }
 
+// helper function to send data to MONIT via StompAMQ (plain or TLS access is supported)
 func sendDataToStomp(config StompConfig, data []byte, verbose int) {
 	contentType := "application/json"
 	conn, err := stomp.Dial("tcp",
@@ -192,6 +197,7 @@ func queryIDB(base string, dbid int, dbname, query string, headers [][]string, v
 	return data
 }
 
+// helper function to query ElasticSearch
 func queryES(base string, dbid int, dbname, query string, headers [][]string, verbose int) Record {
 	// Method to query ES DB
 	// https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
@@ -240,6 +246,7 @@ func queryES(base string, dbid int, dbname, query string, headers [][]string, ve
 	return data
 }
 
+// helper function to query given URL
 func queryURL(rurl string, headers [][]string, verbose int) Record {
 	if verbose > 0 {
 		log.Println(rurl)
@@ -279,6 +286,7 @@ func queryURL(rurl string, headers [][]string, verbose int) Record {
 	return data
 }
 
+// helper function to run ES/InfluxDB or MONIT query
 func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose int) Record {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", token)
@@ -304,7 +312,42 @@ func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose
 	return queryURL(rurl, headers, verbose)
 }
 
-func injectData(creds string, data []byte, verbose int) {
+// helper function to read single JSON or list of JSON records from
+// given file name
+func readRecords(fname string, verbose int) []Record {
+	data, err := ioutil.ReadFile(fname)
+	if err != nil {
+		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
+	}
+	var out []Record
+	// let's probe if our data is a single JSON record
+	var rec Record
+	err = json.Unmarshal(data, &rec)
+	if err == nil {
+		out = append(out, rec)
+	} else {
+		// let's probe if our data is a list of JSON records
+		var records []Record
+		err = json.Unmarshal(data, &records)
+		if err == nil {
+			out = records
+		}
+	}
+	if verbose > 0 {
+		for _, r := range out {
+			raw, err := json.Marshal(r)
+			if err == nil {
+				log.Println(string(raw))
+			} else {
+				log.Printf("unable to marshal input data, %v, error %v", r, err)
+			}
+		}
+	}
+	return out
+}
+
+// helper function to parse stomp credentials, return StompConfig structure
+func parseStompConfig(creds string) StompConfig {
 	raw, err := ioutil.ReadFile(creds)
 	if err != nil {
 		log.Fatalf("Unable to read, file: %s, error: %v\n", creds, err)
@@ -314,9 +357,11 @@ func injectData(creds string, data []byte, verbose int) {
 	if err != nil {
 		log.Fatalf("Unable to parse, file: %s, error: %v\n", creds, err)
 	}
-	if verbose > 0 {
-		log.Println("StompConfig:", config.String())
-	}
+	return config
+}
+
+// helper function to inject given data record into MONIT with given credentials file
+func injectData(config StompConfig, data []byte, verbose int) {
 	if config.Key != "" && config.Cert != "" {
 		if verbose > 0 {
 			log.Println("Use TLS method to conenct to Stomp endpoint")
@@ -332,6 +377,27 @@ func injectData(creds string, data []byte, verbose int) {
 	}
 }
 
+// helper function to inject list of records into MONIT infrastructure with
+// given credentials file name
+func injectRecords(config StompConfig, records []Record, verbose int, inject bool) {
+	if !inject {
+		return
+	}
+	if config.Topic == "" {
+		if verbose > 0 {
+			log.Printf("Empty StompConfig %s\n", config.String())
+			return
+		}
+	}
+	for _, r := range records {
+		raw, err := json.Marshal(r)
+		if err == nil {
+			injectData(config, raw, verbose)
+		}
+	}
+}
+
+// helper funtion to parse stats meta-data
 func parseStats(data map[string]interface{}, verbose int) []Record {
 	indices := data["indices"].(map[string]interface{})
 	cmsIndexes := []string{}
@@ -373,7 +439,8 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 	return out
 }
 
-func hdfsData(fname string, verbose int) []Record {
+// helper function to read given file with hdfs paths and dump their sizes
+func hdfsDump(fname string, verbose int) []Record {
 	var out []Record
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {
@@ -401,6 +468,7 @@ func hdfsData(fname string, verbose int) []Record {
 	return out
 }
 
+// helper function to print out total size of given HDFS path
 func hdfsSize(path string, verbose int) (float64, error) {
 	out, err := exec.Command("hadoop", "fs", "-du", "-s", "-h", path).Output()
 	if err != nil {
@@ -449,8 +517,10 @@ func main() {
 	flag.StringVar(&dbname, "dbname", "", "MONIT dbname")
 	var query string
 	flag.StringVar(&query, "query", "", "query string or query json file")
-	var inject string
-	flag.StringVar(&inject, "inject", "", "inject given json document to MONIT")
+	var input string
+	flag.StringVar(&input, "input", "", "specify input file (should contain either single JSON dict or list of dicts)")
+	var inject bool
+	flag.BoolVar(&inject, "inject", false, "inject data to MONIT")
 	var creds string
 	flag.StringVar(&creds, "creds", "", "json document with MONIT credentials")
 	var hdfs string
@@ -465,8 +535,11 @@ func main() {
 		fmt.Println("Usage: monit [options]")
 		flag.PrintDefaults()
 		fmt.Println("Examples:")
-		fmt.Println("   # inject data into MONIT")
-		fmt.Println("   monit -creds=creds.json -inject=doc.json -verbose 1")
+		fmt.Println("   # read data from input file")
+		fmt.Println("   monit -input=doc.json -verbose 1")
+		fmt.Println("")
+		fmt.Println("   # inject data from given file into MONIT")
+		fmt.Println("   monit -input=doc.json -creds=creds.json -input=doc.json -verbose 1")
 		fmt.Println("")
 		fmt.Println("   # look-up data from MONIT")
 		fmt.Println("   monit -token token -query=query.json -dbname=monit_prod_wmagent")
@@ -475,7 +548,7 @@ func main() {
 		fmt.Println("   monit -token token -query=\"stats\"")
 		fmt.Println("")
 		fmt.Println("   # provide stats for all cms ES and hdfs data and inject them to MONIT")
-		fmt.Println("   monit -token token -query=\"stats\" -hdfs hdfs.json -creds=creds.json")
+		fmt.Println("   monit -token token -query=\"stats\" -hdfs hdfs.json -creds=creds.json -inject")
 		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources")
@@ -496,12 +569,17 @@ func main() {
 			os.Exit(0)
 		}
 	}
-	if inject != "" && creds != "" {
-		data, err := ioutil.ReadFile(inject)
-		if err != nil {
-			log.Fatalf("Unable to read, file: %s, error: %v\n", inject, err)
+	// parse Stomp Configuration
+	var stompConfig StompConfig
+	if creds != "" {
+		stompConfig = parseStompConfig(creds)
+		if verbose > 0 {
+			log.Println("StompConfig:", stompConfig.String())
 		}
-		injectData(creds, data, verbose)
+	}
+	if input != "" {
+		records := readRecords(input, verbose)
+		injectRecords(stompConfig, records, verbose, inject)
 		return
 	}
 	t := read(token)
@@ -535,23 +613,11 @@ func main() {
 	data := run(url, t, dbid, database, q, idx, limit, verbose)
 	if strings.Contains(q, "stats") {
 		records := parseStats(data, verbose)
-		if creds != "" {
-			for _, r := range records {
-				raw, err := json.Marshal(r)
-				if err == nil {
-					injectData(creds, raw, verbose)
-				}
-			}
-		}
+		injectRecords(stompConfig, records, verbose, inject)
 		// obtain HDFS records if requested
-		records = hdfsData(hdfs, verbose)
-		if creds != "" {
-			for _, r := range records {
-				raw, err := json.Marshal(r)
-				if err == nil {
-					injectData(creds, raw, verbose)
-				}
-			}
+		if hdfs != "" {
+			records = hdfsDump(hdfs, verbose)
+			injectRecords(stompConfig, records, verbose, inject)
 		}
 		return
 	}
