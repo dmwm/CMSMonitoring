@@ -495,6 +495,12 @@ func hdfsSize(path string, verbose int) (float64, error) {
 		size = size * 1024 * 1024 * 1024
 	case "P":
 		size = size * 1024 * 1024 * 1024 * 1024
+	case "E":
+		size = size * 1024 * 1024 * 1024 * 1024 * 1024
+	case "Z":
+		size = size * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
+	case "Y":
+		size = size * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
 	default:
 		if verbose > 0 {
 			log.Println("Unable to find proper size", out)
