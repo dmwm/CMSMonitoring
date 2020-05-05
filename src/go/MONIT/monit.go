@@ -557,6 +557,9 @@ func main() {
 		fmt.Println("   # provide stats for all cms ES and hdfs data and inject them to MONIT")
 		fmt.Println("   monit -token token -query=\"stats\" -hdfs hdfs.json -creds=creds.json -inject")
 		fmt.Println("")
+		fmt.Println("   # look-up all available intervention in MONIT InfluxDB for last 2 hours")
+		fmt.Println("   monit -token token -query=\"select * from outages where time > now() - 2h limit 1\" -dbname=monit_production_ssb_otgs -dbid=9474")
+		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources")
 	}
