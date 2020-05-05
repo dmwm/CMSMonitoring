@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
@@ -158,7 +159,7 @@ func sendDataToStomp(config StompConfig, data []byte, verbose int) {
 
 // helper function to query InfluxDB
 func queryIDB(base string, dbid int, dbname, query string, headers [][]string, verbose int) Record {
-	rurl := fmt.Sprintf("%s/api/datasources/proxy/%d/query?db=%s&q=%s", base, dbid, dbname, query)
+	rurl := fmt.Sprintf("%s/api/datasources/proxy/%d/query?db=%s&q=%s", base, dbid, dbname, url.QueryEscape(query))
 	if verbose > 0 {
 		log.Println(rurl)
 	}
