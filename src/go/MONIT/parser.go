@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"encoding/xml"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
+
+	"github.com/gocolly/colly"
 )
 
 // File       : parser.go
@@ -59,13 +61,36 @@ func (tXml *TicketsXML) saveJSON() {
 
 }
 
+func getXMLdata() []byte {
+
+	defaultURL := "https://medium.com/feed/@Medium"
+	var XMLdata []byte
+
+	collector := colly.NewCollector()
+
+	collector.OnResponse(func(resp *colly.Response) {
+		XMLdata = resp.Body
+	})
+
+	collector.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL.String())
+	})
+
+	collector.Visit(defaultURL)
+
+	return XMLdata
+
+}
+
 func main() {
-	xmlFile, _ := os.Open("output.xml")
-	byteValue, _ := ioutil.ReadAll(xmlFile)
+	// xmlFile, _ := os.Open("output.xml")
+	// byteValue, _ := ioutil.ReadAll(xmlFile)
+
+	xmlData := getXMLdata()
 
 	data := &TicketsXML{}
-	data.parseXML(byteValue)
+	data.parseXML(xmlData)
 	data.saveJSON()
 
-	defer xmlFile.Close()
+	// defer xmlFile.Close()
 }
