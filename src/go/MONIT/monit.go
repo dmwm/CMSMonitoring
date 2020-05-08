@@ -382,6 +382,14 @@ func injectData(config StompConfig, data []byte, verbose int) {
 // given credentials file name
 func injectRecords(config StompConfig, records []Record, verbose int, inject bool) {
 	if !inject {
+		if verbose > 0 {
+			for _, r := range records {
+				raw, err := json.Marshal(r)
+				if err == nil {
+					log.Println(string(raw))
+				}
+			}
+		}
 		return
 	}
 	if config.Topic == "" {
@@ -396,6 +404,13 @@ func injectRecords(config StompConfig, records []Record, verbose int, inject boo
 			injectData(config, raw, verbose)
 		}
 	}
+}
+
+// helper function to group ES Index
+func groupESIndex(name string) string {
+	s := strings.Replace(name, "monit_prod_", "", 1)
+	s = strings.Split(s, "_raw_")[0]
+	return s
 }
 
 // helper funtion to parse stats meta-data
@@ -433,6 +448,7 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 				rec["size"] = int64(size)
 				rec["type"] = "elasticsearch"
 				rec["path"] = ""
+				rec["group"] = groupESIndex(k)
 				out = append(out, rec)
 			}
 		}
@@ -462,6 +478,7 @@ func hdfsDump(fname string, verbose int) []Record {
 			rec["size"] = int64(size)
 			rec["type"] = "hdfs"
 			rec["path"] = path
+			rec["group"] = ""
 			fmt.Printf("%s %d\n", path, int64(size))
 			out = append(out, rec)
 		}
