@@ -1,0 +1,1059 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tickets>
+    <ticket>
+        <Ticket-ID>145685</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site></Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>Check-in (AAI)</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 16:02:00</Last_Update>
+        <Subject>Add d4science.org group in COManage</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145684</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site>INFN-CATANIA-STACK</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 14:09:00</Last_Update>
+        <Subject>[Unit::AppDB-VMOps] Issue with vm VESPA_DaCHS_GAVO_prototype [5cf679f37e5a00c41493a2b2]</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145683</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>very urgent</Priority>
+        <Responsible_Unit>TPM</Responsible_Unit>
+        <Status>new</Status>
+        <Last_Update>2020-02-21 13:49:00</Last_Update>
+        <Subject>Error: Failed to perform requested operation on instance</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145682</Ticket-ID>
+        <Type>USER</Type>
+        <VO>atlas</VO>
+        <Site>USTC-T3</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_CHINA</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 11:01:00</Last_Update>
+        <Subject>Failovers on frontier launchpads from China Education and Research Network Center</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145681</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>Check-in (AAI)</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 10:55:00</Last_Update>
+        <Subject>Move EGI-Checking client from dev to prod instance</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145680</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_IBERGRID</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 10:49:00</Last_Update>
+        <Subject>Decommission of GRID services at CESGA</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145679</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>RAL-LCG2</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 10:58:00</Last_Update>
+        <Subject>Enable SRR for RAL</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145678</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site>TRIUMF-LCG2</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>ROC_Canada</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 14:18:00</Last_Update>
+        <Subject>Export CVMFS metadata for the uboone.osgstorage.org repository to EGI Stratum 1s (TRIUMF)</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145677</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site>ASGC_OSG</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>USATLAS</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 14:17:00</Last_Update>
+        <Subject>Export CVMFS metadata for the uboone.osgstorage.org repository to EGI Stratum 1s (ASGC)</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145676</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>INDIACMS-TIFR</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>ROC_Asia/Pacific</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 08:08:00</Last_Update>
+        <Subject>SE upgradation (dpm+dome)</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145675</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>lhcb</VO>
+        <Site>FZK-LCG2</Site>
+        <Priority>very urgent</Priority>
+        <Responsible_Unit>NGI_DE</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 10:25:00</Last_Update>
+        <Subject>arc-3-kit.gridka.de is unavailable at FZK-LCG2</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145674</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>lhcb</VO>
+        <Site>CERN-PROD</Site>
+        <Priority>top priority</Priority>
+        <Responsible_Unit>ROC_CERN</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 15:02:00</Last_Update>
+        <Subject>CERN downtime</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145673</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>belle</VO>
+        <Site>INFN-PISA</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 06:44:00</Last_Update>
+        <Subject>INFN-PISA: Data transfer to stormfe1.pi.infn.it is failed</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145670</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site>NIKHEF-ELPROD</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_NL</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 15:26:00</Last_Update>
+        <Subject>Export CVMFS metadata for the uboone.osgstorage.org repository to EGI Stratum 1s (NIKHEF)</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145669</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>INFN-T1</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-20 13:35:00</Last_Update>
+        <Subject>Unification of analysis and production PanDA queues at INFN-T1</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145668</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>INFN-ROMA1</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 13:24:00</Last_Update>
+        <Subject>Unification of ATLAS analysis and production queues at INFN-ROMA1</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145667</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>INFN-NAPOLI-ATLAS</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 15:20:00</Last_Update>
+        <Subject>Unification of ATLAS analysis and production queues at INFN-NAPOLI-ATLAS</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145665</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>INFN-COSENZA</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 13:14:00</Last_Update>
+        <Subject>Unification of ATLAS analysis and production queues at INFN-COSENZA</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145663</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>EELA-UTFSM</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>ROC_LA</Responsible_Unit>
+        <Status>waiting for reply</Status>
+        <Last_Update>2020-02-20 18:41:00</Last_Update>
+        <Subject>Unification of EELA-UTFSM single-core and multi-core queue</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145661</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>UA-BITP</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_UA</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 15:25:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145660</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>TR-FC1-ULAKBIM</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_TR</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-20 12:43:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145659</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>SCAI</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_DE</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145658</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>RECAS-BARI</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145657</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>NCG-INGRID-PT</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IBERGRID</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145656</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>INFN-PADOVA-STACK</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145655</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>INFN-CATANIA-STACK</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145654</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>IN2P3-IRES</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_FRANCE</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145651</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>CESGA</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IBERGRID</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 11:05:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145650</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>GWDG-CLOUD</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_DE</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145649</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>DESY-HH</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_DE</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145648</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>CYFRONET-CLOUD</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_PL</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145647</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>CLOUDIFIN</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_RO</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-20 11:25:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145646</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>CESNET-MCC</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_CZ</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 11:17:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145644</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>100IT</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-20 15:39:00</Last_Update>
+        <Subject>Please upgrade to cASO 1.4.0</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145642</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>APEL client &amp; Accounting Repository</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 11:13:00</Last_Update>
+        <Subject>APEL accounting out of sync for BEgrid-ULB-VUB</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145641</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>NCG-INGRID-PT</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IBERGRID</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-20 15:11:00</Last_Update>
+        <Subject>T2_PT_NCG_Lisbon is failing SAM</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145640</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>Nebraska</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>USCMS</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 09:19:00</Last_Update>
+        <Subject>Lost file at Nebraska?</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145639</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>CIT_CMS_T2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>USCMS</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 17:59:00</Last_Update>
+        <Subject>Connection issue between Caltech and KIT&amp;PIC</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145638</Ticket-ID>
+        <Type>USER</Type>
+        <VO>ops</VO>
+        <Site>GRID-UNAM</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>ROC_LA</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 07:22:00</Last_Update>
+        <Subject>[Rod Dashboard] Issue detected : org.sam.SRM-All@dpm.grid.unam.mx</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145636</Ticket-ID>
+        <Type>USER</Type>
+        <VO>ops</VO>
+        <Site>ATLAND</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>ROC_LA</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-20 07:20:00</Last_Update>
+        <Subject>[Rod Dashboard] Issue detected : ch.cern.WebDAV@atlandse.fis.puc.cl</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145632</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>VOSupport</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-19 17:01:00</Last_Update>
+        <Subject>Transfern error on sending files</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145628</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>Check-in (AAI)</Responsible_Unit>
+        <Status>on hold</Status>
+        <Last_Update>2020-02-20 09:37:00</Last_Update>
+        <Subject>[Checkin-support] Insufficient attribute release to EOSC Portal (SP entityID: https://aai.eosc-portal.eu/proxy/module.php/saml/sp/metadata.php/sso)</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145627</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>FMPhI-UNIBA</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_SK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-20 11:18:00</Last_Update>
+        <Subject>globus_ftp_client: the server responded with an error 500 500-Command failed</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145626</Ticket-ID>
+        <Type>USER</Type>
+        <VO>ops</VO>
+        <Site>RU-SPbSU</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>ROC_Russia</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 13:26:00</Last_Update>
+        <Subject>[Dashboard] Issues detected at RU-SPbSU</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145625</Ticket-ID>
+        <Type>USER</Type>
+        <VO>atlas</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>APEL client &amp; Accounting Repository</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 13:27:00</Last_Update>
+        <Subject>Problems to publish APEL data Jan 2020</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145624</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>VOSupport</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 15:47:00</Last_Update>
+        <Subject>Configuring 4h pilots for T2_US_Purdue Rice</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145622</Ticket-ID>
+        <Type>USER</Type>
+        <VO>enmr.eu</VO>
+        <Site>CYFRONET-LCG2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_PL</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-19 08:56:00</Last_Update>
+        <Subject>Authorization problem on ce01.grid.cyfronet.pl</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145621</Ticket-ID>
+        <Type>USER</Type>
+        <VO>enmr.eu</VO>
+        <Site>IFCA-LCG2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IBERGRID</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-19 09:01:00</Last_Update>
+        <Subject>Authorization problem due to wrong LSC files/2</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145620</Ticket-ID>
+        <Type>USER</Type>
+        <VO>enmr.eu</VO>
+        <Site>NCG-INGRID-PT</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IBERGRID</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-19 10:59:00</Last_Update>
+        <Subject>Authorization problem due to wrong LSC files/2</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145618</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>GRIF</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_FRANCE</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-18 19:46:00</Last_Update>
+        <Subject>Transfers to GRIF-LPNHE fail with "Connection reset by peer"</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145616</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>INFN-ROMA1-CMS</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-18 15:58:00</Last_Update>
+        <Subject>Connections to cmsrm-se01.roma1.infn.it:8443 failing.</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145614</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>UKI-NORTHGRID-MAN-HEP</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-18 15:15:00</Last_Update>
+        <Subject>UKI-NORTHGRID-MAN-HEP: timeouts on stage-out</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145613</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>ICM</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_PL</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-18 15:14:00</Last_Update>
+        <Subject>Operations timed out</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145612</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>CETA-GRID</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_IBERGRID</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 07:38:00</Last_Update>
+        <Subject>Assign scope tag FedCloud to CETA-GRID in GOCDB</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145610</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>UKI-SCOTGRID-GLASGOW</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 08:28:00</Last_Update>
+        <Subject>Downloading files from UKI-SCOTGRID-GLASGOW-CEPH_DATADISK using the default protocol (gridftp) fails</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145609</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site></Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>APEL client &amp; Accounting Repository</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-19 12:57:00</Last_Update>
+        <Subject>failure to provide HOST_DN to GOCDB setrvice storage accounting</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145606</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>very urgent</Priority>
+        <Responsible_Unit>CRIC</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-18 09:09:00</Last_Update>
+        <Subject>Cric Failures</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145603</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site>TW-NCHC</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>ROC_Asia/Pacific</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-21 16:24:00</Last_Update>
+        <Subject>CVMFS problems at NCHC</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145601</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site></Site>
+        <Priority>very urgent</Priority>
+        <Responsible_Unit>Software and Data Distribution (CVMFS)</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-18 09:29:00</Last_Update>
+        <Subject>RAL CVMFS stratum 1 slow response</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145599</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>umd-cms</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>USCMS</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-17 16:01:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145598</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>UMN-CMS</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>USCMS</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-17 16:01:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145593</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>egee.irb.hr</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_HR</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-17 16:11:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145589</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>RU-Protvino-IHEP</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>ROC_Russia</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-18 06:09:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145588</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>INFN-PISA</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-17 16:01:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145587</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>INFN-LNL-2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-18 08:41:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145586</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>INDIACMS-TIFR</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>ROC_Asia/Pacific</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-17 16:01:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145584</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>RAL-LCG2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 14:35:00</Last_Update>
+        <Subject>Request to upgrade squid</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145583</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>GoeGrid</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_DE</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-17 14:30:00</Last_Update>
+        <Subject>GoeGrid: stage-in issues</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145582</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>CSCS-LCG2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_CH</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-19 08:50:00</Last_Update>
+        <Subject>T2_CH_CSCS is intermittently failing SAM CE</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145580</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>Software Provisioning</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-17 13:27:00</Last_Update>
+        <Subject>New Release of ARGO Messaging Library v0.5.1-1</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145578</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>lhcb</VO>
+        <Site>RAL-LCG2</Site>
+        <Priority>very urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 15:02:00</Last_Update>
+        <Subject>Connection limit exceeded</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145577</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>Hephy-Vienna</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_IT</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-19 15:57:00</Last_Update>
+        <Subject>T2_AT_Vienna is in Waiting Room</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145574</Ticket-ID>
+        <Type>USER</Type>
+        <VO>other</VO>
+        <Site>RAL-LCG2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-20 13:46:00</Last_Update>
+        <Subject>LSST jobs failing at RAL</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145573</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>top priority</Priority>
+        <Responsible_Unit>Collaboration Tools</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 07:29:00</Last_Update>
+        <Subject>documentDB is down</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145570</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>SWT2_CPB</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>USATLAS</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-19 10:58:00</Last_Update>
+        <Subject>SWT2_CPB SOURCE CHECKSUM transfer errors</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145564</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>FZK-LCG2</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_DE</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-17 08:10:00</Last_Update>
+        <Subject>FZK-LCG2 Staging timeout problem</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145563</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site></Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>VOSupport</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-17 15:28:00</Last_Update>
+        <Subject>factory entris at T[12]_FR_CCIN2P3</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145560</Ticket-ID>
+        <Type>USER</Type>
+        <VO>snoplus.snolab.ca</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>DMSU</Responsible_Unit>
+        <Status>waiting for reply</Status>
+        <Last_Update>2020-02-19 14:32:00</Last_Update>
+        <Subject>failure to register files to the LFC</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145559</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>Helpdesk (GGUS)</Responsible_Unit>
+        <Status>waiting for reply</Status>
+        <Last_Update>2020-02-17 09:14:00</Last_Update>
+        <Subject>Unable to access as GGUS supporter</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145558</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>FI_HIP_T2</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_NDGF</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-14 15:48:00</Last_Update>
+        <Subject>Transfers are failing to HIP</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145557</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site></Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>DMSU</Responsible_Unit>
+        <Status>waiting for reply</Status>
+        <Last_Update>2020-02-19 11:29:00</Last_Update>
+        <Subject>how to set GLUE2ComputingShareMaxUserRunningJobs, (and others?)</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145556</Ticket-ID>
+        <Type>USER</Type>
+        <VO>ops</VO>
+        <Site>UKI-SOUTHGRID-SUSX</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-18 10:30:00</Last_Update>
+        <Subject>[Dashboard] Issues detected at UKI-SOUTHGRID-SUSX</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145553</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>TW-NCHC</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>ROC_Asia/Pacific</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-14 14:50:00</Last_Update>
+        <Subject>CMS Frontier activity frpm T2_TW_NCHC</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145551</Ticket-ID>
+        <Type>TEAM</Type>
+        <VO>atlas</VO>
+        <Site>RRC-KI</Site>
+        <Priority>less urgent</Priority>
+        <Responsible_Unit>ROC_Russia</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-21 10:17:00</Last_Update>
+        <Subject>RRC-KI: squid is down</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145550</Ticket-ID>
+        <Type>USER</Type>
+        <VO>alice</VO>
+        <Site></Site>
+        <Priority>top priority</Priority>
+        <Responsible_Unit>APEL client &amp; Accounting Repository</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-17 17:10:00</Last_Update>
+        <Subject>T2 accounting report for January 2020 for RO-03-UPB</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145549</Ticket-ID>
+        <Type>USER</Type>
+        <VO>cms</VO>
+        <Site>SPRACE</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>USCMS</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-14 12:42:00</Last_Update>
+        <Subject>Tranfers failing from SPRACE to US</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145544</Ticket-ID>
+        <Type>USER</Type>
+        <VO>none</VO>
+        <Site>BNL-ATLAS</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>USATLAS</Responsible_Unit>
+        <Status>assigned</Status>
+        <Last_Update>2020-02-14 07:31:00</Last_Update>
+        <Subject>BNL-OSG2: SOURCE CHECKSUM MISMATCH</Subject>
+        <Scope>WLCG</Scope>
+    </ticket>
+    <ticket>
+        <Ticket-ID>145543</Ticket-ID>
+        <Type>USER</Type>
+        <VO>atlas</VO>
+        <Site>UKI-SCOTGRID-GLASGOW</Site>
+        <Priority>urgent</Priority>
+        <Responsible_Unit>NGI_UK</Responsible_Unit>
+        <Status>in progress</Status>
+        <Last_Update>2020-02-18 11:20:00</Last_Update>
+        <Subject>UKI-SCOTGRID-GLASGOW: No such file or directory</Subject>
+        <Scope>EGI</Scope>
+    </ticket>
+</tickets>
