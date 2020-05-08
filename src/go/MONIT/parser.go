@@ -63,7 +63,7 @@ func (tXml *TicketsXML) saveJSON() {
 
 func getXMLdata() []byte {
 
-	defaultURL := "https://medium.com/feed/@Medium"
+	defaultURL := "<GGUS_Ticketing_System_URL>"
 	var XMLdata []byte
 
 	collector := colly.NewCollector()
