@@ -447,7 +447,7 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 				rec["name"] = k
 				rec["size"] = int64(size)
 				rec["type"] = "elasticsearch"
-				rec["path"] = ""
+				rec["location"] = ""
 				rec["group"] = groupESIndex(k)
 				out = append(out, rec)
 			}
@@ -477,7 +477,7 @@ func hdfsDump(fname string, verbose int) []Record {
 			rec["name"] = k
 			rec["size"] = int64(size)
 			rec["type"] = "hdfs"
-			rec["path"] = path
+			rec["location"] = path
 			rec["group"] = ""
 			fmt.Printf("%s %d\n", path, int64(size))
 			out = append(out, rec)
