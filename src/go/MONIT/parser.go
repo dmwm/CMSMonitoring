@@ -1,11 +1,15 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"encoding/xml"
+	"flag"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gocolly/colly"
 )
@@ -31,6 +35,59 @@ type TicketsXML struct {
 	} `xml:"ticket"`
 }
 
+//Ticket Data struct
+type Ticket struct {
+	TicketID        int
+	Type            string
+	VO              string
+	Site            string
+	Priority        string
+	ResponsibleUnit string
+	Status          string
+	LastUpdate      string
+	Subject         string
+	Scope           string
+}
+
+//function for unpacking the CSV data into Ticket Data struct
+func parseCSV(in string) []Ticket {
+	var ticket Ticket
+	var tickets []Ticket
+
+	csvFile, err := os.Open(in)
+	if err != nil {
+		fmt.Printf("Unable to open CSV file, error: %v\n", err)
+	}
+	defer csvFile.Close()
+
+	reader := csv.NewReader(csvFile)
+
+	csvData, err := reader.ReadAll()
+	if err != nil {
+		fmt.Printf("Unable to read CSV file, error: %v\n", err)
+		return tickets
+	}
+
+	for ind := range csvData {
+
+		if ind > 0 {
+			each := strings.Split(csvData[ind][0], ";")
+			ticket.TicketID, _ = strconv.Atoi(each[0])
+			ticket.Type = each[1]
+			ticket.VO = each[2]
+			ticket.Site = each[3]
+			ticket.Priority = each[4]
+			ticket.ResponsibleUnit = each[5]
+			ticket.Status = each[6]
+			ticket.LastUpdate = each[7]
+			ticket.Subject = each[8]
+			ticket.Scope = each[9]
+			tickets = append(tickets, ticket)
+		}
+	}
+	return tickets
+}
+
 //function for unpacking the XML data into TicketsXML Data struct
 func (tXml *TicketsXML) parseXML(byteValue []byte) {
 	err := xml.Unmarshal(byteValue, &tXml)
@@ -41,26 +98,27 @@ func (tXml *TicketsXML) parseXML(byteValue []byte) {
 }
 
 //function for output the processed data into JSON format
-func (tXml *TicketsXML) saveJSON() {
-	jsonFile, errF := os.OpenFile("output.json", os.O_WRONLY, 0644)
-	if errF != nil {
-		log.Printf("Unable to open output.json file, error: %v\n", errF)
-		return
-	}
+func saveJSON(data []Ticket, out string) {
 
-	jsonData, err := json.Marshal(tXml)
+	jsonData, err := json.Marshal(data)
 
-	if errF != nil {
+	if err != nil {
 		log.Printf("Unable to convert into JSON format, error: %v\n", err)
 		return
 	}
 
-	jsonFile.Write(jsonData)
-
+	jsonFile, err := os.Create(out)
+	if err != nil {
+		fmt.Printf("Unable to create JSON file, error: %v\n", err)
+	}
 	defer jsonFile.Close()
+
+	jsonFile.Write(jsonData)
+	jsonFile.Close()
 
 }
 
+//function for fetching XML data from GGUS Ticketing System Endpoint
 func getXMLdata() []byte {
 
 	defaultURL := "<GGUS_Ticketing_System_URL>"
@@ -83,14 +141,20 @@ func getXMLdata() []byte {
 }
 
 func main() {
-	// xmlFile, _ := os.Open("output.xml")
-	// byteValue, _ := ioutil.ReadAll(xmlFile)
+	var in string
+	var out string
+	flag.StringVar(&in, "in", "", "input filename")
+	flag.StringVar(&out, "out", "", "out filename")
+	flag.Parse()
 
-	xmlData := getXMLdata()
+	if in == "" {
+		log.Fatalf("Input filename missing. Exiting....")
+	}
 
-	data := &TicketsXML{}
-	data.parseXML(xmlData)
-	data.saveJSON()
+	if out == "" {
+		log.Fatalf("Output filename missing. Exiting....")
+	}
 
-	// defer xmlFile.Close()
+	csvData := parseCSV(in)
+	saveJSON(csvData, out)
 }
