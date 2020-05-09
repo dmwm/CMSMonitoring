@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
 )
@@ -38,15 +39,24 @@ type TicketsXML struct {
 //Ticket Data struct
 type Ticket struct {
 	TicketID        int
-	Type            string
-	VO              string
-	Site            string
-	Priority        string
-	ResponsibleUnit string
-	Status          string
-	LastUpdate      string
-	Subject         string
-	Scope           string
+	Type            *string
+	VO              *string
+	Site            *string
+	Priority        *string
+	ResponsibleUnit *string
+	Status          *string
+	LastUpdate      int64
+	Subject         *string
+	Scope           *string
+}
+
+func nullValueHelper(value **string, data string) {
+
+	if data == "none" || data == "" {
+		*value = nil
+	} else {
+		*value = &data
+	}
 }
 
 //function for unpacking the CSV data into Ticket Data struct
@@ -72,16 +82,21 @@ func parseCSV(in string) []Ticket {
 
 		if ind > 0 {
 			each := strings.Split(csvData[ind][0], ";")
+
 			ticket.TicketID, _ = strconv.Atoi(each[0])
-			ticket.Type = each[1]
-			ticket.VO = each[2]
-			ticket.Site = each[3]
-			ticket.Priority = each[4]
-			ticket.ResponsibleUnit = each[5]
-			ticket.Status = each[6]
-			ticket.LastUpdate = each[7]
-			ticket.Subject = each[8]
-			ticket.Scope = each[9]
+
+			nullValueHelper(&ticket.Type, each[1])
+			nullValueHelper(&ticket.VO, each[2])
+			nullValueHelper(&ticket.Site, each[3])
+			nullValueHelper(&ticket.Priority, each[4])
+			nullValueHelper(&ticket.ResponsibleUnit, each[5])
+			nullValueHelper(&ticket.Status, each[6])
+
+			UnixTS, _ := time.Parse(time.RFC3339, (strings.ReplaceAll(each[7], " ", "T") + "Z"))
+			ticket.LastUpdate = UnixTS.Unix()
+
+			nullValueHelper(&ticket.Subject, each[8])
+			nullValueHelper(&ticket.Scope, each[9])
 			tickets = append(tickets, ticket)
 		}
 	}
