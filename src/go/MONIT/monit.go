@@ -23,6 +23,10 @@ import (
 	"github.com/go-stomp/stomp"
 )
 
+func greet() {
+	fmt.Println("hello")
+}
+
 // Record represents MONIT return record {"response":...}
 type Record map[string]interface{}
 
