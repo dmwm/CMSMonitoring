@@ -531,7 +531,7 @@ func hdfsSize(path string, verbose int) (float64, error) {
 	return size, nil
 }
 
-func Main() {
+func main() {
 	defaultUrl := "https://monit-grafana.cern.ch"
 	var verbose int
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")

@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"os/user"
 	"strconv"
@@ -18,17 +19,19 @@ import (
 	"sync"
 	"time"
 
-	logs "github.com/sirupsen/logrus"
 	"github.com/vkuznet/x509proxy"
 )
 
-// File       : parser.go
+// File       : ggus_parser.go
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Thu, 07 May 2020 13:34:15 GMT
 // Description: Parser for CERN MONIT infrastructure
 
-// TIMEOUT defines timeout for net/url request
-var TIMEOUT int
+// Timeout defines timeout for net/url request
+var Timeout int
+
+// Verbose defines verbosity level
+var Verbose int
 
 //TicketsXML Data struct
 type TicketsXML struct {
@@ -68,24 +71,6 @@ func nullValueHelper(value **string, data string) {
 	} else {
 		*value = &data
 	}
-}
-
-//CSVFile function for CSVFile Read
-func CSVFile(in string) [][]string {
-	csvFile, err := os.Open(in)
-	if err != nil {
-		fmt.Printf("Unable to open CSV file, error: %v\n", err)
-	}
-	defer csvFile.Close()
-
-	reader := csv.NewReader(csvFile)
-
-	csvData, err := reader.ReadAll()
-	if err != nil {
-		fmt.Printf("Unable to read CSV file, error: %v\n", err)
-	}
-
-	return csvData
 }
 
 //function for unpacking the CSV data into Ticket Data struct
@@ -164,6 +149,10 @@ func saveJSON(data interface{}, out string) error {
 
 }
 
+//
+// The following block of code was taken from
+// https://github.com/dmwm/das2go/blob/master/utils/fetch.go#L75
+
 // TLSCertsRenewInterval controls interval to re-read TLS certs (in seconds)
 var TLSCertsRenewInterval time.Duration
 
@@ -180,9 +169,9 @@ func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
 	defer lock.Unlock()
 	// we'll use existing certs if our window is not expired
 	if t.Certs == nil || time.Since(t.Expire) > TLSCertsRenewInterval {
-		logs.WithFields(logs.Fields{
-			"Expire": t.Expire,
-		}).Debug("Read new certs")
+		if Verbose > 0 {
+			log.Println("read new certs with expire", t.Expire)
+		}
 		t.Expire = time.Now()
 		certs, err := tlsCerts()
 		if err == nil {
@@ -242,9 +231,9 @@ func HTTPClient() *http.Client {
 		panic(err.Error())
 	}
 
-	timeout := time.Duration(TIMEOUT) * time.Second
+	timeout := time.Duration(Timeout) * time.Second
 	if len(certs) == 0 {
-		if TIMEOUT > 0 {
+		if Timeout > 0 {
 			return &http.Client{Timeout: time.Duration(timeout)}
 		}
 		return &http.Client{}
@@ -253,67 +242,76 @@ func HTTPClient() *http.Client {
 		TLSClientConfig: &tls.Config{Certificates: certs,
 			InsecureSkipVerify: true},
 	}
-	if TIMEOUT > 0 {
+	if Timeout > 0 {
 		return &http.Client{Transport: tr, Timeout: timeout}
 	}
 	return &http.Client{Transport: tr}
 }
 
-//Response Data struct
-type Response struct {
-	data io.ReadCloser
-	err  error
-}
-
-//FetchResponse response
-func FetchResponse(url string) Response {
-	var response Response
+//processResponse function for fetching data from GGUS endpoint and dumping it into JSON format
+func processResponse(url, format, accept, out string) {
 	var req *http.Request
 	req, _ = http.NewRequest("GET", url, nil)
 	req.Header.Add("Accept-Encoding", "identity")
-	req.Header.Add("Accept", "text/csv")
+	req.Header.Add("Accept", accept)
 
 	client := HTTPClient()
+
+	if Verbose > 1 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("request: ", string(dump))
+		}
+	}
 
 	resp, err := client.Do(req)
 
 	if err != nil {
-		response.err = err
-		return response
+		log.Println(err)
 	}
+
+	if Verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("response:", string(dump))
+		}
+	}
+
 	defer resp.Body.Close()
 
-	response.data = resp.Body
-	return response
+	if format == "csv" {
+		data := parseCSV(resp.Body)
+		saveJSON(data, out)
+	} else if format == "xml" {
+		data := &TicketsXML{}
+		data.parseXML(resp.Body)
+		saveJSON(data.Ticket, out)
+	}
 }
 
 func main() {
-	var csvURL string
-	var xmlURL string
+	var format string
 	var out string
-	flag.StringVar(&csvURL, "csv", "", "GGUS CSV endpoint")
-	flag.StringVar(&xmlURL, "xml", "", "GGUS XML endpoint")
+	flag.StringVar(&format, "format", "csv", "GGUS data-format to use (csv or xml)")
 	flag.StringVar(&out, "out", "", "out filename")
-
+	flag.IntVar(&Verbose, "verbose", 0, "verbosity level")
+	flag.IntVar(&Timeout, "timeout", 0, "http client timeout operation, zero means no timeout")
 	flag.Parse()
 
-	if csvURL == "" || xmlURL == "" {
-		log.Fatalf("GGUS endpoint URL missing. Exiting....")
+	ggus := "https://ggus.eu/?mode=ticket_search&status=open&date_type=creation+date&tf_radio=1&timeframe=any&orderticketsby=REQUEST_ID&orderhow=desc"
+	var accept string
+	if format == "csv" {
+		ggus = ggus + "&writeFormat=CSV"
+		accept = "text/csv"
+	} else if format == "xml" {
+		ggus = ggus + "&writeFormat=XML"
+		accept = "text/xml"
 	}
 
 	if out == "" {
 		log.Fatalf("Output filename missing. Exiting....")
 	}
 
-	if csvURL != "" {
-		csvData := FetchResponse(csvURL)
-		Data := parseCSV(csvData.data)
-		saveJSON(Data, out)
-	} else {
-		xmlData := FetchResponse(xmlURL)
-		Data := &TicketsXML{}
-		Data.parseXML(xmlData.data)
-		saveJSON(Data, out)
-	}
+	processResponse(ggus, format, accept, out)
 
 }
