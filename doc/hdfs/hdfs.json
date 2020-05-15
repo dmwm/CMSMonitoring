@@ -19,5 +19,7 @@
 "CMS Rucio":"hdfs:///project/monitoring/archive/cms-rucio",
 "CMSSST":"hdfs:///project/monitoring/archive/cmssst",
 "CMS popularity":"hdfs:///project/monitoring/archive/cmssw_pop",
-"CMS EOS quota":"hdfs:///project/monitoring/archive/eoscmsquotas"
+"CMS EOS quota":"hdfs:///project/monitoring/archive/eoscmsquotas",
+"CMS Condor":"/project/monitoring/archive/condor/raw/metric",
+"CMS SI":"/project/monitoring/archive/cms/raw"
 }
