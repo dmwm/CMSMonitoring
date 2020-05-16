@@ -49,6 +49,20 @@ func fetchJSON(filename string) []byte {
 
 }
 
+//function for fetching JSON data from CERN SSB Data monit.go InfluxDB query.
+func fetchJSONmonit() []byte {
+	token := os.Getenv("token")
+	cmd := exec.Command("go", "run", "monit.go", "-query="+"select * from outages where time > now() - 2h limit 1", "-dbname=monit_production_ssb_otgs", "-token="+token, "-dbid=9474")
+	jsonData, err := cmd.Output()
+
+	if err != nil {
+		log.Printf("Unable to run monit command, error: %v\n", err)
+
+	}
+
+	return jsonData
+}
+
 //helper function for amtool.
 func amtool(alertname,
 	start,
@@ -140,6 +154,8 @@ func main() {
 	}
 
 	jsonData := fetchJSON(in)
+	// jsonData := fetchJSONmonit()
+
 	var data ssb
 	data.parseJSON(jsonData)
 	data.pushData()
