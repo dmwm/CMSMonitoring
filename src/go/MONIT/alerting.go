@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"time"
 )
@@ -44,27 +45,30 @@ type amJSON struct {
 		Severity  string `json:"severity"`
 	} `json:"labels"`
 	Annotations struct {
-		Date             string `json:"date"`
-		Description      string `json:"description"`
-		FeName           string `json:"fe_name"`
-		MonitState       string `json:"monit_state"`
-		MonitState1      string `json:"monit_state_1"`
-		SeName           string `json:"se_name"`
-		ShortDescription string `json:"short_description"`
-		SsbNumber        string `json:"ssb_number"`
-		SysCreatedBy     string `json:"sys_created_by"`
-		SysModCount      string `json:"sys_mod_count"`
-		SysUpdatedBy     string `json:"sys_updated_by"`
-		Type             string `json:"type"`
-		UpdateTimestamp  string `json:"update_timestamp"`
+		Date              string `json:"date"`
+		Description       string `json:"description"`
+		Fe_name           string `json:"fe_name"`
+		Monit_state       string `json:"monit_state"`
+		Monit_state_1     string `json:"monit_state_1"`
+		Se_name           string `json:"se_name"`
+		Short_description string `json:"short_description"`
+		Ssb_number        string `json:"ssb_number"`
+		Sys_created_by    string `json:"sys_created_by"`
+		Sys_mod_count     string `json:"sys_mod_count"`
+		Sys_updated_by    string `json:"sys_updated_by"`
+		Type              string `json:"type"`
+		Update_timestamp  string `json:"update_timestamp"`
 	} `json:"annotations"`
-	StartsAt string `json:"startsAt"`
-	EndsAt   string `json:"endsAt"`
+	Starts_at string `json:"startsAt"`
+	Ends_at   string `json:"endsAt"`
 }
 
 //function for parsing JSON data from CERN SSB Data
 func (data *ssb) parseJSON(jsondata []byte) {
-	json.Unmarshal(jsondata, &data)
+	err := json.Unmarshal(jsondata, &data)
+	if err != nil {
+		log.Printf("Unable to parse CERN SSB JSON data, error: %v\n", err)
+	}
 }
 
 //function for fetching JSON data from CERN SSB Data
@@ -74,13 +78,15 @@ func fetchJSON(filename string) []byte {
 		log.Printf("Unable to open JSON file, error: %v\n", err)
 	}
 
+	defer file.Close()
+
 	jsonData, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Printf("Unable to read JSON file, error: %v\n", err)
 	}
 
 	if verbose > 1 {
-		log.Println("SSB Data : \n" + string(jsonData))
+		log.Println("CERN SSB Data: " + string(jsonData))
 	}
 
 	return jsonData
@@ -108,20 +114,20 @@ func (data *ssb) convertData() []byte {
 
 		temp.Annotations.Date = each[0].(string)
 		temp.Annotations.Description = each[2].(string)
-		temp.Annotations.FeName = each[5].(string)
-		temp.Annotations.MonitState = each[6].(string)
-		temp.Annotations.MonitState1 = each[7].(string)
-		temp.Annotations.SeName = each[8].(string)
-		temp.Annotations.ShortDescription = each[9].(string)
-		temp.Annotations.SsbNumber = each[10].(string)
-		temp.Annotations.SysCreatedBy = each[11].(string)
-		temp.Annotations.SysModCount = each[12].(string)
-		temp.Annotations.SysUpdatedBy = each[13].(string)
+		temp.Annotations.Fe_name = each[5].(string)
+		temp.Annotations.Monit_state = each[6].(string)
+		temp.Annotations.Monit_state_1 = each[7].(string)
+		temp.Annotations.Se_name = each[8].(string)
+		temp.Annotations.Short_description = each[9].(string)
+		temp.Annotations.Ssb_number = each[10].(string)
+		temp.Annotations.Sys_created_by = each[11].(string)
+		temp.Annotations.Sys_mod_count = each[12].(string)
+		temp.Annotations.Sys_updated_by = each[13].(string)
 		temp.Annotations.Type = each[14].(string)
-		temp.Annotations.UpdateTimestamp = _updatetsRFC3339
+		temp.Annotations.Update_timestamp = _updatetsRFC3339
 
-		temp.StartsAt = _beginRFC3339
-		temp.EndsAt = _endRFC3339
+		temp.Starts_at = _beginRFC3339
+		temp.Ends_at = _endRFC3339
 
 		finalData = append(finalData, temp)
 
@@ -145,6 +151,14 @@ func post(jsonStr []byte) {
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
+
+	if verbose > 1 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("Request: ", string(dump))
+		}
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
@@ -152,24 +166,38 @@ func post(jsonStr []byte) {
 	defer resp.Body.Close()
 
 	if verbose >= 1 {
-		log.Println("response Status:", resp.Status)
-		log.Println("response Headers:", resp.Header)
-		body, _ := ioutil.ReadAll(resp.Body)
-		log.Println("response Body:", string(body))
+		log.Println("Response Status:", resp.Status)
+		log.Println("Response Headers:", resp.Header)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Unable to read Response Body, error: %v\n", err)
+		}
+		log.Println("Response Body:", string(body))
 	}
+}
+
+//function containing all logics for alerting.
+func alert(inp string) {
+
+	jsonData := fetchJSON(inp)
+	var data ssb
+	data.parseJSON(jsonData)
+	jsonStrAM := data.convertData() //JSON data in AlertManager APIs format.
+	post(jsonStrAM)
+
 }
 
 func main() {
 
-	var in string
+	var inp string
 	severity = "monitoring"
 
-	flag.StringVar(&in, "input", "", "input filename")
+	flag.StringVar(&inp, "input", "", "input filename")
 	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	flag.Parse()
 
-	if in == "" {
+	if inp == "" {
 		log.Fatalf("Input filename missing. Exiting....")
 	}
 
@@ -177,13 +205,12 @@ func main() {
 		log.Fatalf("AlertManager URL missing. Exiting....")
 	}
 
-	jsonData := fetchJSON(in)
+	if verbose > 0 {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	} else {
+		log.SetFlags(log.LstdFlags)
+	}
 
-	var data ssb
-	data.parseJSON(jsonData)
-
-	jsonStrAM := data.convertData() //JSON data in AlertManager APIs format.
-
-	post(jsonStrAM)
+	alert(inp)
 
 }
