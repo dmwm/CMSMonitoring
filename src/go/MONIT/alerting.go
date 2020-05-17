@@ -45,22 +45,22 @@ type amJSON struct {
 		Severity  string `json:"severity"`
 	} `json:"labels"`
 	Annotations struct {
-		Date              string `json:"date"`
-		Description       string `json:"description"`
-		Fe_name           string `json:"fe_name"`
-		Monit_state       string `json:"monit_state"`
-		Monit_state_1     string `json:"monit_state_1"`
-		Se_name           string `json:"se_name"`
-		Short_description string `json:"short_description"`
-		Ssb_number        string `json:"ssb_number"`
-		Sys_created_by    string `json:"sys_created_by"`
-		Sys_mod_count     string `json:"sys_mod_count"`
-		Sys_updated_by    string `json:"sys_updated_by"`
-		Type              string `json:"type"`
-		Update_timestamp  string `json:"update_timestamp"`
+		Date             string `json:"date"`
+		Description      string `json:"description"`
+		FeName           string `json:"feName"`
+		MonitState       string `json:"monitState"`
+		MonitState1      string `json:"monitState1"`
+		SeName           string `json:"seName"`
+		ShortDescription string `json:"shortDescription"`
+		SsbNumber        string `json:"ssbNumber"`
+		SysCreatedBy     string `json:"sysCreatedBy"`
+		SysModCount      string `json:"sysModCount"`
+		SysUpdatedBy     string `json:"sysUpdatedBy"`
+		Type             string `json:"type"`
+		UpdateTimestamp  string `json:"updateTimestamp"`
 	} `json:"annotations"`
-	Starts_at string `json:"startsAt"`
-	Ends_at   string `json:"endsAt"`
+	StartsAt string `json:"startsAt"`
+	EndsAt   string `json:"endsAt"`
 }
 
 //function for parsing JSON data from CERN SSB Data
@@ -114,20 +114,20 @@ func (data *ssb) convertData() []byte {
 
 		temp.Annotations.Date = each[0].(string)
 		temp.Annotations.Description = each[2].(string)
-		temp.Annotations.Fe_name = each[5].(string)
-		temp.Annotations.Monit_state = each[6].(string)
-		temp.Annotations.Monit_state_1 = each[7].(string)
-		temp.Annotations.Se_name = each[8].(string)
-		temp.Annotations.Short_description = each[9].(string)
-		temp.Annotations.Ssb_number = each[10].(string)
-		temp.Annotations.Sys_created_by = each[11].(string)
-		temp.Annotations.Sys_mod_count = each[12].(string)
-		temp.Annotations.Sys_updated_by = each[13].(string)
+		temp.Annotations.FeName = each[5].(string)
+		temp.Annotations.MonitState = each[6].(string)
+		temp.Annotations.MonitState1 = each[7].(string)
+		temp.Annotations.SeName = each[8].(string)
+		temp.Annotations.ShortDescription = each[9].(string)
+		temp.Annotations.SsbNumber = each[10].(string)
+		temp.Annotations.SysCreatedBy = each[11].(string)
+		temp.Annotations.SysModCount = each[12].(string)
+		temp.Annotations.SysUpdatedBy = each[13].(string)
 		temp.Annotations.Type = each[14].(string)
-		temp.Annotations.Update_timestamp = _updatetsRFC3339
+		temp.Annotations.UpdateTimestamp = _updatetsRFC3339
 
-		temp.Starts_at = _beginRFC3339
-		temp.Ends_at = _endRFC3339
+		temp.StartsAt = _beginRFC3339
+		temp.EndsAt = _endRFC3339
 
 		finalData = append(finalData, temp)
 
