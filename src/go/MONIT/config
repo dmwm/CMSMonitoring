@@ -1,0 +1,12 @@
+# CERN SSB Status Board InfluxDB Query
+ssb_query='go run monit.go -query="select * from outages where time > now() - 2h limit 2" -dbname=monit_production_ssb_otgs -token=$token -dbid=9474'
+
+# Time interval in seconds
+interval=1
+
+# Alerting Tool arguments
+input_file='data.json'
+alertmanager_url='http://localhost:9093'
+verbose=2
+
+alert_cmd='go run alerting.go -input '$input_file' -url '$alertmanager_url' -verbose '$verbose
