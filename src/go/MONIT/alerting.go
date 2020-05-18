@@ -165,14 +165,11 @@ func post(jsonStr []byte) {
 	}
 	defer resp.Body.Close()
 
-	if verbose >= 1 {
-		log.Println("Response Status:", resp.Status)
-		log.Println("Response Headers:", resp.Header)
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("Unable to read Response Body, error: %v\n", err)
+	if verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("Response: ", string(dump))
 		}
-		log.Println("Response Body:", string(body))
 	}
 }
 
