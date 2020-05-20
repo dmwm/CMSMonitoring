@@ -23,13 +23,23 @@ COLOR_NORMAL="\\033[0;39m"
 
 ### ***
 
-if [ ! -d $LOGDIR ]; then 
-  echo "Log Directory '$LOGDIR' does not exists. Creating..."
-  mkdir -p $LOGDIR
+if [ ! -d $LOGDIR ]; then
+  echo "Log Directory '$LOGDIR' does not exists. creating..." 
+  
+  if [ ! -w $TOP ]; then
+    echo "${COLOR_WARN}can not create $LOGDIR: $USER has no write permission for '$TOP' directory. exiting."
+    exit 1
+  fi 
+  
+  if mkdir -p $LOGDIR; then
+    echo "${COLOR_OK}$LOGDIR created !${COLOR_NORMAL}"
+  else
+    exit 1
+  fi
 fi
 
 if [ ! -w $LOGDIR ]; then 
-    echo "$USER has no write permission for '$LOGDIR' log directory. Exiting.."
+    echo "${COLOR_WARN}$USER has no write permission for '$LOGDIR' log directory. exiting."
     exit 1
 fi
 
@@ -46,7 +56,7 @@ start()
     echo "Starting Alerting daemon."
     if [ ! -x "$(command -v rotatelogs)" ]; then
       echo "rotatelogs not found. Starting without it..."
-      nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE </dev/null 2>&1 | tee $LOGDIR/ssb_alerting-`date +%F`-`hostname -s`.log >/dev/null 2>&1 &
+      nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE 2>&1 1>& $LOGDIR/ssb_alerting-`date +%F`-`hostname -s`.log &
     else
 	    nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ssb_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
     fi
