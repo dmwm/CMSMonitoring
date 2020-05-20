@@ -18,7 +18,7 @@ query="$1"
 token=$2
 
 # Alerting Tool optional arguments
-alertmanager_url=${3:-"https//cms-monitoring.cern.ch"}
+alertmanager_url=${3:-"https://cms-monitoring.cern.ch"}
 interval=${4:-1}
 verbose=${5:-0}
 

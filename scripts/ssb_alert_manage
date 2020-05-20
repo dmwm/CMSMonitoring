@@ -46,9 +46,9 @@ start()
     echo "Starting Alerting daemon."
     if [ ! -x "$(command -v rotatelogs)" ]; then
       echo "rotatelogs not found. Starting without it..."
-      nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE </dev/null 2>&1 &  
+      nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE </dev/null 2>&1 | tee $LOGDIR/ssb_alerting-`date +%F`-`hostname -s`.log >/dev/null 2>&1 &
     else
-	    nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ssb_alerting-%Y%m%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
+	    nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ssb_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
     fi
 }
 
