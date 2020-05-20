@@ -84,7 +84,7 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 
-# # bin directory
+# bin directory
 bin/
 
 # Environments
