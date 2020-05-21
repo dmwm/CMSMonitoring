@@ -12,16 +12,19 @@ import (
 	"time"
 )
 
-// File       : alerting.go
+// File       : ssb_alerting.go
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Thu, 16 May 2020 16:45:00 GMT
-// Description: Alerting Module for CERN MONIT infrastructure
+// Description: SSB Alerting Module for CERN MONIT infrastructure
 
 //URL for AlertManager
 var alertManagerURL string
 
 //severity of alerts
 var severity string
+
+//SSB tag
+var tag string
 
 //verbose defines verbosity level
 var verbose int
@@ -43,6 +46,7 @@ type amJSON struct {
 	Labels struct {
 		Alertname string `json:"alertname"`
 		Severity  string `json:"severity"`
+		Tag       string `json:"tag"`
 	} `json:"labels"`
 	Annotations struct {
 		Date             string `json:"date"`
@@ -111,6 +115,7 @@ func (data *ssb) convertData() []byte {
 
 		temp.Labels.Alertname = each[2].(string)
 		temp.Labels.Severity = severity
+		temp.Labels.Tag = tag
 
 		temp.Annotations.Date = each[0].(string)
 		temp.Annotations.Description = each[2].(string)
@@ -188,6 +193,7 @@ func main() {
 
 	var inp string
 	severity = "monitoring"
+	tag = "SSB"
 
 	flag.StringVar(&inp, "input", "", "input filename")
 	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
