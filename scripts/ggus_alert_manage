@@ -44,7 +44,7 @@ if [ ! -w $LOGDIR ]; then
 fi
 
 ## ggus_alert.sh arguments from Environment Variable
-FORMAT=$ggus_format                             ## ggus format query (CSV or XML)
+FORMAT=${ggus_format:-"csv"}                    ## ggus format query (CSV or XML)
 URL=${url:-"https://cms-monitoring.cern.ch"}    ## alertmanager_url
 INTERVAL=${interval:-1}                         ## time interval at which fetching and injecting data repeats
 VERBOSE=${verbose:-0}                           ## verbosity level
