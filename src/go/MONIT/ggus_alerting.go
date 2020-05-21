@@ -28,6 +28,9 @@ var severity string
 //GGUS tag
 var tag string
 
+//Required VO attribute
+var vo string
+
 //verbose defines verbosity level
 var verbose int
 
@@ -56,15 +59,15 @@ type amJSON struct {
 		Tag       string `json:"tag"`
 	} `json:"labels"`
 	Annotations struct {
+		Priority        string `json:"Priority"`
+		ResponsibleUnit string `json:"ResponsibleUnit"`
+		Scope           string `json:"Scope"`
+		Site            string `json:"Site"`
+		Status          string `json:"Status"`
+		Subject         string `json:"Subject"`
 		TicketID        string `json:"TicketID"`
 		Type            string `json:"Type"`
 		VO              string `json:"VO"`
-		Site            string `json:"Site"`
-		Priority        string `json:"Priority"`
-		ResponsibleUnit string `json:"ResponsibleUnit"`
-		Status          string `json:"Status"`
-		Subject         string `json:"Subject"`
-		Scope           string `json:"Scope"`
 		URL             string `json:"URL"`
 	} `json:"annotations"`
 	StartsAt time.Time `json:"startsAt"`
@@ -72,37 +75,8 @@ type amJSON struct {
 }
 
 //AlertManager GET API acceptable JSON Data struct for GGUS data
-type getAMJSON struct {
-	Status string `json:"status"`
-	Data   []struct {
-		Labels struct {
-			Alertname string `json:"alertname"`
-			Severity  string `json:"severity"`
-			Tag       string `json:"tag"`
-		} `json:"labels"`
-		Annotations struct {
-			Priority        string `json:"Priority"`
-			ResponsibleUnit string `json:"ResponsibleUnit"`
-			Scope           string `json:"Scope"`
-			Site            string `json:"Site"`
-			Status          string `json:"Status"`
-			Subject         string `json:"Subject"`
-			TicketID        string `json:"TicketID"`
-			Type            string `json:"Type"`
-			VO              string `json:"VO"`
-			URL             string `json:"URL"`
-		} `json:"annotations"`
-		StartsAt     time.Time `json:"startsAt"`
-		EndsAt       time.Time `json:"endsAt"`
-		GeneratorURL string    `json:"generatorURL"`
-		Status       struct {
-			State       string        `json:"state"`
-			SilencedBy  []interface{} `json:"silencedBy"`
-			InhibitedBy []interface{} `json:"inhibitedBy"`
-		} `json:"status"`
-		Receivers   []string `json:"receivers"`
-		Fingerprint string   `json:"fingerprint"`
-	} `json:"data"`
+type ggusData struct {
+	Data []amJSON
 }
 
 //function for parsing JSON data from GGUS Data
@@ -146,7 +120,7 @@ func convertData(data ggus) []byte {
 	for _, each := range data {
 
 		// Ignoring all tickets whose VO is not "cms"
-		if each.VO != "cms" {
+		if each.VO != vo {
 			continue
 		}
 
@@ -187,9 +161,9 @@ func convertData(data ggus) []byte {
 }
 
 //function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
-func get() *getAMJSON {
+func get() *ggusData {
 
-	var data *getAMJSON
+	var data *ggusData
 
 	apiurl := alertManagerURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
 
@@ -335,6 +309,7 @@ func main() {
 	tag = "GGUS"
 
 	flag.StringVar(&inp, "input", "", "input filename")
+	flag.StringVar(&vo, "VO", "cms", "Required VO attribute in GGUS Ticket")
 	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	flag.Parse()

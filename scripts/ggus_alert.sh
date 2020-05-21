@@ -20,12 +20,13 @@ ggus_format=${1:-"csv"}
 # Alerting Tool optional arguments
 alertmanager_url=${2:-"https://cms-monitoring.cern.ch"}
 interval=${3:-1}
-verbose=${4:-0}
+vo=${4:-"cms"}
+verbose=${5:-0}
 
 input_file=data.json
 
 while true;  do
    ggus_parser -format $ggus_format -out $input_file
-   ggus_alerting -input $input_file -url $alertmanager_url -verbose $verbose
+   ggus_alerting -input $input_file -url $alertmanager_url -vo $vo -verbose $verbose
    sleep $interval
 done

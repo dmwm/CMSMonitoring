@@ -47,6 +47,7 @@ fi
 FORMAT=${ggus_format:-"csv"}                    ## ggus format query (CSV or XML)
 URL=${url:-"https://cms-monitoring.cern.ch"}    ## alertmanager_url
 INTERVAL=${interval:-1}                         ## time interval at which fetching and injecting data repeats
+Vo=${vo:-"cms"}                                 ## Required VO attribute
 VERBOSE=${verbose:-0}                           ## verbosity level
 
 # Actions Logic
@@ -55,9 +56,9 @@ start()
     echo "Starting GGUS Alerting daemon."
     if [ ! -x "$(command -v rotatelogs)" ]; then
       echo "rotatelogs not found. Starting without it..."
-      nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VERBOSE 2>&1 1>& $LOGDIR/ggus_alerting-`date +%F`-`hostname -s`.log &
+      nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VO $VERBOSE 2>&1 1>& $LOGDIR/ggus_alerting-`date +%F`-`hostname -s`.log &
     else
-	    nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ggus_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
+	    nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VO $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ggus_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
     fi
 }
 
