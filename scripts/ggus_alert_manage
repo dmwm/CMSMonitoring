@@ -47,7 +47,7 @@ fi
 FORMAT=${ggus_format:-"csv"}                    ## ggus format query (CSV or XML)
 URL=${url:-"https://cms-monitoring.cern.ch"}    ## alertmanager_url
 INTERVAL=${interval:-1}                         ## time interval at which fetching and injecting data repeats
-Vo=${vo:-"cms"}                                 ## Required VO attribute
+VO=${vo:-"cms"}                                 ## Required VO attribute
 VERBOSE=${verbose:-0}                           ## verbosity level
 
 # Actions Logic
