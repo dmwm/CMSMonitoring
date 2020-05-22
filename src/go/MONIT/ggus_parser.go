@@ -81,7 +81,7 @@ func parseCSV(data io.ReadCloser) []Ticket {
 	reader := csv.NewReader(data)
 	csvData, err := reader.ReadAll()
 	if err != nil {
-		fmt.Printf("Unable to read CSV file, error: %v\n", err)
+		log.Fatalf("Unable to read CSV file, error: %v\n", err)
 	}
 
 	for ind := range csvData {
