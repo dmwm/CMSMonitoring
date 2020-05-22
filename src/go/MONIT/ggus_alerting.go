@@ -304,7 +304,7 @@ func alert(inp string) {
 	data.parseJSON(jsonData)
 	jsonStrAM := convertData(data) //JSON data in AlertManager APIs format.
 	post(jsonStrAM)
-	// deleteAlerts()
+	deleteAlerts()
 
 }
 
