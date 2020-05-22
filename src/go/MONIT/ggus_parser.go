@@ -204,9 +204,8 @@ var tlsManager TLSCertsManager
 // client X509 certificates
 func tlsCerts() ([]tls.Certificate, error) {
 	uproxy := os.Getenv("X509_USER_PROXY")
-	uckey := "/home/z3r0/Desktop/CERN-CMS/pass.pem"
-	ucert := "/home/z3r0/Desktop/CERN-CMS/myCertificate.p12"
-
+	uckey := os.Getenv("X509_USER_KEY")
+	ucert := os.Getenv("X509_USER_CERT")
 	// check if /tmp/x509up_u$UID exists, if so setup X509_USER_PROXY env
 	u, err := user.Current()
 	if err == nil {
