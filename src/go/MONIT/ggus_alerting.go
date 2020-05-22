@@ -311,7 +311,7 @@ func main() {
 	tag = "GGUS"
 
 	flag.StringVar(&inp, "input", "", "input filename")
-	flag.StringVar(&vo, "VO", "cms", "Required VO attribute in GGUS Ticket")
+	flag.StringVar(&vo, "vo", "cms", "Required VO attribute in GGUS Ticket")
 	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	flag.Parse()
