@@ -165,7 +165,8 @@ func get() *ggusData {
 
 	var data *ggusData
 
-	apiurl := alertManagerURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
+	//GET API for fetching only GGUS alerts.
+	apiurl := alertManagerURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false&filter=tag=\"GGUS\""
 
 	req, err := http.NewRequest("GET", apiurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
@@ -187,6 +188,7 @@ func get() *ggusData {
 	defer resp.Body.Close()
 
 	byteValue, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", err)
 		return data
