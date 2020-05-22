@@ -46,7 +46,7 @@ type ggus []struct {
 	Priority        string `json:"Priority"`
 	ResponsibleUnit string `json:"ResponsibleUnit"`
 	Status          string `json:"Status"`
-	LastUpdate      int    `json:"LastUpdate"`
+	LastUpdate      string `json:"LastUpdate"`
 	Subject         string `json:"Subject"`
 	Scope           string `json:"Scope"`
 }
@@ -126,7 +126,11 @@ func convertData(data ggus) []byte {
 
 		exstTkt[strconv.Itoa(each.TicketID)] = 1
 
-		begin := int64(each.LastUpdate)
+		begin, errInt := strconv.ParseInt(each.LastUpdate, 10, 64)
+		if errInt != nil {
+			log.Printf("Unable to convert LastUpdate string to int64, error: %v\n", errInt)
+		}
+
 		_beginRFC3339 := time.Unix(begin, 0).UTC()
 
 		temp.Labels.Alertname = "ggus-" + strconv.Itoa(each.TicketID)

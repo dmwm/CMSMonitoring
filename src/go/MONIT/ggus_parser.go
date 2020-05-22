@@ -36,7 +36,7 @@ var Verbose int
 //TicketsXML Data struct
 type TicketsXML struct {
 	Ticket []struct {
-		TicketID        string `xml:"Ticket-ID"`
+		TicketID        int    `xml:"Ticket-ID"`
 		Type            string `xml:"Type"`
 		VO              string `xml:"VO"`
 		Site            string `xml:"Site"`
@@ -58,7 +58,7 @@ type Ticket struct {
 	Priority        *string
 	ResponsibleUnit *string
 	Status          *string
-	LastUpdate      int64
+	LastUpdate      string
 	Subject         *string
 	Scope           *string
 }
@@ -73,12 +73,24 @@ func nullValueHelper(value **string, data string) {
 	}
 }
 
+func convertTime(timestamp string) int64 {
+
+	UnixTS, errTime := time.Parse(time.RFC3339, (strings.ReplaceAll(timestamp, " ", "T") + "Z"))
+	if errTime != nil {
+		log.Printf("Unable to parse LastUpdate TimeStamp, error: %v\n", errTime)
+	}
+
+	return UnixTS.Unix()
+}
+
 //function for unpacking the CSV data into Ticket Data struct
 func parseCSV(data io.ReadCloser) []Ticket {
 	var ticket Ticket
 	var tickets []Ticket
 
 	reader := csv.NewReader(data)
+	reader.Comma = ';'
+	reader.LazyQuotes = true
 	csvData, err := reader.ReadAll()
 	if err != nil {
 		log.Fatalf("Unable to read CSV file, error: %v\n", err)
@@ -87,22 +99,20 @@ func parseCSV(data io.ReadCloser) []Ticket {
 	for ind := range csvData {
 
 		if ind > 0 {
-			each := strings.Split(csvData[ind][0], ";")
 
-			ticket.TicketID, _ = strconv.Atoi(each[0])
+			ticket.TicketID, _ = strconv.Atoi(csvData[ind][0])
 
-			nullValueHelper(&ticket.Type, each[1])
-			nullValueHelper(&ticket.VO, each[2])
-			nullValueHelper(&ticket.Site, each[3])
-			nullValueHelper(&ticket.Priority, each[4])
-			nullValueHelper(&ticket.ResponsibleUnit, each[5])
-			nullValueHelper(&ticket.Status, each[6])
+			nullValueHelper(&ticket.Type, csvData[ind][1])
+			nullValueHelper(&ticket.VO, csvData[ind][2])
+			nullValueHelper(&ticket.Site, csvData[ind][3])
+			nullValueHelper(&ticket.Priority, csvData[ind][4])
+			nullValueHelper(&ticket.ResponsibleUnit, csvData[ind][5])
+			nullValueHelper(&ticket.Status, csvData[ind][6])
 
-			UnixTS, _ := time.Parse(time.RFC3339, (strings.ReplaceAll(each[7], " ", "T") + "Z"))
-			ticket.LastUpdate = UnixTS.Unix()
+			ticket.LastUpdate = strconv.FormatInt(convertTime(csvData[ind][7]), 10)
 
-			nullValueHelper(&ticket.Subject, each[8])
-			nullValueHelper(&ticket.Scope, each[9])
+			nullValueHelper(&ticket.Subject, csvData[ind][8])
+			nullValueHelper(&ticket.Scope, csvData[ind][9])
 			tickets = append(tickets, ticket)
 		}
 	}
@@ -119,10 +129,15 @@ func (tXml *TicketsXML) parseXML(data io.ReadCloser) {
 	}
 
 	errp := xml.Unmarshal(byteValue, &tXml)
-	if err != nil {
+	if errp != nil {
 		log.Printf("Unable to parse XML Data, error: %v\n", errp)
 		return
 	}
+
+	for ind := range tXml.Ticket {
+		tXml.Ticket[ind].LastUpdate = strconv.FormatInt(convertTime(tXml.Ticket[ind].LastUpdate), 10)
+	}
+
 }
 
 //function for output the processed data into JSON format
@@ -191,7 +206,6 @@ func tlsCerts() ([]tls.Certificate, error) {
 	uproxy := os.Getenv("X509_USER_PROXY")
 	uckey := os.Getenv("X509_USER_KEY")
 	ucert := os.Getenv("X509_USER_CERT")
-
 	// check if /tmp/x509up_u$UID exists, if so setup X509_USER_PROXY env
 	u, err := user.Current()
 	if err == nil {
