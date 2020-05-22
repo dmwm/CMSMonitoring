@@ -7,7 +7,13 @@
 ##H   stop        stop the service
 ##H   status      output service's status
 ##H
-
+##H Environments:
+##H   GGUS_FORMAT :   GGUS Query Format("csv" or "xml")               default - "csv"
+##H   CMSMON_URL  :   CMS Monitoring URL                              default - https://cms-monitoring.cern.ch"
+##H   INTERVAL    :   Time interval for Alerts ingestion & injection  default - 1
+##H   VO          :   Required VO attribute                           default - "cms"
+##H   TIMEOUT     :   HTTP client timeout operation (GGUS Parser)     default - 0 (zero means no timeout)
+##H   VERBOSE     :   Verbosity level                                 default - 0
 
 ### ***
 #The following block of code was taken from
@@ -17,9 +23,6 @@ ME=$(basename $(dirname $0))
 TOP=$(cd $(dirname $0)/../../.. && pwd)
 ROOT=$(cd $(dirname $0)/../.. && pwd)
 LOGDIR=$TOP/logs/$ME
-COLOR_OK="\\033[0;32m"
-COLOR_WARN="\\033[0;31m"
-COLOR_NORMAL="\\033[0;39m"
 
 ### ***
 
@@ -27,28 +30,29 @@ if [ ! -d $LOGDIR ]; then
   echo "Log Directory '$LOGDIR' does not exists. creating..." 
   
   if [ ! -w $TOP ]; then
-    echo "${COLOR_WARN}can not create $LOGDIR: $USER has no write permission for '$TOP' directory. exiting."
+    echo "can not create $LOGDIR: $USER has no write permission for '$TOP' directory. exiting."
     exit 1
   fi 
   
   if mkdir -p $LOGDIR; then
-    echo "${COLOR_OK}$LOGDIR created !${COLOR_NORMAL}"
+    echo "$LOGDIR created !"
   else
     exit 1
   fi
 fi
 
 if [ ! -w $LOGDIR ]; then 
-    echo "${COLOR_WARN}$USER has no write permission for '$LOGDIR' log directory. exiting."
+    echo "$USER has no write permission for '$LOGDIR' log directory. exiting."
     exit 1
 fi
 
 ## ggus_alert.sh arguments from Environment Variable
-FORMAT=${ggus_format:-"csv"}                    ## ggus format query (CSV or XML)
-URL=${url:-"https://cms-monitoring.cern.ch"}    ## alertmanager_url
-INTERVAL=${interval:-1}                         ## time interval at which fetching and injecting data repeats
-VO=${vo:-"cms"}                                 ## Required VO attribute
-VERBOSE=${verbose:-0}                           ## verbosity level
+ggus_format=${GGUS_FORMAT:-"csv"}                               ## GGUS Query Format("csv" or "xml") 
+cmsmon_url=${CMSMON_URL:-"https://cms-monitoring.cern.ch"}      ## CMS Monitoring URL 
+interval=${INTERVAL:-1}                                         ## Time interval for Alerts ingestion & injection
+vo=${VO:-"cms"}                                                 ## Required VO attribute
+timeout=${TIMEOUT:-0}                                           ## HTTP client timeout operation (GGUS Parser)
+verbose=${VERBOSE:-0}                                           ## Verbosity level
 
 # Actions Logic
 start()
@@ -56,9 +60,9 @@ start()
     echo "Starting GGUS Alerting daemon."
     if [ ! -x "$(command -v rotatelogs)" ]; then
       echo "rotatelogs not found. Starting without it..."
-      nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VO $VERBOSE 2>&1 1>& $LOGDIR/ggus_alerting-`date +%F`-`hostname -s`.log &
+      nohup ggus_alert.sh $ggus_format $cmsmon_url $interval $vo $timeout $verbose 2>&1 1>& $LOGDIR/ggus_alerting-`date +%F`-`hostname -s`.log &
     else
-	    nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VO $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ggus_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
+	  nohup ggus_alert.sh $ggus_format $cmsmon_url $interval $vo $timeout $verbose </dev/null 2>&1 | rotatelogs $LOGDIR/ggus_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
     fi
 }
 
@@ -76,7 +80,7 @@ status()
     local PID=`ps auxwww | egrep "ggus_alert.sh" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
     
     if  [ -z "${PID}" ]; then
-        echo $echo_e  "GGUS Alerting daemon is ${COLOR_WARN}INACTIVE (DEAD)${COLOR_NORMAL}"
+        echo $echo_e  "GGUS Alerting daemon is INACTIVE (DEAD)"
         return
     fi
     
@@ -88,10 +92,10 @@ status()
     echo "GGUS Alerting daemon running $num_threads thread(s)"
 
     if [ ! -z "${PID}" ]; then
-        echo $echo_e  "GGUS Alerting daemon is ${COLOR_OK}ACTIVE (RUNNING)${COLOR_NORMAL}, PID=${PID}"
+        echo $echo_e  "GGUS Alerting daemon is ACTIVE (RUNNING), PID=${PID}"
         ps -f -wwww -p ${PID}
     else
-        echo $echo_e  "GGUS Alerting daemon is ${COLOR_WARN}INACTIVE (DEAD)${COLOR_NORMAL}"
+        echo $echo_e  "GGUS Alerting daemon is INACTIVE (DEAD)"
     fi
 }
 
