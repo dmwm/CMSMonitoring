@@ -1,5 +1,5 @@
-##H Daemon for Alerting Tool (CERN SSB Status Board)
-##H Usage: ssb_alert_manage <Actions>
+##H Daemon for Alerting Tool (GGUS Ticketing System)
+##H Usage: ggus_alert_manage <Actions>
 ##H
 ##H Actions:
 ##H   help        help manual
@@ -43,29 +43,29 @@ if [ ! -w $LOGDIR ]; then
     exit 1
 fi
 
-## ssb_alert.sh arguments from Environment Variable
-QUERY=$query                                    ## monit influxDB query
-TOKEN=$token                                    ## token file
+## ggus_alert.sh arguments from Environment Variable
+FORMAT=${ggus_format:-"csv"}                    ## ggus format query (CSV or XML)
 URL=${url:-"https://cms-monitoring.cern.ch"}    ## alertmanager_url
 INTERVAL=${interval:-1}                         ## time interval at which fetching and injecting data repeats
-VERBOSE=${verbose:-0}                           ##verbosity level
+Vo=${vo:-"cms"}                                 ## Required VO attribute
+VERBOSE=${verbose:-0}                           ## verbosity level
 
 # Actions Logic
 start()
 {
-    echo "Starting SSB Alerting daemon."
+    echo "Starting GGUS Alerting daemon."
     if [ ! -x "$(command -v rotatelogs)" ]; then
       echo "rotatelogs not found. Starting without it..."
-      nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE 2>&1 1>& $LOGDIR/ssb_alerting-`date +%F`-`hostname -s`.log &
+      nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VO $VERBOSE 2>&1 1>& $LOGDIR/ggus_alerting-`date +%F`-`hostname -s`.log &
     else
-	    nohup ssb_alert.sh "$QUERY" $TOKEN $URL $INTERVAL $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ssb_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
+	    nohup ggus_alert.sh $FORMAT $URL $INTERVAL $VO $VERBOSE </dev/null 2>&1 | rotatelogs $LOGDIR/ggus_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
     fi
 }
 
 stop()
 {
-    local PID=`ps auxwww | egrep "ssb_alert.sh" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
-    echo "Stopping SSB Alerting daemon. PID : ${PID}"
+    local PID=`ps auxwww | egrep "ggus_alert.sh" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
+    echo "Stopping GGUS Alerting daemon. PID : ${PID}"
     if [ -n "${PID}" ]; then
         kill -9 ${PID}
     fi
@@ -73,10 +73,10 @@ stop()
 
 status()
 {
-    local PID=`ps auxwww | egrep "ssb_alert.sh" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
+    local PID=`ps auxwww | egrep "ggus_alert.sh" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
     
     if  [ -z "${PID}" ]; then
-        echo $echo_e "SSB Alerting daemon is ${COLOR_WARN}INACTIVE (DEAD)${COLOR_NORMAL}"
+        echo $echo_e  "GGUS Alerting daemon is ${COLOR_WARN}INACTIVE (DEAD)${COLOR_NORMAL}"
         return
     fi
     
@@ -85,13 +85,13 @@ status()
     else
        num_threads=`ps -L -p $PID | grep -v PID | wc -l | awk '{print $1}'`
     fi
-    echo "SSB Alerting daemon running $num_threads thread(s)"
+    echo "GGUS Alerting daemon running $num_threads thread(s)"
 
     if [ ! -z "${PID}" ]; then
-        echo $echo_e "SSB Alerting daemon is ${COLOR_OK}ACTIVE (RUNNING)${COLOR_NORMAL}, PID=${PID}"
+        echo $echo_e  "GGUS Alerting daemon is ${COLOR_OK}ACTIVE (RUNNING)${COLOR_NORMAL}, PID=${PID}"
         ps -f -wwww -p ${PID}
     else
-        echo $echo_e "SSB Alerting daemon is ${COLOR_WARN}INACTIVE (DEAD)${COLOR_NORMAL}"
+        echo $echo_e  "GGUS Alerting daemon is ${COLOR_WARN}INACTIVE (DEAD)${COLOR_NORMAL}"
     fi
 }
 
@@ -113,7 +113,7 @@ case ${1:-status} in
     perl -ne '/^##H/ && do { s/^##H ?//; print }' < $0
     ;;
   *)
-    echo "ssb_alert_manage: no action named '$1', please try 'ssb_alert_manage help'" 1>&2
+    echo "ggus_alert_manage: no action named '$1', please try 'ggus_alert_manage help'" 1>&2
     exit 1
     ;;
 esac
