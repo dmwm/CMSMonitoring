@@ -34,6 +34,9 @@ var vo string
 //verbose defines verbosity level
 var verbose int
 
+//MAX timeStamp //Saturday, May 24, 3000 3:43:26 PM
+var maxtstmp int64 = 32516091806
+
 //Map for storing Existing Tickets
 var exstTkt map[string]int
 
@@ -149,6 +152,7 @@ func convertData(data ggus) []byte {
 		temp.Annotations.URL = "https://ggus.eu/?mode=ticket_info&ticket_id=" + strconv.Itoa(each.TicketID)
 
 		temp.StartsAt = _beginRFC3339
+		temp.EndsAt = time.Unix(maxtstmp, 0).UTC()
 
 		finalData = append(finalData, temp)
 
@@ -275,6 +279,12 @@ func deleteAlerts() {
 
 		temp.StartsAt = each.StartsAt
 		temp.EndsAt = time.Now().UTC()
+
+		//Checking if Start Time is Afer Time Right now, maybe false alert added by mistake. **Corner Case to be handled**
+		if each.StartsAt.Before(temp.EndsAt) == false {
+			temp.StartsAt = time.Now().UTC()
+			temp.EndsAt = time.Now().UTC()
+		}
 
 		finalData = append(finalData, temp)
 	}
