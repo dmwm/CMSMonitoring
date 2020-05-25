@@ -277,7 +277,7 @@ func deleteAlerts() {
 		temp.Annotations.Scope = each.Annotations.Scope
 		temp.Annotations.URL = each.Annotations.URL
 
-		emp.StartsAt = each.StartsAt
+		temp.StartsAt = each.StartsAt
 		temp.EndsAt = time.Now().UTC()
 
 		//Checking if Start Time is Afer Time Right now, maybe false alert added by mistake. **Corner Case to be handled**
