@@ -287,10 +287,10 @@ func deleteAlerts() {
 		temp.Labels.Alertname = each.Labels.Alertname
 		temp.Labels.Severity = each.Labels.Severity
 		temp.Labels.Tag = each.Labels.Tag
-		temp.Annotations.Description = each.Annotations.Description
-		temp.Annotations.FeName = each.Annotations.FeName
-		temp.Annotations.SeName = each.Annotations.SeName
-		temp.Annotations.Type = each.Annotations.Type
+		temp.Labels.Description = each.Labels.Description
+		temp.Labels.FeName = each.Labels.FeName
+		temp.Labels.SeName = each.Labels.SeName
+		temp.Labels.Type = each.Labels.Type
 
 		temp.Annotations.Date = each.Annotations.Date
 		temp.Annotations.Description = each.Annotations.Description
