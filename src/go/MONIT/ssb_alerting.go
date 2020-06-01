@@ -51,9 +51,13 @@ type ssb struct {
 //AlertManager API acceptable JSON Data for CERN SSB Data
 type amJSON struct {
 	Labels struct {
-		Alertname string `json:"alertname"`
-		Severity  string `json:"severity"`
-		Tag       string `json:"tag"`
+		Alertname   string `json:"alertname"`
+		Severity    string `json:"severity"`
+		Tag         string `json:"tag"`
+		Type        string `json:"type"`
+		Description string `json:"description"`
+		FeName      string `json:"feName"`
+		SeName      string `json:"seName"`
 	} `json:"labels"`
 	Annotations struct {
 		Date             string    `json:"date"`
@@ -149,6 +153,10 @@ func (data *ssb) convertData() []byte {
 		temp.Labels.Alertname = "ssb-" + ssbNum //ssbNumber as an unique key for alertname
 		temp.Labels.Severity = severity
 		temp.Labels.Tag = tag
+		nullValueChecker(&temp.Labels.Description, each[2])
+		nullValueChecker(&temp.Labels.FeName, each[5])
+		nullValueChecker(&temp.Labels.SeName, each[8])
+		nullValueChecker(&temp.Labels.Type, each[14])
 
 		nullValueChecker(&temp.Annotations.Date, each[0])
 		nullValueChecker(&temp.Annotations.Description, each[2])
@@ -279,6 +287,10 @@ func deleteAlerts() {
 		temp.Labels.Alertname = each.Labels.Alertname
 		temp.Labels.Severity = each.Labels.Severity
 		temp.Labels.Tag = each.Labels.Tag
+		temp.Labels.Description = each.Labels.Description
+		temp.Labels.FeName = each.Labels.FeName
+		temp.Labels.SeName = each.Labels.SeName
+		temp.Labels.Type = each.Labels.Type
 
 		temp.Annotations.Date = each.Annotations.Date
 		temp.Annotations.Description = each.Annotations.Description
