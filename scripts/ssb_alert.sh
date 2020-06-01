@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ##H Script for fetching CERN SSB info and injecting it into MONIT (AlertManager)
 ##H Usage: ssb_alerts.sh <query> <token> [cmsmon_url] [interval] [verbose]"
 ##H

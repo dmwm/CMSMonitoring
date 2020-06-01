@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ##H Script for fetching GGUS Tickets and injecting them into MONIT (AlertManager)
 ##H Usage: ggus_alerts.sh [ggus_format] [cmsmon_url] [interval] [vo] [timeout] [verbose]"
 ##H
