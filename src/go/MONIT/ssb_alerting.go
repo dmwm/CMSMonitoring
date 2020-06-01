@@ -24,8 +24,11 @@ var alertManagerURL string
 //severity of alerts
 var severity string
 
-//SSB tag
+// tag name
 var tag string
+
+// service name
+var service string
 
 //verbose defines verbosity level
 var verbose int
@@ -53,6 +56,7 @@ type amJSON struct {
 	Labels struct {
 		Alertname   string `json:"alertname"`
 		Severity    string `json:"severity"`
+		Service     string `json:"service"`
 		Tag         string `json:"tag"`
 		Type        string `json:"type"`
 		Description string `json:"description"`
@@ -152,6 +156,7 @@ func (data *ssb) convertData() []byte {
 
 		temp.Labels.Alertname = "ssb-" + ssbNum //ssbNumber as an unique key for alertname
 		temp.Labels.Severity = severity
+		temp.Labels.Service = service
 		temp.Labels.Tag = tag
 		nullValueChecker(&temp.Labels.Description, each[2])
 		nullValueChecker(&temp.Labels.FeName, each[5])
@@ -286,6 +291,7 @@ func deleteAlerts() {
 
 		temp.Labels.Alertname = each.Labels.Alertname
 		temp.Labels.Severity = each.Labels.Severity
+		temp.Labels.Service = each.Labels.Service
 		temp.Labels.Tag = each.Labels.Tag
 		temp.Labels.Description = each.Labels.Description
 		temp.Labels.FeName = each.Labels.FeName
@@ -345,8 +351,9 @@ func alert(inp string) {
 func main() {
 
 	var inp string
-	severity = "monitoring"
-	tag = "SSB"
+	severity = "info"
+	tag = "monitoring"
+	service = "SSB"
 
 	flag.StringVar(&inp, "input", "", "input filename")
 	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
