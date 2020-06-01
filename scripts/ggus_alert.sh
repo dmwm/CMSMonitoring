@@ -13,7 +13,7 @@
 
 # Check if user is passing least required arguments.
 if [ "$#" -lt 1  ]; then
-    perl -ne '/^##H/ && do { s/^##H ?//; print }' < $0
+    cat $0 | grep "^##H" | sed -e "s,##H,,g"
     exit 1
 fi
 
