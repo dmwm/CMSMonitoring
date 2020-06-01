@@ -342,7 +342,7 @@ func alert(inp string) {
 func main() {
 
 	var inp string
-	severity = "ticket"
+	severity = "ticket" // TODO: replace with severity level from ticket annotation
 	tag = "monitoring"
 	service = "GGUS"
 
