@@ -60,6 +60,11 @@ type amJSON struct {
 		Alertname string `json:"alertname"`
 		Severity  string `json:"severity"`
 		Tag       string `json:"tag"`
+		Priority  string `json:"Priority"`
+		Scope     string `json:"Scope"`
+		Site      string `json:"Site"`
+		VO        string `json:"VO"`
+		Type      string `json:"GGUS-Type"`
 	} `json:"labels"`
 	Annotations struct {
 		Priority        string `json:"Priority"`
@@ -139,6 +144,11 @@ func convertData(data ggus) []byte {
 		temp.Labels.Alertname = "ggus-" + strconv.Itoa(each.TicketID)
 		temp.Labels.Severity = severity
 		temp.Labels.Tag = tag
+		temp.Labels.Type = each.Type
+		temp.Labels.VO = each.VO
+		temp.Labels.Site = each.Site
+		temp.Labels.Priority = each.Priority
+		temp.Labels.Scope = each.Scope
 
 		temp.Annotations.TicketID = strconv.Itoa(each.TicketID)
 		temp.Annotations.Type = each.Type
@@ -265,6 +275,11 @@ func deleteAlerts() {
 		temp.Labels.Alertname = each.Labels.Alertname
 		temp.Labels.Severity = each.Labels.Severity
 		temp.Labels.Tag = each.Labels.Tag
+		temp.Annotations.Type = each.Annotations.Type
+		temp.Annotations.VO = each.Annotations.VO
+		temp.Annotations.Site = each.Annotations.Site
+		temp.Annotations.Priority = each.Annotations.Priority
+		temp.Annotations.Scope = each.Annotations.Scope
 
 		temp.Annotations.TicketID = each.Annotations.TicketID
 		temp.Annotations.Type = each.Annotations.Type
