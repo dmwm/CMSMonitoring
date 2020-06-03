@@ -1,9 +1,10 @@
 #!/bin/sh
 ##H Script for fetching GGUS Tickets and injecting them into MONIT (AlertManager)
-##H Usage: ggus_alerts.sh [ggus_format] [cmsmon_url] [interval] [vo] [timeout] [verbose]"
+##H Usage: ggus_alerts.sh [ggus_format] [data_file] [cmsmon_url] [interval] [vo] [timeout] [verbose]"
 ##H
 ##H Options:
 ##H   ggus_format   GGUS Query Format ("csv" or "xml")              (default: "csv")
+##H   data_file     data json file to use                           (default: "/tmp/data.json")
 ##H   cmsmon_url    CMS Monitoring URL                              (default: https://cms-monitoring.cern.ch)
 ##H   interval      Time interval for Alerts ingestion & injection  (default: 1)
 ##H   vo            Required VO attribute                           (default: "cms")
@@ -19,20 +20,19 @@ fi
 
 
 ggus_format=${1:-"csv"}
+data_file=${2:-"/tmp/data.json"}
 
 ## Alerting Tool optional arguments
-cmsmon_url=${2:-"https://cms-monitoring.cern.ch"}
-interval=${3:-1}
-vo=${4:-"cms"}
+cmsmon_url=${3:-"https://cms-monitoring.cern.ch"}
+interval=${4:-1}
+vo=${5:-"cms"}
 ##
 
 ## GGUS Parser optional arguments
-timeout=${5:-0}
+timeout=${6:-0}
 ##
 
-verbose=${6:-0}
-
-data_file=data.json
+verbose=${7:-0}
 
 while true;  do
    ggus_parser -format $ggus_format -out $data_file -timeout $timeout -verbose $verbose
