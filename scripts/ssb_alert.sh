@@ -22,7 +22,7 @@ query="$1"
 token=$2
 
 # Alerting Tool optional arguments
-data_file=${3:/tmp/data.json}
+data_file=${3:-"/tmp/data.json"}
 cmsmon_url=${4:-"https://cms-monitoring.cern.ch"}
 interval=${5:-1}
 verbose=${6:-0}
