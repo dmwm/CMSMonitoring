@@ -22,7 +22,9 @@ Files included in this service are :-
 The program which is responsible for the SSB queries from InfluxDB. A query can be manually drafted according to our needs. 
 
 An example of such a query :-
+
 ```monit -query="select * from outages where time > now() - 2h" -dbname=monit_production_ssb_otgs -token=$token -dbid=9474```
+
 where we are fetching outages record of last 2 hrs.
 
 ### ssb_alerting
@@ -38,7 +40,7 @@ Usage of ssb_alerting:
     	verbosity level
 ```
 The dataflow and logic behind ssb_alerting tool can be well visualized in the below diagram. 
-![Alt text](alerting.jpg)
+![Alt text](alerting.jpg =250x250)
 
 ### ssb_alert.sh
 A simple bash script which makes the above process automated on configurable time interval value.
@@ -91,7 +93,7 @@ Usage of ggus_alerting:
     	Required VO attribute in GGUS Ticket (default "cms")
 ```
 The dataflow and logic behind ggus_alerting tool can be well visualized in the below diagram. 
-![Alt text](alerting.jpg)
+![Alt text](alerting.jpg =250x250)
 
 ### ggus_alert.sh
 A simple bash script which makes the above process automated on configurable time interval value.
@@ -126,9 +128,11 @@ Environments:
 -Karma Developer
 
 We can build the docker container using Karma Dockerfile.
+
 ```docker build -t <CERN_REPO./karma <path-to-Dockerfile>```
 
 Required Environment Variable for docker container -
+
 ```ALERTMANAGER_URI ```
 
 Karma Dashboard can be configured using `karma.yaml` file.
