@@ -68,7 +68,7 @@ type amJSON struct {
 		Scope     string `json:"Scope"`
 		Site      string `json:"Site"`
 		VO        string `json:"VO"`
-		Type      string `json:"GGUS-Type"`
+		Type      string `json:"Type"`
 	} `json:"labels"`
 	Annotations struct {
 		Priority        string `json:"Priority"`
