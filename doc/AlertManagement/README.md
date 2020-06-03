@@ -40,7 +40,7 @@ Usage of ssb_alerting:
     	verbosity level
 ```
 The dataflow and logic behind ssb_alerting tool can be well visualized in the below diagram. 
-![Alt text](alerting.jpg =250x250)
+![Alt text](alerting.jpg){:height="400px" width="400px"}
 
 ### ssb_alert.sh
 A simple bash script which makes the above process automated on configurable time interval value.
@@ -93,7 +93,7 @@ Usage of ggus_alerting:
     	Required VO attribute in GGUS Ticket (default "cms")
 ```
 The dataflow and logic behind ggus_alerting tool can be well visualized in the below diagram. 
-![Alt text](alerting.jpg =250x250)
+![Alt text](alerting.jpg){:height="400px" width="400px"}
 
 ### ggus_alert.sh
 A simple bash script which makes the above process automated on configurable time interval value.
