@@ -40,7 +40,7 @@ Usage of ssb_alerting:
     	verbosity level
 ```
 The dataflow and logic behind ssb_alerting tool can be well visualized in the below diagram. 
-![Alt text](alerting.jpg){:height="400px" width="400px"}
+![Alt text](alerting.jpg){:height="200px" width="200px"}
 
 ### ssb_alert.sh
 A simple bash script which makes the above process automated on configurable time interval value.
