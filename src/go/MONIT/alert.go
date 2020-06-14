@@ -457,8 +457,8 @@ func jsonPrintDetails() {
 //Function for printing alert's details in Plain text format
 func detailPrint() {
 
-	if alert, ok := alertDetails[name]; ok { //use of two different loops for LABELS as sometimes AM was sending unordered LABELS i.e.
-		for key, value := range alert.Labels { //"severity", "tag", "service" could arrive before "alertname"
+	if alert, ok := alertDetails[name]; ok { //use of two different loops for LABELS as use of map[string]interface{} in amJSON causes unordered LABELS.
+		for key, value := range alert.Labels { // i.e. "severity", "tag", "service" could arrive before "alertname"
 			if key == "alertname" {
 				fmt.Printf("NAME: %s\n", value)
 				break
@@ -483,6 +483,27 @@ func detailPrint() {
 
 //Function running all logics
 func run() {
+
+	//Default Severity Levels in case no config file is provided
+	if severityConfig == "" {
+		sLevel.SeverityLevels = make(map[string]int)
+		sLevel.SeverityLevels["info"] = 0
+		sLevel.SeverityLevels["warning"] = 1
+		sLevel.SeverityLevels["medium"] = 2
+	} else {
+		jsonFile, e := os.Open(severityConfig)
+		if e != nil {
+			fmt.Println("Severity Config File not found, error:", e)
+		}
+		defer jsonFile.Close()
+		decoder := json.NewDecoder(jsonFile)
+		err := decoder.Decode(&sLevel)
+		if err != nil {
+			fmt.Println("Severity Config JSON File can't be loaded, error:", err)
+		}
+	}
+
+	fmt.Println(sLevel)
 
 	var amdata amData
 	get(&amdata)
@@ -519,25 +540,6 @@ func main() {
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 
 	flag.Parse()
-
-	//Default Severity Levels in case no config file is provided
-	if severityConfig == "" {
-		sLevel.SeverityLevels = make(map[string]int)
-		sLevel.SeverityLevels["info"] = 0
-		sLevel.SeverityLevels["warning"] = 1
-		sLevel.SeverityLevels["medium"] = 2
-	} else {
-		jsonFile, e := os.Open(severityConfig)
-		if e != nil {
-			fmt.Println("Severity Config File not found, error:", e)
-		}
-		defer jsonFile.Close()
-		decoder := json.NewDecoder(jsonFile)
-		err := decoder.Decode(&sLevel)
-		if err != nil {
-			fmt.Println("Severity Config JSON File can't be loaded, error:", err)
-		}
-	}
 
 	run()
 }
