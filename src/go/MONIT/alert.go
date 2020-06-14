@@ -49,6 +49,9 @@ var details *bool
 //Sort Label
 var sortLabel string
 
+//Severity Level Config filepath
+var severityConfig string
+
 //verbose defines verbosity level
 var verbose int
 
@@ -59,103 +62,22 @@ var verbose int
 //Map for storing filtered alerts
 var filteredAlerts map[string]int
 
-//Map for severityLevel (Sorting Helper)
-var severityLevel map[string]int
-
 //Map for storing Alert details against their name
-var alertDetails map[string]interface{}
+var alertDetails map[string]amJSON
 
 //-------MAPS-------
 
+//-------STRUCTS---------
 //AlertManager API acceptable JSON Data for GGUS Data
-type amGGUSJSON struct {
-	Labels struct {
-		Alertname string `json:"alertname"`
-		Severity  string `json:"severity"`
-		Service   string `json:"service"`
-		Tag       string `json:"tag"`
-		Priority  string `json:"Priority"`
-		Scope     string `json:"Scope"`
-		Site      string `json:"Site"`
-		VO        string `json:"VO"`
-		Type      string `json:"Type"`
-	} `json:"labels"`
-	Annotations struct {
-		Priority        string `json:"Priority"`
-		ResponsibleUnit string `json:"ResponsibleUnit"`
-		Scope           string `json:"Scope"`
-		Site            string `json:"Site"`
-		Status          string `json:"Status"`
-		Subject         string `json:"Subject"`
-		TicketID        string `json:"TicketID"`
-		Type            string `json:"Type"`
-		VO              string `json:"VO"`
-		URL             string `json:"URL"`
-	} `json:"annotations"`
-	StartsAt time.Time `json:"startsAt"`
-	EndsAt   time.Time `json:"endsAt"`
+type amJSON struct {
+	Labels      map[string]interface{} `json:"labels"`
+	Annotations map[string]interface{} `json:"annotations"`
+	StartsAt    time.Time              `json:"startsAt"`
+	EndsAt      time.Time              `json:"endsAt"`
 }
 
-//AlertManager GET API acceptable JSON Data struct for GGUS data
-type ggusData struct {
-	Data []amGGUSJSON
-}
-
-//AlertManager API acceptable JSON Data for CERN SSB Data
-type amSSBJSON struct {
-	Labels struct {
-		Alertname   string `json:"alertname"`
-		Severity    string `json:"severity"`
-		Service     string `json:"service"`
-		Tag         string `json:"tag"`
-		Type        string `json:"type"`
-		Description string `json:"description"`
-		FeName      string `json:"feName"`
-		SeName      string `json:"seName"`
-	} `json:"labels"`
-	Annotations struct {
-		Date             string    `json:"date"`
-		Description      string    `json:"description"`
-		FeName           string    `json:"feName"`
-		MonitState       string    `json:"monitState"`
-		MonitState1      string    `json:"monitState1"`
-		SeName           string    `json:"seName"`
-		ShortDescription string    `json:"shortDescription"`
-		SsbNumber        string    `json:"ssbNumber"`
-		SysCreatedBy     string    `json:"sysCreatedBy"`
-		SysModCount      string    `json:"sysModCount"`
-		SysUpdatedBy     string    `json:"sysUpdatedBy"`
-		Type             string    `json:"type"`
-		UpdateTimestamp  time.Time `json:"updateTimestamp"`
-	} `json:"annotations"`
-	StartsAt time.Time `json:"startsAt"`
-	EndsAt   time.Time `json:"endsAt"`
-}
-
-//AlertManager GET API acceptable JSON Data struct for SSB data
-type ssbData struct {
-	Data []amSSBJSON
-}
-
-//AlertManager API acceptable JSON Data for Grafana Alerts
-type amGrafanaJSON struct {
-	Labels struct {
-		Alertname string `json:"alertname"`
-		Severity  string `json:"severity"`
-		Service   string `json:"service"`
-		Tag       string `json:"tag"`
-	} `json:"labels"`
-	Annotations struct {
-		Description string `json:"description"`
-		Summary     string `json:"summary"`
-	} `json:"annotations"`
-	StartsAt time.Time `json:"startsAt"`
-	EndsAt   time.Time `json:"endsAt"`
-}
-
-//AlertManager GET API acceptable JSON Data struct for Grafana Alerts
-type grafanaData struct {
-	Data []amGrafanaJSON
+type amData struct {
+	Data []amJSON
 }
 
 //Alert CLI tool data struct (Tabular)
@@ -182,19 +104,19 @@ type alertDataJSON struct {
 	Duration string
 }
 
-//Array of alerts for alert CLI Tool (JSON)
-var allAlertDataJSON []alertData
+type severityLevels struct {
+	SeverityLevels map[string]int `json:"severity"`
+}
+
+var sLevel severityLevels
+
+//-------STRUCTS---------
 
 //function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
-func get(service string, data interface{}) {
+func get(data interface{}) {
 
-	var apiurl string
 	//GET API for fetching only GGUS alerts.
-	if service == "" {
-		apiurl = cmsmonURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
-	} else {
-		apiurl = cmsmonURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false&filter=service=" + service
-	}
+	apiurl := cmsmonURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
 
 	req, err := http.NewRequest("GET", apiurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
@@ -238,52 +160,33 @@ func get(service string, data interface{}) {
 }
 
 //function for merging all alerts from various services at one place
-func mergeData(amGGUSData ggusData, amSSBJSON ssbData, amGrafanaData grafanaData) {
-	alertDetails = make(map[string]interface{})
+func mergeData(amdata amData) {
+	alertDetails = make(map[string]amJSON)
 
-	for _, each := range amGGUSData.Data {
+	for _, each := range amdata.Data {
 		var temp alertData
-		alertDetails[each.Labels.Alertname] = each
 
-		temp.Name = each.Labels.Alertname
-		temp.Severity = each.Labels.Severity
-		temp.Service = each.Labels.Service
-		temp.Tag = each.Labels.Tag
-		temp.StartsAt = each.StartsAt
-		temp.EndsAt = each.EndsAt
-		allAlertData = append(allAlertData, temp)
-	}
+		for key, value := range each.Labels {
+			switch key {
+			case "alertname":
+				alertDetails[value.(string)] = each
+				temp.Name = value.(string)
 
-	for _, each := range amSSBJSON.Data {
-		var temp alertData
-		alertDetails[each.Labels.Alertname] = each
+			case "severity":
+				temp.Severity = value.(string)
 
-		temp.Name = each.Labels.Alertname
-		temp.Severity = each.Labels.Severity
-		temp.Service = each.Labels.Service
-		temp.Tag = each.Labels.Tag
-		temp.StartsAt = each.StartsAt
-		temp.EndsAt = each.EndsAt
-		allAlertData = append(allAlertData, temp)
-	}
+			case "service":
+				temp.Service = value.(string)
 
-	for _, each := range amGrafanaData.Data {
-		var temp alertData
-		if each.Labels.Service == "GGUS" || each.Labels.Service == "SSB" {
-			continue
+			case "tag":
+				temp.Tag = value.(string)
+			}
+
 		}
-
-		alertDetails[each.Labels.Alertname] = each
-
-		temp.Name = each.Labels.Alertname
-		temp.Severity = each.Labels.Severity
-		temp.Service = each.Labels.Service
-		temp.Tag = each.Labels.Tag
 		temp.StartsAt = each.StartsAt
 		temp.EndsAt = each.EndsAt
 		allAlertData = append(allAlertData, temp)
 	}
-
 }
 
 //Helper function for converting time difference in a meaningful manner
@@ -414,7 +317,6 @@ func filterHelper(each alertData) int {
 
 //Function for Filtering
 func filter() {
-
 	filteredAlerts = make(map[string]int)
 	for _, each := range allAlertData {
 		if filterHelper(each) == 0 {
@@ -438,7 +340,7 @@ type severitySorter []alertData
 func (s severitySorter) Len() int      { return len(s) }
 func (s severitySorter) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s severitySorter) Less(i, j int) bool {
-	return severityLevel[s[i].Severity] < severityLevel[s[j].Severity]
+	return sLevel.SeverityLevels[s[i].Severity] < sLevel.SeverityLevels[s[j].Severity]
 }
 
 type startAtSorter []alertData
@@ -459,14 +361,6 @@ func (e endsAtSorter) Less(i, j int) bool {
 
 //Function for sorting alerts based on a passed label
 func sortAlert() {
-	severityLevel = make(map[string]int)
-	//TODO : Have to add all possibilities of severity levels.
-	severityLevel["info"] = 0
-	severityLevel["warning"] = 1
-	severityLevel["medium"] = 2
-	severityLevel["high"] = 3
-	severityLevel["critical"] = 4
-	severityLevel["urgent"] = 5
 
 	switch strings.ToLower(sortLabel) {
 	case "severity":
@@ -563,65 +457,36 @@ func jsonPrintDetails() {
 //Function for printing alert's details in Plain text format
 func detailPrint() {
 
-	if each, ok := alertDetails[name].(amGGUSJSON); ok {
-		fmt.Printf("NAME: %s\n", name)
+	if alert, ok := alertDetails[name]; ok { //use of two different loops for LABELS as sometimes AM was sending unordered LABELS i.e.
+		for key, value := range alert.Labels { //"severity", "tag", "service" could arrive before "alertname"
+			if key == "alertname" {
+				fmt.Printf("NAME: %s\n", value)
+				break
+			}
+		}
 		fmt.Printf("LABELS\n")
-		fmt.Printf("\tservice: %s\n", each.Labels.Service)
-		fmt.Printf("\ttag: %s\n", each.Labels.Tag)
-		fmt.Printf("\tseverity: %s\n", each.Labels.Severity)
+		for key, value := range alert.Labels {
+			switch key {
+			case "service", "tag", "severity":
+				fmt.Printf("\t%s: %s\n", key, value)
+			}
+		}
 		fmt.Printf("ANNOTATIONS\n")
-		fmt.Printf("\tpriority: %s\n", each.Annotations.Priority)
-		fmt.Printf("\tresponsible unit: %s\n", each.Annotations.ResponsibleUnit)
-		fmt.Printf("\tscope: %s\n", each.Annotations.Scope)
-		fmt.Printf("\tsite: %s\n", each.Annotations.Site)
-		fmt.Printf("\tstatus: %s\n", each.Annotations.Status)
-		fmt.Printf("\tsubject: %s\n", each.Annotations.Subject)
-		fmt.Printf("\tticketID: %s\n", each.Annotations.TicketID)
-		fmt.Printf("\ttype: %s\n", each.Annotations.Type)
-		fmt.Printf("\tvo: %s\n", each.Annotations.VO)
-		fmt.Printf("\turl: %s\n", each.Annotations.URL)
-	} else if each, ok := alertDetails[name].(amSSBJSON); ok {
-		fmt.Printf("NAME: %s\n", name)
-		fmt.Printf("LABELS\n")
-		fmt.Printf("\tservice: %s\n", each.Labels.Service)
-		fmt.Printf("\ttag: %s\n", each.Labels.Tag)
-		fmt.Printf("\tseverity: %s\n", each.Labels.Severity)
-		fmt.Printf("ANNOTATIONS\n")
-		fmt.Printf("\tdate: %s\n", each.Annotations.Date)
-		fmt.Printf("\tdescription: %s\n", each.Annotations.Description)
-		fmt.Printf("\tfe name: %s\n", each.Annotations.FeName)
-		fmt.Printf("\tmonit state: %s\n", each.Annotations.MonitState)
-		fmt.Printf("\tmonit state1: %s\n", each.Annotations.MonitState1)
-		fmt.Printf("\tse name: %s\n", each.Annotations.SeName)
-		fmt.Printf("\tshort description: %s\n", each.Annotations.ShortDescription)
-		fmt.Printf("\tssb number: %s\n", each.Annotations.SsbNumber)
-		fmt.Printf("\tsys created by: %s\n", each.Annotations.SysCreatedBy)
-		fmt.Printf("\tsys mod count: %s\n", each.Annotations.SysModCount)
-		fmt.Printf("\tsys updated by: %s\n", each.Annotations.SysUpdatedBy)
-		fmt.Printf("\ttype: %s\n", each.Annotations.Type)
-		fmt.Printf("\tupdate timestamp: %s\n", each.Annotations.UpdateTimestamp)
-	} else if each, ok := alertDetails[name].(amGrafanaJSON); ok {
-		fmt.Printf("NAME: %s\n", name)
-		fmt.Printf("LABELS\n")
-		fmt.Printf("\tservice: %s\n", each.Labels.Service)
-		fmt.Printf("\ttag: %s\n", each.Labels.Tag)
-		fmt.Printf("\tseverity: %s\n", each.Labels.Severity)
-		fmt.Printf("ANNOTATIONS\n")
-		fmt.Printf("\tsummary: %s\n", each.Annotations.Summary)
-		fmt.Printf("\tdescription: %s\n", each.Annotations.Description)
+		for key, value := range alert.Annotations {
+			fmt.Printf("\t%s: %s\n", key, value)
+		}
+	} else {
+		fmt.Printf("%s alert not found\n", name)
 	}
+
 }
 
 //Function running all logics
 func run() {
-	var amGGUSData ggusData
-	var amSSBData ssbData
-	var amGrafanaData grafanaData
-	get("GGUS", &amGGUSData)
-	get("SSB", &amSSBData)
-	get("", &amGrafanaData)
 
-	mergeData(amGGUSData, amSSBData, amGrafanaData)
+	var amdata amData
+	get(&amdata)
+	mergeData(amdata)
 	sortAlert()
 	filter()
 
@@ -650,9 +515,29 @@ func main() {
 	jsonOutput = flag.Bool("json", false, "Output in JSON format")
 	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
 	details = flag.Bool("details", false, "Detailed output for an alert")
+	flag.StringVar(&severityConfig, "sconfig", os.Getenv("SEVERITY_CONFIG"), "Severity Level Config filepath")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 
 	flag.Parse()
+
+	//Default Severity Levels in case no config file is provided
+	if severityConfig == "" {
+		sLevel.SeverityLevels = make(map[string]int)
+		sLevel.SeverityLevels["info"] = 0
+		sLevel.SeverityLevels["warning"] = 1
+		sLevel.SeverityLevels["medium"] = 2
+	} else {
+		jsonFile, e := os.Open(severityConfig)
+		if e != nil {
+			fmt.Println("Severity Config File not found, error:", e)
+		}
+		defer jsonFile.Close()
+		decoder := json.NewDecoder(jsonFile)
+		err := decoder.Decode(&sLevel)
+		if err != nil {
+			fmt.Println("Severity Config JSON File can't be loaded, error:", err)
+		}
+	}
 
 	run()
 }
