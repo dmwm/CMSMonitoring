@@ -513,6 +513,27 @@ func detailPrint() {
 //Function running all logics
 func run() {
 
+	//Default Severity Levels in case no config file is provided
+	if severityConfig == "" {
+		sLevel.SeverityLevels = make(map[string]int)
+		sLevel.SeverityLevels["info"] = 0
+		sLevel.SeverityLevels["warning"] = 1
+		sLevel.SeverityLevels["medium"] = 2
+	} else {
+		jsonFile, e := os.Open(severityConfig)
+		if e != nil {
+			fmt.Println("Severity Config File not found, error:", e)
+		}
+		defer jsonFile.Close()
+		decoder := json.NewDecoder(jsonFile)
+		err := decoder.Decode(&sLevel)
+		if err != nil {
+			fmt.Println("Severity Config JSON File can't be loaded, error:", err)
+		}
+	}
+
+	fmt.Println(sLevel)
+
 	var amdata amData
 	get(&amdata)
 	mergeData(amdata)
