@@ -454,23 +454,33 @@ func jsonPrintDetails() {
 	fmt.Println(string(b))
 }
 
+//Function to get all keys of type map[string]interface{}
+func getkeys(m map[string]interface{}) []string {
+
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
 //Function for printing alert's details in Plain text format
 func detailPrint() {
 
-	if alert, ok := alertDetails[name]; ok { //use of two different loops for LABELS as use of map[string]interface{} in amJSON causes unordered LABELS.
-		for key, value := range alert.Labels { // i.e. "severity", "tag", "service" could arrive before "alertname"
-			if key == "alertname" {
-				fmt.Printf("NAME: %s\n", value)
-				break
-			}
-		}
-		fmt.Printf("LABELS\n")
-		for key, value := range alert.Labels {
-			switch key {
+	if alert, ok := alertDetails[name]; ok {
+		labelsKeys := getkeys(alertDetails[name].Labels)
+		sort.Strings(labelsKeys)
+
+		for _, each := range labelsKeys {
+			switch each {
+			case "alertname":
+				fmt.Printf("NAME: %s\n", alertDetails[name].Labels[each])
+				fmt.Printf("LABELS\n")
 			case "service", "tag", "severity":
-				fmt.Printf("\t%s: %s\n", key, value)
+				fmt.Printf("\t%s: %s\n", each, alertDetails[name].Labels[each])
 			}
 		}
+
 		fmt.Printf("ANNOTATIONS\n")
 		for key, value := range alert.Annotations {
 			fmt.Printf("\t%s: %s\n", key, value)
@@ -483,27 +493,6 @@ func detailPrint() {
 
 //Function running all logics
 func run() {
-
-	//Default Severity Levels in case no config file is provided
-	if severityConfig == "" {
-		sLevel.SeverityLevels = make(map[string]int)
-		sLevel.SeverityLevels["info"] = 0
-		sLevel.SeverityLevels["warning"] = 1
-		sLevel.SeverityLevels["medium"] = 2
-	} else {
-		jsonFile, e := os.Open(severityConfig)
-		if e != nil {
-			fmt.Println("Severity Config File not found, error:", e)
-		}
-		defer jsonFile.Close()
-		decoder := json.NewDecoder(jsonFile)
-		err := decoder.Decode(&sLevel)
-		if err != nil {
-			fmt.Println("Severity Config JSON File can't be loaded, error:", err)
-		}
-	}
-
-	fmt.Println(sLevel)
 
 	var amdata amData
 	get(&amdata)
@@ -526,9 +515,30 @@ func run() {
 	}
 }
 
+func parseConfig() {
+	//Default Severity Levels in case no config file is provided
+	if severityConfig == "" {
+		sLevel.SeverityLevels = make(map[string]int)
+		sLevel.SeverityLevels["info"] = 0
+		sLevel.SeverityLevels["warning"] = 1
+		sLevel.SeverityLevels["medium"] = 2
+	} else {
+		jsonFile, e := os.Open(severityConfig)
+		if e != nil {
+			fmt.Println("Severity Config File not found, error:", e)
+		}
+		defer jsonFile.Close()
+		decoder := json.NewDecoder(jsonFile)
+		err := decoder.Decode(&sLevel)
+		if err != nil {
+			fmt.Println("Severity Config JSON File can't be loaded, error:", err)
+		}
+	}
+}
+
 func main() {
 
-	flag.StringVar(&cmsmonURL, "url", os.Getenv("CMSMON_URL"), "CMS Monit URL")
+	flag.StringVar(&cmsmonURL, "url", "", "CMS Monit URL")
 	flag.StringVar(&name, "name", "", "Alert Service Name (GGUS/SSB)")
 	flag.StringVar(&severity, "severity", "", "Severity Level of alerts")
 	flag.StringVar(&tag, "tag", "", "Tag for alerts")
@@ -536,10 +546,11 @@ func main() {
 	jsonOutput = flag.Bool("json", false, "Output in JSON format")
 	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
 	details = flag.Bool("details", false, "Detailed output for an alert")
-	flag.StringVar(&severityConfig, "sconfig", os.Getenv("SEVERITY_CONFIG"), "Severity Level Config filepath")
+	flag.StringVar(&severityConfig, "sconfig", "", "Severity Level Config filepath")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 
 	flag.Parse()
+	parseConfig()
 
 	run()
 }
