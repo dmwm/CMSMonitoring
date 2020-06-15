@@ -22,8 +22,6 @@ import (
 )
 
 //-------VARIABLES-------
-//URL for AlertManager
-var cmsmonURL string
 
 //MAX timeStamp //Saturday, May 24, 3000 3:43:26 PM
 var maxtstmp int64 = 32516091806
@@ -49,11 +47,8 @@ var details *bool
 //Sort Label
 var sortLabel string
 
-//Severity Level Config filepath
-var severityConfig string
-
-//verbose defines verbosity level
-var verbose int
+//Config filepath
+var configFile string
 
 //-------VARIABLES-------
 
@@ -104,11 +99,15 @@ type alertDataJSON struct {
 	Duration string
 }
 
-type severityLevels struct {
+type config struct {
+	CMSMONURL      string         `json:"cmsmonURL"`
+	Names          []string       `json:"names"`
+	Columns        []string       `json:"columns"`
+	Verbose        int            `json:"verbose"`
 	SeverityLevels map[string]int `json:"severity"`
 }
 
-var sLevel severityLevels
+var configJSON config
 
 //-------STRUCTS---------
 
@@ -116,7 +115,7 @@ var sLevel severityLevels
 func get(data interface{}) {
 
 	//GET API for fetching only GGUS alerts.
-	apiurl := cmsmonURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
+	apiurl := configJSON.CMSMONURL + "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
 
 	req, err := http.NewRequest("GET", apiurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
@@ -124,7 +123,7 @@ func get(data interface{}) {
 
 	client := &http.Client{}
 
-	if verbose > 1 {
+	if configJSON.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -150,7 +149,7 @@ func get(data interface{}) {
 		return
 	}
 
-	if verbose > 1 {
+	if configJSON.Verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
@@ -340,7 +339,7 @@ type severitySorter []alertData
 func (s severitySorter) Len() int      { return len(s) }
 func (s severitySorter) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s severitySorter) Less(i, j int) bool {
-	return sLevel.SeverityLevels[s[i].Severity] < sLevel.SeverityLevels[s[j].Severity]
+	return configJSON.SeverityLevels[s[i].Severity] < configJSON.SeverityLevels[s[j].Severity]
 }
 
 type startAtSorter []alertData
@@ -418,7 +417,11 @@ func tabulate() {
 	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
 	defer w.Flush()
 
-	fmt.Fprintf(w, "\n %s\t\t%s\t\t%s\t\t%s\t\t%s\t\t%s\t\t%s\n", "NAME", "SERVICE", "TAG", "SEVERITY", "STARTS", "ENDS", "DURATION")
+	fmt.Fprintf(w, "\n ")
+	for _, each := range configJSON.Columns {
+		fmt.Fprintf(w, "%s\t\t", each)
+	}
+	fmt.Fprintf(w, "\n")
 
 	for _, each := range allAlertData {
 		if filteredAlerts[each.Name] == 1 {
@@ -474,14 +477,14 @@ func detailPrint() {
 		for _, each := range labelsKeys {
 			switch each {
 			case "alertname":
-				fmt.Printf("NAME: %s\n", alertDetails[name].Labels[each])
-				fmt.Printf("LABELS\n")
+				fmt.Printf("%s: %s\n", configJSON.Names[0], alertDetails[name].Labels[each])
+				fmt.Printf("%s\n", configJSON.Names[1])
 			case "service", "tag", "severity":
 				fmt.Printf("\t%s: %s\n", each, alertDetails[name].Labels[each])
 			}
 		}
 
-		fmt.Printf("ANNOTATIONS\n")
+		fmt.Printf("%s\n", configJSON.Names[2])
 		for key, value := range alert.Annotations {
 			fmt.Printf("\t%s: %s\n", key, value)
 		}
@@ -516,40 +519,52 @@ func run() {
 }
 
 func parseConfig() {
-	//Default Severity Levels in case no config file is provided
-	if severityConfig == "" {
-		sLevel.SeverityLevels = make(map[string]int)
-		sLevel.SeverityLevels["info"] = 0
-		sLevel.SeverityLevels["warning"] = 1
-		sLevel.SeverityLevels["medium"] = 2
-	} else {
-		jsonFile, e := os.Open(severityConfig)
+
+	configFile = os.Getenv("CONFIG_PATH") //CONFIG_PATH Environment Variable storing config filepath.
+
+	//Defaults in case no config file is provided
+	configJSON.CMSMONURL = "https://cms-monitoring.cern.ch"
+	configJSON.Names = []string{"NAMES", "LABELS", "ANNOTATIONS"}
+	configJSON.Columns = []string{"NAME", "SERVICE", "TAG", "SEVERITY", "STARTS", "ENDS", "DURATION"}
+	configJSON.Verbose = 0
+	configJSON.SeverityLevels = make(map[string]int)
+	configJSON.SeverityLevels["info"] = 0
+	configJSON.SeverityLevels["warning"] = 1
+	configJSON.SeverityLevels["medium"] = 2
+
+	if configFile != "" {
+		jsonFile, e := os.Open(configFile)
 		if e != nil {
-			fmt.Println("Severity Config File not found, error:", e)
+			fmt.Println("Config File not found, error:", e)
 		}
 		defer jsonFile.Close()
 		decoder := json.NewDecoder(jsonFile)
-		err := decoder.Decode(&sLevel)
+		err := decoder.Decode(&configJSON)
 		if err != nil {
-			fmt.Println("Severity Config JSON File can't be loaded, error:", err)
+			fmt.Println("Config JSON File can't be loaded, error:", err)
 		}
 	}
+
 }
 
 func main() {
 
-	flag.StringVar(&cmsmonURL, "url", "", "CMS Monit URL")
-	flag.StringVar(&name, "name", "", "Alert Service Name (GGUS/SSB)")
+	flag.StringVar(&name, "name", "", "Alert Service Name")
 	flag.StringVar(&severity, "severity", "", "Severity Level of alerts")
 	flag.StringVar(&tag, "tag", "", "Tag for alerts")
 	flag.StringVar(&service, "service", "", "Service Name")
 	jsonOutput = flag.Bool("json", false, "Output in JSON format")
-	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
-	details = flag.Bool("details", false, "Detailed output for an alert")
-	flag.StringVar(&severityConfig, "sconfig", "", "Severity Level Config filepath")
-	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
+	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label\n\t-sort=severity\n\t-sort=starts\n\t-sort=ends\n\t-sort=duration")
+	details = flag.Bool("details", false, "Detailed output for an alert\n\talert -name=<alert_name> -details")
 
 	flag.Parse()
+
+	if configJSON.Verbose > 0 {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	} else {
+		log.SetFlags(log.LstdFlags)
+	}
+
 	parseConfig()
 
 	run()
