@@ -103,6 +103,7 @@ type config struct {
 	CMSMONURL      string         `json:"cmsmonURL"`
 	Names          []string       `json:"names"`
 	Columns        []string       `json:"columns"`
+	Attributes     []string       `json:"attributes"`
 	Verbose        int            `json:"verbose"`
 	SeverityLevels map[string]int `json:"severity"`
 }
@@ -467,6 +468,16 @@ func getkeys(m map[string]interface{}) []string {
 	return keys
 }
 
+//Helper function for detailPrint() - Finds if alert attribute is present in passed configJSON.Attributes
+func detailPrintHelper(v string, a []string) bool {
+	for _, i := range a {
+		if i == v {
+			return true
+		}
+	}
+	return false
+}
+
 //Function for printing alert's details in Plain text format
 func detailPrint() {
 
@@ -475,12 +486,13 @@ func detailPrint() {
 		sort.Strings(labelsKeys)
 
 		for _, each := range labelsKeys {
-			switch each {
-			case "alertname":
+			switch {
+			case detailPrintHelper(each, []string{"alertname"}):
 				fmt.Printf("%s: %s\n", configJSON.Names[0], alertDetails[name].Labels[each])
 				fmt.Printf("%s\n", configJSON.Names[1])
-			case "service", "tag", "severity":
+			case detailPrintHelper(each, configJSON.Attributes):
 				fmt.Printf("\t%s: %s\n", each, alertDetails[name].Labels[each])
+
 			}
 		}
 
@@ -526,6 +538,7 @@ func parseConfig() {
 	configJSON.CMSMONURL = "https://cms-monitoring.cern.ch"
 	configJSON.Names = []string{"NAMES", "LABELS", "ANNOTATIONS"}
 	configJSON.Columns = []string{"NAME", "SERVICE", "TAG", "SEVERITY", "STARTS", "ENDS", "DURATION"}
+	configJSON.Attributes = []string{"service", "tag", "severity"}
 	configJSON.Verbose = 0
 	configJSON.SeverityLevels = make(map[string]int)
 	configJSON.SeverityLevels["info"] = 0
@@ -535,13 +548,13 @@ func parseConfig() {
 	if configFile != "" {
 		jsonFile, e := os.Open(configFile)
 		if e != nil {
-			fmt.Println("Config File not found, error:", e)
+			log.Fatalf("Config File not found, error: %s", e)
 		}
 		defer jsonFile.Close()
 		decoder := json.NewDecoder(jsonFile)
 		err := decoder.Decode(&configJSON)
 		if err != nil {
-			fmt.Println("Config JSON File can't be loaded, error:", err)
+			log.Fatalf("Config JSON File can't be loaded, error: %s", err)
 		}
 	}
 
@@ -554,8 +567,41 @@ func main() {
 	flag.StringVar(&tag, "tag", "", "Tag for alerts")
 	flag.StringVar(&service, "service", "", "Service Name")
 	jsonOutput = flag.Bool("json", false, "Output in JSON format")
-	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label\n\t-sort=severity\n\t-sort=starts\n\t-sort=ends\n\t-sort=duration")
-	details = flag.Bool("details", false, "Detailed output for an alert\n\talert -name=<alert_name> -details")
+	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
+	details = flag.Bool("details", false, "Detailed output for an alert")
+
+	flag.Usage = func() {
+		fmt.Println("Usage: alert [options]")
+		flag.PrintDefaults()
+		fmt.Println("\nEnvironments:")
+		fmt.Println("\tCONFIG_PATH:\t Config Filepath")
+		fmt.Println("\nExamples:")
+		fmt.Println("\t-Get all alerts:")
+		fmt.Println("\t alert")
+		fmt.Println("\t-Get all alerts in JSON format:")
+		fmt.Println("\t alert -json")
+		fmt.Println("\t-Get all alerts with filters (-json flag will output in JSON format if required):")
+		fmt.Println("\t  Available filters:")
+		fmt.Println("\t  service\tGGUS,SSB,dbs")
+		fmt.Println("\t  severity\tinfo,medium,high,urgent etc.")
+		fmt.Println("\t  tag\t\tcmsweb,cms,monitoring etc.")
+		fmt.Println("\n\t  Get all alerts of specific service/severity/tag. Ex GGUS/high/cms:")
+		fmt.Println("\t   alert -service=GGUS")
+		fmt.Println("\t   alert -severity=high")
+		fmt.Println("\t   alert -tag=cms")
+		fmt.Println("\n\t  Get all alerts based on multi filters. Ex service=GGUS, severity=high:")
+		fmt.Println("\t   alert -service=GGUS -severity=high")
+		fmt.Println("\t-Sort alerts based on labels. The -sort flag on top of above queries will give sorted alerts.:")
+		fmt.Println("\t  Available labels:")
+		fmt.Println("\t  severity\tSeverity Level")
+		fmt.Println("\t  starts\tStarting time of alerts")
+		fmt.Println("\t  ends\t\tEnding time of alerts")
+		fmt.Println("\t  duration\tLifetime of alerts")
+		fmt.Println("\n\t  Get all alerts of service=GGUS, severity=high sorted on alert's duration:")
+		fmt.Println("\t   alert -service=GGUS -severity=high -sort=duration")
+		fmt.Println("\n\t  Get all alerts of service=GGUS sorted on severity level:")
+		fmt.Println("\t   alert -service=GGUS -sort=severity")
+	}
 
 	flag.Parse()
 
@@ -566,6 +612,6 @@ func main() {
 	}
 
 	parseConfig()
-
 	run()
+
 }
