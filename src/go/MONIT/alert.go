@@ -104,6 +104,7 @@ type config struct {
 	Names          []string       `json:"names"`
 	Columns        []string       `json:"columns"`
 	Attributes     []string       `json:"attributes"`
+	httpTimeout    int            `json:"httpTimeout"`
 	Verbose        int            `json:"verbose"`
 	SeverityLevels map[string]int `json:"severity"`
 }
@@ -122,7 +123,8 @@ func get(data interface{}) {
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
 
-	client := &http.Client{}
+	timeout := time.Duration(configJSON.httpTimeout) * time.Second
+	client := &http.Client{Timeout: timeout}
 
 	if configJSON.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
@@ -146,8 +148,10 @@ func get(data interface{}) {
 
 	err = json.Unmarshal(byteValue, &data)
 	if err != nil {
-		log.Printf("Unable to parse %s JSON Data from AlertManager GET API, error: %v\n", service, err)
-		return
+		if configJSON.Verbose > 0 {
+			log.Println(string(byteValue))
+		}
+		log.Fatalf("Unable to parse %s JSON Data from AlertManager GET API, error: %v\n", service, err)
 	}
 
 	if configJSON.Verbose > 1 {
@@ -530,7 +534,7 @@ func run() {
 	}
 }
 
-func parseConfig() {
+func parseConfig(verbose int) {
 
 	configFile = os.Getenv("CONFIG_PATH") //CONFIG_PATH Environment Variable storing config filepath.
 
@@ -539,11 +543,12 @@ func parseConfig() {
 	configJSON.Names = []string{"NAMES", "LABELS", "ANNOTATIONS"}
 	configJSON.Columns = []string{"NAME", "SERVICE", "TAG", "SEVERITY", "STARTS", "ENDS", "DURATION"}
 	configJSON.Attributes = []string{"service", "tag", "severity"}
-	configJSON.Verbose = 0
+	configJSON.Verbose = verbose
 	configJSON.SeverityLevels = make(map[string]int)
 	configJSON.SeverityLevels["info"] = 0
 	configJSON.SeverityLevels["warning"] = 1
 	configJSON.SeverityLevels["medium"] = 2
+	configJSON.httpTimeout = 3 // 3 seconds timeout for http
 
 	if configFile != "" {
 		jsonFile, e := os.Open(configFile)
@@ -555,7 +560,19 @@ func parseConfig() {
 		err := decoder.Decode(&configJSON)
 		if err != nil {
 			log.Fatalf("Config JSON File can't be loaded, error: %s", err)
+		} else if configJSON.Verbose > 0 {
+			log.Printf("Load config from %s\n", configFile)
 		}
+	}
+
+	if configJSON.Verbose > 0 {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	} else {
+		log.SetFlags(log.LstdFlags)
+	}
+
+	if configJSON.Verbose > 1 {
+		log.Printf("Configuration:\n%+v\n", configJSON)
 	}
 
 }
@@ -569,6 +586,8 @@ func main() {
 	jsonOutput = flag.Bool("json", false, "Output in JSON format")
 	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
 	details = flag.Bool("details", false, "Detailed output for an alert")
+	var verbose int
+	flag.IntVar(&verbose, "verbose", 0, "verbosity level, can be overwritten in config")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: alert [options]")
@@ -604,14 +623,7 @@ func main() {
 	}
 
 	flag.Parse()
-
-	if configJSON.Verbose > 0 {
-		log.SetFlags(log.LstdFlags | log.Lshortfile)
-	} else {
-		log.SetFlags(log.LstdFlags)
-	}
-
-	parseConfig()
+	parseConfig(verbose)
 	run()
 
 }
