@@ -6,6 +6,7 @@ package main
 // Description: client for CERN MONIT infrastructure
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"flag"
@@ -527,6 +528,55 @@ func hdfsSize(path string, verbose int) (float64, error) {
 	return size, nil
 }
 
+// helper function to add annotation
+func addAnnotation(base, token, afile string, verbose int) {
+	var headers [][]string
+	bearer := fmt.Sprintf("Bearer %s", token)
+	h := []string{"Authorization", bearer}
+	headers = append(headers, h)
+	h = []string{"Content-Type", "application/json"}
+	headers = append(headers, h)
+
+	rurl := fmt.Sprintf("%s/api/annotations", base)
+	if verbose > 0 {
+		log.Println(rurl)
+	}
+	data, err := ioutil.ReadFile(afile)
+	if err != nil {
+		log.Fatalf("Unable to read, file: %s, error: %v\n", afile, err)
+	}
+	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
+	if err != nil {
+		log.Fatalf("Unable to make request to %s, error: %s", rurl, err)
+	}
+	for _, v := range headers {
+		if len(v) == 2 {
+			req.Header.Add(v[0], v[1])
+		}
+	}
+	if verbose > 1 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("request: ", string(dump))
+		}
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Unable to get response from %s, error: %s", rurl, err)
+	}
+	if verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("response:", string(dump))
+		}
+	}
+	body, _ := ioutil.ReadAll(resp.Body)
+	log.Println("response Status:", resp.Status)
+	log.Println("response Headers:", resp.Header)
+	log.Println("response Body:", string(body))
+}
+
 func main() {
 	defaultUrl := "https://monit-grafana.cern.ch"
 	var verbose int
@@ -539,6 +589,8 @@ func main() {
 	flag.IntVar(&dbid, "dbid", 0, "MONIT db identified")
 	var dbname string
 	flag.StringVar(&dbname, "dbname", "", "MONIT dbname")
+	var annotation string
+	flag.StringVar(&annotation, "annotation", "", "annotation json file")
 	var query string
 	flag.StringVar(&query, "query", "", "query string or query json file")
 	var input string
@@ -577,6 +629,9 @@ func main() {
 		fmt.Println("   # look-up all available intervention in MONIT InfluxDB for last 2 hours")
 		fmt.Println("   monit -token token -query=\"select * from outages where time > now() - 2h limit 1\" -dbname=monit_production_ssb_otgs -dbid=9474")
 		fmt.Println("")
+		fmt.Println("   # provide annotation to MONIT")
+		fmt.Println("   monit -token token -annotation=a.json")
+		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources")
 	}
@@ -610,6 +665,10 @@ func main() {
 		return
 	}
 	t := read(token)
+	if annotation != "" {
+		addAnnotation(url, t, annotation, verbose)
+		return
+	}
 	q := read(query)
 	var database, dbtype string
 	if strings.Contains(q, "stats") {
