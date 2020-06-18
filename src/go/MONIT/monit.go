@@ -528,6 +528,61 @@ func hdfsSize(path string, verbose int) (float64, error) {
 	return size, nil
 }
 
+// helper function to find dashboard info
+func findDashboard(base, token string, tags []string, verbose int) []map[string]interface{} {
+	var headers [][]string
+	bearer := fmt.Sprintf("Bearer %s", token)
+	h := []string{"Authorization", bearer}
+	headers = append(headers, h)
+	h = []string{"Accept", "application/json"}
+	headers = append(headers, h)
+	// example: /api/search?query=Production%20Overview&starred=true&tag=prod
+	v := url.Values{}
+	if len(tags) > 0 {
+		for _, tag := range tags {
+			v.Set("tag", strings.Trim(tag, " "))
+		}
+	}
+	rurl := fmt.Sprintf("%s/api/search?%s", base, v.Encode())
+	if verbose > 0 {
+		log.Println(rurl)
+	}
+	req, err := http.NewRequest("GET", rurl, nil)
+	if err != nil {
+		log.Fatalf("Unable to make request to %s, error: %s", rurl, err)
+	}
+	for _, v := range headers {
+		if len(v) == 2 {
+			req.Header.Add(v[0], v[1])
+		}
+	}
+	if verbose > 1 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("request: ", string(dump))
+		}
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Unable to get response from %s, error: %s", rurl, err)
+	}
+	if verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("response: ", string(dump))
+		}
+	}
+	defer resp.Body.Close()
+	var data []map[string]interface{}
+	// Deserialize the response into a map.
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		log.Fatalf("Error parsing the response body: %s", err)
+	}
+	return data
+
+}
+
 // helper function to add annotation
 func addAnnotation(base, token, afile string, verbose int) {
 	var headers [][]string
@@ -591,6 +646,8 @@ func main() {
 	flag.StringVar(&dbname, "dbname", "", "MONIT dbname")
 	var annotation string
 	flag.StringVar(&annotation, "annotation", "", "annotation json file")
+	var dashboard string
+	flag.StringVar(&dashboard, "dashboard", "", "comma separated dashboard tags")
 	var query string
 	flag.StringVar(&query, "query", "", "query string or query json file")
 	var input string
@@ -670,6 +727,16 @@ func main() {
 		return
 	}
 	q := read(query)
+	if dashboard != "" {
+		tags := strings.Split(dashboard, ",")
+		data := findDashboard(url, t, tags, verbose)
+		b, err := json.MarshalIndent(data, "", "  ")
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		fmt.Print(string(b))
+		return
+	}
 	var database, dbtype string
 	if strings.Contains(q, "stats") {
 		dbid = 0
