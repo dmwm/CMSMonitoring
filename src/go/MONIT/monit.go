@@ -20,6 +20,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-stomp/stomp"
 )
@@ -528,8 +529,62 @@ func hdfsSize(path string, verbose int) (float64, error) {
 	return size, nil
 }
 
+// helper function to parse comma separated tags string
+func parseTags(itags string) []string {
+	var tags []string
+	for _, tag := range strings.Split(itags, ",") {
+		tags = append(tags, strings.Trim(tag, " "))
+	}
+	return tags
+}
+
+// helper function to parse given time-range separated by '-'
+func parseTimes(trange string) []int64 {
+	var times []int64
+	for _, v := range strings.Split(trange, "-") {
+		v = strings.Trim(v, " ")
+		var t int64
+		if v == "now" {
+			t = time.Now().Unix()
+		} else if len(v) == 10 { // unix since epoch
+			value, err := strconv.Atoi(v)
+			if err != nil {
+				log.Fatalf("Unable to parse given time value: %v\n", v)
+			}
+			t = int64(value)
+		} else {
+			var value string
+			var offset int64
+			if strings.HasSuffix(v, "s") || strings.HasSuffix(v, "sec") {
+				value = strings.Split(v, "s")[0]
+				offset = 1
+			} else if strings.HasSuffix(v, "m") || strings.HasSuffix(v, "min") {
+				value = strings.Split(v, "m")[0]
+				offset = 60
+			} else if strings.HasSuffix(v, "h") || strings.HasSuffix(v, "hour") {
+				value = strings.Split(v, "h")[0]
+				offset = 60 * 60
+			} else if strings.HasSuffix(v, "d") || strings.HasSuffix(v, "day") || strings.HasSuffix(v, "days") {
+				value = strings.Split(v, "d")[0]
+				offset = 60 * 60 * 60
+			} else {
+				log.Fatalf("Unable to parse given time value: %v\n", v)
+			}
+			if v, e := strconv.Atoi(value); e == nil {
+				t = time.Now().Unix() + int64(v)*offset
+			}
+		}
+		if t == 0 {
+			log.Fatalf("Unable to parse given time value: %v\n", v)
+		}
+		times = append(times, t*1000) // times should be in milliseconds of Unix since epoch
+	}
+	return times
+}
+
 // helper function to find dashboard info
-func findDashboard(base, token string, tags []string, verbose int) []map[string]interface{} {
+func findDashboard(base, token, itags string, verbose int) []map[string]interface{} {
+	tags := parseTags(itags)
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", token)
 	h := []string{"Authorization", bearer}
@@ -538,10 +593,8 @@ func findDashboard(base, token string, tags []string, verbose int) []map[string]
 	headers = append(headers, h)
 	// example: /api/search?query=Production%20Overview&starred=true&tag=prod
 	v := url.Values{}
-	if len(tags) > 0 {
-		for _, tag := range tags {
-			v.Set("tag", strings.Trim(tag, " "))
-		}
+	for _, tag := range tags {
+		v.Set("tag", strings.Trim(tag, " "))
 	}
 	rurl := fmt.Sprintf("%s/api/search?%s", base, v.Encode())
 	if verbose > 0 {
@@ -584,7 +637,7 @@ func findDashboard(base, token string, tags []string, verbose int) []map[string]
 }
 
 // helper function to add annotation
-func addAnnotation(base, token, afile string, verbose int) {
+func addAnnotation(base, token string, data []byte, verbose int) {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", token)
 	h := []string{"Authorization", bearer}
@@ -595,10 +648,6 @@ func addAnnotation(base, token, afile string, verbose int) {
 	rurl := fmt.Sprintf("%s/api/annotations", base)
 	if verbose > 0 {
 		log.Println(rurl)
-	}
-	data, err := ioutil.ReadFile(afile)
-	if err != nil {
-		log.Fatalf("Unable to read, file: %s, error: %v\n", afile, err)
 	}
 	req, err := http.NewRequest("POST", rurl, bytes.NewBuffer(data))
 	if err != nil {
@@ -646,8 +695,10 @@ func main() {
 	flag.StringVar(&dbname, "dbname", "", "MONIT dbname")
 	var annotation string
 	flag.StringVar(&annotation, "annotation", "", "annotation json file")
-	var dashboard string
-	flag.StringVar(&dashboard, "dashboard", "", "comma separated dashboard tags")
+	var tags string
+	flag.StringVar(&tags, "tags", "", "comma separated dashboard tags")
+	var trange string
+	flag.StringVar(&trange, "trange", "", "dash separated time range, supported formats: <YYYYMMDD>, <now>, or Xs, Xm, Xh, Xd (where X is a value and suffixes s,m,h,d refer to seconds, minute, hour, day)")
 	var query string
 	flag.StringVar(&query, "query", "", "query string or query json file")
 	var input string
@@ -687,7 +738,11 @@ func main() {
 		fmt.Println("   monit -token token -query=\"select * from outages where time > now() - 2h limit 1\" -dbname=monit_production_ssb_otgs -dbid=9474")
 		fmt.Println("")
 		fmt.Println("   # provide annotation to MONIT")
-		fmt.Println("   monit -token token -annotation=a.json")
+		fmt.Println("   monit -token admin.token -annotation=a.json")
+		fmt.Println("   monit -token admin.token -annotation=\"some message\" -tags=cmsweb,das -trange=now-10m")
+		fmt.Println("")
+		fmt.Println("   # find dashboard information for given tags")
+		fmt.Println("   monit -token token -tags=\"cmsweb,das\"")
 		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources")
@@ -723,12 +778,42 @@ func main() {
 	}
 	t := read(token)
 	if annotation != "" {
-		addAnnotation(url, t, annotation, verbose)
+		var data []byte
+		if _, err := os.Stat(annotation); err == nil {
+			data, err = ioutil.ReadFile(annotation)
+			if err != nil {
+				log.Fatalf("Unable to read, file: %s, error: %v\n", annotation, err)
+			}
+			addAnnotation(url, t, data, verbose)
+		} else {
+			// find dashboards info
+			dashboards := findDashboard(url, t, tags, verbose)
+			timeRanges := parseTimes(trange)
+			if verbose > 0 {
+				log.Println("timeRanges", timeRanges)
+			}
+			for _, r := range dashboards {
+				// create new annotation data
+				rec := make(map[string]interface{})
+				rec["dashboardId"] = r["id"]
+				rec["time"] = timeRanges[0]
+				rec["timeEnd"] = timeRanges[1]
+				rec["tags"] = parseTags(tags)
+				rec["text"] = annotation
+				data, err := json.Marshal(rec)
+				if err != nil {
+					log.Fatalf("Unable to marshal the data %+v, error %v\n", rec, err)
+				}
+				if verbose > 0 {
+					log.Printf("Add annotation: %+v", rec)
+				}
+				addAnnotation(url, t, data, verbose)
+			}
+		}
 		return
 	}
 	q := read(query)
-	if dashboard != "" {
-		tags := strings.Split(dashboard, ",")
+	if tags != "" {
 		data := findDashboard(url, t, tags, verbose)
 		b, err := json.MarshalIndent(data, "", "  ")
 		if err != nil {
