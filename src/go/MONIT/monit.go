@@ -698,7 +698,7 @@ func main() {
 	var tags string
 	flag.StringVar(&tags, "tags", "", "comma separated dashboard tags")
 	var trange string
-	flag.StringVar(&trange, "trange", "", "dash separated time range, supported formats: <YYYYMMDD>, <now>, or Xs, Xm, Xh, Xd (where X is a value and suffixes s,m,h,d refer to seconds, minute, hour, day)")
+	flag.StringVar(&trange, "trange", "", "dash separated time range, supported formats: seconds since epoch, <YYYYMMDD>, <now>, or Xs, Xm, Xh, Xd (where X is a value and suffixes s,m,h,d refer to seconds, minute, hour, day)")
 	var query string
 	flag.StringVar(&query, "query", "", "query string or query json file")
 	var input string
