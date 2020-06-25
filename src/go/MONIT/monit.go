@@ -201,10 +201,17 @@ func queryIDB(base string, dbid int, dbname, query string, headers [][]string, v
 }
 
 // helper function to query ElasticSearch
-func queryES(base string, dbid int, dbname, query string, headers [][]string, verbose int) Record {
+func queryES(base string, dbid int, dbname, query, esapi string, headers [][]string, verbose int) Record {
 	// Method to query ES DB
 	// https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
 	rurl := fmt.Sprintf("%s/api/datasources/proxy/%d/_msearch", base, dbid)
+	if esapi != "_msearch" && esapi != "" {
+		if strings.HasPrefix(esapi, "/") {
+			rurl = fmt.Sprintf("%s/api/datasources/proxy/%d%s", base, dbid, esapi)
+		} else {
+			rurl = fmt.Sprintf("%s/api/datasources/proxy/%d/%s", base, dbid, esapi)
+		}
+	}
 	dbname = strings.Replace(dbname, "[", "", -1)
 	dbname = strings.Replace(dbname, "]", "", -1)
 	dbname = strings.Replace(dbname, "_*", "", -1)
@@ -290,7 +297,7 @@ func queryURL(rurl string, headers [][]string, verbose int) Record {
 }
 
 // helper function to run ES/InfluxDB or MONIT query
-func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose int) Record {
+func run(rurl, token string, dbid int, dbname, query, esapi string, idx, limit, verbose int) Record {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", token)
 	h := []string{"Authorization", bearer}
@@ -300,9 +307,9 @@ func run(rurl, token string, dbid int, dbname, query string, idx, limit, verbose
 
 	q := strings.ToLower(query)
 	if strings.Contains(q, "elasticsearch") {
-		return queryES(rurl, dbid, dbname, query, headers, verbose)
+		return queryES(rurl, dbid, dbname, query, esapi, headers, verbose)
 	} else if strings.Contains(q, "query") {
-		return queryES(rurl, dbid, dbname, query, headers, verbose)
+		return queryES(rurl, dbid, dbname, query, esapi, headers, verbose)
 	} else if strings.Contains(q, "select") {
 		return queryIDB(rurl, dbid, dbname, query, headers, verbose)
 	} else if strings.Contains(q, "show") {
@@ -693,6 +700,8 @@ func main() {
 	flag.IntVar(&dbid, "dbid", 0, "MONIT db identified")
 	var dbname string
 	flag.StringVar(&dbname, "dbname", "", "MONIT dbname")
+	var esapi string
+	flag.StringVar(&esapi, "esapi", "_msearch", "MONIT ES API end-point")
 	var annotation string
 	flag.StringVar(&annotation, "annotation", "", "annotation json file")
 	var tags string
@@ -723,10 +732,13 @@ func main() {
 		fmt.Println("   monit -input=doc.json -verbose 1")
 		fmt.Println("")
 		fmt.Println("   # inject data from given file into MONIT")
-		fmt.Println("   monit -input=doc.json -creds=creds.json -input=doc.json -verbose 1")
+		fmt.Println("   monit -input=doc.json -creds=creds.json -verbose 1")
 		fmt.Println("")
 		fmt.Println("   # look-up data from MONIT")
 		fmt.Println("   monit -token token -query=query.json -dbname=monit_prod_wmagent")
+		fmt.Println("")
+		fmt.Println("   # look-up data from ES MONIT using specific ES API end-point")
+		fmt.Println("   monit -token token -query=query.json -dbname=monit_prod_wmagent -esapi=_count")
 		fmt.Println("")
 		fmt.Println("   # provide stats for all cms ES indicies")
 		fmt.Println("   monit -token token -query=\"stats\"")
@@ -848,7 +860,7 @@ func main() {
 		log.Println("dbtype  ", dbtype)
 		log.Println("hdfs    ", hdfs)
 	}
-	data := run(url, t, dbid, database, q, idx, limit, verbose)
+	data := run(url, t, dbid, database, q, esapi, idx, limit, verbose)
 	if strings.Contains(q, "stats") {
 		records := parseStats(data, verbose)
 		injectRecords(stompConfig, records, verbose, inject)
