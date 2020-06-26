@@ -3,12 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -82,13 +84,29 @@ var configJSON config
 
 //-------STRUCTS---------
 
+//function for constructing and validating AM URL
+func construct(baseURL, apiURL string) string {
+
+	cmpltURL := baseURL + apiURL
+
+	u, err := url.ParseRequestURI(cmpltURL)
+	if err != nil {
+		log.Fatalf("AlertManager API URL is not valid, error:%v", err)
+	}
+
+	return u.String()
+}
+
 //function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
-func get(data interface{}) {
+func get(data interface{}) error {
 
-	//GET API for fetching only GGUS alerts.
-	apiurl := configJSON.CMSMONURL + configJSON.GetAlertsAPI
+	//GET API for fetching all AM alerts.
+	apiurl := construct(configJSON.CMSMONURL, configJSON.GetAlertsAPI)
 
-	req, err := http.NewRequest("GET", apiurl, nil)
+	req, reqErr := http.NewRequest("GET", apiurl, nil)
+	if reqErr != nil {
+		return reqErr
+	}
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
 
@@ -96,45 +114,53 @@ func get(data interface{}) {
 	client := &http.Client{Timeout: timeout}
 
 	if configJSON.Verbose > 1 {
-		dump, err := httputil.DumpRequestOut(req, true)
-		if err == nil {
+		dump, dumpErr := httputil.DumpRequestOut(req, true)
+		if dumpErr == nil {
 			log.Println("Request: ", string(dump))
 		}
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
+	resp, respErr := client.Do(req)
+	if respErr != nil {
+		return respErr
+	} else {
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
+			return errors.New("Http Response Code Error")
+		}
 	}
 	defer resp.Body.Close()
 
-	byteValue, err := ioutil.ReadAll(resp.Body)
+	byteValue, bvErr := ioutil.ReadAll(resp.Body)
 
-	if err != nil {
-		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", err)
-		return
+	if bvErr != nil {
+		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", bvErr)
+		return bvErr
 	}
 
-	err = json.Unmarshal(byteValue, &data)
-	if err != nil {
+	jsonErr := json.Unmarshal(byteValue, &data)
+	if jsonErr != nil {
 		if configJSON.Verbose > 0 {
 			log.Println(string(byteValue))
 		}
-		log.Fatalf("Unable to parse JSON Data from AlertManager GET API, error: %v\n", err)
+		log.Printf("Unable to parse JSON Data from AlertManager GET API, error: %v\n", jsonErr)
+		return jsonErr
 	}
 
 	if configJSON.Verbose > 1 {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err == nil {
+		dump, dumpErr := httputil.DumpResponse(resp, true)
+		if dumpErr == nil {
 			log.Println("Response: ", string(dump))
 		}
 	}
 
+	return nil
 }
 
-func silence(data amJSON, mData amJSON) {
-	// GET API for fetching only GGUS alerts.
-	apiurl := configJSON.CMSMONURL + configJSON.PostSilenceAPI
+//Function for post request on /api/v1/silences alertmanager endpoint for creating silences.
+func silence(data amJSON, mData amJSON) error {
+	// POST API for creating silences.
+	apiurl := construct(configJSON.CMSMONURL, configJSON.PostSilenceAPI)
 
 	var sData silenceData
 	sData.StartsAt = mData.StartsAt //Start Time equal to maintenance alert	   //So that when maintenance alerts vanishes, ongoing alerts comes back alive.
@@ -146,39 +172,50 @@ func silence(data amJSON, mData amJSON) {
 	m.Name = configJSON.UniqueLabel
 	for k, v := range data.Labels {
 		if k == configJSON.UniqueLabel {
-			m.Value = v.(string)
+			if val, ok := v.(string); ok {
+				m.Value = val
+			}
 		}
 	}
 
 	sData.Matchers = append(sData.Matchers, m)
-	jsonStr, err := json.Marshal(sData)
+	jsonStr, jsonErr := json.Marshal(sData)
 
-	if err != nil {
-		log.Printf("Unable to convert JSON Data, error: %v\n", err)
+	if jsonErr != nil {
+		log.Printf("Unable to convert JSON Data, error: %v\n", jsonErr)
+		return jsonErr
 	}
 
-	req, err := http.NewRequest("POST", apiurl, bytes.NewBuffer(jsonStr))
+	req, reqErr := http.NewRequest("POST", apiurl, bytes.NewBuffer(jsonStr))
+	if reqErr != nil {
+		return reqErr
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	timeout := time.Duration(configJSON.HttpTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
 	if configJSON.Verbose > 1 {
-		dump, err := httputil.DumpRequestOut(req, true)
-		if err == nil {
+		dump, dumpErr := httputil.DumpRequestOut(req, true)
+		if dumpErr == nil {
 			log.Println("Request: ", string(dump))
 		}
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
+	resp, respErr := client.Do(req)
+	if respErr != nil {
+		return respErr
+	} else {
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
+			return errors.New("Http Response Code Error")
+		}
 	}
 	defer resp.Body.Close()
 
 	if configJSON.Verbose > 1 {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err == nil {
+		dump, dumpErr := httputil.DumpResponse(resp, true)
+		if dumpErr == nil {
 			log.Println("Response: ", string(dump))
 		}
 	}
@@ -186,6 +223,8 @@ func silence(data amJSON, mData amJSON) {
 	if configJSON.Verbose > 1 {
 		log.Printf("Silence Data:\n%+v\n", string(jsonStr))
 	}
+
+	return nil
 }
 
 //Function for silencing maintenance false alerts
@@ -206,7 +245,13 @@ func silenceMaintenance(filteredAlerts amData) {
 				for _, ins := range strings.Split(v.(string), ",") {
 					if val, ok := silenceMap[ins]; ok {
 						ifAnyAlert = true
-						silence(val, each)
+						silenceErr := silence(val, each)
+						if silenceErr != nil {
+							log.Printf("Could not silence, error: %v\n", silenceErr)
+							if configJSON.Verbose > 1 {
+								log.Printf("Silence Data: %s\n ", val)
+							}
+						}
 					}
 				}
 			}
@@ -244,16 +289,19 @@ func filterMaintenance(amdata amData) amData {
 func run() {
 
 	var amdata amData
-	get(&amdata)
+	getErr := get(&amdata)
+
+	if getErr != nil {
+		log.Fatalf("Could not get alerts. %v", getErr)
+	}
 
 	filtered := filterMaintenance(amdata)
 	silenceMaintenance(filtered)
 
 }
 
-func parseConfig(verbose int) {
-
-	configFile := os.Getenv("INTELLIGENCE_CONFIG_PATH") //INTELLIGENCE_CONFIG_PATH Environment Variable storing config filepath.
+//Function for parsing the config File
+func parseConfig(configFile string, verbose int) {
 
 	//Defaults in case no config file is provided
 	configJSON.CMSMONURL = "https://cms-monitoring.cern.ch"
@@ -268,7 +316,10 @@ func parseConfig(verbose int) {
 	configJSON.Interval = 10   // 10 sec interval for the service
 	configJSON.Verbose = verbose
 
-	if configFile != "" {
+	if stats, err := os.Stat(configFile); err == nil {
+		if configJSON.Verbose > 1 {
+			log.Printf("FileInfo: %s\n", stats)
+		}
 		jsonFile, e := os.Open(configFile)
 		if e != nil {
 			log.Fatalf("Config File not found, error: %s", e)
@@ -281,6 +332,8 @@ func parseConfig(verbose int) {
 		} else if configJSON.Verbose > 0 {
 			log.Printf("Load config from %s\n", configFile)
 		}
+	} else {
+		log.Fatalf("%s: Config File doesn't exist, error: %v", configFile, err)
 	}
 
 	if configJSON.Verbose > 0 {
@@ -295,6 +348,7 @@ func parseConfig(verbose int) {
 
 }
 
+//Function for running the logic on a time interval
 func runInfinite() {
 	for true {
 		run()
@@ -305,16 +359,16 @@ func runInfinite() {
 func main() {
 
 	var verbose int
+	var configFile string
+	flag.StringVar(&configFile, "config", "", "Config File path")
 	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: intelligence [options]")
 		flag.PrintDefaults()
-		fmt.Println("\nEnvironments:")
-		fmt.Println("\tINTELLIGENCE_CONFIG_PATH:\t Config Filepath")
 	}
 
 	flag.Parse()
-	parseConfig(verbose)
+	parseConfig(configFile, verbose)
 	runInfinite()
 }
