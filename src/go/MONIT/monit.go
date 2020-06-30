@@ -217,7 +217,7 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 	dbname = strings.Replace(dbname, "_*", "", -1)
 	dbname = strings.Replace(dbname, "*", "", -1)
 	q := fmt.Sprintf("{\"search_type\": \"query_then_fetch\", \"index\": [\"%s*\"], \"ignore_unavailable\": true}\n%s\n", dbname, query)
-	if esapi != "" {
+	if esapi != "_msearch" {
 		// if we provided with concrete API to use, e.g. _count
 		// we don't need to wrap the query
 		q = query
@@ -234,7 +234,7 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 			req.Header.Add(v[0], v[1])
 		}
 	}
-	if esapi != "" {
+	if esapi != "_msearch" {
 		// for concrete API use application/json content type
 		req.Header.Add("Content-type", "application/json")
 	} else {
@@ -874,6 +874,7 @@ func main() {
 		log.Println("dbid    ", dbid)
 		log.Println("database", database)
 		log.Println("dbtype  ", dbtype)
+		log.Println("esapi   ", esapi)
 		log.Println("hdfs    ", hdfs)
 	}
 	data := run(url, t, dbid, database, q, esapi, idx, limit, verbose)
