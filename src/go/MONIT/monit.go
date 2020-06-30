@@ -217,6 +217,11 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 	dbname = strings.Replace(dbname, "_*", "", -1)
 	dbname = strings.Replace(dbname, "*", "", -1)
 	q := fmt.Sprintf("{\"search_type\": \"query_then_fetch\", \"index\": [\"%s*\"], \"ignore_unavailable\": true}\n%s\n", dbname, query)
+	if esapi != "" {
+		// if we provided with concrete API to use, e.g. _count
+		// we don't need to wrap the query
+		q = query
+	}
 	if verbose > 0 {
 		log.Println(rurl, q)
 	}
@@ -229,7 +234,13 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 			req.Header.Add(v[0], v[1])
 		}
 	}
-	req.Header.Add("Content-type", "application/x-ndjson")
+	if esapi != "" {
+		// for concrete API use application/json content type
+		req.Header.Add("Content-type", "application/json")
+	} else {
+		// for _msearch (default) API we use specific json content type
+		req.Header.Add("Content-type", "application/x-ndjson")
+	}
 	if verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
@@ -834,6 +845,7 @@ func main() {
 		fmt.Print(string(b))
 		return
 	}
+	dbID := dbid
 	var database, dbtype string
 	if strings.Contains(q, "stats") {
 		dbid = 0
@@ -846,6 +858,10 @@ func main() {
 		if dbid == 0 {
 			log.Fatalf("No valid dbid found for %s", dbname)
 		}
+	}
+	// if user gave explicit dbid we should use it
+	if dbID > 0 {
+		dbid = dbID
 	}
 	if token == "" {
 		log.Fatalf("Please provide valid token")
