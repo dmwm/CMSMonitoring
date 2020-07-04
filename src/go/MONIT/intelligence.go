@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -23,7 +24,7 @@ import (
 
 //--------MAPS----------
 //Map for storing alertData with instance as key.
-var silenceMap map[string]amJSON
+var silenceMap map[string][]amJSON
 
 //--------MAPS----------
 
@@ -76,6 +77,7 @@ type config struct {
 	SeverityFilter string        `json:"severityFilter"`
 	SearchingLabel string        `json:"searchingLabel"`
 	UniqueLabel    string        `json:"uniqueLabel"`
+	Seperator      string        `json:"seperator"`
 	Comment        string        `json:"comment"`
 	Verbose        int           `json:"verbose"`
 }
@@ -234,6 +236,8 @@ func silenceMaintenance(filteredAlerts amData) {
 		if len(filteredAlerts.Data) == 0 {
 			log.Printf("No Maintenance Alert Found")
 			return
+		} else {
+			log.Printf("Maintenance Alert Data:\n%v\n\n", filteredAlerts)
 		}
 	}
 
@@ -242,14 +246,24 @@ func silenceMaintenance(filteredAlerts amData) {
 	for _, each := range filteredAlerts.Data {
 		for k, v := range each.Labels {
 			if k == configJSON.SearchingLabel {
-				for _, ins := range strings.Split(v.(string), ",") {
-					if val, ok := silenceMap[ins]; ok {
-						ifAnyAlert = true
-						silenceErr := silence(val, each)
-						if silenceErr != nil {
-							log.Printf("Could not silence, error: %v\n", silenceErr)
-							if configJSON.Verbose > 1 {
-								log.Printf("Silence Data: %s\n ", val)
+				for _, ins := range strings.Split(v.(string), configJSON.Seperator) {
+					if ins != "" {
+						re, err := regexp.Compile(ins + ":\\d*|" + ins + "$")
+						if err != nil {
+							log.Fatalf("Regex didn't compile %v", err)
+						}
+						for silenceMapKey, silenceMapValues := range silenceMap {
+							if re.Match([]byte(silenceMapKey)) {
+								ifAnyAlert = true
+								for _, silenceMapValue := range silenceMapValues {
+									silenceErr := silence(silenceMapValue, each)
+									if silenceErr != nil {
+										log.Printf("Could not silence, error: %v\n", silenceErr)
+										if configJSON.Verbose > 1 {
+											log.Printf("Silence Data: %s\n ", silenceMapValue)
+										}
+									}
+								}
 							}
 						}
 					}
@@ -267,17 +281,18 @@ func silenceMaintenance(filteredAlerts amData) {
 
 //Function for filtering maintenance alerts
 func filterMaintenance(amdata amData) amData {
-	silenceMap = make(map[string]amJSON)
+	silenceMap = make(map[string][]amJSON)
 	var maintenanceData amData
 
 	for _, each := range amdata.Data {
 		for k, v := range each.Labels {
 			if k == "severity" && v == configJSON.SeverityFilter {
 				maintenanceData.Data = append(maintenanceData.Data, each)
-			}
-			if k == configJSON.SearchingLabel {
-				if len(strings.Split(v.(string), ",")) == 1 {
-					silenceMap[v.(string)] = each
+			} else {
+				if k == configJSON.SearchingLabel {
+					if len(strings.Split(v.(string), configJSON.Seperator)) == 1 {
+						silenceMap[v.(string)] = append(silenceMap[v.(string)], each)
+					}
 				}
 			}
 		}
@@ -310,6 +325,7 @@ func parseConfig(configFile string, verbose int) {
 	configJSON.SeverityFilter = "maintenance"
 	configJSON.SearchingLabel = "instance"
 	configJSON.UniqueLabel = "alertname"
+	configJSON.Seperator = " "
 	configJSON.Comment = "maintenance"
 	configJSON.CreatedBy = "admin"
 	configJSON.HttpTimeout = 3 //3 secs timeout for HTTP requests
