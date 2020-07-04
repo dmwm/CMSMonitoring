@@ -13,7 +13,6 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -246,7 +245,7 @@ func silenceMaintenance(filteredAlerts amData) {
 	for _, each := range filteredAlerts.Data {
 		for k, v := range each.Labels {
 			if k == configJSON.SearchingLabel {
-				for _, ins := range strings.Split(v.(string), configJSON.Seperator) {
+				for _, ins := range regexp.MustCompile("["+configJSON.Seperator+"\\,\\s]+").Split(v.(string), -1) {
 					if ins != "" {
 						re, err := regexp.Compile(ins + ":\\d*|" + ins + "$")
 						if err != nil {
@@ -290,7 +289,7 @@ func filterMaintenance(amdata amData) amData {
 				maintenanceData.Data = append(maintenanceData.Data, each)
 			} else {
 				if k == configJSON.SearchingLabel {
-					if len(strings.Split(v.(string), configJSON.Seperator)) == 1 {
+					if len(regexp.MustCompile("["+configJSON.Seperator+"\\,\\s]+").Split(v.(string), -1)) == 1 {
 						silenceMap[v.(string)] = append(silenceMap[v.(string)], each)
 					}
 				}
