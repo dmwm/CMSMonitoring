@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/intelligence/models"
 	"go/intelligence/pipeline"
 	"go/intelligence/utils"
 )
@@ -14,17 +15,19 @@ import (
 
 //Function running all logics
 func run() {
+	var processedData []models.AmJSON
 	a := pipeline.Silence(pipeline.PushAlert(
 		pipeline.MlBox(
 			pipeline.KeywordMatching(
 				pipeline.Preprocess(
 					pipeline.FetchAlert())))))
 
-	if utils.ConfigJSON.Verbose > 2 {
-		fmt.Println("Processed Alerts Data:")
-		for d := range a {
-			fmt.Println(d)
-		}
+	for d := range a {
+		processedData = append(processedData, d)
+	}
+
+	if utils.ConfigJSON.Server.Verbose > 2 {
+		fmt.Printf("Processed Alerts Data: %s\n", processedData)
 	}
 }
 

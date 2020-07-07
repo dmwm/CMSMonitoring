@@ -27,7 +27,7 @@ func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 			err := post(each)
 			if err != nil {
 				log.Printf("Could not push alert, error:%v\n", err)
-				if utils.ConfigJSON.Verbose > 1 {
+				if utils.ConfigJSON.Server.Verbose > 1 {
 					log.Printf("Alert Data: %s\n ", each)
 				}
 			}
@@ -40,7 +40,7 @@ func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 //post function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
 func post(data models.AmJSON) error {
-	apiurl := utils.ValidateURL(utils.ConfigJSON.CMSMONURL, utils.ConfigJSON.PostAlertsAPI)
+	apiurl := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.PostAlertsAPI)
 	var finalData []models.AmJSON
 	finalData = append(finalData, data)
 
@@ -57,10 +57,10 @@ func post(data models.AmJSON) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	timeout := time.Duration(utils.ConfigJSON.HTTPTimeout) * time.Second
+	timeout := time.Duration(utils.ConfigJSON.Server.HTTPTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -79,7 +79,7 @@ func post(data models.AmJSON) error {
 
 	defer resp.Body.Close()
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
@@ -88,7 +88,7 @@ func post(data models.AmJSON) error {
 		}
 	}
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		fmt.Println("Pushed Alerts: ", string(jsonStr))
 	}
 

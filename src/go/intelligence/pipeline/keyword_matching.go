@@ -3,6 +3,7 @@ package pipeline
 import (
 	"go/intelligence/models"
 	"go/intelligence/utils"
+	"reflect"
 	"strings"
 )
 
@@ -11,17 +12,27 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CERN MONIT infrastructure Intelligence Module
 
+//KeywordMatchFunction sd
+type KeywordMatchFunction struct{}
+
 //KeywordMatching function finds defined keywords in the shortDescription of alerts and assign severity level accordingly
 func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	dataWithSeverity := make(chan models.AmJSON)
+
 	go func() {
 		for each := range data {
-			if each.Labels["service"] == "SSB" {
-				ssbKeywordMatching(&each)
-			}
-			if each.Labels["service"] == "GGUS" {
-				ggusKeywordMatching(&each)
+
+			for _, service := range utils.ConfigJSON.Services {
+				// Using Reflection for dynamic keyword matching function calling
+				// For details on Reflection see
+				// http://golang.org/pkg/net/rpc/
+				// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
+				// https://play.golang.org/p/Yd-WDRzura
+				t := reflect.ValueOf(KeywordMatchFunction{})
+				m := t.MethodByName(service.KeywordMatchFunction)                         // associative function for keyword matching
+				args := []reflect.Value{reflect.ValueOf(&each), reflect.ValueOf(service)} // list of function arguments
+				m.Call(args)
 			}
 
 			dataWithSeverity <- each
@@ -32,59 +43,58 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return dataWithSeverity
 }
 
-//SSB alerts KeywordMatching function
-func ssbKeywordMatching(data *models.AmJSON) {
+//SsbKeywordMatching SSB alerts KeywordMatching function
+func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models.Service) {
+
 	assignSeverityLevel := ""
 	maxSeverityLevel := -1
 
 	for key, value := range data.Annotations {
-		if key == utils.ConfigJSON.SsbKeywordLabel {
-			for k, v := range utils.ConfigJSON.SsbSeverityMap {
+		if key == srv.KeywordLabel {
+			for k, v := range srv.SeverityMap {
 				if val, ok := value.(string); ok {
-					if strings.Contains(val, k) {
-						if utils.ConfigJSON.SeverityLevels[v] > maxSeverityLevel {
-							maxSeverityLevel = utils.ConfigJSON.SeverityLevels[v]
+					if strings.Contains(strings.ToLower(val), k) {
+						if utils.ConfigJSON.Alerts.SeverityLevels[v] > maxSeverityLevel {
+							maxSeverityLevel = utils.ConfigJSON.Alerts.SeverityLevels[v]
 							assignSeverityLevel = v
 						}
 					}
 				}
 			}
-			break
 		}
 	}
 
 	for key := range data.Labels {
-		if key == utils.ConfigJSON.SeverityLabel {
+		if key == utils.ConfigJSON.Alerts.SeverityLabel {
 			if assignSeverityLevel != "" {
-				data.Labels[utils.ConfigJSON.SeverityLabel] = assignSeverityLevel
+				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = assignSeverityLevel
 			} else {
-				data.Labels[utils.ConfigJSON.SeverityLabel] = utils.ConfigJSON.DefaultSeverityLevel
+				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = utils.ConfigJSON.Alerts.DefaultSeverityLevel
 			}
-			break
 		}
 	}
+
 }
 
-//GGUS alerts KeywordMatching function
-func ggusKeywordMatching(data *models.AmJSON) {
+//GgusKeywordMatching GGUS alerts KeywordMatching function
+func (k KeywordMatchFunction) GgusKeywordMatching(data *models.AmJSON, srv models.Service) {
+
 	assignSeverityLevel := ""
 	for key, value := range data.Annotations {
-		if key == utils.ConfigJSON.GGUSKeywordLabel {
+		if key == srv.KeywordLabel {
 			if val, ok := value.(string); ok {
-				assignSeverityLevel = utils.ConfigJSON.GGUSSeverityMap[val]
+				assignSeverityLevel = srv.SeverityMap[val]
 			}
-			break
 		}
 	}
 
 	for key := range data.Labels {
-		if key == utils.ConfigJSON.SeverityLabel {
+		if key == utils.ConfigJSON.Alerts.SeverityLabel {
 			if assignSeverityLevel != "" {
-				data.Labels[utils.ConfigJSON.SeverityLabel] = assignSeverityLevel
+				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = assignSeverityLevel
 			} else {
-				data.Labels[utils.ConfigJSON.SeverityLabel] = utils.ConfigJSON.DefaultSeverityLevel
+				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = utils.ConfigJSON.Alerts.DefaultSeverityLevel
 			}
-			break
 		}
 	}
 }

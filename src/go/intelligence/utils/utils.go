@@ -33,30 +33,24 @@ func ValidateURL(baseURL, apiURL string) string {
 func ParseConfig(configFile string, verbose int) {
 
 	//Defaults in case no config file is provided
-	ConfigJSON.CMSMONURL = "https://cms-monitoring.cern.ch"
-	ConfigJSON.GetAlertsAPI = "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
-	ConfigJSON.PostAlertsAPI = "/api/v1/alerts"
-	ConfigJSON.PostSilenceAPI = "/api/v1/silences"
-	ConfigJSON.HTTPTimeout = 3 //3 secs timeout for HTTP requests
-	ConfigJSON.Interval = 10   // 10 sec interval for the service
-	ConfigJSON.Verbose = verbose
+	ConfigJSON.Server.CMSMONURL = "https://cms-monitoring.cern.ch"
+	ConfigJSON.Server.GetAlertsAPI = "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
+	ConfigJSON.Server.PostAlertsAPI = "/api/v1/alerts"
+	ConfigJSON.Server.PostSilenceAPI = "/api/v1/silences"
+	ConfigJSON.Server.HTTPTimeout = 3 //3 secs timeout for HTTP requests
+	ConfigJSON.Server.Interval = 10   // 10 sec interval for the service
+	ConfigJSON.Server.Verbose = verbose
 
-	ConfigJSON.UniqueLabel = "alertname"
-	ConfigJSON.Comment = "maintenance"
-	ConfigJSON.CreatedBy = "admin"
+	ConfigJSON.Silence.Comment = "maintenance"
+	ConfigJSON.Silence.CreatedBy = "admin"
 
-	ConfigJSON.SeverityLabel = "severity"
-
-	ConfigJSON.SsbKeywordLabel = "shortDescription"
-	ConfigJSON.DefaultSSBSeverityLevel = "info"
-
-	ConfigJSON.GGUSKeywordLabel = "Priority"
-	ConfigJSON.DefaultGGUSSeverityLevel = "ticket"
-
-	ConfigJSON.DefaultSeverityLevel = "info"
+	ConfigJSON.Alerts.UniqueLabel = "alertname"
+	ConfigJSON.Alerts.SeverityLabel = "severity"
+	ConfigJSON.Alerts.ServiceLabel = "service"
+	ConfigJSON.Alerts.DefaultSeverityLevel = "info"
 
 	if stats, err := os.Stat(configFile); err == nil {
-		if ConfigJSON.Verbose > 1 {
+		if ConfigJSON.Server.Verbose > 1 {
 			log.Printf("FileInfo: %s\n", stats)
 		}
 		jsonFile, e := os.Open(configFile)
@@ -68,20 +62,20 @@ func ParseConfig(configFile string, verbose int) {
 		err := decoder.Decode(&ConfigJSON)
 		if err != nil {
 			log.Fatalf("Config JSON File can't be loaded, error: %s", err)
-		} else if ConfigJSON.Verbose > 0 {
+		} else if ConfigJSON.Server.Verbose > 0 {
 			log.Printf("Load config from %s\n", configFile)
 		}
 	} else {
 		log.Fatalf("%s: Config File doesn't exist, error: %v", configFile, err)
 	}
 
-	if ConfigJSON.Verbose > 0 {
+	if ConfigJSON.Server.Verbose > 0 {
 		log.SetFlags(log.LstdFlags | log.Lshortfile)
 	} else {
 		log.SetFlags(log.LstdFlags)
 	}
 
-	if ConfigJSON.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 1 {
 		log.Printf("Configuration:\n%+v\n", ConfigJSON)
 	}
 

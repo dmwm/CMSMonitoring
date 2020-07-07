@@ -35,8 +35,8 @@ type SilenceData struct {
 	Comment   string     `json:"comment"`
 }
 
-//Config data struct
-type Config struct {
+//server data struct
+type server struct {
 	CMSMONURL      string        `json:"cmsmonURL"`
 	GetAlertsAPI   string        `json:"getAlertsAPI"`
 	PostAlertsAPI  string        `json:"postAlertsAPI"`
@@ -44,21 +44,36 @@ type Config struct {
 	HTTPTimeout    int           `json:"httpTimeout"`
 	Interval       time.Duration `json:"interval"`
 	Verbose        int           `json:"verbose"`
+}
 
-	CreatedBy   string `json:"createdBy"`
-	UniqueLabel string `json:"uniqueLabel"`
-	Comment     string `json:"comment"`
-
-	SeverityLabel string `json:"severityLabel"`
-
-	SsbKeywordLabel         string            `json:"ssbKeywordLabel"`
-	DefaultSSBSeverityLevel string            `json:"defaultSSBSeverityLevel"`
-	SsbSeverityMap          map[string]string `json:"ssbSeverityMap"`
-
-	GGUSKeywordLabel         string            `json:"ggusKeywordLabel"`
-	DefaultGGUSSeverityLevel string            `json:"defaultGGUSSeverityLevel"`
-	GGUSSeverityMap          map[string]string `json:"ggusSeverityMap"`
-
-	SeverityLevels       map[string]int `json:"severityLevels"`
+//alert data struct
+type alert struct {
+	UniqueLabel          string         `json:"uniqueLabel"`
+	SeverityLabel        string         `json:"severityLabel"`
+	ServiceLabel         string         `json:"serviceLabel"`
 	DefaultSeverityLevel string         `json:"defaultSeverityLevel"`
+	SeverityLevels       map[string]int `json:"severityLevels"`
+}
+
+//silence data struct
+type silence struct {
+	CreatedBy string `json:"createdBy"`
+	Comment   string `json:"comment"`
+}
+
+//Service data struct
+type Service struct {
+	Name                 string            `json:"name"`
+	KeywordLabel         string            `json:"keywordLabel"`
+	DefaultLevel         string            `json:"defaultLevel"`
+	KeywordMatchFunction string            `json:"keywordMatchFunction"`
+	SeverityMap          map[string]string `json:"severityMap"`
+}
+
+//Config data struct
+type Config struct {
+	Server   server    `json:"server"`
+	Alerts   alert     `json:"alerts"`
+	Silence  silence   `json:"silence"`
+	Services []Service `json:"services"`
 }

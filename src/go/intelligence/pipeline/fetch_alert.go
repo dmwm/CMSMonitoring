@@ -23,7 +23,7 @@ func FetchAlert() <-chan models.AmJSON {
 	go func() {
 		data, err := get()
 		if err != nil {
-			log.Fatalf("Could not fetch alerts from AlertManager, error:%v\n", err)
+			log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
 		}
 		for _, each := range data.Data {
 			fetchedData <- each
@@ -37,7 +37,7 @@ func FetchAlert() <-chan models.AmJSON {
 func get() (models.AmData, error) {
 
 	var data models.AmData
-	apiurl := utils.ValidateURL(utils.ConfigJSON.CMSMONURL, utils.ConfigJSON.GetAlertsAPI) //GET API for fetching all AM alerts.
+	apiurl := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.GetAlertsAPI) //GET API for fetching all AM alerts.
 
 	req, err := http.NewRequest("GET", apiurl, nil)
 	if err != nil {
@@ -47,10 +47,10 @@ func get() (models.AmData, error) {
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
 
-	timeout := time.Duration(utils.ConfigJSON.HTTPTimeout) * time.Second
+	timeout := time.Duration(utils.ConfigJSON.Server.HTTPTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -80,14 +80,14 @@ func get() (models.AmData, error) {
 
 	err = json.Unmarshal(byteValue, &data)
 	if err != nil {
-		if utils.ConfigJSON.Verbose > 0 {
+		if utils.ConfigJSON.Server.Verbose > 0 {
 			log.Println(string(byteValue))
 		}
 		log.Printf("Unable to parse JSON Data from AlertManager GET API, error: %v\n", err)
 		return data, err
 	}
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))

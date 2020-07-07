@@ -26,7 +26,7 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 			err := silenceAlert(each)
 			if err != nil {
 				log.Printf("Could not silence alert, error:%v\n", err)
-				if utils.ConfigJSON.Verbose > 1 {
+				if utils.ConfigJSON.Server.Verbose > 1 {
 					log.Printf("Silence Data: %s\n ", each)
 				}
 			}
@@ -39,7 +39,7 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 func silenceAlert(data models.AmJSON) error {
 
-	apiurl := utils.ValidateURL(utils.ConfigJSON.CMSMONURL, utils.ConfigJSON.PostSilenceAPI) // POST API for creating silences.
+	apiurl := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.PostSilenceAPI) // POST API for creating silences.
 
 	var sData models.SilenceData
 	var alertnameMatcher models.Matchers
@@ -47,26 +47,24 @@ func silenceAlert(data models.AmJSON) error {
 
 	sData.StartsAt = data.StartsAt //Start Time equal to main alert	   //So that the silence remains on old alert till the lifetime of the alert
 	sData.EndsAt = data.EndsAt     //End Time equal to main alert	  //So that the silence remains on old alert till the lifetime of the alert
-	sData.CreatedBy = utils.ConfigJSON.CreatedBy
-	sData.Comment = utils.ConfigJSON.Comment
+	sData.CreatedBy = utils.ConfigJSON.Silence.CreatedBy
+	sData.Comment = utils.ConfigJSON.Silence.Comment
 
-	alertnameMatcher.Name = utils.ConfigJSON.UniqueLabel
-	severityMatcher.Name = utils.ConfigJSON.SeverityLabel
+	alertnameMatcher.Name = utils.ConfigJSON.Alerts.UniqueLabel
+	severityMatcher.Name = utils.ConfigJSON.Alerts.SeverityLabel
 
 	for k, v := range data.Labels {
-		if k == utils.ConfigJSON.UniqueLabel {
+		if k == utils.ConfigJSON.Alerts.UniqueLabel {
 			if val, ok := v.(string); ok {
 				alertnameMatcher.Value = val
 			}
 		}
 
-		if k == utils.ConfigJSON.SeverityLabel {
-			if data.Labels["service"] == "SSB" {
-				severityMatcher.Value = utils.ConfigJSON.DefaultSSBSeverityLevel
-			}
-
-			if data.Labels["service"] == "GGUS" {
-				severityMatcher.Value = utils.ConfigJSON.DefaultGGUSSeverityLevel
+		if k == utils.ConfigJSON.Alerts.SeverityLabel {
+			for _, service := range utils.ConfigJSON.Services {
+				if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+					severityMatcher.Value = service.DefaultLevel
+				}
 			}
 		}
 	}
@@ -87,10 +85,10 @@ func silenceAlert(data models.AmJSON) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	timeout := time.Duration(utils.ConfigJSON.HTTPTimeout) * time.Second
+	timeout := time.Duration(utils.ConfigJSON.Server.HTTPTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -111,7 +109,7 @@ func silenceAlert(data models.AmJSON) error {
 
 	defer resp.Body.Close()
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
@@ -120,7 +118,7 @@ func silenceAlert(data models.AmJSON) error {
 		}
 	}
 
-	if utils.ConfigJSON.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		log.Printf("Silence Data:\n%+v\n", string(jsonStr))
 	}
 
