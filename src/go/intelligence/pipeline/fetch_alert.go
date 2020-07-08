@@ -78,15 +78,6 @@ func get() (models.AmData, error) {
 		return data, err
 	}
 
-	err = json.Unmarshal(byteValue, &data)
-	if err != nil {
-		if utils.ConfigJSON.Server.Verbose > 0 {
-			log.Println(string(byteValue))
-		}
-		log.Printf("Unable to parse JSON Data from AlertManager GET API, error: %v\n", err)
-		return data, err
-	}
-
 	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
@@ -94,6 +85,15 @@ func get() (models.AmData, error) {
 		} else {
 			return data, err
 		}
+	}
+
+	err = json.Unmarshal(byteValue, &data)
+	if err != nil {
+		if utils.ConfigJSON.Server.Verbose > 0 {
+			log.Println(string(byteValue))
+		}
+		log.Printf("Unable to parse JSON Data from AlertManager GET API, error: %v\n", err)
+		return data, err
 	}
 
 	return data, nil
