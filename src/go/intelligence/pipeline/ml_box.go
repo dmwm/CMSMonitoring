@@ -10,8 +10,12 @@ import (
 // Description: CERN MONIT infrastructure Intelligence Module
 
 //MlBox Machine Learning predicted Data
-//To be implemented
 func MlBox(data <-chan models.AmJSON) <-chan models.AmJSON {
+
+	/*
+		IMPLEMENT THE LOGIC OF ML PREDICTIONS
+		so far we are returning back the data without any predictions.
+	*/
 
 	predictedData := make(chan models.AmJSON)
 	go func() {

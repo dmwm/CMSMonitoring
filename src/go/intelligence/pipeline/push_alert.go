@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"go/intelligence/models"
 	"go/intelligence/utils"
 	"log"
@@ -87,7 +86,7 @@ func post(data models.AmJSON) error {
 	}
 
 	if utils.ConfigJSON.Server.Verbose > 1 {
-		fmt.Println("Pushed Alerts: ", string(jsonStr))
+		log.Println("Pushed Alerts: ", string(jsonStr))
 	}
 
 	return nil
