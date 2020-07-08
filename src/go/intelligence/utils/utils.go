@@ -11,10 +11,13 @@ import (
 // Module     : intelligence
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Wed, 1 July 2020 11:04:01 GMT
-// Description: CERN MONIT infrastructure Intelligence Module
+// Description: CMS MONIT infrastructure Intelligence Module
 
 //ConfigJSON variable
 var ConfigJSON models.Config
+
+//IfSilencedMap for storing ongoing silences
+var IfSilencedMap map[string]int
 
 //ValidateURL function for constructing and validating AM URL
 func ValidateURL(baseURL, apiURL string) string {
@@ -36,6 +39,7 @@ func ParseConfig(configFile string, verbose int) {
 	ConfigJSON.Server.CMSMONURL = "https://cms-monitoring.cern.ch"
 	ConfigJSON.Server.GetAlertsAPI = "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
 	ConfigJSON.Server.PostAlertsAPI = "/api/v1/alerts"
+	ConfigJSON.Server.GetSilencesAPI = "/api/v1/silences"
 	ConfigJSON.Server.PostSilenceAPI = "/api/v1/silences"
 	ConfigJSON.Server.HTTPTimeout = 3 //3 secs timeout for HTTP requests
 	ConfigJSON.Server.Interval = 10   // 10 sec interval for the service
@@ -43,6 +47,7 @@ func ParseConfig(configFile string, verbose int) {
 
 	ConfigJSON.Silence.Comment = "maintenance"
 	ConfigJSON.Silence.CreatedBy = "admin"
+	ConfigJSON.Silence.ActiveStatus = "active"
 
 	ConfigJSON.Alerts.UniqueLabel = "alertname"
 	ConfigJSON.Alerts.SeverityLabel = "severity"
