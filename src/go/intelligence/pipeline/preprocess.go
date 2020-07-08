@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"go/intelligence/models"
+	"go/intelligence/utils"
 )
 
 // Module     : intelligence
@@ -15,8 +16,10 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 	preprocessedData := make(chan models.AmJSON)
 	go func() {
 		for each := range data {
-			if each.Labels["service"] == "SSB" || each.Labels["service"] == "GGUS" {
-				preprocessedData <- each
+			for _, service := range utils.ConfigJSON.Services {
+				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+					preprocessedData <- each
+				}
 			}
 		}
 		close(preprocessedData)
