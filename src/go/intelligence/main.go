@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"go/intelligence/models"
 	"go/intelligence/pipeline"
 	"go/intelligence/utils"
+	"log"
 	"time"
 )
 
@@ -28,7 +28,7 @@ func run() {
 	}
 
 	if utils.ConfigJSON.Server.Verbose > 2 {
-		fmt.Printf("Processed Alerts Data: %s\n", processedData)
+		log.Printf("Processed Alerts Data: %s\n", processedData)
 	}
 }
 
@@ -47,7 +47,7 @@ func main() {
 	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
 
 	flag.Usage = func() {
-		fmt.Println("Usage: intelligence [options]")
+		log.Println("Usage: intelligence [options]")
 		flag.PrintDefaults()
 	}
 
