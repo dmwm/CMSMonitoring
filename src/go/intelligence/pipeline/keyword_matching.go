@@ -46,7 +46,7 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 //SsbKeywordMatching SSB alerts KeywordMatching function
 func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models.Service) {
 
-	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != "SSB" {
+	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != srv.Name {
 		return
 	}
 
@@ -82,7 +82,7 @@ func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models
 //GgusKeywordMatching GGUS alerts KeywordMatching function
 func (k KeywordMatchFunction) GgusKeywordMatching(data *models.AmJSON, srv models.Service) {
 
-	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != "GGUS" {
+	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != srv.Name {
 		return
 	}
 
