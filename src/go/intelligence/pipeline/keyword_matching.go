@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"fmt"
 	"go/intelligence/models"
 	"go/intelligence/utils"
 	"reflect"
@@ -46,6 +47,10 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 //SsbKeywordMatching SSB alerts KeywordMatching function
 func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models.Service) {
 
+	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != "SSB" {
+		return
+	}
+
 	assignSeverityLevel := ""
 	maxSeverityLevel := -1
 
@@ -64,6 +69,7 @@ func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models
 		}
 	}
 
+	fmt.Println(assignSeverityLevel)
 	for key := range data.Labels {
 		if key == utils.ConfigJSON.Alerts.SeverityLabel {
 			if assignSeverityLevel != "" {
@@ -74,10 +80,16 @@ func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models
 		}
 	}
 
+	fmt.Println(data)
+
 }
 
 //GgusKeywordMatching GGUS alerts KeywordMatching function
 func (k KeywordMatchFunction) GgusKeywordMatching(data *models.AmJSON, srv models.Service) {
+
+	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != "GGUS" {
+		return
+	}
 
 	assignSeverityLevel := ""
 	for key, value := range data.Annotations {
