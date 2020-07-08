@@ -351,7 +351,7 @@ func alert(inp string) {
 func main() {
 
 	var inp string
-	severity = "info" // TODO: repalce with severity level from the annotations
+	severity = "notification" // TODO: repalce with severity level from the annotations
 	tag = "monitoring"
 	service = "SSB"
 
