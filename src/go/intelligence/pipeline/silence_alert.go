@@ -92,8 +92,6 @@ func silenceAlert(data models.AmJSON) error {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
-		} else {
-			return err
 		}
 	}
 
@@ -113,8 +111,6 @@ func silenceAlert(data models.AmJSON) error {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
-		} else {
-			return err
 		}
 	}
 

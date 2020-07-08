@@ -6,6 +6,7 @@ import (
 	"go/intelligence/models"
 	"go/intelligence/pipeline"
 	"go/intelligence/utils"
+	"time"
 )
 
 // Module     : intelligence
@@ -31,6 +32,13 @@ func run() {
 	}
 }
 
+func runInfinite() {
+	for true {
+		run()
+		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
+	}
+}
+
 func main() {
 
 	var verbose int
@@ -46,5 +54,5 @@ func main() {
 	flag.Parse()
 	utils.ParseConfig(configFile, verbose)
 
-	run()
+	runInfinite()
 }

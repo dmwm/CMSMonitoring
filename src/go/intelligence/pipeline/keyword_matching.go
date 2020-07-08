@@ -24,15 +24,19 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 		for each := range data {
 
 			for _, service := range utils.ConfigJSON.Services {
-				// Using Reflection for dynamic keyword matching function calling
-				// For details on Reflection see
-				// http://golang.org/pkg/net/rpc/
-				// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
-				// https://play.golang.org/p/Yd-WDRzura
-				t := reflect.ValueOf(KeywordMatchFunction{})
-				m := t.MethodByName(service.KeywordMatchFunction)                         // associative function for keyword matching
-				args := []reflect.Value{reflect.ValueOf(&each), reflect.ValueOf(service)} // list of function arguments
-				m.Call(args)
+
+				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+					// Using Reflection for dynamic keyword matching function calling
+					// For details on Reflection see
+					// http://golang.org/pkg/net/rpc/
+					// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
+					// https://play.golang.org/p/Yd-WDRzura
+					t := reflect.ValueOf(KeywordMatchFunction{})
+					m := t.MethodByName(service.KeywordMatchFunction)                         // associative function for keyword matching
+					args := []reflect.Value{reflect.ValueOf(&each), reflect.ValueOf(service)} // list of function arguments
+					m.Call(args)
+				}
+
 			}
 
 			dataWithSeverity <- each
@@ -45,10 +49,6 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 //SsbKeywordMatching SSB alerts KeywordMatching function
 func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models.Service) {
-
-	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != srv.Name {
-		return
-	}
 
 	assignSeverityLevel := ""
 	maxSeverityLevel := -1
@@ -81,10 +81,6 @@ func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models
 
 //GgusKeywordMatching GGUS alerts KeywordMatching function
 func (k KeywordMatchFunction) GgusKeywordMatching(data *models.AmJSON, srv models.Service) {
-
-	if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] != srv.Name {
-		return
-	}
 
 	assignSeverityLevel := ""
 	for key, value := range data.Annotations {

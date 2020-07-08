@@ -54,8 +54,6 @@ func get() (models.AmData, error) {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
-		} else {
-			return data, err
 		}
 	}
 
@@ -82,8 +80,6 @@ func get() (models.AmData, error) {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
-		} else {
-			return data, err
 		}
 	}
 

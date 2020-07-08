@@ -83,8 +83,6 @@ func post(data models.AmJSON) error {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
-		} else {
-			return err
 		}
 	}
 
