@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"fmt"
 	"go/intelligence/models"
 	"go/intelligence/utils"
 	"reflect"
@@ -69,7 +68,6 @@ func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models
 		}
 	}
 
-	fmt.Println(assignSeverityLevel)
 	for key := range data.Labels {
 		if key == utils.ConfigJSON.Alerts.SeverityLabel {
 			if assignSeverityLevel != "" {
@@ -79,9 +77,6 @@ func (k KeywordMatchFunction) SsbKeywordMatching(data *models.AmJSON, srv models
 			}
 		}
 	}
-
-	fmt.Println(data)
-
 }
 
 //GgusKeywordMatching GGUS alerts KeywordMatching function
