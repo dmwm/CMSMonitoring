@@ -46,6 +46,15 @@ type AllSilences struct {
 	Data []SilenceData // Array of struct SilenceData required for GET API call data storage
 }
 
+//GrafanaDashboard data struct for storing Annotation's information to each dashboard
+type GrafanaDashboard struct {
+	DashboardID int      `json:"dashboardId"`
+	Time        int64    `json:"time"`
+	TimeEnd     int64    `json:"timeEnd"`
+	Tags        []string `json:"tags"`
+	Text        string   `json:"text"`
+}
+
 //server data struct
 type server struct {
 	CMSMONURL      string        `json:"cmsmonURL"`      //CMSMON URL for AlertManager API
@@ -56,6 +65,14 @@ type server struct {
 	HTTPTimeout    int           `json:"httpTimeout"`    //Timeout for HTTP Requests
 	Interval       time.Duration `json:"interval"`       //Time Interval at which the intelligence service will repeat
 	Verbose        int           `json:"verbose"`        //Verbosity Level
+}
+
+type annotation struct {
+	URL                string `json:"URL"`                //Dashboards' Base URL for sending annotation
+	DashboardSearchAPI string `json:"dashboardSearchAPI"` //API endpoint for searching dashboards with tags
+	AnnotationAPI      string `json:"annotationAPI"`      //API endpoint for pushing annotations
+	Tags               string `json:"tags"`               //Tags for the dashboards
+	Token              string `json:"token"`              //Admin's Token required for sending requests
 }
 
 //alert data struct
@@ -74,18 +91,26 @@ type silence struct {
 	ActiveStatus string `json:"activeStatus"` //Label for active status of the silence
 }
 
+type annotationMap struct {
+	Label   string   `json:"label"`
+	Actions []string `json:"actions"`
+	Systems []string `json:"systems"`
+}
+
 //Service data struct
 type Service struct {
-	Name         string            `json:"name"`         //Name of a service (eg. SSB, GGUS)
-	KeywordLabel string            `json:"keywordLabel"` //Field in which the service tries to match keyword
-	DefaultLevel string            `json:"defaultLevel"` //Default Severity Level assigned to the alert at the time of it's creation
-	SeverityMap  map[string]string `json:"severityMap"`  //Map for severity levels for a service
+	Name          string            `json:"name"`          //Name of a service (eg. SSB, GGUS)
+	KeywordLabel  string            `json:"keywordLabel"`  //Field in which the service tries to match keyword
+	DefaultLevel  string            `json:"defaultLevel"`  //Default Severity Level assigned to the alert at the time of it's creation
+	SeverityMap   map[string]string `json:"severityMap"`   //Map for severity levels for a service
+	AnnotationMap annotationMap     `json:"annotationMap"` //Map for Dashboard annotations' keywords
 }
 
 //Config data struct
 type Config struct {
-	Server   server    `json:"server"`   //server struct
-	Alerts   alert     `json:"alerts"`   //Alert struct
-	Silence  silence   `json:"silence"`  //Silence struct
-	Services []Service `json:"services"` //Array of Service
+	Server     server     `json:"server"`     //server struct
+	Annotation annotation `json:"annotation"` //annotation struct
+	Alerts     alert      `json:"alerts"`     //Alert struct
+	Silence    silence    `json:"silence"`    //Silence struct
+	Services   []Service  `json:"services"`   //Array of Service
 }
