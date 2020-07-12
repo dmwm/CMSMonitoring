@@ -97,7 +97,7 @@ func ParseConfig(configFile string, verbose int) {
 func FindDashboard() []map[string]interface{} {
 	tags := ParseTags()
 	var headers [][]string
-	bearer := fmt.Sprintf("Bearer %s", ConfigJSON.Annotation.Token)
+	bearer := fmt.Sprintf("Bearer %s", ConfigJSON.AnnotationDashboard.Token)
 	h := []string{"Authorization", bearer}
 	headers = append(headers, h)
 	h = []string{"Accept", "application/json"}
@@ -107,7 +107,7 @@ func FindDashboard() []map[string]interface{} {
 	for _, tag := range tags {
 		v.Set("tag", strings.Trim(tag, " "))
 	}
-	apiURL := fmt.Sprintf("%s%s?%s", ConfigJSON.Annotation.URL, ConfigJSON.Annotation.DashboardSearchAPI, v.Encode())
+	apiURL := fmt.Sprintf("%s%s?%s", ConfigJSON.AnnotationDashboard.URL, ConfigJSON.AnnotationDashboard.DashboardSearchAPI, v.Encode())
 
 	if ConfigJSON.Server.Verbose > 0 {
 		log.Println(apiURL)
@@ -156,7 +156,7 @@ func FindDashboard() []map[string]interface{} {
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L551
 func ParseTags() []string {
 	var tags []string
-	for _, tag := range strings.Split(ConfigJSON.Annotation.Tags, ",") {
+	for _, tag := range strings.Split(ConfigJSON.AnnotationDashboard.Tags, ",") {
 		tags = append(tags, strings.Trim(tag, " "))
 	}
 	return tags

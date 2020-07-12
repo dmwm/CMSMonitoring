@@ -27,42 +27,45 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 	go func() {
 		dashboards := utils.FindDashboard()
 		for each := range data {
+			var srv models.Service
+			ifServiceFound := false
+
 			for _, service := range utils.ConfigJSON.Services {
 				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
-					for _, action := range service.AnnotationMap.Actions {
-						if val, ok := each.Annotations[service.AnnotationMap.Label].(string); ok {
-							if strings.Contains(strings.ToLower(val), strings.ToLower(action)) {
-								for _, system := range service.AnnotationMap.Systems {
-									if val, ok := each.Annotations[service.AnnotationMap.Label].(string); ok {
-										if strings.Contains(strings.ToLower(val), strings.ToLower(system)) {
-											for _, dashboard := range dashboards {
-												var dashboardData models.GrafanaDashboard
-												if val, ok := dashboard["id"].(int); ok {
-													dashboardData.DashboardID = val
-												}
-												dashboardData.Time = each.StartsAt.Unix() * 1000
-												dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
-												dashboardData.Tags = utils.ParseTags()
-												if val, ok := each.Annotations["shortDescription"].(string); ok {
-													dashboardData.Text = val
-												}
-												dData, err := json.Marshal(dashboardData)
-												if err != nil {
-													log.Printf("Unable to convert the data into JSON %v, error: %v\n", dashboardData, err)
-												}
-												if utils.ConfigJSON.Server.Verbose > 0 {
-													log.Printf("Annotation: %v", dashboardData)
-												}
-												addAnnotationHelper(dData)
-											}
-										}
-									}
-								}
-							}
+					srv = service
+					ifServiceFound = true
+					break
+				}
+			}
+
+			if ifServiceFound {
+				ifActionFound := checkIfAvailable(srv.AnnotationMap.Actions, each, srv.AnnotationMap.Label)
+				ifSystemFound := checkIfAvailable(srv.AnnotationMap.Systems, each, srv.AnnotationMap.Label)
+
+				if ifActionFound && ifSystemFound {
+					for _, dashboard := range dashboards {
+						var dashboardData models.GrafanaDashboard
+						if val, ok := dashboard["id"].(float64); ok {
+							dashboardData.DashboardID = val
 						}
+						dashboardData.Time = each.StartsAt.Unix() * 1000
+						dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
+						dashboardData.Tags = utils.ParseTags()
+						if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
+							dashboardData.Text = srv.Name + ": " + val
+						}
+						dData, err := json.Marshal(dashboardData)
+						if err != nil {
+							log.Printf("Unable to convert the data into JSON %v, error: %v\n", dashboardData, err)
+						}
+						if utils.ConfigJSON.Server.Verbose > 0 {
+							log.Printf("Annotation: %v", dashboardData)
+						}
+						addAnnotationHelper(dData)
 					}
 				}
 			}
+
 			dataAfterAnnotation <- each
 		}
 
@@ -71,18 +74,30 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return dataAfterAnnotation
 }
 
+//function for finding if particular keyword is available or not in the given field of Alerts
+func checkIfAvailable(data []string, amData models.AmJSON, label string) bool {
+	for _, each := range data {
+		if val, ok := amData.Annotations[label].(string); ok {
+			if strings.Contains(strings.ToLower(val), strings.ToLower(each)) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 //addAnnotationHelper helper function
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L639
 func addAnnotationHelper(data []byte) {
 	var headers [][]string
-	bearer := fmt.Sprintf("Bearer %s", utils.ConfigJSON.Annotation.Token)
+	bearer := fmt.Sprintf("Bearer %s", utils.ConfigJSON.AnnotationDashboard.Token)
 	h := []string{"Authorization", bearer}
 	headers = append(headers, h)
 	h = []string{"Content-Type", "application/json"}
 	headers = append(headers, h)
 
-	apiURL := utils.ValidateURL(utils.ConfigJSON.Annotation.URL, utils.ConfigJSON.Annotation.AnnotationAPI)
+	apiURL := utils.ValidateURL(utils.ConfigJSON.AnnotationDashboard.URL, utils.ConfigJSON.AnnotationDashboard.AnnotationAPI)
 
 	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(data))
 	if err != nil {
@@ -115,6 +130,7 @@ func addAnnotationHelper(data []byte) {
 		}
 	}
 	body, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if utils.ConfigJSON.Server.Verbose > 1 {
 		log.Println("response Status:", resp.Status)
 		log.Println("response Headers:", resp.Header)

@@ -48,7 +48,7 @@ type AllSilences struct {
 
 //GrafanaDashboard data struct for storing Annotation's information to each dashboard
 type GrafanaDashboard struct {
-	DashboardID int      `json:"dashboardId"`
+	DashboardID float64  `json:"dashboardId"`
 	Time        int64    `json:"time"`
 	TimeEnd     int64    `json:"timeEnd"`
 	Tags        []string `json:"tags"`
@@ -67,7 +67,7 @@ type server struct {
 	Verbose        int           `json:"verbose"`        //Verbosity Level
 }
 
-type annotation struct {
+type annotationDashboard struct {
 	URL                string `json:"URL"`                //Dashboards' Base URL for sending annotation
 	DashboardSearchAPI string `json:"dashboardSearchAPI"` //API endpoint for searching dashboards with tags
 	AnnotationAPI      string `json:"annotationAPI"`      //API endpoint for pushing annotations
@@ -108,9 +108,9 @@ type Service struct {
 
 //Config data struct
 type Config struct {
-	Server     server     `json:"server"`     //server struct
-	Annotation annotation `json:"annotation"` //annotation struct
-	Alerts     alert      `json:"alerts"`     //Alert struct
-	Silence    silence    `json:"silence"`    //Silence struct
-	Services   []Service  `json:"services"`   //Array of Service
+	Server              server              `json:"server"`              //server struct
+	AnnotationDashboard annotationDashboard `json:"annotationDashboard"` //annotation Dashboard struct
+	Alerts              alert               `json:"alerts"`              //Alert struct
+	Silence             silence             `json:"silence"`             //Silence struct
+	Services            []Service           `json:"services"`            //Array of Service
 }
