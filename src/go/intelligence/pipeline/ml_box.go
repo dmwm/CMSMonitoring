@@ -9,7 +9,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//MlBox Machine Learning predicted Data
+//MlBox - Machine Learning predicted Data
 func MlBox(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	/*

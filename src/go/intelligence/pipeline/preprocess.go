@@ -17,7 +17,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//Preprocess function make required changes to alerts and filter only SSB and GGUS alerts
+//Preprocess - function make required changes to alerts and filter only SSB and GGUS alerts
 func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 	utils.IfSilencedMap = make(map[string]int)
 
@@ -49,7 +49,7 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return preprocessedData
 }
 
-//Function for updating the ifSilenced Map to help us not to push redundant silences
+//updateSilencedMap -function for updating the ifSilenced Map to help us not to push redundant silences
 func updateSilencedMap() error {
 
 	var data models.AllSilences

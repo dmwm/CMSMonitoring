@@ -19,13 +19,15 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//AddAnnotation function for adding annotations to dashboards
+//AddAnnotation - function for adding annotations to dashboards
 func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	dataAfterAnnotation := make(chan models.AmJSON)
 
 	go func() {
-		dashboards := utils.FindDashboard()
+		ptr := &utils.DCache
+		ptr.UpdateDashboardCache()
+
 		for each := range data {
 			var srv models.Service
 			ifServiceFound := false
@@ -43,17 +45,17 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 				ifSystemFound := checkIfAvailable(srv.AnnotationMap.Systems, each, srv.AnnotationMap.Label)
 
 				if ifActionFound && ifSystemFound {
-					for _, dashboard := range dashboards {
+					for _, dashboard := range utils.DCache.Dashboards {
 						var dashboardData models.GrafanaDashboard
-						if val, ok := dashboard["id"].(float64); ok {
-							dashboardData.DashboardID = val
-						}
+
+						dashboardData.DashboardID = dashboard.ID
 						dashboardData.Time = each.StartsAt.Unix() * 1000
 						dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
 						dashboardData.Tags = utils.ParseTags()
 						if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
 							dashboardData.Text = srv.Name + ": " + val
 						}
+
 						dData, err := json.Marshal(dashboardData)
 						if err != nil {
 							log.Printf("Unable to convert the data into JSON %v, error: %v\n", dashboardData, err)
@@ -74,7 +76,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return dataAfterAnnotation
 }
 
-//function for finding if particular keyword is available or not in the given field of Alerts
+//checkIfAvailable - function for finding if particular keyword is available or not in the given field of Alerts
 func checkIfAvailable(data []string, amData models.AmJSON, label string) bool {
 	for _, each := range data {
 		if val, ok := amData.Annotations[label].(string); ok {
@@ -86,7 +88,7 @@ func checkIfAvailable(data []string, amData models.AmJSON, label string) bool {
 	return false
 }
 
-//addAnnotationHelper helper function
+//addAnnotationHelper - helper function
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L639
 func addAnnotationHelper(data []byte) {

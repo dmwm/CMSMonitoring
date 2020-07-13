@@ -17,7 +17,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//PushAlert function for pushing modified alerts back to AlertManager
+//PushAlert - function for pushing modified alerts back to AlertManager
 func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 	c := make(chan models.AmJSON)
 
@@ -37,7 +37,7 @@ func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return c
 }
 
-//post function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
+//post - function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
 func post(data models.AmJSON) error {
 	apiurl := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.PostAlertsAPI)
 	var finalData []models.AmJSON

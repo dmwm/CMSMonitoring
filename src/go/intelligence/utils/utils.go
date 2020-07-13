@@ -21,10 +21,33 @@ import (
 //ConfigJSON variable
 var ConfigJSON models.Config
 
-//IfSilencedMap for storing ongoing silences
+//IfSilencedMap - variable for storing ongoing silences
 var IfSilencedMap map[string]int
 
-//ValidateURL function for constructing and validating AM URL
+//FirstRunSinceRestart - boolean variable for storing the information if the it's the first start of the service after restart or not
+var FirstRunSinceRestart bool
+
+//DashboardsCache - a cache for storing dashboards and Expiration time for updating the cache
+type DashboardsCache struct {
+	Dashboards models.AllDashboardsFetched
+	Expiration time.Time
+}
+
+//UpdateDashboardCache - function for updating the dashboards cache on expiration
+func (dCache *DashboardsCache) UpdateDashboardCache() {
+
+	if !FirstRunSinceRestart && !(dCache.Expiration.Equal(time.Now())) {
+		return
+	}
+
+	dCache.Dashboards = findDashboards()
+	dCache.Expiration = time.Now().Add(24 * ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration * time.Hour)
+}
+
+//DCache - variable for DashboardsCache
+var DCache DashboardsCache
+
+//ValidateURL - function for constructing and validating AM URL
 func ValidateURL(baseURL, apiURL string) string {
 
 	cmpltURL := baseURL + apiURL
@@ -37,7 +60,7 @@ func ValidateURL(baseURL, apiURL string) string {
 	return u.String()
 }
 
-//ParseConfig Function for parsing the config File
+//ParseConfig - Function for parsing the config File
 func ParseConfig(configFile string, verbose int) {
 
 	//Defaults in case no config file is provided
@@ -91,10 +114,10 @@ func ParseConfig(configFile string, verbose int) {
 
 }
 
-//FindDashboard helper function to find dashboard info
+//findDashboard - helper function to find dashboard info
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L604
-func FindDashboard() []map[string]interface{} {
+func findDashboards() models.AllDashboardsFetched {
 	tags := ParseTags()
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", ConfigJSON.AnnotationDashboard.Token)
@@ -142,16 +165,15 @@ func FindDashboard() []map[string]interface{} {
 		}
 	}
 	defer resp.Body.Close()
-	var data []map[string]interface{}
+	var data models.AllDashboardsFetched
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		log.Printf("Error parsing the response body: %s", err)
 	}
 	return data
-
 }
 
-//ParseTags helper function to parse comma separated tags string
+//ParseTags - helper function to parse comma separated tags string
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L551
 func ParseTags() []string {

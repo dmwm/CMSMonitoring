@@ -34,8 +34,10 @@ func run() {
 }
 
 func runInfinite() {
+	utils.FirstRunSinceRestart = true
 	for true {
 		run()
+		utils.FirstRunSinceRestart = false
 		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
 	}
 }

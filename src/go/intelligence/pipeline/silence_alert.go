@@ -17,7 +17,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//Silence function silences the old alert
+//Silence - function silences the old alert
 func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	silencedData := make(chan models.AmJSON)
@@ -37,6 +37,7 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return silencedData
 }
 
+//silenceAlert - helper function for silencing old alerts
 func silenceAlert(data models.AmJSON) error {
 
 	apiurl := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.PostSilenceAPI) // POST API for creating silences.
