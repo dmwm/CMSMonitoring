@@ -73,14 +73,19 @@ func ParseConfig(configFile string, verbose int) {
 	ConfigJSON.Server.Interval = 10   // 10 sec interval for the service
 	ConfigJSON.Server.Verbose = verbose
 
-	ConfigJSON.Silence.Comment = "maintenance"
-	ConfigJSON.Silence.CreatedBy = "admin"
-	ConfigJSON.Silence.ActiveStatus = "active"
+	ConfigJSON.AnnotationDashboard.URL = "https://monit-grafana.cern.ch"
+	ConfigJSON.AnnotationDashboard.DashboardSearchAPI = "/api/search"
+	ConfigJSON.AnnotationDashboard.AnnotationAPI = "/api/annotations"
+	ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration = 1
 
 	ConfigJSON.Alerts.UniqueLabel = "alertname"
 	ConfigJSON.Alerts.SeverityLabel = "severity"
 	ConfigJSON.Alerts.ServiceLabel = "service"
 	ConfigJSON.Alerts.DefaultSeverityLevel = "info"
+
+	ConfigJSON.Silence.Comment = "maintenance"
+	ConfigJSON.Silence.CreatedBy = "admin"
+	ConfigJSON.Silence.ActiveStatus = "active"
 
 	if stats, err := os.Stat(configFile); err == nil {
 		if ConfigJSON.Server.Verbose > 1 {

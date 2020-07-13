@@ -85,12 +85,12 @@ type server struct {
 }
 
 type annotationDashboard struct {
-	URL                       string        `json:"URL,omitempty"`                //Dashboards' Base URL for sending annotation
-	DashboardSearchAPI        string        `json:"dashboardSearchAPI,omitempty"` //API endpoint for searching dashboards with tags
-	AnnotationAPI             string        `json:"annotationAPI,omitempty"`      //API endpoint for pushing annotations
-	Tags                      string        `json:"tags,omitempty"`               //Tags for the dashboards
-	Token                     string        `json:"token,omitempty"`              //Admin's Token required for sending requests
-	DashboardsCacheExpiration time.Duration `json:"dashboardsCacheExpiration"`    //Dashboard Cache Expiration in number of day(s)
+	URL                       string        `json:"URL"`                       //Dashboards' Base URL for sending annotation
+	DashboardSearchAPI        string        `json:"dashboardSearchAPI"`        //API endpoint for searching dashboards with tags
+	AnnotationAPI             string        `json:"annotationAPI"`             //API endpoint for pushing annotations
+	Tags                      string        `json:"tags"`                      //Tags for the dashboards
+	Token                     string        `json:"token"`                     //Admin's Token required for sending requests
+	DashboardsCacheExpiration time.Duration `json:"dashboardsCacheExpiration"` //Dashboard Cache Expiration in number of day(s)
 }
 
 //alert data struct
