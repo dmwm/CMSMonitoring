@@ -19,9 +19,10 @@ func run() {
 	var processedData []models.AmJSON
 	a := pipeline.Silence(pipeline.PushAlert(
 		pipeline.MlBox(
-			pipeline.KeywordMatching(
-				pipeline.Preprocess(
-					pipeline.FetchAlert())))))
+			pipeline.AddAnnotation(
+				pipeline.KeywordMatching(
+					pipeline.Preprocess(
+						pipeline.FetchAlert()))))))
 
 	for d := range a {
 		processedData = append(processedData, d)
@@ -33,8 +34,10 @@ func run() {
 }
 
 func runInfinite() {
+	utils.FirstRunSinceRestart = true
 	for true {
 		run()
+		utils.FirstRunSinceRestart = false
 		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
 	}
 }

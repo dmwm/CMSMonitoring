@@ -2,10 +2,15 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"go/intelligence/models"
 	"log"
+	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
+	"strings"
+	"time"
 )
 
 // Module     : intelligence
@@ -16,10 +21,33 @@ import (
 //ConfigJSON variable
 var ConfigJSON models.Config
 
-//IfSilencedMap for storing ongoing silences
+//IfSilencedMap - variable for storing ongoing silences
 var IfSilencedMap map[string]int
 
-//ValidateURL function for constructing and validating AM URL
+//FirstRunSinceRestart - boolean variable for storing the information if the it's the first start of the service after restart or not
+var FirstRunSinceRestart bool
+
+//DashboardsCache - a cache for storing dashboards and Expiration time for updating the cache
+type DashboardsCache struct {
+	Dashboards models.AllDashboardsFetched
+	Expiration time.Time
+}
+
+//UpdateDashboardCache - function for updating the dashboards cache on expiration
+func (dCache *DashboardsCache) UpdateDashboardCache() {
+
+	if !FirstRunSinceRestart && dCache.Expiration.After(time.Now()) {
+		return
+	}
+
+	dCache.Dashboards = findDashboards()
+	dCache.Expiration = time.Now().Add(ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration * time.Hour)
+}
+
+//DCache - variable for DashboardsCache
+var DCache DashboardsCache
+
+//ValidateURL - function for constructing and validating AM URL
 func ValidateURL(baseURL, apiURL string) string {
 
 	cmpltURL := baseURL + apiURL
@@ -32,7 +60,7 @@ func ValidateURL(baseURL, apiURL string) string {
 	return u.String()
 }
 
-//ParseConfig Function for parsing the config File
+//ParseConfig - Function for parsing the config File
 func ParseConfig(configFile string, verbose int) {
 
 	//Defaults in case no config file is provided
@@ -45,14 +73,19 @@ func ParseConfig(configFile string, verbose int) {
 	ConfigJSON.Server.Interval = 10   // 10 sec interval for the service
 	ConfigJSON.Server.Verbose = verbose
 
-	ConfigJSON.Silence.Comment = "maintenance"
-	ConfigJSON.Silence.CreatedBy = "admin"
-	ConfigJSON.Silence.ActiveStatus = "active"
+	ConfigJSON.AnnotationDashboard.URL = "https://monit-grafana.cern.ch"
+	ConfigJSON.AnnotationDashboard.DashboardSearchAPI = "/api/search"
+	ConfigJSON.AnnotationDashboard.AnnotationAPI = "/api/annotations"
+	ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration = 1
 
 	ConfigJSON.Alerts.UniqueLabel = "alertname"
 	ConfigJSON.Alerts.SeverityLabel = "severity"
 	ConfigJSON.Alerts.ServiceLabel = "service"
 	ConfigJSON.Alerts.DefaultSeverityLevel = "info"
+
+	ConfigJSON.Silence.Comment = "maintenance"
+	ConfigJSON.Silence.CreatedBy = "admin"
+	ConfigJSON.Silence.ActiveStatus = "active"
 
 	if stats, err := os.Stat(configFile); err == nil {
 		if ConfigJSON.Server.Verbose > 1 {
@@ -84,4 +117,74 @@ func ParseConfig(configFile string, verbose int) {
 		log.Printf("Configuration:\n%+v\n", ConfigJSON)
 	}
 
+}
+
+//findDashboard - helper function to find dashboard info
+// The following block of code was taken from
+// https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L604
+func findDashboards() models.AllDashboardsFetched {
+	tags := ParseTags()
+	var headers [][]string
+	bearer := fmt.Sprintf("Bearer %s", ConfigJSON.AnnotationDashboard.Token)
+	h := []string{"Authorization", bearer}
+	headers = append(headers, h)
+	h = []string{"Accept", "application/json"}
+	headers = append(headers, h)
+	// example: /api/search?query=Production%20Overview&starred=true&tag=prod
+	v := url.Values{}
+	for _, tag := range tags {
+		v.Set("tag", strings.Trim(tag, " "))
+	}
+	apiURL := fmt.Sprintf("%s%s?%s", ConfigJSON.AnnotationDashboard.URL, ConfigJSON.AnnotationDashboard.DashboardSearchAPI, v.Encode())
+
+	if ConfigJSON.Server.Verbose > 0 {
+		log.Println(apiURL)
+	}
+	req, err := http.NewRequest("GET", apiURL, nil)
+	if err != nil {
+		log.Printf("Unable to make request to %s, error: %s", apiURL, err)
+	}
+	for _, v := range headers {
+		if len(v) == 2 {
+			req.Header.Add(v[0], v[1])
+		}
+	}
+	if ConfigJSON.Server.Verbose > 1 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("request: ", string(dump))
+		}
+	}
+
+	timeout := time.Duration(ConfigJSON.Server.HTTPTimeout) * time.Second
+	client := &http.Client{Timeout: timeout}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Unable to get response from %s, error: %s", apiURL, err)
+	}
+	if ConfigJSON.Server.Verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("response: ", string(dump))
+		}
+	}
+	defer resp.Body.Close()
+	var data models.AllDashboardsFetched
+	// Deserialize the response into a map.
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		log.Printf("Error parsing the response body: %s", err)
+	}
+	return data
+}
+
+//ParseTags - helper function to parse comma separated tags string
+// The following block of code was taken from
+// https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L551
+func ParseTags() []string {
+	var tags []string
+	for _, tag := range strings.Split(ConfigJSON.AnnotationDashboard.Tags, ",") {
+		tags = append(tags, strings.Trim(tag, " "))
+	}
+	return tags
 }

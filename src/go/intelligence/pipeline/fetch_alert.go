@@ -17,7 +17,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//FetchAlert function for fetching all active alerts from AlertManager
+//FetchAlert - function for fetching all active alerts from AlertManager
 func FetchAlert() <-chan models.AmJSON {
 	fetchedData := make(chan models.AmJSON)
 	go func() {
@@ -33,7 +33,7 @@ func FetchAlert() <-chan models.AmJSON {
 	return fetchedData
 }
 
-//get function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
+//get - function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
 func get() (models.AmData, error) {
 
 	var data models.AmData

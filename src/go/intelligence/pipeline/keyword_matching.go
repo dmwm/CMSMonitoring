@@ -11,7 +11,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//KeywordMatching function finds defined keywords in the shortDescription of alerts and assign severity level accordingly
+//KeywordMatching - function finds defined keywords in the shortDescription of alerts and assign severity level accordingly
 func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	dataWithSeverity := make(chan models.AmJSON)
@@ -30,7 +30,7 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return dataWithSeverity
 }
 
-//keywordMatchingHelper helper function which matches keywords and assigns severity levels
+//keywordMatchingHelper - helper function which matches keywords and assigns severity levels
 func keywordMatchingHelper(data *models.AmJSON, srv models.Service) {
 	/*
 				Common Structure of an alert
