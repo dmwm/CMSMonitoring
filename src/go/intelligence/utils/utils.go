@@ -36,12 +36,12 @@ type DashboardsCache struct {
 //UpdateDashboardCache - function for updating the dashboards cache on expiration
 func (dCache *DashboardsCache) UpdateDashboardCache() {
 
-	if !FirstRunSinceRestart && !(dCache.Expiration.Equal(time.Now())) {
+	if !FirstRunSinceRestart && dCache.Expiration.After(time.Now()) {
 		return
 	}
 
 	dCache.Dashboards = findDashboards()
-	dCache.Expiration = time.Now().Add(24 * ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration * time.Hour)
+	dCache.Expiration = time.Now().Add(ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration * time.Hour)
 }
 
 //DCache - variable for DashboardsCache

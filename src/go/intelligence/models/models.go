@@ -90,7 +90,7 @@ type annotationDashboard struct {
 	AnnotationAPI             string        `json:"annotationAPI"`             //API endpoint for pushing annotations
 	Tags                      string        `json:"tags"`                      //Tags for the dashboards
 	Token                     string        `json:"token"`                     //Admin's Token required for sending requests
-	DashboardsCacheExpiration time.Duration `json:"dashboardsCacheExpiration"` //Dashboard Cache Expiration in number of day(s)
+	DashboardsCacheExpiration time.Duration `json:"dashboardsCacheExpiration"` //Dashboard Cache Expiration in terms of hour(s)
 }
 
 //alert data struct
