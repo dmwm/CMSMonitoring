@@ -183,7 +183,7 @@ func findDashboards() models.AllDashboardsFetched {
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L551
 func ParseTags() []string {
 	var tags []string
-	for _, tag := range strings.Split(ConfigJSON.AnnotationDashboard.Tags, ",") {
+	for _, tag := range ConfigJSON.AnnotationDashboard.Tags {
 		tags = append(tags, strings.Trim(tag, " "))
 	}
 	return tags

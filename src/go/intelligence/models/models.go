@@ -88,7 +88,7 @@ type annotationDashboard struct {
 	URL                       string        `json:"URL"`                       //Dashboards' Base URL for sending annotation
 	DashboardSearchAPI        string        `json:"dashboardSearchAPI"`        //API endpoint for searching dashboards with tags
 	AnnotationAPI             string        `json:"annotationAPI"`             //API endpoint for pushing annotations
-	Tags                      string        `json:"tags"`                      //Tags for the dashboards
+	Tags                      []string      `json:"tags"`                      //Tags for the dashboards
 	Token                     string        `json:"token"`                     //Admin's Token required for sending requests
 	DashboardsCacheExpiration time.Duration `json:"dashboardsCacheExpiration"` //Dashboard Cache Expiration in terms of hour(s)
 }
