@@ -19,6 +19,7 @@ This command will execute the intelligence binary. Config file path flag (-confi
 ## Config File
 The given config file format should be followed. The config file consists of mainly four parts :-
 - Server
+- Annotation Dashboard 
 - Alerts
 - Silence
 - Services
@@ -36,6 +37,15 @@ The given config file format should be followed. The config file consists of mai
     "verbose": 0
   },
 
+  "annotationDashboard" :{
+    "url" : "https://monit-grafana.cern.ch",
+    "dashboardSearchAPI" : "/api/search",
+    "annotationAPI" : "/api/annotations",
+    "tags" : "cmsweb-play",
+    "token" : "",
+    "dashboardsCacheExpiration" : 1 
+  },
+
   "alerts": {
     "uniqueLabel": "alertname",
     "severityLabel": "severity",
@@ -51,8 +61,8 @@ The given config file format should be followed. The config file consists of mai
   },
 
   "silence": {
-    "createdBy": "intelligence module",
-    "comment": "Silencing the alert - intelligence",
+    "createdBy": "admin",
+    "comment": "maintenance",
     "activeStatus": "active"
   },
 
@@ -72,6 +82,11 @@ The given config file format should be followed. The config file consists of mai
         "interruption": "medium",
         "risk": "high",
         "down": "urgent"
+      },
+      "annotationMap" : {
+        "label" : "shortDescription",
+        "actions" : ["intervention"],
+        "systems" : ["network", "database", "db"]
       }
     },
 
@@ -87,4 +102,5 @@ The given config file format should be followed. The config file consists of mai
     }
   ]
 }
+
 ```
