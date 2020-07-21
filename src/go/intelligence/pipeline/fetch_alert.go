@@ -51,6 +51,8 @@ func get() (models.AmData, error) {
 	client := &http.Client{Timeout: timeout}
 
 	if utils.ConfigJSON.Server.Verbose > 1 {
+		log.Println("GET", apiurl)
+	} else if utils.ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))

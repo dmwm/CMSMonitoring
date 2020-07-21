@@ -90,6 +90,8 @@ func silenceAlert(data models.AmJSON) error {
 	client := &http.Client{Timeout: timeout}
 
 	if utils.ConfigJSON.Server.Verbose > 1 {
+		log.Println("POST", apiurl)
+	} else if utils.ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -108,7 +110,7 @@ func silenceAlert(data models.AmJSON) error {
 
 	defer resp.Body.Close()
 
-	if utils.ConfigJSON.Server.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))

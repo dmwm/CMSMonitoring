@@ -112,6 +112,8 @@ func addAnnotationHelper(data []byte) {
 	}
 
 	if utils.ConfigJSON.Server.Verbose > 1 {
+		log.Println("POST", apiURL)
+	} else if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("request: ", string(dump))
