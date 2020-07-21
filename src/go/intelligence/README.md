@@ -41,7 +41,7 @@ The given config file format should be followed. The config file consists of mai
     "url" : "https://monit-grafana.cern.ch",
     "dashboardSearchAPI" : "/api/search",
     "annotationAPI" : "/api/annotations",
-    "tags" : "cmsweb-play",
+    "tags" : ["cmsweb-play"],
     "token" : "",
     "dashboardsCacheExpiration" : 1 
   },
