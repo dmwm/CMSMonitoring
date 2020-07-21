@@ -27,7 +27,7 @@ The given config file format should be followed. The config file consists of mai
 ```json
 {
   "server": {
-    "cmsmonURL": "http://localhost:9093",
+    "cmsmonURL": "https://cms-monitoring.cern.ch",
     "getAlertsAPI": "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false",
     "getSilencesAPI": "/api/v1/silences",
     "postAlertsAPI": "/api/v1/alerts",
