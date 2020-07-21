@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/intelligence/models"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -173,7 +174,8 @@ func findDashboards() models.AllDashboardsFetched {
 	var data models.AllDashboardsFetched
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		log.Printf("Error parsing the response body: %s", err)
+		d, _ := ioutil.ReadAll(resp.Body)
+		log.Printf("Error parsing the response body: %s, %+v\n", err, string(d))
 	}
 	return data
 }
