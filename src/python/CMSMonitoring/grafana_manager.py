@@ -8,6 +8,13 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
 
 
 class grafana_manager:
+    """An interface with the grafana API
+    Attributes:
+        GRAFANA_TOKEN
+        GRAFANA_URL
+        OUTPUT_FOLDER: local folder for methods which store dashoards.
+    """
+
     def __init__(self, grafana_url=None, grafana_token=None, output_folder="./output"):
         assert (
             grafana_token and grafana_url
@@ -26,6 +33,18 @@ class grafana_manager:
         title=None,
         store_only=False,
     ):
+        """
+            Create a copy of one or more dashboards,
+            making datasources replacements if needed.
+            (either uid or query must be specified).
+            Args:
+             - dashboard_uid uid of the original dashboard.
+             - dashboards_query query to select the original dashboards
+             - datasources_replacements list of pairs,
+               each pair is composed by old and new datasource.
+             - title new title, if uid is specified, or prefix for the titles.
+             - store_only, do not publish to Grafana, just store localy the dashboards.
+        """
         assert (
             dashboard_uid or dashboards_query
         ), "Either uid or query need to be specified"
@@ -81,9 +100,9 @@ class grafana_manager:
     ) -> int:
         """
             Replaces the content between start_text and end_text
-            of text panels in the matching 
+            of text panels in the matching
             target_dashboards for the one in the source dashboard.
-            Returns the number of replaced dashboards. 
+            Returns the number of replaced dashboards.
 
         """
         _source_dash_list = self.search_dasboards(**source_dashboard_query)
