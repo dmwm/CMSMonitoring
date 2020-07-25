@@ -15,6 +15,7 @@ import (
 func FetchAlert() <-chan models.AmJSON {
 	fetchedData := make(chan models.AmJSON)
 	go func() {
+		defer close(fetchedData)
 		_, err := utils.GetAlerts(utils.ConfigJSON.Server.GetSuppressedAlertsAPI, false)
 		if err != nil {
 			log.Printf("Could not fetch suppressed alerts from AlertManager, error:%v\n", err)
@@ -27,7 +28,6 @@ func FetchAlert() <-chan models.AmJSON {
 		for _, each := range data.Data {
 			fetchedData <- each
 		}
-		close(fetchedData)
 	}()
 	return fetchedData
 }

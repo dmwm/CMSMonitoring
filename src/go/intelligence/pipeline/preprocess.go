@@ -32,6 +32,7 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	preprocessedData := make(chan models.AmJSON)
 	go func() {
+		defer close(preprocessedData)
 		for each := range data {
 			for _, service := range utils.ConfigJSON.Services {
 				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
@@ -43,7 +44,6 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 				}
 			}
 		}
-		close(preprocessedData)
 	}()
 
 	return preprocessedData

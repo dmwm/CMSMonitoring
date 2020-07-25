@@ -22,6 +22,7 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	silencedData := make(chan models.AmJSON)
 	go func() {
+		defer close(silencedData)
 		for each := range data {
 			err := silenceAlert(each)
 			if err != nil {
@@ -32,7 +33,6 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 			}
 			silencedData <- each
 		}
-		close(silencedData)
 	}()
 	return silencedData
 }

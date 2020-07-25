@@ -25,6 +25,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 	dataAfterAnnotation := make(chan models.AmJSON)
 
 	go func() {
+		defer close(dataAfterAnnotation)
 		ptr := &utils.DCache
 		ptr.UpdateDashboardCache()
 
@@ -70,8 +71,6 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 			dataAfterAnnotation <- each
 		}
-
-		close(dataAfterAnnotation)
 	}()
 	return dataAfterAnnotation
 }

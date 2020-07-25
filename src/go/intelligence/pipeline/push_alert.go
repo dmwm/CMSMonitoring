@@ -16,6 +16,7 @@ func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 	c := make(chan models.AmJSON)
 
 	go func() {
+		defer close(c)
 		for each := range data {
 			err := utils.PostAlert(each)
 			if err != nil {
@@ -26,7 +27,6 @@ func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 			}
 			c <- each
 		}
-		close(c)
 	}()
 	return c
 }

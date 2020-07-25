@@ -17,6 +17,7 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 	dataWithSeverity := make(chan models.AmJSON)
 
 	go func() {
+		defer close(dataWithSeverity)
 		for each := range data {
 			changedData := each
 			for _, service := range utils.ConfigJSON.Services {
@@ -26,7 +27,6 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 			}
 			dataWithSeverity <- changedData
 		}
-		close(dataWithSeverity)
 	}()
 	return dataWithSeverity
 }

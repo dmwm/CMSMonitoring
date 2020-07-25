@@ -20,11 +20,11 @@ func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	finalData := make(chan models.AmJSON)
 	go func() {
+		defer close(finalData)
 		deleteSilenceHelper()
 		for each := range data {
 			finalData <- each
 		}
-		close(finalData)
 	}()
 	return finalData
 }
