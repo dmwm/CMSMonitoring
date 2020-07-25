@@ -26,12 +26,14 @@ The given config file format should be followed. The config file consists of mai
 
 ```json
 {
-  "server": {
+ "server": {
     "cmsmonURL": "https://cms-monitoring.cern.ch",
     "getAlertsAPI": "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false",
+    "getSuppressedAlertsAPI" : "/api/v1/alerts?active=false&silenced=true",
     "getSilencesAPI": "/api/v1/silences",
     "postAlertsAPI": "/api/v1/alerts",
     "postSilenceAPI": "/api/v1/silences",
+    "deleteSilenceAPI": "/api/v1/silence",
     "httpTimeout": 3,
     "interval": 1,
     "verbose": 0
@@ -63,7 +65,7 @@ The given config file format should be followed. The config file consists of mai
   "silence": {
     "createdBy": "admin",
     "comment": "maintenance",
-    "activeStatus": "active"
+    "silenceStatus": ["active","pending"]
   },
 
   "services": [

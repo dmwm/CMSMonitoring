@@ -18,12 +18,13 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	go func() {
 		for each := range data {
+			changedData := each
 			for _, service := range utils.ConfigJSON.Services {
-				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
-					keywordMatchingHelper(&each, service)
+				if changedData.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+					keywordMatchingHelper(&changedData, service)
 				}
 			}
-			dataWithSeverity <- each
+			dataWithSeverity <- changedData
 		}
 		close(dataWithSeverity)
 	}()

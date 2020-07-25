@@ -19,7 +19,7 @@ import (
 
 //Preprocess - function make required changes to alerts and filter only SSB and GGUS alerts
 func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
-	utils.IfSilencedMap = make(map[string]int)
+	utils.IfSilencedMap = make(map[string]utils.SilenceMapVals)
 
 	err := updateSilencedMap()
 	if err != nil {
@@ -36,7 +36,7 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 			for _, service := range utils.ConfigJSON.Services {
 				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
 					if val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel].(string); ok {
-						if utils.IfSilencedMap[val] != 1 {
+						if utils.IfSilencedMap[val].IfAvail != 1 {
 							preprocessedData <- each
 						}
 					}
@@ -113,8 +113,12 @@ func updateSilencedMap() error {
 	for _, each := range data.Data {
 
 		for _, matcher := range each.Matchers {
-			if matcher.Name == utils.ConfigJSON.Alerts.UniqueLabel && each.Status.State == utils.ConfigJSON.Silence.ActiveStatus {
-				utils.IfSilencedMap[matcher.Value] = 1
+			if matcher.Name == utils.ConfigJSON.Alerts.UniqueLabel {
+				for _, sStatus := range utils.ConfigJSON.Silence.SilenceStatus {
+					if each.Status.State == sStatus {
+						utils.IfSilencedMap[matcher.Value] = utils.SilenceMapVals{IfAvail: 1, SilenceID: each.ID}
+					}
+				}
 			}
 		}
 	}

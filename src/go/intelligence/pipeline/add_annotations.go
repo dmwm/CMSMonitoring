@@ -51,7 +51,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 						dashboardData.DashboardID = dashboard.ID
 						dashboardData.Time = each.StartsAt.Unix() * 1000
 						dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
-						dashboardData.Tags = utils.ParseTags()
+						dashboardData.Tags = utils.ConfigJSON.AnnotationDashboard.Tags
 						if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
 							dashboardData.Text = srv.Name + ": " + val
 						}

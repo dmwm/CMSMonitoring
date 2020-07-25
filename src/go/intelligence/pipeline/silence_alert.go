@@ -46,8 +46,13 @@ func silenceAlert(data models.AmJSON) error {
 	var alertnameMatcher models.Matchers
 	var severityMatcher models.Matchers
 
-	sData.StartsAt = data.StartsAt //Start Time equal to main alert	   //So that the silence remains on old alert till the lifetime of the alert
-	sData.EndsAt = data.EndsAt     //End Time equal to main alert	  //So that the silence remains on old alert till the lifetime of the alert
+	if data.StartsAt.After(time.Now()) {
+		sData.StartsAt = time.Now() //Start Time equal to current time if it's starting in future  //So that the silence remains on old alert till the lifetime of the alert
+	} else {
+		sData.StartsAt = data.StartsAt //Start Time equal to main alert	   //So that the silence remains on old alert till the lifetime of the alert
+	}
+
+	sData.EndsAt = data.EndsAt //End Time equal to main alert	  //So that the silence remains on old alert till the lifetime of the alert
 	sData.CreatedBy = utils.ConfigJSON.Silence.CreatedBy
 	sData.Comment = utils.ConfigJSON.Silence.Comment
 

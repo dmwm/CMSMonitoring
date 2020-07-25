@@ -33,6 +33,7 @@ type status struct {
 
 //SilenceData data struct
 type SilenceData struct {
+	ID        string     `json:"id"`        // ID for each silence
 	Matchers  []Matchers `json:"matchers"`  //Array of matchers which helps in finding the alert for silencing
 	StartsAt  time.Time  `json:"startsAt"`  //Starting time of a silence
 	EndsAt    time.Time  `json:"endsAt"`    //Ending time of a silence
@@ -74,14 +75,16 @@ type GrafanaDashboard struct {
 
 //server data struct
 type server struct {
-	CMSMONURL      string        `json:"cmsmonURL"`      //CMSMON URL for AlertManager API
-	GetAlertsAPI   string        `json:"getAlertsAPI"`   //API endpoint from fetching alerts
-	PostAlertsAPI  string        `json:"postAlertsAPI"`  //API endpoint from creating new alerts
-	GetSilencesAPI string        `json:"getSilencesAPI"` //API endpoint from fetching silences
-	PostSilenceAPI string        `json:"postSilenceAPI"` //API endpoint from silencing alerts
-	HTTPTimeout    int           `json:"httpTimeout"`    //Timeout for HTTP Requests
-	Interval       time.Duration `json:"interval"`       //Time Interval at which the intelligence service will repeat
-	Verbose        int           `json:"verbose"`        //Verbosity Level
+	CMSMONURL              string        `json:"cmsmonURL"`              //CMSMON URL for AlertManager API
+	GetAlertsAPI           string        `json:"getAlertsAPI"`           //API endpoint from fetching alerts
+	GetSuppressedAlertsAPI string        `json:"getSuppressedAlertsAPI"` //API endpoint from fetching suppressed alerts
+	PostAlertsAPI          string        `json:"postAlertsAPI"`          //API endpoint from creating new alerts
+	GetSilencesAPI         string        `json:"getSilencesAPI"`         //API endpoint from fetching silences
+	PostSilenceAPI         string        `json:"postSilenceAPI"`         //API endpoint from silencing alerts
+	DeleteSilenceAPI       string        `json:"deleteSilenceAPI"`       //API endpoint from deleting silences
+	HTTPTimeout            int           `json:"httpTimeout"`            //Timeout for HTTP Requests
+	Interval               time.Duration `json:"interval"`               //Time Interval at which the intelligence service will repeat
+	Verbose                int           `json:"verbose"`                //Verbosity Level
 }
 
 type annotationDashboard struct {
@@ -104,9 +107,9 @@ type alert struct {
 
 //silence data struct
 type silence struct {
-	CreatedBy    string `json:"createdBy"`    //Name of the creater of the silence (Made configurable)
-	Comment      string `json:"comment"`      //Comment for the silence (Made configurable)
-	ActiveStatus string `json:"activeStatus"` //Label for active status of the silence
+	CreatedBy     string   `json:"createdBy"`     //Name of the creater of the silence (Made configurable)
+	Comment       string   `json:"comment"`       //Comment for the silence (Made configurable)
+	SilenceStatus []string `json:"silenceStatus"` //Labels for status of the silence
 }
 
 type annotationMap struct {
