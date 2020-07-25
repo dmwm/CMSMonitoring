@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go/intelligence/models"
 	"io/ioutil"
@@ -11,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -22,11 +25,29 @@ import (
 //ConfigJSON variable
 var ConfigJSON models.Config
 
+//SilenceMapVals struct for storing ifAvail bool and silenceID in IfSilencedMap
+type SilenceMapVals struct {
+	IfAvail   int
+	SilenceID string
+}
+
 //IfSilencedMap - variable for storing ongoing silences
-var IfSilencedMap map[string]int
+var IfSilencedMap map[string]SilenceMapVals
+
+//ExtAlertsMap - map for storing existing Alerts in AlertManager
+var ExtAlertsMap map[string]int
+
+//ExtSuppressedAlertsMap - map for storing existing suppressed Alerts in AlertManager
+var ExtSuppressedAlertsMap map[string]models.AmJSON
 
 //FirstRunSinceRestart - boolean variable for storing the information if the it's the first start of the service after restart or not
 var FirstRunSinceRestart bool
+
+//DataReadWriteLock - Mutex Lock for Concurrent Read/Write on Alert Data
+var DataReadWriteLock sync.RWMutex
+
+//SuppressedAlertsDataReadWriteLock - Mutex Lock for Concurrent Read/Write on Suppressed Alert Data
+var SuppressedAlertsDataReadWriteLock sync.RWMutex
 
 //DashboardsCache - a cache for storing dashboards and Expiration time for updating the cache
 type DashboardsCache struct {
@@ -67,9 +88,11 @@ func ParseConfig(configFile string, verbose int) {
 	//Defaults in case no config file is provided
 	ConfigJSON.Server.CMSMONURL = "https://cms-monitoring.cern.ch"
 	ConfigJSON.Server.GetAlertsAPI = "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false"
+	ConfigJSON.Server.GetSuppressedAlertsAPI = "/api/v1/alerts?active=false&silenced=true"
 	ConfigJSON.Server.PostAlertsAPI = "/api/v1/alerts"
 	ConfigJSON.Server.GetSilencesAPI = "/api/v1/silences"
 	ConfigJSON.Server.PostSilenceAPI = "/api/v1/silences"
+	ConfigJSON.Server.DeleteSilenceAPI = "/api/v1/silence"
 	ConfigJSON.Server.HTTPTimeout = 3 //3 secs timeout for HTTP requests
 	ConfigJSON.Server.Interval = 10   // 10 sec interval for the service
 	ConfigJSON.Server.Verbose = verbose
@@ -86,7 +109,6 @@ func ParseConfig(configFile string, verbose int) {
 
 	ConfigJSON.Silence.Comment = "maintenance"
 	ConfigJSON.Silence.CreatedBy = "admin"
-	ConfigJSON.Silence.ActiveStatus = "active"
 
 	if stats, err := os.Stat(configFile); err == nil {
 		if ConfigJSON.Server.Verbose > 1 {
@@ -124,7 +146,6 @@ func ParseConfig(configFile string, verbose int) {
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L604
 func findDashboards() models.AllDashboardsFetched {
-	tags := ParseTags()
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", ConfigJSON.AnnotationDashboard.Token)
 	h := []string{"Authorization", bearer}
@@ -133,7 +154,7 @@ func findDashboards() models.AllDashboardsFetched {
 	headers = append(headers, h)
 	// example: /api/search?query=Production%20Overview&starred=true&tag=prod
 	v := url.Values{}
-	for _, tag := range tags {
+	for _, tag := range ConfigJSON.AnnotationDashboard.Tags {
 		v.Set("tag", strings.Trim(tag, " "))
 	}
 	apiURL := fmt.Sprintf("%s%s?%s", ConfigJSON.AnnotationDashboard.URL, ConfigJSON.AnnotationDashboard.DashboardSearchAPI, v.Encode())
@@ -180,13 +201,150 @@ func findDashboards() models.AllDashboardsFetched {
 	return data
 }
 
-//ParseTags - helper function to parse comma separated tags string
-// The following block of code was taken from
-// https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L551
-func ParseTags() []string {
-	var tags []string
-	for _, tag := range ConfigJSON.AnnotationDashboard.Tags {
-		tags = append(tags, strings.Trim(tag, " "))
+//GetAlerts - function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
+func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, error) {
+
+	var data models.AmData
+	apiurl := ValidateURL(ConfigJSON.Server.CMSMONURL, getAlertsAPI) //GET API for fetching all AM alerts.
+
+	req, err := http.NewRequest("GET", apiurl, nil)
+	if err != nil {
+		log.Printf("Request Error, error: %v\n", err)
+		return data, err
 	}
-	return tags
+	req.Header.Add("Accept-Encoding", "identity")
+	req.Header.Add("Accept", "application/json")
+
+	timeout := time.Duration(ConfigJSON.Server.HTTPTimeout) * time.Second
+	client := &http.Client{Timeout: timeout}
+
+	if ConfigJSON.Server.Verbose > 1 {
+		log.Println("GET", apiurl)
+	} else if ConfigJSON.Server.Verbose > 2 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("Request: ", string(dump))
+		}
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Response Error, error: %v\n", err)
+		return data, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
+		return data, errors.New("Respose Error")
+	}
+
+	defer resp.Body.Close()
+
+	byteValue, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", err)
+		return data, err
+	}
+
+	if ConfigJSON.Server.Verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("Response: ", string(dump))
+		}
+	}
+
+	err = json.Unmarshal(byteValue, &data)
+	if err != nil {
+		if ConfigJSON.Server.Verbose > 0 {
+			log.Println(string(byteValue))
+		}
+		log.Printf("Unable to parse JSON Data from AlertManager GET API, error: %v\n", err)
+		return data, err
+	}
+
+	if updateMapChoice == true {
+		DataReadWriteLock.Lock()
+		defer DataReadWriteLock.Unlock()
+		ExtAlertsMap = make(map[string]int)
+		for _, eachAlert := range data.Data {
+			for k, v := range eachAlert.Labels {
+				if k == ConfigJSON.Alerts.UniqueLabel {
+					if val, ok := v.(string); ok {
+						ExtAlertsMap[val] = 1
+					}
+				}
+			}
+		}
+	} else {
+		SuppressedAlertsDataReadWriteLock.Lock()
+		defer SuppressedAlertsDataReadWriteLock.Unlock()
+		ExtSuppressedAlertsMap = make(map[string]models.AmJSON)
+		for _, eachAlert := range data.Data {
+			for k, v := range eachAlert.Labels {
+				if k == ConfigJSON.Alerts.UniqueLabel {
+					if val, ok := v.(string); ok {
+						ExtSuppressedAlertsMap[val] = eachAlert
+					}
+				}
+			}
+		}
+	}
+
+	return data, nil
+}
+
+//PostAlert - function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
+func PostAlert(data models.AmJSON) error {
+	apiurl := ValidateURL(ConfigJSON.Server.CMSMONURL, ConfigJSON.Server.PostAlertsAPI)
+	var finalData []models.AmJSON
+	finalData = append(finalData, data)
+
+	jsonStr, err := json.Marshal(finalData)
+	if err != nil {
+		log.Printf("Unable to convert JSON Data, error: %v\n", err)
+		return err
+	}
+
+	req, err := http.NewRequest("POST", apiurl, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		log.Printf("Request Error, error: %v\n", err)
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	timeout := time.Duration(ConfigJSON.Server.HTTPTimeout) * time.Second
+	client := &http.Client{Timeout: timeout}
+
+	if ConfigJSON.Server.Verbose > 1 {
+		log.Println("POST", apiurl)
+	} else if ConfigJSON.Server.Verbose > 2 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("Request: ", string(dump))
+		}
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Response Error, error: %v\n", err)
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
+		return errors.New("Http Response Code Error")
+	}
+
+	defer resp.Body.Close()
+
+	if ConfigJSON.Server.Verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("Response: ", string(dump))
+		}
+	}
+
+	if ConfigJSON.Server.Verbose > 1 {
+		log.Println("Pushed Alerts: ", string(jsonStr))
+	}
+	return nil
 }

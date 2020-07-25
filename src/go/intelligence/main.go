@@ -17,12 +17,13 @@ import (
 //Function running all logics
 func run() {
 	var processedData []models.AmJSON
-	a := pipeline.Silence(pipeline.PushAlert(
-		pipeline.MlBox(
-			pipeline.AddAnnotation(
-				pipeline.KeywordMatching(
-					pipeline.Preprocess(
-						pipeline.FetchAlert()))))))
+	a := pipeline.DeleteSilence(pipeline.Silence(
+		pipeline.PushAlert(
+			pipeline.MlBox(
+				pipeline.AddAnnotation(
+					pipeline.KeywordMatching(
+						pipeline.Preprocess(
+							pipeline.FetchAlert())))))))
 
 	for d := range a {
 		processedData = append(processedData, d)

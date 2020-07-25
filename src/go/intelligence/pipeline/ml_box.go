@@ -19,10 +19,10 @@ func MlBox(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	predictedData := make(chan models.AmJSON)
 	go func() {
+		defer close(predictedData)
 		for d := range data {
 			predictedData <- d
 		}
-		close(predictedData)
 	}()
 	return predictedData
 }
