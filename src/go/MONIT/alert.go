@@ -41,9 +41,6 @@ var severity string
 //boolean for JSON output
 var jsonOutput *bool
 
-//boolean for detailed output for an alert
-var details *bool
-
 //Sort Label
 var sortLabel string
 
@@ -520,13 +517,13 @@ func run() {
 	filter()
 
 	if *jsonOutput {
-		if *details {
+		if name != "" {
 			jsonPrintDetails()
 		} else {
 			jsonPrint()
 		}
 	} else {
-		if *details {
+		if name != "" {
 			detailPrint()
 		} else {
 			tabulate()
@@ -585,7 +582,6 @@ func main() {
 	flag.StringVar(&service, "service", "", "Service Name")
 	jsonOutput = flag.Bool("json", false, "Output in JSON format")
 	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
-	details = flag.Bool("details", false, "Detailed output for an alert")
 	var verbose int
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level, can be overwritten in config")
 
