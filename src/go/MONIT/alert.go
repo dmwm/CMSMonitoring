@@ -41,11 +41,14 @@ var severity string
 //boolean for JSON output
 var jsonOutput *bool
 
+//boolean for generating default config
+var generateConfig *bool
+
 //Sort Label
 var sortLabel string
 
 //Config filepath
-var configFile string
+var configFilePath string
 
 //-------VARIABLES-------
 
@@ -531,12 +534,36 @@ func run() {
 	}
 }
 
+//helper function for parsing Configs
+func openConfigFile(configFilePath string) {
+	jsonFile, e := os.Open(configFilePath)
+	if e != nil {
+		if configJSON.Verbose > 0 {
+			log.Printf("Config File not found at %s, error: %s", configFilePath, e)
+		} else {
+			fmt.Printf("Config File Missing at %s. Using Defaults\n", configFilePath)
+		}
+		return
+	}
+	defer jsonFile.Close()
+	decoder := json.NewDecoder(jsonFile)
+	err := decoder.Decode(&configJSON)
+	if err != nil {
+		log.Printf("Config JSON File can't be loaded, error: %s", err)
+		return
+	} else if configJSON.Verbose > 0 {
+		log.Printf("Load config from %s\n", configFilePath)
+	}
+}
+
+//function for parsing Configs
 func parseConfig(verbose int) {
 
-	configFile = os.Getenv("CONFIG_PATH") //CONFIG_PATH Environment Variable storing config filepath.
+	configFilePath = os.Getenv("CONFIG_PATH") //CONFIG_PATH Environment Variable storing config filepath.
+	defaultConfigFilePath := os.Getenv("HOME") + "/alert.json"
 
 	//Defaults in case no config file is provided
-	configJSON.CMSMONURL = "https://cms-monitoring.cern.ch"
+	configJSON.CMSMONURL = "http://cms-monitoring.cern.ch"
 	configJSON.Names = []string{"NAMES", "LABELS", "ANNOTATIONS"}
 	configJSON.Columns = []string{"NAME", "SERVICE", "TAG", "SEVERITY", "STARTS", "ENDS", "DURATION"}
 	configJSON.Attributes = []string{"service", "tag", "severity"}
@@ -545,21 +572,34 @@ func parseConfig(verbose int) {
 	configJSON.SeverityLevels["info"] = 0
 	configJSON.SeverityLevels["warning"] = 1
 	configJSON.SeverityLevels["medium"] = 2
+	configJSON.SeverityLevels["high"] = 3
+	configJSON.SeverityLevels["critical"] = 4
+	configJSON.SeverityLevels["urgent"] = 5
 	configJSON.httpTimeout = 3 // 3 seconds timeout for http
 
-	if configFile != "" {
-		jsonFile, e := os.Open(configFile)
-		if e != nil {
-			log.Fatalf("Config File not found, error: %s", e)
-		}
-		defer jsonFile.Close()
-		decoder := json.NewDecoder(jsonFile)
-		err := decoder.Decode(&configJSON)
+	if *generateConfig {
+		config, err := json.Marshal(configJSON)
 		if err != nil {
-			log.Fatalf("Config JSON File can't be loaded, error: %s", err)
-		} else if configJSON.Verbose > 0 {
-			log.Printf("Load config from %s\n", configFile)
+			log.Fatalf("Default Config Value can't be parsed from configJSON struct, error: %s", err)
 		}
+		filePath := defaultConfigFilePath
+		if len(flag.Args()) > 0 {
+			filePath = flag.Args()[0]
+		}
+
+		err = ioutil.WriteFile(filePath, config, 0644)
+		if err != nil {
+			log.Fatalf("Failed to generate Config File, error: %s", err)
+		}
+		fmt.Printf("A new configuration file %s was generated.\n", filePath)
+		return
+	}
+
+	if configFilePath != "" {
+		openConfigFile(configFilePath)
+	} else if defaultConfigFilePath != "" {
+		fmt.Printf("$CONFIG_PATH is not set. Using config file at %s\n", defaultConfigFilePath)
+		openConfigFile(defaultConfigFilePath)
 	}
 
 	if configJSON.Verbose > 0 {
@@ -571,7 +611,6 @@ func parseConfig(verbose int) {
 	if configJSON.Verbose > 1 {
 		log.Printf("Configuration:\n%+v\n", configJSON)
 	}
-
 }
 
 func main() {
@@ -581,6 +620,7 @@ func main() {
 	flag.StringVar(&tag, "tag", "", "Tag for alerts")
 	flag.StringVar(&service, "service", "", "Service Name")
 	jsonOutput = flag.Bool("json", false, "Output in JSON format")
+	generateConfig = flag.Bool("generateConfig", false, "Flag for generating default config")
 	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
 	var verbose int
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level, can be overwritten in config")
@@ -620,6 +660,7 @@ func main() {
 
 	flag.Parse()
 	parseConfig(verbose)
-	run()
-
+	if !*generateConfig {
+		run()
+	}
 }
