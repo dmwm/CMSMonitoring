@@ -539,7 +539,7 @@ func openConfigFile(configFilePath string) {
 	jsonFile, e := os.Open(configFilePath)
 	if e != nil {
 		if configJSON.Verbose > 0 {
-			log.Printf("Config File not found at %s, error: %s", configFilePath, e)
+			log.Printf("Config File not found at %s, error: %s\n", configFilePath, e)
 		} else {
 			fmt.Printf("Config File Missing at %s. Using Defaults\n", configFilePath)
 		}
@@ -560,10 +560,10 @@ func openConfigFile(configFilePath string) {
 func parseConfig(verbose int) {
 
 	configFilePath = os.Getenv("CONFIG_PATH") //CONFIG_PATH Environment Variable storing config filepath.
-	defaultConfigFilePath := os.Getenv("HOME") + "/alert.json"
+	defaultConfigFilePath := os.Getenv("HOME") + "/.alertconfig.json"
 
 	//Defaults in case no config file is provided
-	configJSON.CMSMONURL = "http://cms-monitoring.cern.ch"
+	configJSON.CMSMONURL = "https://cms-monitoring.cern.ch"
 	configJSON.Names = []string{"NAMES", "LABELS", "ANNOTATIONS"}
 	configJSON.Columns = []string{"NAME", "SERVICE", "TAG", "SEVERITY", "STARTS", "ENDS", "DURATION"}
 	configJSON.Attributes = []string{"service", "tag", "severity"}
@@ -578,7 +578,7 @@ func parseConfig(verbose int) {
 	configJSON.httpTimeout = 3 // 3 seconds timeout for http
 
 	if *generateConfig {
-		config, err := json.Marshal(configJSON)
+		config, err := json.MarshalIndent(configJSON, "", " ")
 		if err != nil {
 			log.Fatalf("Default Config Value can't be parsed from configJSON struct, error: %s", err)
 		}
