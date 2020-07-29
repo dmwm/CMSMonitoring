@@ -14,7 +14,9 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//Function running all logics
+// Function running all logics
+// Processing data pipeline module is based on ideas presented in
+// https://towardsdatascience.com/concurrent-data-pipelines-in-golang-85b18c2eecc2
 func run() {
 	var processedData []models.AmJSON
 	a := pipeline.DeleteSilence(pipeline.Silence(
