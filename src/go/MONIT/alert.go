@@ -35,6 +35,9 @@ var service string
 //tag name
 var tag string
 
+//token name
+var token string
+
 //severity level
 var severity string
 
@@ -100,13 +103,14 @@ type alertDataJSON struct {
 }
 
 type config struct {
-	CMSMONURL      string         `json:"cmsmonURL"`
-	Names          []string       `json:"names"`
-	Columns        []string       `json:"columns"`
-	Attributes     []string       `json:"attributes"`
-	httpTimeout    int            `json:"httpTimeout"`
-	Verbose        int            `json:"verbose"`
-	SeverityLevels map[string]int `json:"severity"`
+	CMSMONURL      string         `json:"cmsmonURL"`   // cms monitoring URL
+	Names          []string       `json:"names"`       // alert names
+	Columns        []string       `json:"columns"`     // column names for alert info
+	Attributes     []string       `json:"attributes"`  // attributes values for alert info
+	httpTimeout    int            `json:"httpTimeout"` // http timeout to connec to AM
+	Verbose        int            `json:"verbose"`     // verbosity level
+	SeverityLevels map[string]int `json:"severity"`    // alert severity levels
+	Token          string         `json:"token"`       // CERN SSO token to use
 }
 
 var configJSON config
@@ -122,11 +126,15 @@ func get(data interface{}) {
 	req, err := http.NewRequest("GET", apiurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
+	if configJSON.Token != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("bearer %s", configJSON.Token))
+	}
 
 	timeout := time.Duration(configJSON.httpTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
 	if configJSON.Verbose > 1 {
+		log.Println("URL", apiurl)
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -563,7 +571,7 @@ func parseConfig(verbose int) {
 	defaultConfigFilePath := os.Getenv("HOME") + "/.alertconfig.json"
 
 	//Defaults in case no config file is provided
-	configJSON.CMSMONURL = "https://cms-monitoring.cern.ch"
+	configJSON.CMSMONURL = "https://cms-monitoring.cern.ch/alertmanager"
 	configJSON.Names = []string{"NAMES", "LABELS", "ANNOTATIONS"}
 	configJSON.Columns = []string{"NAME", "SERVICE", "TAG", "SEVERITY", "STARTS", "ENDS", "DURATION"}
 	configJSON.Attributes = []string{"service", "tag", "severity"}
@@ -602,12 +610,21 @@ func parseConfig(verbose int) {
 		openConfigFile(defaultConfigFilePath)
 	}
 
+	// we we were given verbose from command line we should overwrite its value in config
+	if verbose > 0 {
+		configJSON.Verbose = verbose
+	}
+
 	if configJSON.Verbose > 0 {
 		log.SetFlags(log.LstdFlags | log.Lshortfile)
 	} else {
 		log.SetFlags(log.LstdFlags)
 	}
 
+	// if we were given the token we will use it
+	if token != "" {
+		configJSON.Token = token
+	}
 	if configJSON.Verbose > 1 {
 		log.Printf("Configuration:\n%+v\n", configJSON)
 	}
@@ -615,7 +632,8 @@ func parseConfig(verbose int) {
 
 func main() {
 
-	flag.StringVar(&name, "name", "", "Alert Service Name")
+	flag.StringVar(&token, "token", "", "Authentication token to use")
+	flag.StringVar(&name, "name", "", "Alert Name")
 	flag.StringVar(&severity, "severity", "", "Severity Level of alerts")
 	flag.StringVar(&tag, "tag", "", "Tag for alerts")
 	flag.StringVar(&service, "service", "", "Service Name")
@@ -626,10 +644,11 @@ func main() {
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level, can be overwritten in config")
 
 	flag.Usage = func() {
+		configPath := os.Getenv("HOME") + "/.alertconfig.json"
 		fmt.Println("Usage: alert [options]")
 		flag.PrintDefaults()
 		fmt.Println("\nEnvironments:")
-		fmt.Println("\tCONFIG_PATH:\t Config Filepath")
+		fmt.Printf("\tCONFIG_PATH:\t Config to use, default (%s)\n", configPath)
 		fmt.Println("\nExamples:")
 		fmt.Println("\tGet all alerts:")
 		fmt.Println("\t    alert")
@@ -640,10 +659,11 @@ func main() {
 		fmt.Println("\tservice\tEx GGUS,SSB,dbs,etc.")
 		fmt.Println("\tseverity\tEx info,medium,high,urgent,etc.")
 		fmt.Println("\ttag\t\tEx cmsweb,cms,monitoring,etc.")
-		fmt.Println("\n\tGet all alerts of specific service/severity/tag. Ex GGUS/high/cms:")
+		fmt.Println("\n\tGet all alerts of specific service/severity/tag/name. Ex GGUS/high/cms/ssb-OTG0058113:")
 		fmt.Println("\t    alert -service=GGUS")
 		fmt.Println("\t    alert -severity=high")
 		fmt.Println("\t    alert -tag=cms")
+		fmt.Println("\t    alert -name=ssb-OTG0058113")
 		fmt.Println("\n\tGet all alerts based on multi filters. Ex service=GGUS, severity=high:")
 		fmt.Println("\t    alert -service=GGUS -severity=high")
 		fmt.Println("\n\tSort alerts based on labels. The -sort flag on top of above queries will give sorted alerts.:")
