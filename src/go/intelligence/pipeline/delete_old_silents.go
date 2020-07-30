@@ -21,7 +21,9 @@ func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 	finalData := make(chan models.AmJSON)
 	go func() {
 		defer close(finalData)
-		deleteSilenceHelper()
+		if *utils.DryRun == false {
+			deleteSilenceHelper()
+		}
 		for each := range data {
 			finalData <- each
 		}
