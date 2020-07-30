@@ -39,89 +39,55 @@ func run() {
 	}
 }
 
-func runDefinedIterations() {
-	utils.FirstRunSinceRestart = true
+func runNoOfTimes() {
+	utils.NoOfAlertsBeforeIntModule = 0
+	utils.NoOfPushedAlerts = 0
+	utils.NoOfNewSilencedAlerts = 0
+	utils.NoOfAlertsAfterIntModule = 0
+	utils.NoOfActiveSilencesAfterIntModule = 0
+	utils.NoOfExpiredSilencesAfterIntModule = 0
+	var err error
 
-	for i := 0; i < iter; i++ {
-		utils.NoOfAlertsBeforeIntModule = 0
-		utils.NoOfPushedAlerts = 0
-		utils.NoOfNewSilencedAlerts = 0
-		utils.NoOfAlertsAfterIntModule = 0
-		utils.NoOfActiveSilencesAfterIntModule = 0
-		utils.NoOfExpiredSilencesAfterIntModule = 0
-		var err error
+	run()
 
-		run()
+	utils.FirstRunSinceRestart = false
+	log.Printf("No of Alerts found into AlertManager before running int module : %d\n", utils.NoOfAlertsBeforeIntModule)
+	log.Printf("No of Active Silences in AlertManager before runnint int module : %d\n", utils.NoOfActiveSilencesBeforeIntModule)
+	log.Printf("No of Expired Silences in AlertManager before runnint int module : %d\n", utils.NoOfExpiredSilencesBeforeIntModule)
+	log.Printf("No of Pending Silences in AlertManager before runnint int module : %d\n", utils.NoOfPendingSilencesBeforeIntModule)
 
-		utils.FirstRunSinceRestart = false
-		log.Printf("No of Alerts found into AlertManager before running int module : %d\n", utils.NoOfAlertsBeforeIntModule)
-		log.Printf("No of Active Silences in AlertManager before runnint int module : %d\n", utils.NoOfActiveSilencesBeforeIntModule)
-		log.Printf("No of Expired Silences in AlertManager before runnint int module : %d\n", utils.NoOfExpiredSilencesBeforeIntModule)
-		log.Printf("No of Pending Silences in AlertManager before runnint int module : %d\n", utils.NoOfPendingSilencesBeforeIntModule)
-
-		if *utils.DryRun == false {
-			log.Printf("No of Alerts pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
-			log.Printf("No of new Silences created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
-			_, utils.NoOfAlertsAfterIntModule, err = utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
-			if err != nil {
-				log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
-			}
-			log.Printf("No of alerts in AlertManager after runnint int module : %d", utils.NoOfAlertsAfterIntModule)
-			_, utils.NoOfActiveSilencesAfterIntModule, utils.NoOfExpiredSilencesAfterIntModule, utils.NoOfPendingSilencesAfterIntModule, err = utils.GetSilences()
-			if err != nil {
-				log.Printf("Could not fetch silences from AlertManager, error:%v\n", err)
-			}
-			log.Printf("No of Active Silences in AlertManager after runnint int module : %d\n", utils.NoOfActiveSilencesAfterIntModule)
-			log.Printf("No of Expired Silences in AlertManager after runnint int module : %d\n", utils.NoOfExpiredSilencesAfterIntModule)
-			log.Printf("No of Pending Silences in AlertManager after runnint int module : %d\n", utils.NoOfPendingSilencesAfterIntModule)
-		} else {
-			log.Printf("Dry Run.. No of Alerts meant to be pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
-			log.Printf("Dry Run.. No of new Silences meant to be created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
+	if *utils.DryRun == false {
+		log.Printf("No of Alerts pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
+		log.Printf("No of new Silences created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
+		_, utils.NoOfAlertsAfterIntModule, err = utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
+		if err != nil {
+			log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
 		}
+		log.Printf("No of alerts in AlertManager after runnint int module : %d", utils.NoOfAlertsAfterIntModule)
+		_, utils.NoOfActiveSilencesAfterIntModule, utils.NoOfExpiredSilencesAfterIntModule, utils.NoOfPendingSilencesAfterIntModule, err = utils.GetSilences()
+		if err != nil {
+			log.Printf("Could not fetch silences from AlertManager, error:%v\n", err)
+		}
+		log.Printf("No of Active Silences in AlertManager after runnint int module : %d\n", utils.NoOfActiveSilencesAfterIntModule)
+		log.Printf("No of Expired Silences in AlertManager after runnint int module : %d\n", utils.NoOfExpiredSilencesAfterIntModule)
+		log.Printf("No of Pending Silences in AlertManager after runnint int module : %d\n", utils.NoOfPendingSilencesAfterIntModule)
+	} else {
+		log.Printf("Dry Run.. No of Alerts meant to be pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
+		log.Printf("Dry Run.. No of new Silences meant to be created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
+	}
 
-		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
+	time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
+}
+
+func runDefinedIterations() {
+	for i := 0; i < iter; i++ {
+		runNoOfTimes()
 	}
 }
 
 func runInfinite() {
-	utils.FirstRunSinceRestart = true
 	for true {
-		utils.NoOfAlertsBeforeIntModule = 0
-		utils.NoOfPushedAlerts = 0
-		utils.NoOfNewSilencedAlerts = 0
-		utils.NoOfAlertsAfterIntModule = 0
-		utils.NoOfActiveSilencesAfterIntModule = 0
-		utils.NoOfExpiredSilencesAfterIntModule = 0
-		var err error
-
-		run()
-
-		utils.FirstRunSinceRestart = false
-		log.Printf("No of Alerts found into AlertManager before running int module : %d\n", utils.NoOfAlertsBeforeIntModule)
-		log.Printf("No of Active Silences in AlertManager before runnint int module : %d\n", utils.NoOfActiveSilencesBeforeIntModule)
-		log.Printf("No of Expired Silences in AlertManager before runnint int module : %d\n", utils.NoOfExpiredSilencesBeforeIntModule)
-		log.Printf("No of Pending Silences in AlertManager before runnint int module : %d\n", utils.NoOfPendingSilencesBeforeIntModule)
-
-		if *utils.DryRun == false {
-			log.Printf("No of Alerts pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
-			log.Printf("No of new Silences created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
-			_, utils.NoOfAlertsAfterIntModule, err = utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
-			if err != nil {
-				log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
-			}
-			log.Printf("No of alerts in AlertManager after runnint int module : %d", utils.NoOfAlertsAfterIntModule)
-			_, utils.NoOfActiveSilencesAfterIntModule, utils.NoOfExpiredSilencesAfterIntModule, utils.NoOfPendingSilencesAfterIntModule, err = utils.GetSilences()
-			if err != nil {
-				log.Printf("Could not fetch silences from AlertManager, error:%v\n", err)
-			}
-			log.Printf("No of Active Silences in AlertManager after runnint int module : %d\n", utils.NoOfActiveSilencesAfterIntModule)
-			log.Printf("No of Expired Silences in AlertManager after runnint int module : %d\n", utils.NoOfExpiredSilencesAfterIntModule)
-			log.Printf("No of Pending Silences in AlertManager after runnint int module : %d\n", utils.NoOfPendingSilencesAfterIntModule)
-		} else {
-			log.Printf("Dry Run.. No of Alerts meant to be pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
-			log.Printf("Dry Run.. No of new Silences meant to be created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
-		}
-		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
+		runNoOfTimes()
 	}
 }
 
@@ -142,6 +108,7 @@ func main() {
 	flag.Parse()
 	utils.ParseConfig(configFile, verbose)
 
+	utils.FirstRunSinceRestart = true
 	if iter == 0 {
 		runInfinite()
 	} else {
