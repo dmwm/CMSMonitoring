@@ -65,7 +65,7 @@ The given config file format should be followed. The config file consists of mai
   "silence": {
     "createdBy": "admin",
     "comment": "maintenance",
-    "silenceStatus": ["active","pending"]
+    "silenceStatus": ["active","expired","pending"]
   },
 
   "services": [
