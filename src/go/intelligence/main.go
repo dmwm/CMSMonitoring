@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"go/intelligence/models"
 	"go/intelligence/pipeline"
@@ -13,9 +14,6 @@ import (
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
-
-//variable storing custom defined no. of iteration
-var iter int
 
 // Function running all logics
 // Processing data pipeline module is based on ideas presented in
@@ -39,61 +37,69 @@ func run() {
 	}
 }
 
-func runNoOfTimes() {
-	utils.NoOfAlertsBeforeIntModule = 0
-	utils.NoOfPushedAlerts = 0
-	utils.NoOfNewSilencedAlerts = 0
-	utils.NoOfAlertsAfterIntModule = 0
-	utils.NoOfActiveSilencesAfterIntModule = 0
-	utils.NoOfExpiredSilencesAfterIntModule = 0
-	var err error
+func changedCountersLogging() {
+	byteVal, err := json.Marshal(utils.ChangeCounters)
+	if err != nil {
+		log.Printf("Could not parse ChangeCounters struct to JSON, error:%v\n", err)
+	}
+	log.Printf("Expected Status in AlertManager: %v\n", string(byteVal))
 
-	run()
-
-	utils.FirstRunSinceRestart = false
-	log.Printf("No of Alerts found into AlertManager before running int module : %d\n", utils.NoOfAlertsBeforeIntModule)
-	log.Printf("No of Active Silences in AlertManager before runnint int module : %d\n", utils.NoOfActiveSilencesBeforeIntModule)
-	log.Printf("No of Expired Silences in AlertManager before runnint int module : %d\n", utils.NoOfExpiredSilencesBeforeIntModule)
-	log.Printf("No of Pending Silences in AlertManager before runnint int module : %d\n", utils.NoOfPendingSilencesBeforeIntModule)
-
-	if *utils.DryRun == false {
-		log.Printf("No of Alerts pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
-		log.Printf("No of new Silences created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
-		_, utils.NoOfAlertsAfterIntModule, err = utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
-		if err != nil {
-			log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
+	silencedData, err := utils.GetSilences()
+	if err != nil {
+		log.Printf("Unable to fetch silences, error: %v", err)
+	}
+	for _, each := range silencedData.Data {
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[0] {
+			utils.ChangeCounters.NoOfActiveSilences--
 		}
-		log.Printf("No of alerts in AlertManager after runnint int module : %d", utils.NoOfAlertsAfterIntModule)
-		_, utils.NoOfActiveSilencesAfterIntModule, utils.NoOfExpiredSilencesAfterIntModule, utils.NoOfPendingSilencesAfterIntModule, err = utils.GetSilences()
-		if err != nil {
-			log.Printf("Could not fetch silences from AlertManager, error:%v\n", err)
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[1] {
+			utils.ChangeCounters.NoOfExpiredSilences--
 		}
-		log.Printf("No of Active Silences in AlertManager after runnint int module : %d\n", utils.NoOfActiveSilencesAfterIntModule)
-		log.Printf("No of Expired Silences in AlertManager after runnint int module : %d\n", utils.NoOfExpiredSilencesAfterIntModule)
-		log.Printf("No of Pending Silences in AlertManager after runnint int module : %d\n", utils.NoOfPendingSilencesAfterIntModule)
-	} else {
-		log.Printf("Dry Run.. No of Alerts meant to be pushed into AlertManager : %d\n", utils.NoOfPushedAlerts)
-		log.Printf("Dry Run.. No of new Silences meant to be created into AlertManager : %d\n", utils.NoOfNewSilencedAlerts)
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[2] {
+			utils.ChangeCounters.NoOfPendingSilences--
+		}
 	}
 
-	time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
+	_, err = utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
+	if err != nil {
+		log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
+	}
+	utils.ChangeCounters.NoOfAlerts -= len(utils.ExtAlertsMap)
+
+	if utils.ChangeCounters.NoOfAlerts != 0 {
+		log.Fatalf("No. of Alerts Mismatched.. Exiting..")
+	}
+	if utils.ChangeCounters.NoOfActiveSilences != 0 {
+		log.Fatalf("No. of Active Silences Mismatched.. Exiting..")
+	}
+	if utils.ChangeCounters.NoOfExpiredSilences != 0 {
+		log.Fatalf("No. of Expired Silences Mismatched.. Exiting..")
+	}
 }
 
-func runDefinedIterations() {
+func runDefinedIterations(iter int) {
 	for i := 0; i < iter; i++ {
-		runNoOfTimes()
+		run()
+		utils.ChangeCounters = models.ChangeCounters{}
+		utils.FirstRunSinceRestart = false
+		changedCountersLogging()
+		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
 	}
 }
 
 func runInfinite() {
 	for true {
-		runNoOfTimes()
+		utils.ChangeCounters = models.ChangeCounters{}
+		run()
+		utils.FirstRunSinceRestart = false
+		changedCountersLogging()
+		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
 	}
 }
 
 func main() {
-
 	var verbose int
+	var iter int
 	var configFile string
 	flag.StringVar(&configFile, "config", "", "Config File path")
 	utils.DryRun = flag.Bool("dryRun", false, "Flag for dry running")
@@ -112,6 +118,6 @@ func main() {
 	if iter == 0 {
 		runInfinite()
 	} else {
-		runDefinedIterations()
+		runDefinedIterations(iter)
 	}
 }

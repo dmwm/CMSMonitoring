@@ -15,17 +15,16 @@ import (
 func FetchAlert() <-chan models.AmJSON {
 	fetchedData := make(chan models.AmJSON)
 
-	_, _, err := utils.GetAlerts(utils.ConfigJSON.Server.GetSuppressedAlertsAPI, false)
+	_, err := utils.GetAlerts(utils.ConfigJSON.Server.GetSuppressedAlertsAPI, false)
 	if err != nil {
 		log.Printf("Could not fetch suppressed alerts from AlertManager, error:%v\n", err)
 	}
 
-	data, size, err := utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
-	utils.NoOfAlertsBeforeIntModule = size
-
+	data, err := utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
 	if err != nil {
 		log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
 	}
+	utils.ChangeCounters.NoOfAlerts = len(utils.ExtAlertsMap)
 
 	go func() {
 		defer close(fetchedData)

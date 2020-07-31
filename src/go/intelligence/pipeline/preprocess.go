@@ -46,22 +46,25 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 //updateSilencedMap -function for updating the ifSilenced Map to help us not to push redundant silences
 func updateSilencedMap() error {
 
-	var err error
-	var data models.AllSilences
-
-	data, utils.NoOfActiveSilencesBeforeIntModule, utils.NoOfExpiredSilencesBeforeIntModule, utils.NoOfPendingSilencesBeforeIntModule, err = utils.GetSilences()
+	data, err := utils.GetSilences()
 	if err != nil {
 		log.Printf("Unable to Update Silence Map, error: %v", err)
 	}
 
 	for _, each := range data.Data {
-
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[0] {
+			utils.ChangeCounters.NoOfActiveSilences++
+		}
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[1] {
+			utils.ChangeCounters.NoOfExpiredSilences++
+		}
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[2] {
+			utils.ChangeCounters.NoOfPendingSilences++
+		}
 		for _, matcher := range each.Matchers {
 			if matcher.Name == utils.ConfigJSON.Alerts.UniqueLabel {
-				for _, sStatus := range utils.ConfigJSON.Silence.SilenceStatus {
-					if each.Status.State == sStatus {
-						utils.IfSilencedMap[matcher.Value] = utils.SilenceMapVals{IfAvail: 1, SilenceID: each.ID}
-					}
+				if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[0] {
+					utils.IfSilencedMap[matcher.Value] = utils.SilenceMapVals{IfAvail: 1, SilenceID: each.ID}
 				}
 			}
 		}

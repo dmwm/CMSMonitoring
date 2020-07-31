@@ -27,7 +27,7 @@ func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 					}
 				}
 			}
-			utils.NoOfPushedAlerts++
+			utils.ChangeCounters.NoOfPushedAlerts++
 			c <- each
 		}
 	}()

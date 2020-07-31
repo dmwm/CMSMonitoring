@@ -135,3 +135,12 @@ type Config struct {
 	Silence             silence             `json:"silence"`             //Silence struct
 	Services            []Service           `json:"services"`            //Array of Service
 }
+
+//ChangeCounters data struct
+type ChangeCounters struct {
+	NoOfAlerts          int //No of alerts in AM
+	NoOfPushedAlerts    int //No of alerts being pushed to AM
+	NoOfActiveSilences  int //No of active Silences in AM
+	NoOfExpiredSilences int //No of expired Silences in AM
+	NoOfPendingSilences int //No of pending Silences in AM
+}

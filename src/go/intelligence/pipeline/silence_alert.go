@@ -33,7 +33,7 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 					}
 				}
 			}
-			utils.NoOfNewSilencedAlerts++
+			utils.ChangeCounters.NoOfActiveSilences++
 			silencedData <- each
 		}
 	}()

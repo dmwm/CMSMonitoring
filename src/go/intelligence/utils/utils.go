@@ -34,35 +34,8 @@ type SilenceMapVals struct {
 //DryRun boolean flag for dry run
 var DryRun *bool
 
-//NoOfAlertsBeforeIntModule variable for storing no of alerts in AM before running intelligence module pipeline
-var NoOfAlertsBeforeIntModule int
-
-//NoOfActiveSilencesBeforeIntModule variable for storingo no of active Silences in AM before running intelligence module pipeline
-var NoOfActiveSilencesBeforeIntModule int
-
-//NoOfExpiredSilencesBeforeIntModule variable for storing no of expired Silences in AM before running intelligence module pipeline
-var NoOfExpiredSilencesBeforeIntModule int
-
-//NoOfPendingSilencesBeforeIntModule variable for storing no of pending Silences in AM before running intelligence module pipeline
-var NoOfPendingSilencesBeforeIntModule int
-
-//NoOfPushedAlerts variable for storing no of alerts being pushed to AM
-var NoOfPushedAlerts int
-
-//NoOfNewSilencedAlerts variable for storing no of new silences created into AM
-var NoOfNewSilencedAlerts int
-
-//NoOfAlertsAfterIntModule variable for storing no of current alerts in AM after running intelligence module pipeline
-var NoOfAlertsAfterIntModule int
-
-//NoOfActiveSilencesAfterIntModule variable for storingo no of active Silences in AM after running intelligence module pipeline
-var NoOfActiveSilencesAfterIntModule int
-
-//NoOfExpiredSilencesAfterIntModule variable for storing no of expired Silences in AM after running intelligence module pipeline
-var NoOfExpiredSilencesAfterIntModule int
-
-//NoOfPendingSilencesAfterIntModule variable for storing no of pending Silences in AM after running intelligence module pipeline
-var NoOfPendingSilencesAfterIntModule int
+//ChangeCounters variable for storing counters for logging before and after running intelligence module
+var ChangeCounters models.ChangeCounters
 
 //IfSilencedMap - variable for storing ongoing silences
 var IfSilencedMap map[string]SilenceMapVals
@@ -240,14 +213,14 @@ func findDashboards() models.AllDashboardsFetched {
 }
 
 //GetSilences - function for get request on /api/v1/silences alertmanager endpoint for fetching all silences.
-func GetSilences() (models.AllSilences, int, int, int, error) {
+func GetSilences() (models.AllSilences, error) {
 	var data models.AllSilences
 	apiurl := ValidateURL(ConfigJSON.Server.CMSMONURL, ConfigJSON.Server.GetSilencesAPI) //GET API for fetching all AM Silences.
 
 	req, err := http.NewRequest("GET", apiurl, nil)
 	if err != nil {
 		log.Printf("Request Error, error: %v\n", err)
-		return data, 0, 0, 0, err
+		return data, err
 	}
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
@@ -267,11 +240,11 @@ func GetSilences() (models.AllSilences, int, int, int, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Response Error, error: %v\n", err)
-		return data, 0, 0, 0, err
+		return data, err
 	}
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
-		return data, 0, 0, 0, errors.New("Respose Error")
+		return data, errors.New("Respose Error")
 	}
 
 	defer resp.Body.Close()
@@ -280,7 +253,7 @@ func GetSilences() (models.AllSilences, int, int, int, error) {
 
 	if err != nil {
 		log.Printf("Unable to read JSON Data from AlertManager Silence GET API, error: %v\n", err)
-		return data, 0, 0, 0, err
+		return data, err
 	}
 
 	if ConfigJSON.Server.Verbose > 1 {
@@ -296,30 +269,14 @@ func GetSilences() (models.AllSilences, int, int, int, error) {
 			log.Println(string(byteValue))
 		}
 		log.Printf("Unable to parse JSON Data from AlertManager Silence GET API, error: %v\n", err)
-		return data, 0, 0, 0, err
+		return data, err
 	}
 
-	expiredLength := 0
-	activeLength := 0
-	pendingLength := 0
-
-	for _, each := range data.Data {
-		if each.Status.State == ConfigJSON.Silence.SilenceStatus[0] {
-			activeLength++
-		}
-		if each.Status.State == ConfigJSON.Silence.SilenceStatus[1] {
-			expiredLength++
-		}
-		if each.Status.State == ConfigJSON.Silence.SilenceStatus[2] {
-			pendingLength++
-		}
-	}
-
-	return data, activeLength, expiredLength, pendingLength, nil
+	return data, nil
 }
 
 //GetAlerts - function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
-func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, int, error) {
+func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, error) {
 
 	var data models.AmData
 	apiurl := ValidateURL(ConfigJSON.Server.CMSMONURL, getAlertsAPI) //GET API for fetching all AM alerts.
@@ -327,7 +284,7 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, int, e
 	req, err := http.NewRequest("GET", apiurl, nil)
 	if err != nil {
 		log.Printf("Request Error, error: %v\n", err)
-		return data, 0, err
+		return data, err
 	}
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
@@ -347,11 +304,11 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, int, e
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Response Error, error: %v\n", err)
-		return data, 0, err
+		return data, err
 	}
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
-		return data, 0, errors.New("Respose Error")
+		return data, errors.New("Respose Error")
 	}
 
 	defer resp.Body.Close()
@@ -360,7 +317,7 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, int, e
 
 	if err != nil {
 		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", err)
-		return data, 0, err
+		return data, err
 	}
 
 	if ConfigJSON.Server.Verbose > 1 {
@@ -376,7 +333,7 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, int, e
 			log.Println(string(byteValue))
 		}
 		log.Printf("Unable to parse JSON Data from AlertManager GET API, error: %v\n", err)
-		return data, 0, err
+		return data, err
 	}
 
 	if updateMapChoice == true {
@@ -407,7 +364,7 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, int, e
 		}
 	}
 
-	return data, len(ExtAlertsMap), nil
+	return data, nil
 }
 
 //PostAlert - function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
