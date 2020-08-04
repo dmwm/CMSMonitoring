@@ -31,9 +31,6 @@ type SilenceMapVals struct {
 	SilenceID string
 }
 
-//DryRun boolean flag for dry run
-var DryRun *bool
-
 //ChangeCounters variable for storing counters for logging before and after running intelligence module
 var ChangeCounters models.ChangeCounters
 

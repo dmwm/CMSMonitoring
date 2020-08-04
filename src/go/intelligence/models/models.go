@@ -85,6 +85,7 @@ type server struct {
 	HTTPTimeout            int           `json:"httpTimeout"`            //Timeout for HTTP Requests
 	Interval               time.Duration `json:"interval"`               //Time Interval at which the intelligence service will repeat
 	Verbose                int           `json:"verbose"`                //Verbosity Level
+	DryRun                 bool          `json:"dryRun"`                 //DryRun boolean flag for dry run
 }
 
 type annotationDashboard struct {

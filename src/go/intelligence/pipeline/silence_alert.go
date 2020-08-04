@@ -24,7 +24,7 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 	go func() {
 		defer close(silencedData)
 		for each := range data {
-			if *utils.DryRun == false {
+			if utils.ConfigJSON.Server.DryRun == false {
 				err := silenceAlert(each)
 				if err != nil {
 					log.Printf("Could not silence alert, error:%v\n", err)

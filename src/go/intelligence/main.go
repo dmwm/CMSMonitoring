@@ -102,7 +102,6 @@ func main() {
 	var iter int
 	var configFile string
 	flag.StringVar(&configFile, "config", "", "Config File path")
-	utils.DryRun = flag.Bool("dryRun", false, "Flag for dry running")
 	flag.IntVar(&iter, "iter", 0, "Custom defined no. of iterations for premature termination")
 	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
 

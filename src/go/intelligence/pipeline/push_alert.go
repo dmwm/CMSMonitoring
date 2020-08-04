@@ -18,7 +18,7 @@ func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 	go func() {
 		defer close(c)
 		for each := range data {
-			if *utils.DryRun == false {
+			if utils.ConfigJSON.Server.DryRun == false {
 				err := utils.PostAlert(each)
 				if err != nil {
 					log.Printf("Could not push alert, error:%v\n", err)
