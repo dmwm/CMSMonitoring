@@ -44,19 +44,19 @@ func pushTestAlerts() {
 
 	file, err := os.Open(utils.ConfigJSON.Server.Testing.TestFile)
 	if err != nil {
-		log.Fatalf("Unable to open JSON file, error: %v\n", err)
+		log.Fatalf("Unable to open JSON file. Testing failed! error: %v\n", err)
 	}
 
 	defer file.Close()
 
 	jsonData, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Fatalf("Unable to read JSON file, error: %v\n", err)
+		log.Fatalf("Unable to read JSON file. Testing failed! error: %v\n", err)
 	}
 
 	err = json.Unmarshal(jsonData, &testAlertData)
 	if err != nil {
-		log.Fatalf("Unable to Unmarshal Data, error: %v\n", err)
+		log.Fatalf("Unable to Unmarshal Data. Testing failed! error: %v\n", err)
 	}
 
 	for _, each := range testAlertData {
@@ -66,14 +66,14 @@ func pushTestAlerts() {
 
 		err := utils.PostAlert(each)
 		if err != nil {
-			log.Printf("Could not push alert, error:%v\n", err)
 			if utils.ConfigJSON.Server.Verbose > 1 {
 				log.Printf("Alert Data: %s\n ", each)
 			}
+			log.Fatalf("Could not push alert. Testing failed! error:%v\n", err)
 		}
 	}
 
-	log.Printf("Test alerts has been pushed to AlertManager successfully.\n\n")
+	log.Printf("Test alerts has been pushed into AlertManager successfully.\n\n")
 }
 
 func runTest() {
@@ -82,7 +82,7 @@ func runTest() {
 
 	pushTestAlerts()
 
-	log.Printf("Snapshot of AlertManager before starting Test... \n")
+	log.Printf("Snapshot of AlertManager before starting Testing... \n")
 	snapshotBefore := getAMSnapshot()
 
 	runPipeline()
@@ -91,15 +91,15 @@ func runTest() {
 	log.Printf("Number of Silences Created : %d \n", utils.ChangeCounters.NoOfSilencesCreated)
 	log.Printf("Number of Silences Deleted : %d \n\n", utils.ChangeCounters.NoOfSilencesDeleted)
 
-	log.Printf("Snapshot of AlertManager after completing Test... \n")
+	log.Printf("Snapshot of AlertManager after completing Testing... \n")
 	snapshotAfter := getAMSnapshot()
 
 	if snapshotBefore.NoOfActiveSilences+utils.ChangeCounters.NoOfSilencesCreated != snapshotAfter.NoOfActiveSilences {
-		log.Fatalf("Number of Active Silences Mismatched... Test Failed !!")
+		log.Fatalf("Number of Active Silences Mismatched... Testing Failed !!")
 	}
 
 	if snapshotBefore.NoOfExpiredSilences+utils.ChangeCounters.NoOfSilencesDeleted != snapshotAfter.NoOfExpiredSilences {
-		log.Fatalf("Number of Expired Silences Mismatched... Test Failed !!")
+		log.Fatalf("Number of Expired Silences Mismatched... Testing Failed !!")
 	}
 
 	log.Printf("Testing Successful!\n\n")
@@ -122,11 +122,11 @@ func getAMSnapshot() models.ChangeCounters {
 
 	data, err := utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
 	if err != nil {
-		log.Fatalf("Could not fetch alerts from AlertManager, error:%v\n", err)
+		log.Fatalf("Could not fetch alerts from AlertManager. Testing Failed! error:%v\n", err)
 	}
 	silenceData, err := utils.GetSilences()
 	if err != nil {
-		log.Fatalf("Could not fetch silences from AlertManager, error:%v\n", err)
+		log.Fatalf("Could not fetch silences from AlertManager. Testing Failed! error:%v\n", err)
 	}
 
 	currentCounters.NoOfAlerts = len(data.Data)
