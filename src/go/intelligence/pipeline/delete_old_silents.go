@@ -45,7 +45,7 @@ func deleteSilenceHelper() {
 			log.Printf("Could not delete expired silence for: %s, error:%v\n", silencedAlert, err)
 		}
 
-		utils.ChangeCounters.NoOfExpiredSilences++
+		utils.ChangeCounters.NoOfSilencesDeleted++
 	}
 }
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"go/intelligence/models"
 	"go/intelligence/pipeline"
@@ -37,52 +36,11 @@ func run() {
 	}
 }
 
-func changedCountersLogging() {
-	byteVal, err := json.Marshal(utils.ChangeCounters)
-	if err != nil {
-		log.Printf("Could not parse ChangeCounters struct to JSON, error:%v\n", err)
-	}
-	log.Printf("Expected Status in AlertManager: %v\n", string(byteVal))
-
-	silencedData, err := utils.GetSilences()
-	if err != nil {
-		log.Printf("Unable to fetch silences, error: %v", err)
-	}
-	for _, each := range silencedData.Data {
-		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[0] {
-			utils.ChangeCounters.NoOfActiveSilences--
-		}
-		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[1] {
-			utils.ChangeCounters.NoOfExpiredSilences--
-		}
-		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[2] {
-			utils.ChangeCounters.NoOfPendingSilences--
-		}
-	}
-
-	_, err = utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
-	if err != nil {
-		log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
-	}
-	utils.ChangeCounters.NoOfAlerts -= len(utils.ExtAlertsMap)
-
-	if utils.ChangeCounters.NoOfAlerts != 0 {
-		log.Fatalf("No. of Alerts Mismatched.. Exiting..")
-	}
-	if utils.ChangeCounters.NoOfActiveSilences != 0 {
-		log.Fatalf("No. of Active Silences Mismatched.. Exiting..")
-	}
-	if utils.ChangeCounters.NoOfExpiredSilences != 0 {
-		log.Fatalf("No. of Expired Silences Mismatched.. Exiting..")
-	}
-}
-
 func runDefinedIterations(iter int) {
 	for i := 0; i < iter; i++ {
 		run()
 		utils.ChangeCounters = models.ChangeCounters{}
 		utils.FirstRunSinceRestart = false
-		changedCountersLogging()
 		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
 	}
 }
@@ -92,7 +50,6 @@ func runInfinite() {
 		utils.ChangeCounters = models.ChangeCounters{}
 		run()
 		utils.FirstRunSinceRestart = false
-		changedCountersLogging()
 		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
 	}
 }

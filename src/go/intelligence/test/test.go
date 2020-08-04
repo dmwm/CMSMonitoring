@@ -1,0 +1,152 @@
+package main
+
+import (
+	"encoding/json"
+	"flag"
+	"go/intelligence/models"
+	"go/intelligence/pipeline"
+	"go/intelligence/utils"
+	"io/ioutil"
+	"log"
+	"os"
+	"time"
+)
+
+// Module     : intelligence
+// Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
+// Created    : Wed, 1 July 2020 11:04:01 GMT
+// Description: CMS MONIT infrastructure Intelligence Module
+
+func runPipeline() {
+	utils.ChangeCounters = models.ChangeCounters{}
+	var processedData []models.AmJSON
+	a := pipeline.DeleteSilence(pipeline.Silence(
+		pipeline.PushAlert(
+			pipeline.MlBox(
+				pipeline.AddAnnotation(
+					pipeline.KeywordMatching(
+						pipeline.Preprocess(
+							pipeline.FetchAlert())))))))
+
+	for d := range a {
+		processedData = append(processedData, d)
+	}
+
+	if utils.ConfigJSON.Server.Verbose > 2 {
+		log.Printf("Processed Alerts Data: %s\n", processedData)
+	}
+}
+
+func pushTestAlerts() {
+	log.Printf("Pushing Test alerts into AlertManager \n")
+
+	testAlertData := []models.AmJSON{}
+
+	file, err := os.Open(utils.ConfigJSON.Server.Testing.TestFile)
+	if err != nil {
+		log.Fatalf("Unable to open JSON file, error: %v\n", err)
+	}
+
+	defer file.Close()
+
+	jsonData, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Fatalf("Unable to read JSON file, error: %v\n", err)
+	}
+
+	err = json.Unmarshal(jsonData, &testAlertData)
+	if err != nil {
+		log.Fatalf("Unable to Unmarshal Data, error: %v\n", err)
+	}
+
+	for _, each := range testAlertData {
+
+		each.StartsAt = time.Now()
+		each.EndsAt = time.Now().Add(utils.ConfigJSON.Server.Testing.LifetimeOfTestAlerts * time.Minute)
+
+		err := utils.PostAlert(each)
+		if err != nil {
+			log.Printf("Could not push alert, error:%v\n", err)
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Printf("Alert Data: %s\n ", each)
+			}
+		}
+	}
+
+	log.Printf("Test alerts has been pushed to AlertManager successfully.\n\n")
+}
+
+func runTest() {
+
+	log.Printf("Starting Intelligence Pipeline Testing!\n\n")
+
+	pushTestAlerts()
+
+	log.Printf("Snapshot of AlertManager before starting Test... \n")
+	snapshotBefore := getAMSnapshot()
+
+	runPipeline()
+	log.Printf("Changes made during the pipeline execution.... \n")
+	log.Printf("Number of Alerts Pushed : %d \n", utils.ChangeCounters.NoOfPushedAlerts)
+	log.Printf("Number of Silences Created : %d \n", utils.ChangeCounters.NoOfSilencesCreated)
+	log.Printf("Number of Silences Deleted : %d \n\n", utils.ChangeCounters.NoOfSilencesDeleted)
+
+	log.Printf("Snapshot of AlertManager after completing Test... \n")
+	snapshotAfter := getAMSnapshot()
+
+	if snapshotBefore.NoOfActiveSilences+utils.ChangeCounters.NoOfSilencesCreated != snapshotAfter.NoOfActiveSilences {
+		log.Fatalf("Number of Active Silences Mismatched... Test Failed !!")
+	}
+
+	if snapshotBefore.NoOfExpiredSilences+utils.ChangeCounters.NoOfSilencesDeleted != snapshotAfter.NoOfExpiredSilences {
+		log.Fatalf("Number of Expired Silences Mismatched... Test Failed !!")
+	}
+
+	log.Printf("Testing Successful!\n\n")
+}
+
+func main() {
+	var verbose int
+	var configFile string
+	flag.StringVar(&configFile, "config", "", "Config File path")
+	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
+
+	flag.Parse()
+	utils.ParseConfig(configFile, verbose)
+
+	runTest()
+}
+
+func getAMSnapshot() models.ChangeCounters {
+	currentCounters := models.ChangeCounters{}
+
+	data, err := utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
+	if err != nil {
+		log.Fatalf("Could not fetch alerts from AlertManager, error:%v\n", err)
+	}
+	silenceData, err := utils.GetSilences()
+	if err != nil {
+		log.Fatalf("Could not fetch silences from AlertManager, error:%v\n", err)
+	}
+
+	currentCounters.NoOfAlerts = len(data.Data)
+
+	for _, each := range silenceData.Data {
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[0] {
+			currentCounters.NoOfActiveSilences++
+		}
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[1] {
+			currentCounters.NoOfExpiredSilences++
+		}
+		if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[2] {
+			currentCounters.NoOfPendingSilences++
+		}
+	}
+
+	log.Printf("Number of Alerts : %d\n", currentCounters.NoOfAlerts)
+	log.Printf("Number of Active Silences : %d\n", currentCounters.NoOfActiveSilences)
+	log.Printf("Number of Expired Silences : %d\n", currentCounters.NoOfExpiredSilences)
+	log.Printf("Number of Pending Silences : %d\n\n", currentCounters.NoOfPendingSilences)
+
+	return currentCounters
+}

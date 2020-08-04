@@ -65,6 +65,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							log.Printf("Annotation: %v", dashboardData)
 						}
 						addAnnotationHelper(dData)
+						log.Printf("Annotation Added Successfully to Grafana Dashboards : data %v", string(dData))
 					}
 				}
 			}
