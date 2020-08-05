@@ -124,3 +124,28 @@ The given config file format should be followed. The config file consists of mai
   ]
 }
 ```
+### The Logic behind intelligence module
+1) The main function will run all pipeline's logic.
+2) pipeline starts with fetching alerts,
+3) then to process each alert seeing if it has already been processed and silenced. If they are then we ignore that alert, otherwise, we pass it to the next pipeline component. ( So here we require the SilencedMap which stores all those alerts which are in Silence Mode which indicates they are processed and we should not repeat the intelligence process again for them ).
+4) Then the alert comes to keyword matching were keywords are matched and accordingly severity is assigned.
+5) Passes through ML Box with no logic as of now.
+6) then the processed alert is pushed to AM and,
+7) Then the old alert with default severity is silenced
+8) Then Some resolved alerts that are silenced (i.e. when GGUS alerts are resolved) are deleted.
+
+Regarding Counters and Testing:-
+When we are fetching the alerts at step 2, we will count the number of alerts in the AM (i.e. before intelligence module does its stuff)
+Then when we go to preprocessing step 3, we will count all active, expired silences when we update our SilenceMap
+When we push Alerts we count how many alerts got pushed.
+When we create new Silences we will add 1 to the Active Silence counter which we modified at step 3
+When we delete a resolved alert's Silence we will add 1 the Expired Silence counter which we modified at step 3.
+
+Now at the end of pipeline. We will end up having following counters:-
+
+No Of Alerts
+No Of Active Silences
+No Of Expired Silences
+No of Alerts Pushed
+
+Now to verify if everything went well at the end of pipeline. We will again fetch Alerts/Silences from AM and count them and check if they matches with the counters above. If they match go to next iteration otherwise stop the testing.
