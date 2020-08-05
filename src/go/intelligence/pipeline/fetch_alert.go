@@ -14,17 +14,20 @@ import (
 //FetchAlert - function for fetching all active alerts from AlertManager
 func FetchAlert() <-chan models.AmJSON {
 	fetchedData := make(chan models.AmJSON)
+
+	_, err := utils.GetAlerts(utils.ConfigJSON.Server.GetSuppressedAlertsAPI, false)
+	if err != nil {
+		log.Printf("Could not fetch suppressed alerts from AlertManager, error:%v\n", err)
+	}
+
+	data, err := utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
+	if err != nil {
+		log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
+	}
+	utils.ChangeCounters.NoOfAlerts = len(utils.ExtAlertsMap)
+
 	go func() {
 		defer close(fetchedData)
-		_, err := utils.GetAlerts(utils.ConfigJSON.Server.GetSuppressedAlertsAPI, false)
-		if err != nil {
-			log.Printf("Could not fetch suppressed alerts from AlertManager, error:%v\n", err)
-		}
-
-		data, err := utils.GetAlerts(utils.ConfigJSON.Server.GetAlertsAPI, true)
-		if err != nil {
-			log.Printf("Could not fetch alerts from AlertManager, error:%v\n", err)
-		}
 		for _, each := range data.Data {
 			fetchedData <- each
 		}

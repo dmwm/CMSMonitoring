@@ -1,0 +1,89 @@
+[
+  {
+    "labels": {
+      "alertname": "ssb-OTG00088-Testing-Alert-Network-Intervention",
+      "description": "Network Services",
+      "feName": "Network",
+      "seName": "Network Service",
+      "service": "SSB",
+      "severity": "notification",
+      "tag": "monitoring",
+      "type": "Planned Intervention"
+    },
+    "annotations": {
+      "date": "2020-07-29T06:30:00Z",
+      "description": "Network Services",
+      "feName": "Network",
+      "monitState": "CLOSED",
+      "monitState1": "CLOSED",
+      "seName": "Network Service",
+      "shortDescription": "Network Intervention in building 8888",
+      "ssbNumber": "OTG00088",
+      "sysCreatedBy": "jdoe",
+      "sysModCount": "2",
+      "sysUpdatedBy": "jdoe",
+      "type": "Planned Intervention",
+      "updateTimestamp": "2020-07-03T15:32:36Z"
+    },
+    "startsAt": "2020-07-27T04:30:00Z",
+    "endsAt": "2020-07-31T20:10:58.537Z"
+  },
+
+  {
+    "labels": {
+      "alertname": "ssb-OTG00099-Testing-Alert-DB-Intervention",
+      "description": "Network Services",
+      "feName": "Network",
+      "seName": "Network Service",
+      "service": "SSB",
+      "severity": "notification",
+      "tag": "monitoring",
+      "type": "Planned Intervention"
+    },
+    "annotations": {
+      "date": "2020-07-29T06:30:00Z",
+      "description": "Network Services",
+      "feName": "Network",
+      "monitState": "CLOSED",
+      "monitState1": "CLOSED",
+      "seName": "Network Service",
+      "shortDescription": "Database Intervention in building 7777",
+      "ssbNumber": "OTG00099",
+      "sysCreatedBy": "jdoe",
+      "sysModCount": "2",
+      "sysUpdatedBy": "jdoe",
+      "type": "Planned Intervention",
+      "updateTimestamp": "2020-07-03T15:32:36Z"
+    },
+    "startsAt": "2020-07-27T04:30:00Z",
+    "endsAt": "2020-07-31T20:10:58.537Z"
+  },
+
+  {
+    "labels": {
+      "Priority": "urgent",
+      "Scope": "WLCG",
+      "Site": "pic",
+      "Type": "USER",
+      "VO": "cms",
+      "alertname": "ggus-89899-Testing-Alert",
+      "service": "GGUS",
+      "severity": "ticket",
+      "tag": "monitoring"
+    },
+    "annotations": {
+      "Priority": "urgent",
+      "ResponsibleUnit": "VOSupport",
+      "Scope": "WLCG",
+      "Site": "pic",
+      "Status": "assigned",
+      "Subject": "Transfers failing to T1_ES_PIC",
+      "TicketID": "89899",
+      "Type": "USER",
+      "URL": "https://ggus.eu/?mode=ticket_info&ticket_id=89899",
+      "VO": "cms"
+    },
+    "startsAt": "2020-07-22T05:54:00Z",
+    "endsAt": "2020-07-30T22:15:58.537Z"
+  }
+]

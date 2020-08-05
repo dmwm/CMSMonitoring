@@ -24,13 +24,16 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 	go func() {
 		defer close(silencedData)
 		for each := range data {
-			err := silenceAlert(each)
-			if err != nil {
-				log.Printf("Could not silence alert, error:%v\n", err)
-				if utils.ConfigJSON.Server.Verbose > 1 {
-					log.Printf("Silence Data: %s\n ", each)
+			if utils.ConfigJSON.Server.DryRun == false {
+				err := silenceAlert(each)
+				if err != nil {
+					log.Printf("Could not silence alert, error:%v\n", err)
+					if utils.ConfigJSON.Server.Verbose > 1 {
+						log.Printf("Silence Data: %s\n ", each)
+					}
 				}
 			}
+			utils.ChangeCounters.NoOfSilencesCreated++
 			silencedData <- each
 		}
 	}()

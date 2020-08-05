@@ -73,6 +73,12 @@ type GrafanaDashboard struct {
 	Text        string   `json:"text"`
 }
 
+//TestingData data struct
+type TestingData struct {
+	TestFile             string        `json:"testfile"`             //Test cases file name for testing
+	LifetimeOfTestAlerts time.Duration `json:"lifetimeOfTestAlerts"` //Lifetime of test alerts (in minutes)
+}
+
 //server data struct
 type server struct {
 	CMSMONURL              string        `json:"cmsmonURL"`              //CMSMON URL for AlertManager API
@@ -85,6 +91,8 @@ type server struct {
 	HTTPTimeout            int           `json:"httpTimeout"`            //Timeout for HTTP Requests
 	Interval               time.Duration `json:"interval"`               //Time Interval at which the intelligence service will repeat
 	Verbose                int           `json:"verbose"`                //Verbosity Level
+	DryRun                 bool          `json:"dryRun"`                 //DryRun boolean flag for dry run
+	Testing                TestingData   `json:"testing"`                // Testing struct for storing details about test scenario
 }
 
 type annotationDashboard struct {
@@ -134,4 +142,15 @@ type Config struct {
 	Alerts              alert               `json:"alerts"`              //Alert struct
 	Silence             silence             `json:"silence"`             //Silence struct
 	Services            []Service           `json:"services"`            //Array of Service
+}
+
+//ChangeCounters data struct
+type ChangeCounters struct {
+	NoOfAlerts          int //No of alerts in AM
+	NoOfPushedAlerts    int //No of alerts being pushed to AM
+	NoOfSilencesCreated int //No of new silences created in AM
+	NoOfSilencesDeleted int //No of new silences deleted from AM
+	NoOfActiveSilences  int //No of active Silences in AM
+	NoOfExpiredSilences int //No of expired Silences in AM
+	NoOfPendingSilences int //No of pending Silences in AM
 }

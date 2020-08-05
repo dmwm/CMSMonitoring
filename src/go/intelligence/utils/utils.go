@@ -31,6 +31,9 @@ type SilenceMapVals struct {
 	SilenceID string
 }
 
+//ChangeCounters variable for storing counters for logging before and after running intelligence module
+var ChangeCounters models.ChangeCounters
+
 //IfSilencedMap - variable for storing ongoing silences
 var IfSilencedMap map[string]SilenceMapVals
 
@@ -130,6 +133,11 @@ func ParseConfig(configFile string, verbose int) {
 		log.Fatalf("%s: Config File doesn't exist, error: %v", configFile, err)
 	}
 
+	//Custom verbose value overriden
+	if verbose > 0 {
+		ConfigJSON.Server.Verbose = verbose
+	}
+
 	if ConfigJSON.Server.Verbose > 0 {
 		log.SetFlags(log.LstdFlags | log.Lshortfile)
 	} else {
@@ -199,6 +207,69 @@ func findDashboards() models.AllDashboardsFetched {
 		log.Printf("Error parsing the response body: %s, %+v\n", err, string(d))
 	}
 	return data
+}
+
+//GetSilences - function for get request on /api/v1/silences alertmanager endpoint for fetching all silences.
+func GetSilences() (models.AllSilences, error) {
+	var data models.AllSilences
+	apiurl := ValidateURL(ConfigJSON.Server.CMSMONURL, ConfigJSON.Server.GetSilencesAPI) //GET API for fetching all AM Silences.
+
+	req, err := http.NewRequest("GET", apiurl, nil)
+	if err != nil {
+		log.Printf("Request Error, error: %v\n", err)
+		return data, err
+	}
+	req.Header.Add("Accept-Encoding", "identity")
+	req.Header.Add("Accept", "application/json")
+
+	timeout := time.Duration(ConfigJSON.Server.HTTPTimeout) * time.Second
+	client := &http.Client{Timeout: timeout}
+
+	if ConfigJSON.Server.Verbose > 1 {
+		log.Println("GET", apiurl)
+	} else if ConfigJSON.Server.Verbose > 1 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("Request: ", string(dump))
+		}
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Response Error, error: %v\n", err)
+		return data, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
+		return data, errors.New("Respose Error")
+	}
+
+	defer resp.Body.Close()
+
+	byteValue, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Printf("Unable to read JSON Data from AlertManager Silence GET API, error: %v\n", err)
+		return data, err
+	}
+
+	if ConfigJSON.Server.Verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("Response: ", string(dump))
+		}
+	}
+
+	err = json.Unmarshal(byteValue, &data)
+	if err != nil {
+		if ConfigJSON.Server.Verbose > 0 {
+			log.Println(string(byteValue))
+		}
+		log.Printf("Unable to parse JSON Data from AlertManager Silence GET API, error: %v\n", err)
+		return data, err
+	}
+
+	return data, nil
 }
 
 //GetAlerts - function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.

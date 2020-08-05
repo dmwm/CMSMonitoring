@@ -21,7 +21,9 @@ func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 	finalData := make(chan models.AmJSON)
 	go func() {
 		defer close(finalData)
-		deleteSilenceHelper()
+		if utils.ConfigJSON.Server.DryRun == false {
+			deleteSilenceHelper()
+		}
 		for each := range data {
 			finalData <- each
 		}
@@ -42,6 +44,8 @@ func deleteSilenceHelper() {
 		if err != nil {
 			log.Printf("Could not delete expired silence for: %s, error:%v\n", silencedAlert, err)
 		}
+
+		utils.ChangeCounters.NoOfSilencesDeleted++
 	}
 }
 
@@ -49,14 +53,14 @@ func deleteSilenceHelper() {
 func deleteSuppressedAlert(silencedAlert string) {
 	utils.SuppressedAlertsDataReadWriteLock.RLock()
 	defer utils.SuppressedAlertsDataReadWriteLock.RUnlock()
-	data := utils.ExtSuppressedAlertsMap[silencedAlert]
-	data.EndsAt = time.Now()
-
-	err := utils.PostAlert(data)
-	if err != nil {
-		log.Printf("Could not delete suppressed alert, error:%v\n", err)
-		if utils.ConfigJSON.Server.Verbose > 1 {
-			log.Printf("Suppressed Alert Data: %s\n ", data)
+	if data, ifDataFound := utils.ExtSuppressedAlertsMap[silencedAlert]; ifDataFound {
+		data.EndsAt = time.Now()
+		err := utils.PostAlert(data)
+		if err != nil {
+			log.Printf("Could not delete suppressed alert, error:%v\n", err)
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Printf("Suppressed Alert Data: %s\n ", data)
+			}
 		}
 	}
 }

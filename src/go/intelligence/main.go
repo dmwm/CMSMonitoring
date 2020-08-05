@@ -36,9 +36,18 @@ func run() {
 	}
 }
 
+func runDefinedIterations(iter int) {
+	for i := 0; i < iter; i++ {
+		run()
+		utils.ChangeCounters = models.ChangeCounters{}
+		utils.FirstRunSinceRestart = false
+		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
+	}
+}
+
 func runInfinite() {
-	utils.FirstRunSinceRestart = true
 	for true {
+		utils.ChangeCounters = models.ChangeCounters{}
 		run()
 		utils.FirstRunSinceRestart = false
 		time.Sleep(utils.ConfigJSON.Server.Interval * time.Second)
@@ -46,10 +55,11 @@ func runInfinite() {
 }
 
 func main() {
-
 	var verbose int
+	var iter int
 	var configFile string
 	flag.StringVar(&configFile, "config", "", "Config File path")
+	flag.IntVar(&iter, "iter", 0, "Custom defined no. of iterations for premature termination")
 	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
 
 	flag.Usage = func() {
@@ -60,5 +70,10 @@ func main() {
 	flag.Parse()
 	utils.ParseConfig(configFile, verbose)
 
-	runInfinite()
+	utils.FirstRunSinceRestart = true
+	if iter == 0 {
+		runInfinite()
+	} else {
+		runDefinedIterations(iter)
+	}
 }
