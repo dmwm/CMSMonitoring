@@ -3,9 +3,8 @@ LABEL maintainer="Rahul Indra indrarahul2013@gmail.com"
 
 WORKDIR /monit
 
-# INPUT REQUIRED
-#Copy the intelligence module configuration file. Here you need to pass the absolute path of the config file.
-COPY <INT_CONFIG_FILE_PATH> .
+#Copy the intelligence module configuration file.
+COPY test_config.json .
 
 #Test Wrapper script basically runs AlertManager in the container in background and then run the test for intelligence module.
 COPY test_wrapper.sh .
