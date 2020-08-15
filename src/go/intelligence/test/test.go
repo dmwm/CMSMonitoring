@@ -81,6 +81,8 @@ func runTest() {
 	log.Printf("Starting Intelligence Pipeline Testing!\n\n")
 
 	pushTestAlerts()
+	log.Printf("Data getting persisted in AlertManager...\n\n")
+	time.Sleep(10 * time.Second)
 
 	log.Printf("Snapshot of AlertManager before starting Testing... \n")
 	snapshotBefore := getAMSnapshot()
@@ -100,6 +102,10 @@ func runTest() {
 
 	if snapshotBefore.NoOfExpiredSilences+utils.ChangeCounters.NoOfSilencesDeleted != snapshotAfter.NoOfExpiredSilences {
 		log.Fatalf("Number of Expired Silences Mismatched... Testing Failed !!")
+	}
+
+	if utils.ConfigJSON.Server.Testing.AnnotateTestStatus == false {
+		log.Fatalf("Unable to Annotate Dashboard... Testing Failed !!")
 	}
 
 	log.Printf("Testing Successful!\n\n")

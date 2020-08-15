@@ -77,6 +77,7 @@ type GrafanaDashboard struct {
 type TestingData struct {
 	TestFile             string        `json:"testfile"`             //Test cases file name for testing
 	LifetimeOfTestAlerts time.Duration `json:"lifetimeOfTestAlerts"` //Lifetime of test alerts (in minutes)
+	AnnotateTestStatus   bool          `json:"annotateTestStatus"`   //Check for dashboards annotation during testing
 }
 
 //server data struct

@@ -65,7 +65,6 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							log.Printf("Annotation: %v", dashboardData)
 						}
 						addAnnotationHelper(dData)
-						log.Printf("Annotation Added Successfully to Grafana Dashboards : data %v", string(dData))
 					}
 				}
 			}
@@ -104,6 +103,7 @@ func addAnnotationHelper(data []byte) {
 	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(data))
 	if err != nil {
 		log.Printf("Unable to make request to %s, error: %s", apiURL, err)
+		return
 	}
 	for _, v := range headers {
 		if len(v) == 2 {
@@ -126,6 +126,7 @@ func addAnnotationHelper(data []byte) {
 
 	if err != nil {
 		log.Printf("Unable to get response from %s, error: %s", apiURL, err)
+		return
 	}
 	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
@@ -140,4 +141,13 @@ func addAnnotationHelper(data []byte) {
 		log.Println("response Headers:", resp.Header)
 		log.Println("response Body:", string(body))
 	}
+
+	if resp.StatusCode == http.StatusForbidden {
+		utils.ConfigJSON.Server.Testing.AnnotateTestStatus = false
+		log.Printf("Unable to annotate the dashboard(s), NO PERMISSION")
+		return
+	}
+
+	utils.ConfigJSON.Server.Testing.AnnotateTestStatus = true
+	log.Printf("Annotation Added Successfully to Grafana Dashboards : data %v", string(data))
 }
