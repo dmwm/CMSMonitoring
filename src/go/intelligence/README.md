@@ -117,10 +117,13 @@ The given config file format should be followed. The config file consists of mai
 - Silence
 - Services
 
+**fields with * mark are required.**
+**fields with # mark should not be changed unless there's any change in the codebase for the same.**
+
 ```json
 {
   "server": {
-    "cmsmonURL": "https://cms-monitoring.cern.ch",
+    "cmsmonURL": "https://cms-monitoring.cern.ch", 
     "getAlertsAPI": "/api/v1/alerts?active=true&silenced=false&inhibited=false&unprocessed=false",
     "getSuppressedAlertsAPI": "/api/v1/alerts?active=false&silenced=true",
     "getSilencesAPI": "/api/v1/silences",
@@ -132,8 +135,9 @@ The given config file format should be followed. The config file consists of mai
     "verbose": 0,
     "dryRun": false,
     "testing": {
-      "testfile": "/tmp/test_cases.json",
-      "lifetimeOfTestAlerts": 5
+      * "testfile": "/tmp/test_cases.json",
+      "lifetimeOfTestAlerts": 5,
+      "annotateTestStatus" : false
     }
   },
 
@@ -141,8 +145,8 @@ The given config file format should be followed. The config file consists of mai
     "url": "https://monit-grafana.cern.ch",
     "dashboardSearchAPI": "/api/search",
     "annotationAPI": "/api/annotations",
-    "tags": ["cmsweb-play"],
-    "token": "",
+    * "tags": ["cmsweb-play"],
+    * "token": "",
     "dashboardsCacheExpiration": 1
   },
 
@@ -150,7 +154,7 @@ The given config file format should be followed. The config file consists of mai
     "uniqueLabel": "alertname",
     "severityLabel": "severity",
     "serviceLabel": "service",
-    "severityLevels": {
+    * "severityLevels": {
       "info": 0,
       "warning": 1,
       "medium": 2,
@@ -163,15 +167,15 @@ The given config file format should be followed. The config file consists of mai
   "silence": {
     "createdBy": "admin",
     "comment": "maintenance",
-    "silenceStatus": ["active", "expired", "pending"]
+    *# "silenceStatus": ["active", "expired", "pending"]     #DO NOT CHANGE IT
   },
 
-  "services": [
-    {
-      "name": "SSB",
-      "keywordLabel": "shortDescription",
-      "defaultLevel": "notification",
-      "severityMap": {
+  * "services": [
+    * {
+      * "name": "SSB",
+      *# "keywordLabel": "shortDescription",         #DO NOT CHANGE IT, UNIQUE FOR SSB
+      *# "defaultLevel": "notification",               #DO NOT CHANGE IT, UNIQUE FOR SSB
+      * "severityMap": {                   #THIS MAP CAN BE CHANGED WITH REQUIREMENTS
         "update": "info",
         "configuration": "info",
         "support": "info",
@@ -183,18 +187,18 @@ The given config file format should be followed. The config file consists of mai
         "risk": "high",
         "down": "urgent"
       },
-      "annotationMap": {
-        "label": "shortDescription",
+      * "annotationMap": {
+        # "label": "shortDescription",              #DO NOT CHANGE IT, UNIQUE FOR SSB
         "actions": ["intervention"],
         "systems": ["network", "database", "db"]
       }
     },
 
-    {
-      "name": "GGUS",
-      "keywordLabel": "Priority",
-      "defaultLevel": "ticket",
-      "severityMap": {
+    * {
+      * "name": "GGUS",                         
+      *# "keywordLabel": "Priority",                #DO NOT CHANGE IT, UNIQUE FOR GGUS
+      *# "defaultLevel": "ticket",                  #DO NOT CHANGE IT, UNIQUE FOR GGUS
+      * "severityMap": {                   #THIS MAP CAN BE CHANGED WITH REQUIREMENTS
         "less urgent": "medium",
         "urgent": "high",
         "very urgent": "urgent"
