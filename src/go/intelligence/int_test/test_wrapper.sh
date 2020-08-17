@@ -80,13 +80,11 @@ else
                     exit 1
                 fi
             else
-                echo "Install tar to continue. Exiting.."
-                delete_wdir
+                echo "Install tar to continue and try again. Exiting.."
                 exit 1
             fi
         else
-            echo "Install wget to continue. Exiting.."
-            delete_wdir
+            echo "Install wget to continue and try again. Exiting.."
             exit 1
         fi
         start_am
@@ -98,8 +96,7 @@ if [ -x "$(command -v git)" ]; then
     echo "Cloning CMSMonitoring at ${WDIR}."
     cd $WDIR && git clone $CMSMONITORING_REPO_URL
 else
-    echo "Install git to continue. Exiting.."
-    delete_wdir
+    echo "Install git to continue and try again. Exiting.."
     exit 1
 fi
 
@@ -123,8 +120,7 @@ if [ -x "$(command -v go)" ]; then
     echo "Building the int module...."
     go build -o $WDIR go/intelligence/int_test
 else
-    echo "Install go to continue. Exiting.."
-    delete_wdir
+    echo "Install go to continue and try again. Exiting.."
     exit 1
 fi
 

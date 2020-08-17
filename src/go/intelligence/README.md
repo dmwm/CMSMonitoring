@@ -96,9 +96,14 @@ If you are not able to set environment for testing in lxplux VM, all test scenar
 
 ```$ git clone https://github.com/dmwm/CMSMonitoring.git```
 
-```$ export PATH=`pwd`/CMSMonitoring/src/go/intelligence/int_test/:$PATH```
+```$ export PATH=/CMSMonitoring/src/go/intelligence/int_test/:$PATH```
 
-```$ test_wrapper.sh``` 
+Set the "testfile" : <YOUR WORKING DIRECTORY TOP>/test_cases.json in [test_config.json](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_config.json)
+For instance if you are doing test in "/tmp/<your-name>", set the "testfile" field to "/tmp/test_cases.json".
+
+Now finally run the below command to start testing.
+
+```$ test_wrapper.sh /tmp/<your-name>``` 
 
 
 
