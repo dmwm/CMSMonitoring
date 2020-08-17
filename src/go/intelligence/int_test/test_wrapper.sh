@@ -6,7 +6,6 @@ AM_BIN=$(pwd)/am/alertmanager
 TEST_CONFIG=$(pwd)/CMSMonitoring/src/go/intelligence/int_test/test_config.json
 PID=$(ps auxwww | egrep "alertmanager" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}')
 AM_URL="https://github.com/prometheus/alertmanager/releases/download/v0.21.0/alertmanager-0.21.0.linux-amd64.tar.gz"
-CMSMONITORING_REPO_URL="https://github.com/dmwm/CMSMonitoring.git"
 
 # function for starting AlertManager
 start_am() {
@@ -51,7 +50,7 @@ fi
 
 ## building the intelligence module for testing
 export GOPATH=$(pwd)/CMSMonitoring
-export PATH=$(pwd);$(pwd)/bin:$PATH
+export PATH=$(pwd):$(pwd)/bin:$PATH
 
 if [ -x "$(command -v go)" ]; then
     echo "Building the int module...."
