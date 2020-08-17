@@ -25,7 +25,11 @@ You will see a folder named am after untar. Follow the following steps to run th
 ```$ cd am```
 ```$ nohup ./alertmanager --config.file=./alertmanager.yml </dev/null 2>&1 > AM.log &```
 
-Now that alertmanager is up and running. You will need to setup ggus_alerting and ssb_alerting services. They require some Environment variables to be set which you can refer from the doc [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md).
+Now that alertmanager is up and running. Clone the CMSMonitoring repo -
+
+```$ git clone https://github.com/dmwm/CMSMonitoring.git```
+
+You will need to setup ggus_alerting and ssb_alerting services. They require some Environment variables to be set which you can refer from the doc [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md).
 
 You need to build the binaries residing in ~/CMSMonitoring/src/go/MONIT and keep them in CMSMonitoring/bin directory.
 
@@ -50,17 +54,21 @@ The above instructions are only for LXPLUX VM User. You don't need to setup Aler
 
 ## Setup
 
-You need to set the $GOPATH at ../CMSMonitoring
+If you want the compiled binary to reside in CMSMonitoring/bin then set the $GOPATH at /CMSMonitoring by
 
 ```  export GOPATH=`pwd` ```
 
-The above command will set $GOPATH to the same if your in /CMSMonitoring
+Then you will have to include following into the PATH variable 
+
+```$GOPATH/bin```
+
+You always have an option to chose any other path to $GOPATH and then build the module.
 
 ## Build
 
-This command will build the intelligence module and put the binary file in bin.
+This command will build the intelligence module and put the binary file in $GOPATH/bin.
 
-`go install go/intelligence`
+`go build go/intelligence`
 
 ## Run
 
@@ -75,13 +83,16 @@ This command will execute the intelligence binary. Config file path flag (-confi
 ##### Binary
 We can build the test binary residing in CMSMonitoring/src/go/intelligence/test/test.go by running
 
-`go install go/intelligence/test`
+`go build go/intelligence/test`
 
 and then we can run the below command which will test the whole pipeline by pushing test alerts, changing their severity value, annotating the Grafana dashboards and silencing unwanted alerts.
 
+Test config file is residing in the /CMSMonitoring/src/go/intelligence/test_config.json.
+##### CHANGE cmsmonURL to the url of Testing instance of AlertManager not the production one in test_config.json.
+
 `test -config  <path-to-test-config-file>`
 
-##### Docker (Recommended)
+##### Docker
 You can also use the Docker Image for testing purpose.
 You can set the configuration for testing purpose in the test_config.json inside ~/CMSMonitoring/src/go/intelligence/test.
 ##### DO NOT CHANGE cmsmonURL from "http://localhost:9093" in test_config.json
