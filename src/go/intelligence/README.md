@@ -7,25 +7,48 @@ This intelligence Module has been developed for the CMS Infra MONIT AlertManagem
 ## Setup
 
 You need to set the $GOPATH at ../CMSMonitoring
+
 ```  export GOPATH=`pwd` ```
+
 The above command will set $GOPATH to the same if your in /CMSMonitoring
 
 ## Build
 
 This command will build the intelligence module and put the binary file in bin.
+
 `go install go/intelligence`
 
 ## Run
 
 This command will execute the intelligence binary. Config file path flag (-config) is mandatory. However, -verbose flag is optional.  
+
 `intelligence -config <path-to-config-file>`
 
 ## Test
+
+##### Binary
 We can build the test binary residing in CMSMonitoring/src/go/intelligence/test/test.go by running
+
 `go install go/intelligence/test`
 
 and then we can run the below command which will test the whole pipeline by pushing test alerts, changing their severity value, annotating the Grafana dashboards and silencing unwanted alerts.
+
 `test -config  <path-to-config-file>`
+
+##### Docker
+You can also use the Docker Image for testing purpose.
+You can set the configuration for testing purpose in the test_config.json inside ~/CMSMonitoring/src/go/intelligence/test.
+##### DO NOT CHANGE cmsmonURL from "http://localhost:9093"
+
+Build the docker image using the following command.
+
+```docker build -t <CERN_REPO>/int-mod-test ~/CMSMonitoring/src/go/intelligence/test```
+
+Run the test in docker container.
+
+```docker run -it --rm <CERN_REPO>/int-mod-test:latest```
+
+
 
 
 ## Config File
