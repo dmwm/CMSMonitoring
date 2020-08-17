@@ -4,6 +4,50 @@
 
 This intelligence Module has been developed for the CMS Infra MONIT AlertManagement. It is responsible for assigning relevant severity levels, bundling similar alerts, silencing false alerts from time to time based on it's intelligence.
 
+## Environment Setup for lxplus VM Users
+
+If you are trying to simulate the project in a lxplus VM then you will have to deploy AlertManager and ggus_alerting & ssb_alerting services as well.
+
+#### Alertmanager Setup
+Download latest version of Alertmanager. You can download it from,
+https://prometheus.io/download/#alertmanager
+
+Just copy the link of latest alertmanager binary according to your OS (here we will be using Linux one) and download it using wget util.
+
+```$ wget "https://github.com/prometheus/alertmanager/releases/download/<version>/alertmanager-<version>.linux-amd64.tar.gz" -O am.tar.gz```
+
+once you downloaded the alertmanager now just untar the compressed file using,
+
+```$ tar -xzf am.tar.gz --one-top-level=am --strip-components 1```
+
+You will see a folder named am after untar. Follow the following steps to run the Alertmanager in background as a service.
+
+```$ cd am```
+```$ nohup ./alertmanager --config.file=./alertmanager.yml </dev/null 2>&1 > AM.log &```
+
+Now that alertmanager is up and running. You will need to setup ggus_alerting and ssb_alerting services. They require some Environment variables to be set which you can refer from the doc [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md).
+
+You need to build the binaries residing in ~/CMSMonitoring/src/go/MONIT and keep them in CMSMonitoring/bin directory.
+
+```$ go build <file_name.go>```
+
+Once everything is set you can run following command to run the alerting services.
+
+```$ ggus_alert_manage start```
+```$ ssb_alert_manage start```
+
+TWO IMPORTANT THINGS TO NOTICE
+- Make sure you have write permission in the directory for logging.
+- Make sure to set your PATH variable to CMSMonitoring/bin, CMSMonitoring/scripts, CMSMonitoring/src/python
+
+Now you have Alertmanager & Alerting Services running, you can now run/test the intelligence module on the Lxplus VM.
+
+---
+
+The above instructions are only for LXPLUX VM User. You don't need to setup Alertmanager and alerting services (GGUS/SSB) in k8s infrastructure. Just follow the below instructions.
+
+---
+
 ## Setup
 
 You need to set the $GOPATH at ../CMSMonitoring
@@ -26,6 +70,8 @@ This command will execute the intelligence binary. Config file path flag (-confi
 
 ## Test
 
+##### For Lxplux users do not deploy alerting services (GGUS & SSB). There are some fake alerts which are similar to GGUS and SSB ticketing services which are pushed into Alertmanager before starting the test. You only need to deploy AlertManager which can be done following the above instructions, though you can use Docker image for hassleless testing.
+
 ##### Binary
 We can build the test binary residing in CMSMonitoring/src/go/intelligence/test/test.go by running
 
@@ -33,12 +79,12 @@ We can build the test binary residing in CMSMonitoring/src/go/intelligence/test/
 
 and then we can run the below command which will test the whole pipeline by pushing test alerts, changing their severity value, annotating the Grafana dashboards and silencing unwanted alerts.
 
-`test -config  <path-to-config-file>`
+`test -config  <path-to-test-config-file>`
 
-##### Docker
+##### Docker (Recommended)
 You can also use the Docker Image for testing purpose.
 You can set the configuration for testing purpose in the test_config.json inside ~/CMSMonitoring/src/go/intelligence/test.
-##### DO NOT CHANGE cmsmonURL from "http://localhost:9093"
+##### DO NOT CHANGE cmsmonURL from "http://localhost:9093" in test_config.json
 
 Build the docker image using the following command.
 
@@ -47,7 +93,6 @@ Build the docker image using the following command.
 Run the test in docker container.
 
 ```docker run -it --rm <CERN_REPO>/int-mod-test:latest```
-
 
 
 
@@ -147,28 +192,3 @@ The given config file format should be followed. The config file consists of mai
   ]
 }
 ```
-### The Logic behind intelligence module
-1) The main function will run all pipeline's logic.
-2) pipeline starts with fetching alerts,
-3) then to process each alert seeing if it has already been processed and silenced. If they are then we ignore that alert, otherwise, we pass it to the next pipeline component. ( So here we require the SilencedMap which stores all those alerts which are in Silence Mode which indicates they are processed and we should not repeat the intelligence process again for them ).
-4) Then the alert comes to keyword matching were keywords are matched and accordingly severity is assigned.
-5) Passes through ML Box with no logic as of now.
-6) then the processed alert is pushed to AM and,
-7) Then the old alert with default severity is silenced
-8) Then Some resolved alerts that are silenced (i.e. when GGUS alerts are resolved) are deleted.
-
-Regarding Counters and Testing:-
-When we are fetching the alerts at step 2, we will count the number of alerts in the AM (i.e. before intelligence module does its stuff)
-Then when we go to preprocessing step 3, we will count all active, expired silences when we update our SilenceMap
-When we push Alerts we count how many alerts got pushed.
-When we create new Silences we will add 1 to the Active Silence counter which we modified at step 3
-When we delete a resolved alert's Silence we will add 1 the Expired Silence counter which we modified at step 3.
-
-Now at the end of pipeline. We will end up having following counters:-
-
-No Of Alerts
-No Of Active Silences
-No Of Expired Silences
-No of Alerts Pushed
-
-Now to verify if everything went well at the end of pipeline. We will again fetch Alerts/Silences from AM and count them and check if they matches with the counters above. If they match go to next iteration otherwise stop the testing.
