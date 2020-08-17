@@ -14,7 +14,7 @@ fi
 sleep 5
 
 if [ -f "$TEST_BIN" ]; then
-    ./CMSMonitoring/bin/test -config=config.json
+    ./CMSMonitoring/bin/test -config=test_config.json
 else
 	echo "Test script not found !! Testing Failed..."
     exit 1
