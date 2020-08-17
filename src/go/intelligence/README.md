@@ -92,7 +92,7 @@ Test config file is residing in the /CMSMonitoring/src/go/intelligence/int_test/
 
 `test -config  <path-to-test-config-file>`
 
-If you are not able to set environment for testing in lxplux VM, all test scenario for lxplux user has been automated using the test_wrapper.sh script residing in CMSMonitoring/src/go/intelligence/int_test/test_wrapper.sh. You just need to clone the repository at some directory, set the PATH variable and run test_wrapper.sh.
+If you are not able to set environment for testing in lxplux VM, all test scenario for lxplux user has been automated using the [test_writer.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh) script residing in CMSMonitoring/src/go/intelligence/int_test/test_wrapper.sh. You just need to clone the repository at some directory, set the PATH variable and run [test_writer.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh)
 
 ```$ git clone https://github.com/dmwm/CMSMonitoring.git```
 
@@ -127,7 +127,7 @@ The given config file format should be followed. The config file consists of mai
     "verbose": 0,
     "dryRun": false,
     "testing": {
-      "testfile": "~/CMSMonitoring/src/go/intelligence/int_test/test_cases.json",
+      "testfile": "/tmp/test_cases.json",
       "lifetimeOfTestAlerts": 5
     }
   },
