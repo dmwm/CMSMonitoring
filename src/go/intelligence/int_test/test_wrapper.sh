@@ -1,11 +1,14 @@
 #!/bin/sh
 ##H Script for automation of testing process of the intelligence module.
 
+#Variables
 CMSMONITORING_REPO=$(pwd)/CMSMonitoring
 AM_BIN=$(pwd)/am/alertmanager
 TEST_CONFIG=$(pwd)/CMSMonitoring/src/go/intelligence/int_test/test_config.json
+AM_VERSION="alertmanager-0.21.0.linux-amd64"
+AM_URL="https://github.com/prometheus/alertmanager/releases/download/v0.21.0/$AM_VERSION.tar.gz"
+
 PID=$(ps auxwww | egrep "alertmanager" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}')
-AM_URL="https://github.com/prometheus/alertmanager/releases/download/v0.21.0/alertmanager-0.21.0.linux-amd64.tar.gz"
 
 # function for starting AlertManager
 start_am() {
@@ -35,7 +38,9 @@ else
             wget $AM_URL -O am.tar.gz
             if [ -x "$(command -v tar)" ]; then
                 echo "Untar AlertManager..."
-                tar -xzf am.tar.gz --one-top-level=am --strip-components 1
+                tar -xzf am.tar.gz
+                rm am.tar.gz
+                mv $AM_VERSION am
             else
                 echo "Install tar to continue. Exiting.."
                 exit 1
