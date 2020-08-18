@@ -95,12 +95,12 @@ Test config file is residing in the /CMSMonitoring/src/go/intelligence/int_test/
 If you are not able to set environment for testing in lxplux VM, all test scenario for lxplux user has been automated using the [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh) script residing in CMSMonitoring/src/go/intelligence/int_test/test_wrapper.sh. 
 
 ```
- Script for automation of testing process of the intelligence module.
- Usage: test_wrapper.sh <options>
+Script for automation of testing process of the intelligence module.
+Usage: test_wrapper.sh <options>
 
- Options:
-        help    help manual
-	      wdir    work directory      default: /tmp/$USER
+Options:
+      help    help manual
+      wdir    work directory    default: /tmp/$USER
 ```
 
 You just need to clone the repository at a specific directory, set the PATH variable and run [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh)
