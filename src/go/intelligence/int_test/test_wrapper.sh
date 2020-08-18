@@ -1,17 +1,21 @@
 #!/bin/sh
 ##H Script for automation of testing process of the intelligence module.
-##H Usage: test_wrapper.sh <work_directory>
+##H Usage: test_wrapper.sh <options>
 ##H
+##H Options:
+##H         help    help manual
 
-# If user provided the input parameter
-if [ $# -ne 1 ]; then
-    perl -ne '/^##H/ && do { s/^##H ?//; print }' <$0
+case ${1:-status} in
+help )
+    cat $0 | grep "^##H" | sed -e "s,##H,,g"
+    echo "\t wdir    work directory      default: /tmp/${USER}"
     exit 1
-fi
+    ;;
+esac
 
 # Setup work directory based on user input
-WDIR=$1
-TOP=$(dirname $1)
+WDIR=${1:-"/tmp/$USER"}
+TOP=$(dirname $WDIR)
 
 if [ ! -d $WDIR ]; then
     echo "Provided work directory '$WDIR' does not exists. creating..."
@@ -35,7 +39,7 @@ AM_CONFIG=$WDIR/am/alertmanager.yml
 TEST_CONFIG=$WDIR/test_config.json
 AM_VERSION="alertmanager-0.21.0.linux-amd64"
 AM_URL="https://github.com/prometheus/alertmanager/releases/download/v0.21.0/${AM_VERSION}.tar.gz"
-CMSMONITORING_REPO_URL="https://github.com/indrarahul2013/CMSMonitoring.git"
+CMSMONITORING_REPO_URL="https://github.com/dmwm/CMSMonitoring.git"
 
 PID=$(ps auxwww | egrep "alertmanager" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}')
 
@@ -68,23 +72,34 @@ else
         start_am
     else
         echo "AlertManager not found !!"
-        if [ -x "$(command -v wget)" ]; then
-            echo "Downloading AlertManager...."
+        command -v wget
+        if [ $? -eq 0 ]; then
+            echo "Downloading AlertManager using wget"
             wget $AM_URL -O $WDIR/am.tar.gz
-            if [ -x "$(command -v tar)" ]; then
-                echo "Untar AlertManager..."
-                tar -C $WDIR -xzf $WDIR/am.tar.gz
-                if ! mv $WDIR/$AM_VERSION $WDIR/am; then
-                    echo "Could not move. Exiting.."
-                    delete_wdir
-                    exit 1
-                fi
+        else
+            command -v curl
+            if [ $? -eq 0 ]; then
+                echo "Downloading AlertManager using curl"
+                curl $AM_URL >$WDIR/am.tar.gz
             else
-                echo "Install tar to continue and try again. Exiting.."
+                echo "Install wget or curl to continue and try again. Exiting.."
+                exit 1
+            fi
+        fi
+        command -v tar
+        if [ $? -eq 0 ]; then
+            echo "Untar AlertManager..."
+            tar -C $WDIR -xzf $WDIR/am.tar.gz
+            mv $WDIR/$AM_VERSION $WDIR/am
+            if [ $? -eq 0 ]; then
+                echo "Successfully renamed ${WDIR}/${AM_VERSION} to ${WDIR}/am"
+            else
+                echo "Could not rename. Exiting.."
+                delete_wdir
                 exit 1
             fi
         else
-            echo "Install wget to continue and try again. Exiting.."
+            echo "Install tar to continue and try again. Exiting.."
             exit 1
         fi
         start_am
@@ -92,7 +107,8 @@ else
 fi
 
 ## git clone the update CMSMonitoring repository in the working directory
-if [ -x "$(command -v git)" ]; then
+command -v git
+if [ $? -eq 0 ]; then
     echo "Cloning CMSMonitoring at ${WDIR}."
     cd $WDIR && git clone $CMSMONITORING_REPO_URL
 else
@@ -101,13 +117,19 @@ else
 fi
 
 ## building the intelligence module for testing
-if ! mv $WDIR/CMSMonitoring/src/go/intelligence/int_test/test_config.json $WDIR; then
+mv $WDIR/CMSMonitoring/src/go/intelligence/int_test/test_config.json $WDIR
+if [ $? -eq 0 ]; then
+    echo "Successfully moved ${WDIR}/CMSMonitoring/src/go/intelligence/int_test/test_config.json to $WDIR."
+else
     echo "Could not move. Exiting.."
     delete_wdir
     exit 1
 fi
 
-if ! mv $WDIR/CMSMonitoring/src/go/intelligence/int_test/test_cases.json $TOP; then
+mv $WDIR/CMSMonitoring/src/go/intelligence/int_test/test_cases.json $TOP
+if [ $? -eq 0 ]; then
+    echo "Successfully moved ${WDIR}/CMSMonitoring/src/go/intelligence/int_test/test_cases.json to $WDIR."
+else
     echo "Could not move. Exiting.."
     delete_wdir
     exit 1
@@ -116,7 +138,8 @@ fi
 export GOPATH=$WDIR/CMSMonitoring
 export PATH=$WDIR:$WDIR/bin:$PATH
 
-if [ -x "$(command -v go)" ]; then
+command -v go
+if [ $? -eq 0 ]; then
     echo "Building the int module...."
     go build -o $WDIR go/intelligence/int_test
 else
@@ -127,7 +150,8 @@ fi
 # Delay for Alertmanager so that it starts completely.
 sleep 5
 
-if [ -x "$(command -v int_test)" ]; then
+command -v int_test
+if [ $? -eq 0 ]; then
     int_test -config=$TEST_CONFIG
     stop_am
     delete_wdir
