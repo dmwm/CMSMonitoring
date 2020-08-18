@@ -12,7 +12,7 @@
     "verbose": 0,
     "dryRun" : false,
     "testing" : {
-      "testfile" : "CMSMonitoring/src/go/intelligence/test/test_cases.json",
+      "testfile" : "/tmp/test_cases.json",
       "lifetimeOfTestAlerts" : 5,
       "annotateTestStatus" : false
     }

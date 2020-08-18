@@ -81,29 +81,40 @@ This command will execute the intelligence binary. Config file path flag (-confi
 ##### For Lxplux users do not deploy alerting services (GGUS & SSB). There are some fake alerts which are similar to GGUS and SSB ticketing services which are pushed into Alertmanager before starting the test. You only need to deploy AlertManager which can be done following the above instructions, though you can use Docker image for hassleless testing.
 
 ##### Binary
-We can build the test binary residing in CMSMonitoring/src/go/intelligence/test/test.go by running
+We can build the test binary residing in CMSMonitoring/src/go/intelligence/int_test/test.go by running
 
-`go build go/intelligence/test`
+`go build go/intelligence/int_test`
 
 and then we can run the below command which will test the whole pipeline by pushing test alerts, changing their severity value, annotating the Grafana dashboards and silencing unwanted alerts.
 
-Test config file is residing in the /CMSMonitoring/src/go/intelligence/test_config.json.
+Test config file is residing in the /CMSMonitoring/src/go/intelligence/int_test/test_config.json.
 ##### CHANGE cmsmonURL to the url of Testing instance of AlertManager not the production one in test_config.json.
 
 `test -config  <path-to-test-config-file>`
 
-##### Docker
-You can also use the Docker Image for testing purpose.
-You can set the configuration for testing purpose in the test_config.json inside ~/CMSMonitoring/src/go/intelligence/test.
-##### DO NOT CHANGE cmsmonURL from "http://localhost:9093" in test_config.json
+If you are not able to set environment for testing in lxplux VM, all test scenario for lxplux user has been automated using the [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh) script residing in CMSMonitoring/src/go/intelligence/int_test/test_wrapper.sh. 
 
-Build the docker image using the following command.
+```
+Script for automation of testing process of the intelligence module.
+Usage: test_wrapper.sh <options>
 
-```docker build -t <CERN_REPO>/int-mod-test ~/CMSMonitoring/src/go/intelligence/test```
+Options:
+      help    help manual
+      wdir    work directory    default: /tmp/$USER
+```
 
-Run the test in docker container.
+You just need to clone the repository at a specific directory, set the PATH variable and run [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh)
 
-```docker run -it --rm <CERN_REPO>/int-mod-test:latest```
+```$ git clone https://github.com/dmwm/CMSMonitoring.git```
+
+```$ export PATH=/CMSMonitoring/src/go/intelligence/int_test/:$PATH```
+
+Set the "testfile" : <YOUR WORKING DIRECTORY TOP>/test_cases.json in [test_config.json](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_config.json)
+For instance if you are doing test in "/tmp/<your-name>", set the "testfile" field to "/tmp/test_cases.json".
+
+Now finally run the below command to start testing.
+
+```$ test_wrapper.sh /tmp/<your-name>``` 
 
 
 
@@ -132,7 +143,7 @@ The given config file format should be followed. The config file consists of mai
     "verbose": 0,
     "dryRun": false,
     "testing": {
-      "testfile": "~/CMSMonitoring/src/go/intelligence/test/test_cases.json",
+      "testfile": "/tmp/test_cases.json",
       "lifetimeOfTestAlerts": 5
     }
   },
