@@ -38,7 +38,7 @@ Now that alertmanager is up and running. Clone the CMSMonitoring repo -
 
 ```$ git clone https://github.com/dmwm/CMSMonitoring.git```
 
-You will need to setup ggus_alerting and ssb_alerting services. They require some Environment variables to be set which you can refer from the doc [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md).
+You will need to setup ggus_alerting and ssb_alerting services. They require some Environment variables to be set which you can refer from the doc [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md#ssb_alert_manage) and [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md#ggus_alert_manage).
 
 You need to build the binaries residing in ~/CMSMonitoring/src/go/MONIT and keep them in CMSMonitoring/bin directory.
 
