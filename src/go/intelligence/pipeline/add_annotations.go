@@ -54,7 +54,9 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 						dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
 						dashboardData.Tags = utils.ConfigJSON.AnnotationDashboard.Tags
 						if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
-							dashboardData.Text = srv.Name + ": " + val
+							if url, urlOk := each.Annotations[srv.AnnotationMap.URLLabel].(string); urlOk {
+								dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)
+							}
 						}
 
 						dData, err := json.Marshal(dashboardData)
@@ -73,6 +75,11 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 		}
 	}()
 	return dataAfterAnnotation
+}
+
+//makeHTMLhref for making url clickable it needs be tagged with html href attribute that's what this function does
+func makeHTMLhref(url string) string {
+	return "<a target=_blank href=" + url + ">URL</a>"
 }
 
 //checkIfAvailable - function for finding if particular keyword is available or not in the given field of Alerts
