@@ -10,6 +10,7 @@
 ##H Environments:
 ##H   QUERY       :   CMS Monit ES/InfluxDB Query              
 ##H   TOKEN       :   User's Token
+##H   SSBDATAFILE :   Data json file to use                           default - /tmp/ssb_data.json
 ##H   CMSMON_URL  :   CMS Monitoring URL                              default - https://cms-monitoring.cern.ch"
 ##H   INTERVAL    :   Time interval for Alerts ingestion & injection  default - 1
 ##H   VERBOSE     :   Verbosity level                                 default - 0
@@ -66,6 +67,7 @@ fi
 ## ssb_alert.sh arguments from Environment Variable
 query=$QUERY                                                    ## CMS Monit InfluxDB Query
 token=$TOKEN                                                    ## User's Token
+data_file=${SSBDATAFILE:-"/tmp/ssb_data.json"}                  ## Data json file to use   
 cmsmon_url=${CMSMON_URL:-"https://cms-monitoring.cern.ch"}      ## CMS Monitoring URL 
 interval=${INTERVAL:-1}                                         ## Time interval for Alerts ingestion & injection
 verbose=${VERBOSE:-0}                                           ## Verbosity level
@@ -76,9 +78,9 @@ start()
     echo "Starting SSB Alerting daemon."
     if [ ! -x "$(command -v rotatelogs)" ]; then
       echo "rotatelogs not found. Starting without it..."
-      nohup ssb_alert.sh "$query" $token $cmsmon_url $interval $verbose 2>&1 1>& $LOGDIR/ssb_alerting-`date +%F`-`hostname -s`.log &
+      nohup ssb_alert.sh "$query" $token $data_file $cmsmon_url $interval $verbose 2>&1 1>& $LOGDIR/ssb_alerting-`date +%F`-`hostname -s`.log &
     else
-	    nohup ssb_alert.sh "$query" $token $cmsmon_url $interval $verbose </dev/null 2>&1 | rotatelogs $LOGDIR/ssb_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
+	    nohup ssb_alert.sh "$query" $token $data_file $cmsmon_url $interval $verbose </dev/null 2>&1 | rotatelogs $LOGDIR/ssb_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
     fi
 }
 
