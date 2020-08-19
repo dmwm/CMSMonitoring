@@ -122,9 +122,10 @@ type silence struct {
 }
 
 type annotationMap struct {
-	Label   string   `json:"label"`
-	Actions []string `json:"actions"`
-	Systems []string `json:"systems"`
+	Label    string   `json:"label"`
+	Actions  []string `json:"actions"`
+	Systems  []string `json:"systems"`
+	URLLabel string   `json:"urlLabel"`
 }
 
 //Service data struct

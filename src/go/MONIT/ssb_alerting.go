@@ -77,6 +77,7 @@ type amJSON struct {
 		SysUpdatedBy     string    `json:"sysUpdatedBy"`
 		Type             string    `json:"type"`
 		UpdateTimestamp  time.Time `json:"updateTimestamp"`
+		URL              string    `json:"URL"`
 	} `json:"annotations"`
 	StartsAt time.Time `json:"startsAt"`
 	EndsAt   time.Time `json:"endsAt"`
@@ -177,6 +178,7 @@ func (data *ssb) convertData() []byte {
 		nullValueChecker(&temp.Annotations.Type, each[14])
 
 		temp.Annotations.UpdateTimestamp = _updateTS
+		temp.Annotations.URL = "https://cern.service-now.com/service-portal?id=outage&n=" + temp.Annotations.SsbNumber
 
 		temp.StartsAt = _beginTS
 		temp.EndsAt = _endTS
