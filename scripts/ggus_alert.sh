@@ -4,7 +4,7 @@
 ##H
 ##H Options:
 ##H   ggus_format   GGUS Query Format ("csv" or "xml")              (default: "csv")
-##H   data_file     data json file to use                           (default: "/tmp/data.json")
+##H   data_file     data json file to use                           (default: "/tmp/ggus_data.json")
 ##H   cmsmon_url    CMS Monitoring URL                              (default: https://cms-monitoring.cern.ch)
 ##H   interval      Time interval for Alerts ingestion & injection  (default: 1)
 ##H   vo            Required VO attribute                           (default: "cms")
@@ -20,7 +20,7 @@ fi
 
 
 ggus_format=${1:-"csv"}
-data_file=${2:-"/tmp/data.json"}
+data_file=${2:-"/tmp/ggus_data.json"}
 
 ## Alerting Tool optional arguments
 cmsmon_url=${3:-"https://cms-monitoring.cern.ch"}
