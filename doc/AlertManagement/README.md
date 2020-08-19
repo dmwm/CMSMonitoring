@@ -1,3 +1,22 @@
+# Content
+
+- [AlertManagement](#alertmanagement)
+  * [Overview](#overview)
+  * [Architectural Diagram](#architectural-diagram)
+  * [SSB Alerting Service](#ssb-alerting-service)
+    + [monit](#monit)
+    + [ssb_alerting](#ssb-alerting)
+    + [ssb_alert.sh](#ssb-alertsh)
+    + [ssb_alert_manage](#ssb-alert-manage)
+  * [GGUS Alerting Service](#ggus-alerting-service)
+    + [ggus_parser](#ggus-parser)
+    + [ggus_alerting](#ggus-alerting)
+    + [ggus_alert.sh](#ggus-alertsh)
+    + [ggus_alert_manage](#ggus-alert-manage)
+  * [Karma Dashboard](#karma-dashboard)
+  * [Intelligence Module](#intelligence-module)
+    + [The Logic behind intelligence module](#the-logic-behind-intelligence-module)
+    
 For more detailed information please visit the blog about the whole project.
 https://indrarahul.codes/2020/07/24/google-summer-of-code.html
 
@@ -163,6 +182,8 @@ Below screenshot shows the karma dashboard with alerts from both of the services
 ![Alt text](karma.png)
 
 ## Intelligence Module
+
+Detailed instructions how to setup, run and test the intelligence module can be found [here](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/README.md).
 
 ### The Logic behind intelligence module
 1) The main function will run all pipeline's logic.
