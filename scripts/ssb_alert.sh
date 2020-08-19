@@ -6,7 +6,7 @@
 ##H   <token>       User's Token
 ##H    
 ##H Options:
-##H   data_file     data json file to use                           (default: /tmp/data.json)
+##H   data_file     data json file to use                           (default: /tmp/ssb_data.json)
 ##H   cmsmon_url    CMS Monitoring URL                              (default: https://cms-monitoring.cern.ch)
 ##H   interval      Time interval for Alerts ingestion & injection  (default: 1)
 ##H   verbose       Verbosity level                                 (default: 0)
@@ -22,7 +22,7 @@ query="$1"
 token=$2
 
 # Alerting Tool optional arguments
-data_file=${3:-"/tmp/data.json"}
+data_file=${3:-"/tmp/ssb_data.json"}
 cmsmon_url=${4:-"https://cms-monitoring.cern.ch"}
 interval=${5:-1}
 verbose=${6:-0}

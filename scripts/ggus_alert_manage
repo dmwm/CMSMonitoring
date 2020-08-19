@@ -8,12 +8,13 @@
 ##H   status      output service's status
 ##H
 ##H Environments:
-##H   GGUS_FORMAT :   GGUS Query Format("csv" or "xml")               default - "csv"
-##H   CMSMON_URL  :   CMS Monitoring URL                              default - https://cms-monitoring.cern.ch"
-##H   INTERVAL    :   Time interval for Alerts ingestion & injection  default - 1
-##H   VO          :   Required VO attribute                           default - "cms"
-##H   TIMEOUT     :   HTTP client timeout operation (GGUS Parser)     default - 0 (zero means no timeout)
-##H   VERBOSE     :   Verbosity level                                 default - 0
+##H   GGUS_FORMAT  :   GGUS Query Format("csv" or "xml")               default - "csv"
+##H   GGUSDATAFILE :   Data json file to use                           default - /tmp/ggus_data.json
+##H   CMSMON_URL   :   CMS Monitoring URL                              default - https://cms-monitoring.cern.ch"
+##H   INTERVAL     :   Time interval for Alerts ingestion & injection  default - 1
+##H   VO           :   Required VO attribute                           default - "cms"
+##H   TIMEOUT      :   HTTP client timeout operation (GGUS Parser)     default - 0 (zero means no timeout)
+##H   VERBOSE      :   Verbosity level                                 default - 0
 
 ### ***
 #The following block of code was taken from
@@ -48,6 +49,7 @@ fi
 
 ## ggus_alert.sh arguments from Environment Variable
 ggus_format=${GGUS_FORMAT:-"csv"}                               ## GGUS Query Format("csv" or "xml") 
+data_file=${GGUSDATAFILE:-"/tmp/ggus_data.json"}                ## Data json file to use  
 cmsmon_url=${CMSMON_URL:-"https://cms-monitoring.cern.ch"}      ## CMS Monitoring URL 
 interval=${INTERVAL:-1}                                         ## Time interval for Alerts ingestion & injection
 vo=${VO:-"cms"}                                                 ## Required VO attribute
@@ -60,9 +62,9 @@ start()
     echo "Starting GGUS Alerting daemon."
     if [ ! -x "$(command -v rotatelogs)" ]; then
       echo "rotatelogs not found. Starting without it..."
-      nohup ggus_alert.sh $ggus_format $cmsmon_url $interval $vo $timeout $verbose 2>&1 1>& $LOGDIR/ggus_alerting-`date +%F`-`hostname -s`.log &
+      nohup ggus_alert.sh $ggus_format $data_file $cmsmon_url $interval $vo $timeout $verbose 2>&1 1>& $LOGDIR/ggus_alerting-`date +%F`-`hostname -s`.log &
     else
-	  nohup ggus_alert.sh $ggus_format $cmsmon_url $interval $vo $timeout $verbose </dev/null 2>&1 | rotatelogs $LOGDIR/ggus_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
+	  nohup ggus_alert.sh $ggus_format $data_file $cmsmon_url $interval $vo $timeout $verbose </dev/null 2>&1 | rotatelogs $LOGDIR/ggus_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
     fi
 }
 
