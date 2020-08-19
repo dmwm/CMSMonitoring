@@ -4,6 +4,15 @@
 
 This intelligence Module has been developed for the CMS Infra MONIT AlertManagement. It is responsible for assigning relevant severity levels, bundling similar alerts, silencing false alerts from time to time based on it's intelligence.
 
+- Table of contents
+  * [Environment Setup for lxplus VM Users](#environment-setup-for-lxplus-vm-users)
+      - [Alertmanager Setup](#alertmanager-setup)
+  * [Setup](#setup)
+  * [Build](#build)
+  * [Run](#run)
+  * [Test](#test)
+  * [Config File](#config-file)
+
 ## Environment Setup for lxplus VM Users
 
 If you are trying to simulate the project in a lxplus VM then you will have to deploy AlertManager and ggus_alerting & ssb_alerting services as well.
