@@ -3,21 +3,24 @@
 - [AlertManagement](#alertmanagement)
   * [Overview](#overview)
   * [Architectural Diagram](#architectural-diagram)
+  * [Installation](#installation)
   * [SSB Alerting Service](#ssb-alerting-service)
     + [monit](#monit)
-    + [ssb_alerting](#ssb-alerting)
-    + [ssb_alert.sh](#ssb-alertsh)
-    + [ssb_alert_manage](#ssb-alert-manage)
+    + [ssb_alerting](#ssb_alerting)
+    + [ssb_alert.sh](#ssb_alert.sh)
+    + [ssb_alert_manage](#ssb_alert_manage)
   * [GGUS Alerting Service](#ggus-alerting-service)
-    + [ggus_parser](#ggus-parser)
-    + [ggus_alerting](#ggus-alerting)
-    + [ggus_alert.sh](#ggus-alertsh)
-    + [ggus_alert_manage](#ggus-alert-manage)
+    + [ggus_parser](#ggus_parser)
+    + [ggus_alerting](#ggus_alerting)
+    + [ggus_alert.sh](#ggus_alert.sh)
+    + [ggus_alert_manage](#ggus_alert_manage)
   * [Karma Dashboard](#karma-dashboard)
+  * [Slack](#slack)
+  * [Alert CLI Tool](#alert-cli-tool)
   * [Intelligence Module](#intelligence-module)
     + [The Logic behind intelligence module](#the-logic-behind-intelligence-module)
-    
-For more detailed information please visit the blog about the whole project.
+
+For detailed information please visit the blog about the whole project.
 https://indrarahul.codes/2020/07/24/google-summer-of-code.html
 
 # AlertManagement
@@ -33,15 +36,19 @@ The system should collect anomalies, notifications, etc., from ES, InfluxDB, Pro
 ## Architectural Diagram
 ![Alt text](arch_diag.jpg)
 
+# Installation
+
+You can find the all details to setup this project [here](https://github.com/dmwm/CMSMonitoring/tree/master/doc/AlertManagement/installation.md).
+
 ## SSB Alerting Service
 Files included in this service are :-
-1) monit
-2) ssb_alerting
-3) ssb_alert.sh
-4) ssb_alert_manage
+1) [monit](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go)
+2) [ssb_alerting](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ssb_alerting.go)
+3) [ssb_alert.sh](https://github.com/dmwm/CMSMonitoring/blob/master/scripts/ssb_alert.sh)
+4) [ssb_alert_manage](https://github.com/dmwm/CMSMonitoring/blob/master/scripts/ssb_alert_manage)
 
 ### monit
-The program which is responsible for the SSB queries from InfluxDB. A query can be manually drafted according to our needs. 
+The program which is responsible for the SSB queries from InfluxDB. A query can be crafted according to our needs. 
 
 An example of such a query :-
 
@@ -61,7 +68,7 @@ Usage of ssb_alerting:
   -verbose int
     	verbosity level
 ```
-The dataflow and logic behind ssb_alerting tool can be well visualized in the below diagram.
+The dataflow and logic behind ssb_alerting tool can be visualized in the diagram below.
 ![Alt text](alerting.jpg)
 
 ### ssb_alert.sh
@@ -79,7 +86,7 @@ Options:
   verbose       Verbosity level                                 (default: 0)
   ```
 ### ssb_alert_manage
-A Linux Daemon for our ssb_alerting mechanism which makes possible to run our service in background giving access to major commands like start, stop, status, help.
+A Linux Daemon for our ssb_alerting mechanism which runs our alerting service in the background. It has four open commands like start, stop, status, help to control the ssb alerting service without much of hassle.
 Few Environment Variables are required to be set ( PS. some of them have default values.) which makes the whole service easily configurable. 
 
 ```
@@ -92,11 +99,10 @@ Environments:
 ```
 ## GGUS Alerting Service
 Files included in this service are :-
-1) ggus_parser
-2) ggus_alerting
-3) ggus_alert.sh
-4) ggus_alert_manage
-
+1) [ggus_parser](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ggus_parser.go)
+2) [ggus_alerting](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ggus_alerting.go)
+3) [ggus_alert.sh](https://github.com/dmwm/CMSMonitoring/blob/master/scripts/ggus_alert.sh)
+4) [ggus_alert_manage](https://github.com/dmwm/CMSMonitoring/blob/master/scripts/ggus_alert_manage)
 ### ggus_parser
 The program which uses HTTP request to fetch GGUS Tickets using CERN Grid Certificate in XML/CSV Format which is then parsed and converted into usable JSON Format and dumped to the disk.
 
@@ -132,7 +138,7 @@ Options:
   verbose       Verbosity level                                 (default: 0)
   ```
 ### ggus_alert_manage
-A Linux Daemon for the ggus_alerting mechanism which makes possible to run our service in background giving access to major commands like start, stop, status, help.
+A Linux Daemon for our ssb_alerting mechanism which runs our alerting service in the background. It has four open commands like start, stop, status, help to control the ssb alerting service without much of hassle.
 Few Environment Variables are required to be set ( PS. some of them have default values.) which makes the whole service easily configurable. 
 
 ```
@@ -145,68 +151,134 @@ Environments:
   VERBOSE     :   Verbosity level                                 default - 0
 ```
 
-A user has to set the required Environment variables. Once all environment Variables are set you can run these two commands only to start the services. That's it.
-
-``` $ ggus_alert_manage start ```
-``` $ ssb_alert_manage start ```
-
 ## Karma Dashboard
 "Alertmanager UI is useful for browsing alerts and managing silences, but it’s lacking as a dashboard tool - karma aims to fill this gap."     
 -Karma Developer
 
-We can build the docker container using Karma Dockerfile.
-
-```docker build -t <CERN_REPO./karma <path-to-Dockerfile>```
-
-Required Environment Variable for docker container -
-
-```ALERTMANAGER_URI ```
-
-Karma Dashboard can be configured using `karma.yaml` file.
-```
-ui:
-    refresh: 30s
-    hideFiltersWhenIdle: true
-    colorTitlebar: false
-    theme: "auto"
-    minimalGroupWidth: 420
-    alertsPerGroup: 6
-    collapseGroups: collapsed
-    multiGridLabel: "tag"
-    multiGridSortReverse: false
-```
-
-k8s manifest files can be used to deploy the karma dashboard on CERN Kubernetes infrastructure.
-
-Below screenshot shows the karma dashboard with alerts from both of the services developed.
+You also get the URL for alerts which land you to the original ticketing platform. It gives a nice and intuitive view. Multi grid option, collapsing alerts, viewing silences are few nice features of Karma. Below screenshot shows the karma dashboard with alerts from both of the services developed. 
 ![Alt text](karma.png)
+
+## Slack
+Slack has defined channels for particular service alerts. Users are notified about fired alerts which are drived by AlertManager bots. 
+
+![Alt text](slack.png)
+
+## Alert CLI Tool
+
+Nice and clean CLI interface for getting alerts, their details on terminal either in tabular form or JSON format. Convenient option for operators who prefer command line tools. Comes with several options such as :-
+ - service, severity, tag - Filters
+ - sort - Sorting
+ - name - For detailed information of an alert
+ - json - information in JSON format
+
+```
+Usage: alert [options]
+  -generateConfig
+    	Flag for generating default config
+  -json
+    	Output in JSON format
+  -name string
+    	Alert Name
+  -service string
+    	Service Name
+  -severity string
+    	Severity Level of alerts
+  -sort string
+    	Sort data on a specific Label
+  -tag string
+    	Tag for alerts
+  -token string
+    	Authentication token to use
+  -verbose int
+    	verbosity level, can be overwritten in config
+
+Environments:
+	CONFIG_PATH:	 Config to use, default (/home/z3r0/.alertconfig.json)
+
+Examples:
+	Get all alerts:
+	    alert
+
+	Get all alerts in JSON format:
+	    alert -json
+
+	Get all alerts with filters (-json flag will output in JSON format if required):
+	Available filters:
+	service	Ex GGUS,SSB,dbs,etc.
+	severity	Ex info,medium,high,urgent,etc.
+	tag		Ex cmsweb,cms,monitoring,etc.
+
+	Get all alerts of specific service/severity/tag/name. Ex GGUS/high/cms/ssb-OTG0058113:
+	    alert -service=GGUS
+	    alert -severity=high
+	    alert -tag=cms
+	    alert -name=ssb-OTG0058113
+
+	Get all alerts based on multi filters. Ex service=GGUS, severity=high:
+	    alert -service=GGUS -severity=high
+
+	Sort alerts based on labels. The -sort flag on top of above queries will give sorted alerts.:
+	Available labels:
+	severity	Severity Level
+	starts		Starting time of alerts
+	ends		Ending time of alerts
+	duration	Lifetime of alerts
+
+	Get all alerts of service=GGUS, severity=high sorted on alert's duration:
+	    alert -service=GGUS -severity=high -sort=duration
+
+	Get all alerts of service=GGUS sorted on severity level:
+	    alert -service=GGUS -sort=severity
+```
+
+Below is a screenshot of such queries using the tool.
+![Alt text](alert.png)
 
 ## Intelligence Module
 
-Detailed instructions how to setup, run and test the intelligence module can be found [here](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/README.md).
+It is a data pipeline. Each components are independent of each other. One component receives the data, adds its logic and forwards the processed data to other component.
+
+Below is the Intelligence module architecture diagram.
+![Alt text](int_mod.png)
+
+What it does ?
+ - assigns proper severity levels to SSB/GGUS alerts which helps operators to understand the criticality of the infrastructure. Ex. If Number of Alerts with severity=”urgent” > some threshold, then the infrastructure is in critical situation.
+- annotates Grafana Dashboards when Network or Database interventions.
+- predicts type of alerts and groups similar alerts with the help of Machine Learning.
+- adds applicable tutorial/instructions URL/doc to alert, on following which an operator can solve the issue quickly.
 
 ### The Logic behind intelligence module
 1) The main function will run all pipeline's logic.
 2) pipeline starts with fetching alerts,
-3) then to process each alert seeing if it has already been processed and silenced. If they are then we ignore that alert, otherwise, we pass it to the next pipeline component. ( So here we require the SilencedMap which stores all those alerts which are in Silence Mode which indicates they are processed and we should not repeat the intelligence process again for them ).
-4) Then the alert comes to keyword matching were keywords are matched and accordingly severity is assigned.
+3) then to process each alert seeing if it has already been processed and silenced. If they are then we ignore that alert, otherwise, we pass it to the next pipeline component. ( So here we require the SilencedMap that stores all those alerts which are in Silence Mode, indicates they are processed and we should not repeat the intelligence process again for them ).
+4) Then the alert comes to keyword matching were keywords are matched and accordingly severity level is assigned.
 5) Passes through ML Box with no logic as of now.
 6) then the processed alert is pushed to AM and,
-7) Then the old alert with default severity is silenced
-8) Then Some resolved alerts that are silenced (i.e. when GGUS alerts are resolved) are deleted.
+7) the old alert with default severity is silenced
+8) Then Some resolved alerts that are silenced (i.e. when GGUS alerts are resolved) are deleted. This step for those alerts which have open ending. We wait for them till they are resolved.
 
-Regarding Counters and Testing:-
-When we are fetching the alerts at step 2, we will count the number of alerts in the AM (i.e. before intelligence module does its stuff)
-Then when we go to preprocessing step 3, we will count all active, expired silences when we update our SilenceMap
-When we push Alerts we count how many alerts got pushed.
-When we create new Silences we will add 1 to the Active Silence counter which we modified at step 3
-When we delete a resolved alert's Silence we will add 1 the Expired Silence counter which we modified at step 3.
+Testing:-
+
+We use counters to verify if the intelligence module testing was successful or not. If there is mismatch in the counters we declare failure. We also check if the module successfully annotated the dashboards or not. To pass the test, the module shouldn't make random values in counters and it should annotate the dashboards.
+
+- When we are fetching the alerts at step 2, we will count the number of alerts in the AM (i.e. before intelligence module does its stuff)
+- Then when we go to preprocessing step 3, we will count all active, expired silences when we update our SilenceMap.
+- When we create new Silences we keep adding 1 to the Active Silence counter which we modified at step 3.
+- When we delete a resolved alert's Silence we keep adding 1 to the Expired Silence counter which we modified at step 3.
 
 Now at the end of pipeline. We will end up having following counters:-
 
-No Of Alerts
-No Of Active Silences
-No Of Expired Silences
-No of Alerts Pushed
+- No Of Active Silences
+- No Of Expired Silences
+- No of Pending Silences
 
-Now to verify if everything went well at the end of pipeline. We will again fetch Alerts/Silences from AM and count them and check if they matches with the counters above. If they match go to next iteration otherwise stop the testing.
+Now to verify if everything went well at the end of pipeline. We will again fetch Alerts/Silences from AM and count them and check if they matches with the counters above. If they match, check for the "AnnotateTestStatus" value, if the module has annnotated the dashboards, it will be true and thus Test will be succesfull or if any one of them fails, Testing fails.
+
+**MANUAL CHECK**
+Also look on number of alerts counter. Although we can't say before and after running of intelligence module this counter should be equal because any time new alert can come in and we may be in the middle of run of our intelligence module. But we do know the number of alerts after running the intelligence module should not go high (exponential) as limited number of alerts are created at GGUS/SSB. So if you see unexpectedly high increase in number of alerts after running the intelligence module, consider the testing failed. 
+
+Detailed instructions how to setup, run and test the intelligence module can be found [here](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/README.md).
+
+We also are providing solution for silencing false alerts which are created due to maintenance alert. The maintenance alert has a field of instances which is a list of all those instance which are going to get affected due to this ongoing maintenance. So our [intelligence program](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/intelligence.go), goes to Alertmanager fetches all alerts and filters them based on the searchingLabel (here instance) and silence them for time the maintenance is going. Once the maintenance ends the if alerts are still alive they come back to the AlertManager. This helps the operator to deal with less alerts when maintenance is going on, he/she will look into the maintenance alerts only, not all those false alerts fired due to maintenance.
+
+For installation walkthrough of this program go [here](https://github.com/dmwm/CMSMonitoring/tree/master/doc/AlertManagement/installation.md#intelligence-program).
