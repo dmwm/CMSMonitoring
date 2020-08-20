@@ -7,20 +7,22 @@
     + [Status](#status)
     + [Stop](#stop)
 * [GGUS Alerting Service](#ggus-alerting-service)
-    + [Build](#build)
-    + [Environment Variables](#environment-variables)
-    + [Run](#run)
-    + [Status](#status)
-    + [Stop](#stop)
+    + [Build](#build-1)
+    + [Environment Variables](#environment-variables-1)
+    + [Run](#run-1)
+    + [Status](#status-1)
+    + [Stop](#stop-1)
 * [Karma Dashboard](#karma-dashboard)
+    + [Build](#build-2)
+    + [Config](#config)
 * [Alert CLI Tool](#alert-cli-tool)
-    + [Build](#build)
-    + [Config](#config)
-    + [Run](#run)
+    + [Build](#build-3)
+    + [Config](#config-1)
+    + [Run](#run-2)
 * [Intelligence Program](#intelligence-program)
-    + [Build](#build)
-    + [Config](#config)
-    + [Run](#run)
+    + [Build](#build-4)
+    + [Config](#config-2)
+    + [Run](#run-3)
 * [Intelligence Module](#intelligence-module)
 * [LXPLUS VM Setup](#lxplus-vm-setup)
     + [Alertmanager Setup](#alertmanager-setup)
@@ -371,7 +373,7 @@ You can run the intelligence program by executing the following command.
 Find the detailed installation guide for intelligence module [here](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/installation.md).
 
 # LXPLUS VM Setup
-## Environment Setup
+
 ### Alertmanager Setup
 If you are trying to simulate the project in a lxplus VM then you will also have to deploy AlertManager.
 
