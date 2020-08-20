@@ -1,10 +1,10 @@
 #!/bin/sh
 ##H Script for automation of testing process of the intelligence module.
-##H Usage: test_wrapper.sh <config-file-path> <wdir>  
+##H Usage: test_wrapper.sh <config-file-path> <wdir>
 ##H
 
-case ${1:-status} in
-help )
+# Function for printing usage.
+print_usage() {
     cat $0 | grep "^##H" | sed -e "s,##H,,g"
     echo " config  test config file path      (mandatory)"
     echo " wdir    work directory             default: /tmp/${USER}"
@@ -12,9 +12,21 @@ help )
     echo " Options:"
     echo " help    help manual"
     exit 1
+}
+
+case ${1:-status} in
+help)
+    print_usage
     ;;
+
 esac
 
+# Check if user is passing least required arguments.
+if [ "$#" -lt 1  ]; then
+    print_usage
+fi
+
+# Check if user has passed test config file path.
 TEST_CONFIG=${1}
 if [ -z "$TEST_CONFIG" ]; then
     echo "Pass the Config File Path. Testing Failed. Exiting.."
