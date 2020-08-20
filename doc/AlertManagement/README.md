@@ -7,12 +7,12 @@
   * [SSB Alerting Service](#ssb-alerting-service)
     + [monit](#monit)
     + [ssb_alerting](#ssb_alerting)
-    + [ssb_alert.sh](#ssb_alert.sh)
+    + [ssb_alert.sh](#ssb_alertsh)
     + [ssb_alert_manage](#ssb_alert_manage)
   * [GGUS Alerting Service](#ggus-alerting-service)
     + [ggus_parser](#ggus_parser)
     + [ggus_alerting](#ggus_alerting)
-    + [ggus_alert.sh](#ggus_alert.sh)
+    + [ggus_alert.sh](#ggus_alertsh)
     + [ggus_alert_manage](#ggus_alert_manage)
   * [Karma Dashboard](#karma-dashboard)
   * [Slack](#slack)
@@ -34,7 +34,7 @@ On daily basis these CMS computing infrastructure may produce significant amount
 The system should collect anomalies, notifications, etc., from ES, InfluxDB, Prometheus data-sources, GGUS system and be able to aggregate, and create meaningful alerts to address various computing infrastructure failures. For instance, if certain component of global distributed system experiences a problem in terms of its storage the Alert Management system should notify via appropriate channels a set of instructions on how to fix and handle this situation. Before sending the alert it should check if this is a real anomaly or part of on-going outage, or schedule maintenance.
 
 ## Architectural Diagram
-![Alt text](arch_diag.jpg)
+![Alt text](images/arch_diag.png)
 
 # Installation
 
@@ -69,7 +69,7 @@ Usage of ssb_alerting:
     	verbosity level
 ```
 The dataflow and logic behind ssb_alerting tool can be visualized in the diagram below.
-![Alt text](alerting.jpg)
+![Alt text](images/alerting.jpg)
 
 ### ssb_alert.sh
 A simple bash script which makes the above process automated on configurable time interval value.
@@ -121,7 +121,7 @@ Usage of ggus_alerting:
     	Required VO attribute in GGUS Ticket (default "cms")
 ```
 The dataflow and logic behind ggus_alerting tool can be well visualized in the below diagram. 
-![Alt text](alerting.jpg)
+![Alt text](images/alerting.jpg)
 
 ### ggus_alert.sh
 A simple bash script which makes the above process automated on configurable time interval value.
@@ -155,13 +155,22 @@ Environments:
 "Alertmanager UI is useful for browsing alerts and managing silences, but it’s lacking as a dashboard tool - karma aims to fill this gap."     
 -Karma Developer
 
-You also get the URL for alerts which land you to the original ticketing platform. It gives a nice and intuitive view. Multi grid option, collapsing alerts, viewing silences are few nice features of Karma. Below screenshot shows the karma dashboard with alerts from both of the services developed. 
-![Alt text](karma.png)
+You also get the URL for alerts which land you to the original ticketing platform. It gives a nice and intuitive view. Multi grid option, collapsing alerts, viewing silences are few nice features of Karma. Below screenshots show the karma dashboard with alerts from both of the services developed. 
+
+![Alt text](images/karma1.png)
+
+![Alt text](images/karma2.png)
 
 ## Slack
 Slack has defined channels for particular service alerts. Users are notified about fired alerts which are drived by AlertManager bots. 
 
-![Alt text](slack.png)
+GGUS Alerts in Slack.
+
+![Alt text](images/slack1.png)
+
+SSB Alerts in Slack.
+
+![Alt text](images/slack2.png)
 
 ## Alert CLI Tool
 
@@ -232,14 +241,31 @@ Examples:
 ```
 
 Below is a screenshot of such queries using the tool.
-![Alt text](alert.png)
+
+Alert CLI Tool printing all alerts in the alertmanager of type SSB services which are sorted over duration of each alert.
+
+![Alt text](images/alert_tool1.png)
+
+Alert CLI Tool printing all alerts in the alertmanager whose severity values are "high".
+
+![Alt text](images/alert_tool2.png)
+
+Alert CLI Tool printing a specific alert in details.
+
+![Alt text](images/alert_tool3.png)
+
+
+Alert CLI Tool printing a specific alert in details in json format.
+
+![Alt text](images/alert_tool4.png)
 
 ## Intelligence Module
 
 It is a data pipeline. Each components are independent of each other. One component receives the data, adds its logic and forwards the processed data to other component.
 
 Below is the Intelligence module architecture diagram.
-![Alt text](int_mod.png)
+
+![Alt text](images/int_mod.png)
 
 What it does ?
  - assigns proper severity levels to SSB/GGUS alerts which helps operators to understand the criticality of the infrastructure. Ex. If Number of Alerts with severity=”urgent” > some threshold, then the infrastructure is in critical situation.
@@ -281,4 +307,4 @@ Detailed instructions how to setup, run and test the intelligence module can be 
 
 We also are providing solution for silencing false alerts which are created due to maintenance alert. The maintenance alert has a field of instances which is a list of all those instance which are going to get affected due to this ongoing maintenance. So our [intelligence program](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/intelligence.go), goes to Alertmanager fetches all alerts and filters them based on the searchingLabel (here instance) and silence them for time the maintenance is going. Once the maintenance ends the if alerts are still alive they come back to the AlertManager. This helps the operator to deal with less alerts when maintenance is going on, he/she will look into the maintenance alerts only, not all those false alerts fired due to maintenance.
 
-For installation walkthrough of this program go [here](https://github.com/dmwm/CMSMonitoring/tree/master/doc/AlertManagement/installation.md#intelligence-program).
+For installation walkthrough of this program go [here](https://github.com/dmwm/CMSMonitoring/blob/Documentation/doc/AlertManagement/installation.md#intelligence-program).

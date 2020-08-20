@@ -6,7 +6,7 @@
     - [Main](#main)
     - [Test](#test)
   * [Run](#run)
-  * [Test](#test)
+  * [Test](#test-1)
     - [Manual](#manual)
     - [Automation](#automation)
 
@@ -83,24 +83,36 @@ It is expected that a testing instance of Alertmanager is running in the system.
 All test scenario required for intelligence module testing has been automated using the [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh). 
 
 ```
-Script for automation of testing process of the intelligence module.
-Usage: test_wrapper.sh <options>
+ Script for automation of testing process of the intelligence module.
+ Usage: test_wrapper.sh <config-file-path> <wdir>  
 
-Options:
-      help    help manual
-      wdir    work directory    default: /tmp/$USER
+ config  test config file path      (mandatory)
+ wdir    work directory             default: /tmp/$USER
+
+ Options:
+ help    help manual
 ```
 
 Follow the following steps :-
 1) Clone the repository at a specific directory
+
 ```$ git clone https://github.com/dmwm/CMSMonitoring.git```
 
 2) Set the PATH variable
+
 ```$ export PATH=/CMSMonitoring/src/go/intelligence/int_test/:$PATH```
 
-3) Set the "testfile" : <YOUR WORKING DIRECTORY TOP>/test_cases.json in [test_config.json](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_config.json)
-For instance if you are doing test in "/tmp/<your-name>", set the "testfile" field to "/tmp/test_cases.json".
-4) Run [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh)
-```$ test_wrapper.sh /tmp/<your-name>``` 
+3) Set the "testfile" : <WORK_DIR>/test_cases.json in [test_config.json](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_config.json)
+
+Since the default WORK_DIR is /tmp/$USER, so change "testfile" : /tmp/$USER/test_cases.json.
+If different WORK_DIR, then change "testfile" : <WORK_DIR>/test_cases.json.
+
+4) Run [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh) at default directory (i.e. /tmp/$USER)
+
+```$ test_wrapper.sh <test-config-file-path>``` 
+
+Run this command for testing at different directory. 
+
+```$ test_wrapper.sh <test-config-file-path> <WORK_DIR>``` 
 
 ##### *For LXPLUS USERS* - If you want to test on lxplus VM, you don't need to deploy alerting services (GGUS & SSB). There are some fake alerts which are similar to GGUS and SSB ticketing services which are pushed into Alertmanager before starting the test. However, you can run alerting services to include realtime alerts in testing process too. Wondering how to run alerting services ? Go [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/installation.md).
