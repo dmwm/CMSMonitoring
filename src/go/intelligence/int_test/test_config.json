@@ -12,7 +12,7 @@
     "verbose": 0,
     "dryRun" : false,
     "testing" : {
-      "testfile" : "/tmp/test_cases.json",
+      "testfile" : "<WORK_DIR>/test_cases.json",
       "lifetimeOfTestAlerts" : 5,
       "annotateTestStatus" : false
     }
@@ -23,7 +23,7 @@
     "dashboardSearchAPI" : "/api/search",
     "annotationAPI" : "/api/annotations",
     "tags" : ["cmsweb-play"],
-    "token" : "",
+    "token" : "<YOUR-GRAFANA-PROXY-TOKEN>",
     "dashboardsCacheExpiration" : 1 
   },
 
@@ -64,10 +64,11 @@
         "risk": "high",
         "down": "urgent"
       },
-      "annotationMap" : {
-        "label" : "shortDescription",
-        "actions" : ["intervention"],
-        "systems" : ["network", "database", "db"]
+      "annotationMap": {
+        "label": "shortDescription",
+        "actions": ["intervention", "outage"],
+        "systems": ["network", "database", "db"],
+        "urlLabel": "URL"
       }
     },
 
@@ -79,6 +80,12 @@
         "less urgent": "medium",
         "urgent": "high",
         "very urgent": "urgent"
+      },
+      "annotationMap": {
+        "label": "Subject",
+        "actions": ["transfer", "outage"],
+        "systems": ["rucio"],
+        "urlLabel": "URL"
       }
     }
   ]
