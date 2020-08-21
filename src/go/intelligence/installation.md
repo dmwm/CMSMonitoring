@@ -100,7 +100,7 @@ Follow the following steps :-
 
 2) Set the PATH variable
 
-```$ export PATH=/<PATHTOCMSMonitoring>/src/go/intelligence/int_test/:$PATH```
+```$ export PATH=$PWD/CMSMonitoring/src/go/intelligence/int_test/:$PATH```
 
 3) Edit [CMSMonitoring/src/go/intelligence/int_test/test_config.json](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_config.json) and set "testfile" to: <WORK_DIR>/test_cases.json 
 
