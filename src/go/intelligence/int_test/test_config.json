@@ -83,7 +83,7 @@
       },
       "annotationMap": {
         "label": "Subject",
-        "actions": ["transfer", "outage"],
+        "actions": ["transfers", "outage"],
         "systems": ["rucio"],
         "urlLabel": "URL"
       }

@@ -59,10 +59,13 @@ func pushTestAlerts() {
 		log.Fatalf("Unable to Unmarshal Data. Testing failed! error: %v\n", err)
 	}
 
+	timeNow := time.Now()
+
 	for _, each := range testAlertData {
 
-		each.StartsAt = time.Now()
+		each.StartsAt = timeNow
 		each.EndsAt = time.Now().Add(utils.ConfigJSON.Server.Testing.LifetimeOfTestAlerts * time.Minute)
+		timeNow = timeNow.Add(utils.ConfigJSON.Server.Testing.LifetimeOfTestAlerts * time.Minute * -1) // Adjusting startTime for fake alerts so that they don't overlap in the dashboards
 
 		err := utils.PostAlert(each)
 		if err != nil {
