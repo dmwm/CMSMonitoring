@@ -100,11 +100,11 @@ Follow the following steps :-
 
 2) Set the PATH variable
 
-```$ export PATH=/CMSMonitoring/src/go/intelligence/int_test/:$PATH```
+```$ export PATH=/PATHTOCMSMonitoring/src/go/intelligence/int_test/:$PATH```
 
-3) Set the "testfile" : <WORK_DIR>/test_cases.json in [test_config.json](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_config.json)
+3) Edit [CMSMonitoring/src/go/intelligence/int_test/test_config.json](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_config.json) and set "testfile" to: <WORK_DIR>/test_cases.json 
 
-Since the default WORK_DIR is /tmp/$USER, so change "testfile" : /tmp/$USER/test_cases.json.
+where WORKDIR is the directory where you want to run the test (if you use the default WORK_DIR  /tmp/$USER, change "testfile" to : /tmp/$USER/test_cases.json.
 If different WORK_DIR, then change "testfile" : <WORK_DIR>/test_cases.json.
 
 4) Run [test_wrapper.sh](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test_wrapper.sh) at default directory (i.e. /tmp/$USER)
