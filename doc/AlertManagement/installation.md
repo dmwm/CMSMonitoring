@@ -250,7 +250,7 @@ You can simple run :-
 
 ```alert```
 
-to get all the alerts currently in the alertmanager. A screenshot for the same [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/alert_tool.png). However, it has many options to sort over various values, to filter etc. You can follow the help section below.
+to get all the alerts currently in the alertmanager. Screenshots for the same [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md#screenshots). However, it has many options to sort over various values, to filter etc. You can follow the help section below.
 
 ```
 Usage: alert [options]
@@ -401,8 +401,8 @@ Now that alertmanager is up and running. Clone the CMSMonitoring repo -
 You will need to setup ggus_alerting and ssb_alerting services. They require some Environment variables to be set which you can refer from the doc [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md#ggus-alerting-service) and [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md#ssb-alerting-service).
 
 Extra Environment Variables other than mentioned above which are required for setting up the project:-
-- X509_USER_KEY= <PATH FOR X509_USER_KEY>
-- X509_USER_CERT=<PATH FOR X509_USER_CERT>
+- X509_USER_KEY= **PATH FOR X509_USER_KEY**
+- X509_USER_CERT= **PATH FOR X509_USER_CERT**
 
 TWO IMPORTANT THINGS TO NOTICE
 - Make sure you have write permission in the directory for logging.
