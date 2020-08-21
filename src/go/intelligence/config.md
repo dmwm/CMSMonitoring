@@ -131,12 +131,14 @@ Contains all the values required for annotation of Grafana Dashboards.
     - **# label** - Field in which the intelligence module tries to match keywords for the following actions and systems.
     - **actions** - List of actions (eg. outage, maintenance, intervention)
     - **systems** - List of services which are involved (eg. Network, Database, rucio etc.)
+    - **urlLabel** - Label for searching URL from the alerts and putting the found URL into text while annotating the dashboards.
 
 **Fields with * mark are required. Fields with # mark should not be changed unless there's any change in the codebase for the same.**
 
 - **keywordLabel for SSB should be "shortDescription" and for GGUS "Priority"**.
 - **defaultLevels for SSB should be "notification" and for GGUS "ticket"**.
 - **label for annotationMap for SSB should be "shortDescription" and for GGUS "Subject"**.
+- **urlLabel for annotationMap for SSB should be "URL" and for GGUS "URL"**.
 
 DO NOT MAKE CHANGES FOR SSB AND GGUS SERVICES UNLESS YOU MAKE CHANGES ACCORDINGLY IN GGUS & SSB ALERTING SERVICES. 
 YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
@@ -213,7 +215,8 @@ YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
       "annotationMap": {
         # "label": "shortDescription",              #DO NOT CHANGE IT, UNIQUE FOR SSB
         "actions": ["intervention"],
-        "systems": ["network", "database", "db"]
+        "systems": ["network", "database", "db"],
+        "urlLabel": "URL"
       }
     },
 
@@ -229,7 +232,8 @@ YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
       "annotationMap": {
         # "label": "Subject",              #DO NOT CHANGE IT, UNIQUE FOR GGUS
         "actions": ["down", "failure", "outage"],
-        "systems": ["network", "rucio"]
+        "systems": ["network", "rucio"],
+        "urlLabel": "URL"
       }
     }
   ]
