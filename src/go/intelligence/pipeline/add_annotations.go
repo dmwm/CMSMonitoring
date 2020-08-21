@@ -56,6 +56,8 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 						if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
 							if url, urlOk := each.Annotations[srv.AnnotationMap.URLLabel].(string); urlOk {
 								dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)
+							} else {
+								dashboardData.Text = srv.Name + ": " + val
 							}
 						}
 

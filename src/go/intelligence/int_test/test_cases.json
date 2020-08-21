@@ -17,13 +17,14 @@
       "monitState": "CLOSED",
       "monitState1": "CLOSED",
       "seName": "Network Service",
-      "shortDescription": "Network Intervention in building 8888",
+      "shortDescription": "Network Intervention in building 8888 - TEST ALERT",
       "ssbNumber": "OTG00088",
       "sysCreatedBy": "jdoe",
       "sysModCount": "2",
       "sysUpdatedBy": "jdoe",
       "type": "Planned Intervention",
-      "updateTimestamp": "2020-07-03T15:32:36Z"
+      "updateTimestamp": "2020-07-03T15:32:36Z",
+      "URL": "https://cern.service-now.com/service-portal?id=outage&n=OTG0058253"
     },
     "startsAt": "2020-07-27T04:30:00Z",
     "endsAt": "2020-07-31T20:10:58.537Z"
@@ -32,28 +33,29 @@
   {
     "labels": {
       "alertname": "ssb-OTG00099-Testing-Alert-DB-Intervention",
-      "description": "Network Services",
-      "feName": "Network",
-      "seName": "Network Service",
+      "description": "Database Services",
+      "feName": "Database",
+      "seName": "Database Service",
       "service": "SSB",
       "severity": "notification",
       "tag": "monitoring",
       "type": "Planned Intervention"
     },
     "annotations": {
-      "date": "2020-07-29T06:30:00Z",
-      "description": "Network Services",
-      "feName": "Network",
+      "date": "2020-08-28T06:30:00Z",
+      "description": "Database Services",
+      "feName": "Database",
       "monitState": "CLOSED",
       "monitState1": "CLOSED",
-      "seName": "Network Service",
-      "shortDescription": "Database Intervention in building 7777",
+      "seName": "Database Service",
+      "shortDescription": "Database Intervention in building 7777 - TEST ALERT",
       "ssbNumber": "OTG00099",
-      "sysCreatedBy": "jdoe",
-      "sysModCount": "2",
-      "sysUpdatedBy": "jdoe",
+      "sysCreatedBy": "jdoe2",
+      "sysModCount": "22",
+      "sysUpdatedBy": "jdoe2",
       "type": "Planned Intervention",
-      "updateTimestamp": "2020-07-03T15:32:36Z"
+      "updateTimestamp": "2020-07-05T15:32:36Z",
+      "URL": "https://cern.service-now.com/service-portal?id=outage&n=OTG0058253"
     },
     "startsAt": "2020-07-27T04:30:00Z",
     "endsAt": "2020-07-31T20:10:58.537Z"
@@ -77,7 +79,7 @@
       "Scope": "WLCG",
       "Site": "pic",
       "Status": "assigned",
-      "Subject": "Transfers failing to T1_ES_PIC",
+      "Subject": "Transfers failing to rucio - TEST ALERT",
       "TicketID": "89899",
       "Type": "USER",
       "URL": "https://ggus.eu/?mode=ticket_info&ticket_id=89899",
