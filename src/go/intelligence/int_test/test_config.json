@@ -12,7 +12,7 @@
     "verbose": 0,
     "dryRun" : false,
     "testing" : {
-      "testfile" : "/tmp/test_cases.json",
+      "testfile" : "<WORK_DIR>/test_cases.json",
       "lifetimeOfTestAlerts" : 5,
       "annotateTestStatus" : false
     }
@@ -23,7 +23,7 @@
     "dashboardSearchAPI" : "/api/search",
     "annotationAPI" : "/api/annotations",
     "tags" : ["cmsweb-play"],
-    "token" : "",
+    "token" : "<YOUR-GRAFANA-PROXY-TOKEN>",
     "dashboardsCacheExpiration" : 1 
   },
 
