@@ -64,10 +64,11 @@
         "risk": "high",
         "down": "urgent"
       },
-      "annotationMap" : {
-        "label" : "shortDescription",
-        "actions" : ["intervention"],
-        "systems" : ["network", "database", "db"]
+      "annotationMap": {
+        "label": "shortDescription",
+        "actions": ["intervention", "outage"],
+        "systems": ["network", "database", "db"],
+        "urlLabel": "URL"
       }
     },
 
@@ -79,6 +80,12 @@
         "less urgent": "medium",
         "urgent": "high",
         "very urgent": "urgent"
+      },
+      "annotationMap": {
+        "label": "Subject",
+        "actions": ["transfer", "outage"],
+        "systems": ["rucio"],
+        "urlLabel": "URL"
       }
     }
   ]
