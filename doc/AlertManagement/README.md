@@ -242,6 +242,7 @@ Examples:
 
 Below is a screenshot of such queries using the tool.
 
+#### Screenshots
 Alert CLI Tool printing all alerts in the alertmanager of type SSB services which are sorted over duration of each alert.
 
 ![Alt text](images/alert_tool1.png)
@@ -307,4 +308,4 @@ Detailed instructions how to setup, run and test the intelligence module can be 
 
 We also are providing solution for silencing false alerts which are created due to maintenance alert. The maintenance alert has a field of instances which is a list of all those instance which are going to get affected due to this ongoing maintenance. So our [intelligence program](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/intelligence.go), goes to Alertmanager fetches all alerts and filters them based on the searchingLabel (here instance) and silence them for time the maintenance is going. Once the maintenance ends the if alerts are still alive they come back to the AlertManager. This helps the operator to deal with less alerts when maintenance is going on, he/she will look into the maintenance alerts only, not all those false alerts fired due to maintenance.
 
-For installation walkthrough of this program go [here](https://github.com/dmwm/CMSMonitoring/blob/Documentation/doc/AlertManagement/installation.md#intelligence-program).
+For installation walkthrough of this program go [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/installation.md#intelligence-program).
