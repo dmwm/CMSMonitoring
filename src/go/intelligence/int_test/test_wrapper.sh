@@ -1,20 +1,40 @@
 #!/bin/sh
 ##H Script for automation of testing process of the intelligence module.
-##H Usage: test_wrapper.sh <options>
+##H Usage: test_wrapper.sh <config-file-path> <wdir>
 ##H
-##H Options:
-##H         help    help manual
+
+# Function for printing usage.
+print_usage() {
+    cat $0 | grep "^##H" | sed -e "s,##H,,g"
+    echo " config  test config file path      (mandatory)"
+    echo " wdir    work directory             default: /tmp/${USER}"
+    echo ""
+    echo " Options:"
+    echo " help    help manual"
+    exit 1
+}
 
 case ${1:-status} in
-help )
-    cat $0 | grep "^##H" | sed -e "s,##H,,g"
-    echo "\t wdir    work directory      default: /tmp/${USER}"
-    exit 1
+help)
+    print_usage
     ;;
+
 esac
 
+# Check if user is passing least required arguments.
+if [ "$#" -lt 1  ]; then
+    print_usage
+fi
+
+# Check if user has passed test config file path.
+TEST_CONFIG=${1}
+if [ -z "$TEST_CONFIG" ]; then
+    echo "Pass the Config File Path. Testing Failed. Exiting.."
+    exit
+fi
+
 # Setup work directory based on user input
-WDIR=${1:-"/tmp/$USER"}
+WDIR=${2:-"/tmp/$USER"}
 TOP=$(dirname $WDIR)
 
 if [ ! -d $WDIR ]; then
@@ -36,7 +56,6 @@ fi
 #Variables
 AM_BIN=$WDIR/am/alertmanager
 AM_CONFIG=$WDIR/am/alertmanager.yml
-TEST_CONFIG=$WDIR/test_config.json
 AM_VERSION="alertmanager-0.21.0.linux-amd64"
 AM_URL="https://github.com/prometheus/alertmanager/releases/download/v0.21.0/${AM_VERSION}.tar.gz"
 CMSMONITORING_REPO_URL="https://github.com/dmwm/CMSMonitoring.git"
@@ -117,16 +136,7 @@ else
 fi
 
 ## building the intelligence module for testing
-mv $WDIR/CMSMonitoring/src/go/intelligence/int_test/test_config.json $WDIR
-if [ $? -eq 0 ]; then
-    echo "Successfully moved ${WDIR}/CMSMonitoring/src/go/intelligence/int_test/test_config.json to $WDIR."
-else
-    echo "Could not move. Exiting.."
-    delete_wdir
-    exit 1
-fi
-
-mv $WDIR/CMSMonitoring/src/go/intelligence/int_test/test_cases.json $TOP
+mv $WDIR/CMSMonitoring/src/go/intelligence/int_test/test_cases.json $WDIR
 if [ $? -eq 0 ]; then
     echo "Successfully moved ${WDIR}/CMSMonitoring/src/go/intelligence/int_test/test_cases.json to $WDIR."
 else
