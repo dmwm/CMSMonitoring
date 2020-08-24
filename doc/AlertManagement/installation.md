@@ -1,12 +1,14 @@
 # Installation
 
 * [SSB Alerting Service](#ssb-alerting-service)
+    + [Requirements](#requirements)
     + [Build](#build)
     + [Environment Variables](#environment-variables)
     + [Run](#run)
     + [Status](#status)
     + [Stop](#stop)
 * [GGUS Alerting Service](#ggus-alerting-service)
+    + [Requirements](#requirements-1)
     + [Build](#build-1)
     + [Environment Variables](#environment-variables-1)
     + [Run](#run-1)
@@ -28,10 +30,24 @@
     + [Alertmanager Setup](#alertmanager-setup)
     + [Project Setup](#project-setup)
 
-# SSB Alerting Service
-As alerting services run on two basic programs:
+At first set the GOPATH to Working directory.
+
+```export GOPATH=<WORK_DIR>```
+
+Alerting services run on two basic programs:
 - Parser - Which fetches tickets from the source
 - Alerting module - converts tickets into alerts and pushes to Alertmanager
+
+# SSB Alerting Service
+
+LXPLUS USERS PLEASE DO NOT RUN THESE COMMANDS AT HOME DIRECTORY AS YOU DON'T HAVE WRITE PERMISSION IN ONE DIRECTORY TOP FOR ALERTING SERVICES' LOGGING. THUS, MAKE A DIRECTORY e.g. $HOME/test and then proceed. 
+
+### Requirements
+
+You need [Stomp](https://github.com/go-stomp/stomp) package for [monit](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go). Get the package using this command.
+
+```go get github.com/go-stomp/stomp```
+
 
 ### Build
 
@@ -45,14 +61,16 @@ or git pull
 For SSB we use [monit.go](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go).
 Build the monit program by executing the command below.
 
-```go build <WORK_DIR>/CMSMonitoring/src/go/MONIT/monit.go```
+```go build -o <WORK_DIR>/bin/monit <WORK_DIR>/CMSMonitoring/src/go/MONIT/monit.go```
 
 ##### Alerting Module 
 For SSB we use [ssb_alerting.go](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ssb_alerting.go).
 
-```go build <WORK_DIR>/CMSMonitoring/src/go/MONIT/ssb_alerting.go```
+```go build -o <WORK_DIR>/bin/ssb_alerting <WORK_DIR>/CMSMonitoring/src/go/MONIT/ssb_alerting.go```
 
 where, WORK_DIR is your working directory. So you might want to set the PATH variable to the directory where these binaries are getting build (e.g. <WORK_DIR>/bin).
+
+```export PATH=<WORK_DIR>/bin:$PATH```
 
 ### Environment Variables
 Environments:
@@ -77,6 +95,8 @@ We are using bash scripts for deploying the alerting services as a linux service
 
 You might want to set the PATH variable to the directory where these scripts are residing ie. (<WORK_DIR>/CMSMonitoring/scripts).
 
+```export PATH=<WORK_DIR>/CMSMonitoring/scripts:$PATH```
+
 Run this command to start the SSB alerting service. Make sure all environment variables are set.
 
 ```ssb_alert_manage start```
@@ -96,32 +116,42 @@ You can use stop command to stop the SSB alerting service using this command.
 
 # GGUS Alerting Service
 
+LXPLUS USERS PLEASE DO NOT RUN THESE COMMANDS AT HOME DIRECTORY AS YOU DON'T HAVE PERMISSION TO WRITE IN ONE DIRECTORY TOP FOR ALERTING SERVICES' LOGGING. THUS, MAKE A DIRECTORY e.g. $HOME/test and then proceed. 
+
+### Requirements
+
+You need [x509proxy](https://github.com/vkuznet/x509proxy) package for [ggus_parser](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ggus_parser.go). Get the package using this command.
+
+```go get github.com/vkuznet/x509proxy```
+
 ### Build
 
 ##### Parser 
 For GGUS we use [ggus_parser.go](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ggus_parser.go).
 Build the ggus_parser by executing the command below.
 
-```go build <WORK_DIR>/CMSMonitoring/src/go/MONIT/ggus_parser.go```
+```go build -o <WORK_DIR>/bin/ggus_parser <WORK_DIR>/CMSMonitoring/src/go/MONIT/ggus_parser.go```
 
 ##### Alerting Module 
 For GGUS we use [ggus_alerting.go](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ggus_alerting.go).
 
-```go build <WORK_DIR>/CMSMonitoring/src/go/MONIT/ggus_alerting.go```
+```go build -o <WORK_DIR>/bin/ggus_alerting <WORK_DIR>/CMSMonitoring/src/go/MONIT/ggus_alerting.go```
 
 where, WORK_DIR is your working directory. So you might want to set the PATH variable to the directory where these binaries are getting build (e.g. <WORK_DIR>/bin).
 
+```export PATH=<WORK_DIR>/bin:$PATH```
+
 ### Environment Variables
 Environments:
-- GGUS_FORMAT :   GGUS Query Format("csv" or "xml")     (default - "csv")
-- VO          :   Required VO attribute   (default - "cms")
+- **GGUS_FORMAT** :   GGUS Query Format("csv" or "xml")     (default - "csv")
+- **VO**          :   Required VO attribute   (default - "cms")
 
 Environment Vars which are common for GGUS & SSB Alerting Services:-
   - **CMSMON_URL**  -   CMS Monitoring URL (default - https://cms-monitoring.cern.ch")
   - **INTERVAL**    -   Time interval at which alerting services run (in sec)  (default - 1)
   - **TIMEOUT** - HTTP client timeout operation (GGUS Parser)     default - 0 (zero means no timeout)
   - **VERBOSE**     -   Verbosity level  (default - 0)
-     - 0 - no verbosity
+    - 0 - no verbosity
     - 1 - first level of verbosity
     - 2 - second level of verbosity
     - 3 - deep level verbosity
@@ -132,6 +162,8 @@ We are using bash scripts for deploying the alerting services as a linux service
 - [ggus_alert_manage](https://github.com/dmwm/CMSMonitoring/blob/master/scripts/ggus_alert_manage) - This script gives special commands to start/stop the alerting service as a linux service.
 
 You might want to set the PATH variable to the directory where these scripts are residing ie. (<WORK_DIR>/CMSMonitoring/scripts).
+
+```export PATH=<WORK_DIR>/CMSMonitoring/scripts:$PATH```
 
 Run this command to start the GGUS alerting service. Make sure all environment variables are set.
 
@@ -186,9 +218,11 @@ k8s manifest files can be used to deploy the karma dashboard on CERN Kubernetes 
 
 Run the following command to build [alert.go](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/alert.go).
 
-```go build <WORK_DIR>/CMSMonitoring/src/go/MONIT/alert.go```
+```go build -o <WORK_DIR>/bin/alert <WORK_DIR>/CMSMonitoring/src/go/MONIT/alert.go```
 
 where, WORK_DIR is your working directory. So you might want to set the PATH variable to the directory where the binary is going to get build (e.g. <WORK_DIR>/bin).
+
+```export PATH=<WORK_DIR>/bin:$PATH```
 
 ### Config
 
@@ -252,11 +286,19 @@ An example of a config file.
 
 ### Run
 
-You can simple run :-
+You can simply run :-
 
 ```alert```
 
 to get all the alerts currently in the alertmanager. Screenshots for the same [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md#screenshots). However, it has many options to sort over various values, to filter etc. You can follow the help section below.
+
+**FOR LXPLUS USERS**
+You need to generate a config file and set the Environment Variable (CONFIG_PATH). MAKE SURE YOU SET PROPER "cmsmonURL" in config File.
+
+```alert -generateConfig <WORK_DIR>/.alertconfig.json```
+
+```export CONFIG_PATH=<WORK_DIR>/.alertconfig.json```
+
 
 ```
 Usage: alert [options]
@@ -324,7 +366,7 @@ Examples:
 
 Run the following command to build [intelligence.go](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/intelligence.go).
 
-```go build <WORK_DIR>/CMSMonitoring/src/go/MONIT/intelligence.go```
+```go build -o <WORK_DIR>/bin/intelligence <WORK_DIR>/CMSMonitoring/src/go/MONIT/intelligence.go```
 
 where, WORK_DIR is your working directory. So you might want to set the PATH variable to the directory where the binary is going to get build (e.g. <WORK_DIR>/bin).
 
@@ -397,6 +439,7 @@ once you download the alertmanager, untar the compressed file using tar util.
 Follow the following steps to run the Alertmanager in background as a service.
 
 ```$ cd alertmanager-<version>.linux-amd64.tar.gz```
+
 ```$ nohup ./alertmanager --config.file=./alertmanager.yml </dev/null 2>&1 > AM.log &```
 
 ### Project Setup
@@ -411,7 +454,7 @@ Extra Environment Variables other than mentioned above which are required for se
 - X509_USER_CERT= **PATH FOR X509_USER_CERT**
 
 TWO IMPORTANT THINGS TO NOTICE
-- Make sure you have write permission in the directory for logging.
-- Make sure to set your PATH variable to <WORK_DIR>/CMSMonitoring/bin, <WORK_DIR>/CMSMonitoring/scripts, <WORK_DIR>/CMSMonitoring/src/python.
+- Make sure you have write permission in the directory for logging. If you don't have permission, then don't setup anything at $HOME directory. Create a directory at $HOME (eg. $HOME/test) and start setting up there only.
+- Make sure to set your PATH variable to <WORK_DIR>/bin, <WORK_DIR>/CMSMonitoring/scripts.
 
 Now you have Alertmanager & Alerting Services running. You can also run the intelligence module using the doc [here](#intelligence-module).
