@@ -35,6 +35,12 @@ As alerting services run on two basic programs:
 
 ### Build
 
+Clone the CMSMonitoring repo -
+
+```$ git clone https://github.com/dmwm/CMSMonitoring.git```
+
+or git pull
+
 ##### Parser 
 For SSB we use [monit.go](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go).
 Build the monit program by executing the command below.
