@@ -54,7 +54,7 @@ var SuppressedAlertsDataReadWriteLock sync.RWMutex
 
 //DashboardsCache - a cache for storing dashboards and Expiration time for updating the cache
 type DashboardsCache struct {
-	Dashboards models.AllDashboardsFetched
+	Dashboards map[float64]models.AllDashboardsFetched
 	Expiration time.Time
 }
 
@@ -65,7 +65,16 @@ func (dCache *DashboardsCache) UpdateDashboardCache() {
 		return
 	}
 
-	dCache.Dashboards = findDashboards()
+	dCache.Dashboards = make(map[float64]models.AllDashboardsFetched)
+
+	for _, tag := range ConfigJSON.AnnotationDashboard.Tags {
+		tmp := findDashboards(tag)
+
+		for _, each := range tmp {
+			dCache.Dashboards[each.ID] = each
+		}
+	}
+
 	dCache.Expiration = time.Now().Add(ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration * time.Hour)
 }
 
@@ -153,7 +162,7 @@ func ParseConfig(configFile string, verbose int) {
 //findDashboard - helper function to find dashboard info
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L604
-func findDashboards() models.AllDashboardsFetched {
+func findDashboards(tag string) []models.AllDashboardsFetched {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", ConfigJSON.AnnotationDashboard.Token)
 	h := []string{"Authorization", bearer}
@@ -162,9 +171,7 @@ func findDashboards() models.AllDashboardsFetched {
 	headers = append(headers, h)
 	// example: /api/search?query=Production%20Overview&starred=true&tag=prod
 	v := url.Values{}
-	for _, tag := range ConfigJSON.AnnotationDashboard.Tags {
-		v.Set("tag", strings.Trim(tag, " "))
-	}
+	v.Set("tag", strings.Trim(tag, " "))
 	apiURL := fmt.Sprintf("%s%s?%s", ConfigJSON.AnnotationDashboard.URL, ConfigJSON.AnnotationDashboard.DashboardSearchAPI, v.Encode())
 
 	if ConfigJSON.Server.Verbose > 0 {
@@ -200,7 +207,7 @@ func findDashboards() models.AllDashboardsFetched {
 		}
 	}
 	defer resp.Body.Close()
-	var data models.AllDashboardsFetched
+	var data []models.AllDashboardsFetched
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		d, _ := ioutil.ReadAll(resp.Body)

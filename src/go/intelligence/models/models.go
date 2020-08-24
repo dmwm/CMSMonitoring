@@ -48,7 +48,7 @@ type AllSilences struct {
 }
 
 //AllDashboardsFetched is an array of all Dashboards' information having given tags in common
-type AllDashboardsFetched []struct {
+type AllDashboardsFetched struct {
 	ID          float64  `json:"id"`
 	UID         string   `json:"uid"`
 	Title       string   `json:"title"`
@@ -121,11 +121,17 @@ type silence struct {
 	SilenceStatus []string `json:"silenceStatus"` //Labels for status of the silence
 }
 
+//annotations struct for storing specific set of keywords & set of dashboards to annotate when these keywords are matched in alerts.
+type annotationsData struct {
+	Actions []string `json:"actions"`
+	Systems []string `json:"systems"`
+	Tags    []string `json:"tags"`
+}
+
 type annotationMap struct {
-	Label    string   `json:"label"`
-	Actions  []string `json:"actions"`
-	Systems  []string `json:"systems"`
-	URLLabel string   `json:"urlLabel"`
+	Label           string            `json:"label"`
+	AnnotationsData []annotationsData `json:"annotations"`
+	URLLabel        string            `json:"urlLabel"`
 }
 
 //Service data struct

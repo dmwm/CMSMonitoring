@@ -42,37 +42,94 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 			}
 
 			if ifServiceFound {
-				ifActionFound := checkIfAvailable(srv.AnnotationMap.Actions, each, srv.AnnotationMap.Label)
-				ifSystemFound := checkIfAvailable(srv.AnnotationMap.Systems, each, srv.AnnotationMap.Label)
 
-				if ifActionFound && ifSystemFound {
-					for _, dashboard := range utils.DCache.Dashboards {
-						var dashboardData models.GrafanaDashboard
+				for _, annotationData := range srv.AnnotationMap.AnnotationsData {
 
-						dashboardData.DashboardID = dashboard.ID
-						dashboardData.Time = each.StartsAt.Unix() * 1000
-						dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
-						dashboardData.Tags = utils.ConfigJSON.AnnotationDashboard.Tags
-						if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
-							if url, urlOk := each.Annotations[srv.AnnotationMap.URLLabel].(string); urlOk {
-								dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)
-							} else {
-								dashboardData.Text = srv.Name + ": " + val
+					ifActionFound := checkIfAvailable(annotationData.Actions, each, srv.AnnotationMap.Label) //If action keywords match in alerts
+					ifSystemFound := checkIfAvailable(annotationData.Systems, each, srv.AnnotationMap.Label) //If system keywords match in alerts
+
+					if ifActionFound && ifSystemFound {
+
+						for _, dashboard := range utils.DCache.Dashboards {
+
+							/*
+								getTagsIntersection(annotationDashboardTags, allDashboardsTags []string) bool {} is used for finding intersection between two list of strings each having tags for Grafana Dashboards.
+
+								Each service has annotationMap field, and annotationMap has a "annotation" field which is a list of action & system keywords and tags for dashboards.
+								See below in the example.
+
+								"annotationMap": {
+										.
+										.
+										.
+
+										"annotations": [
+											{
+												"actions": ["intervention", "outage"],
+												"systems": ["network", "database", "db"],	---> #
+												"tags": ["cmsweb-play"]
+											},
+
+											{
+												"actions": ["update", "upgrads"],
+												"systems": ["network", "database", "db"],	---> *
+												"tags": ["das"]
+											}
+										],
+
+									}
+
+								However, in config "annotationDashboard" field also consists of "tags" field. It is a list of dashboard tags which the intelligent module tracks for annotating.
+
+										"annotationDashboard": {
+											.
+											.
+											.
+											"tags": ["jobs","das", "cmsweb"]
+										}
+
+								So, when we create a cache for Dashboards data based on these tags (here, "tags": ["jobs","das", "cmsweb"]), all dashboards info are saved.
+								Thus, we need to find intersection between tags of all these dashboards with those passed with specific services (SSB/GGUS).
+
+										Using example above we can say the intersection result would be,
+
+										["cmsweb-play"] ---> #
+										["das"]			---> *
+
+							*/
+
+							ifCommonTagsFound := getTagsIntersection(annotationData.Tags, dashboard.Tags)
+
+							if ifCommonTagsFound == false {
+								continue
 							}
-						}
 
-						dData, err := json.Marshal(dashboardData)
-						if err != nil {
-							log.Printf("Unable to convert the data into JSON %v, error: %v\n", dashboardData, err)
+							var dashboardData models.GrafanaDashboard
+
+							dashboardData.DashboardID = dashboard.ID
+							dashboardData.Time = each.StartsAt.Unix() * 1000
+							dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
+							dashboardData.Tags = annotationData.Tags
+							if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
+								if url, urlOk := each.Annotations[srv.AnnotationMap.URLLabel].(string); urlOk {
+									dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)
+								} else {
+									dashboardData.Text = srv.Name + ": " + val
+								}
+							}
+
+							dData, err := json.Marshal(dashboardData)
+							if err != nil {
+								log.Printf("Unable to convert the data into JSON %v, error: %v\n", dashboardData, err)
+							}
+							if utils.ConfigJSON.Server.Verbose > 0 {
+								log.Printf("Annotation: %v", dashboardData)
+							}
+							addAnnotationHelper(dData)
 						}
-						if utils.ConfigJSON.Server.Verbose > 0 {
-							log.Printf("Annotation: %v", dashboardData)
-						}
-						addAnnotationHelper(dData)
 					}
 				}
 			}
-
 			dataAfterAnnotation <- each
 		}
 	}()
@@ -82,6 +139,26 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 //makeHTMLhref for making url clickable it needs be tagged with html href attribute that's what this function does
 func makeHTMLhref(url string) string {
 	return "<a target=_blank href=" + url + ">URL</a>"
+}
+
+//getTagsIntersection for finding intersection between two list of dashboard tags.
+func getTagsIntersection(annotationDashboardTags, allDashboardsTags []string) bool {
+
+	var intersectionResult []string
+
+	hashMap := make(map[string]bool) //a hashmap which helps to reduce the intersection operation from O(n^2) to O(n).
+
+	for _, val := range allDashboardsTags {
+		hashMap[val] = true
+	}
+
+	for _, each := range annotationDashboardTags {
+		if _, ok := hashMap[each]; ok {
+			intersectionResult = append(intersectionResult, each)
+		}
+	}
+
+	return len(intersectionResult) > 0
 }
 
 //checkIfAvailable - function for finding if particular keyword is available or not in the given field of Alerts
