@@ -44,7 +44,7 @@ LXPLUS USERS PLEASE DO NOT RUN THESE COMMANDS AT HOME DIRECTORY AS YOU DON'T HAV
 
 ### Requirements
 
-You need [Stomp](https://github.com/go-stomp/stomp) package for monit. Get the package using this command.
+You need [Stomp](https://github.com/go-stomp/stomp) package for [monit](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go). Get the package using this command.
 
 ```go get github.com/go-stomp/stomp```
 
@@ -114,7 +114,7 @@ LXPLUS USERS PLEASE DO NOT RUN THESE COMMANDS AT HOME DIRECTORY AS YOU DON'T HAV
 
 ### Requirements
 
-You need [x509proxy](https://github.com/vkuznet/x509proxy) package for monit. Get the package using this command.
+You need [x509proxy](https://github.com/vkuznet/x509proxy) package for [ggus_parser](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/ggus_parser.go). Get the package using this command.
 
 ```go get github.com/vkuznet/x509proxy```
 
@@ -286,8 +286,8 @@ You can simply run :-
 
 to get all the alerts currently in the alertmanager. Screenshots for the same [here](https://github.com/dmwm/CMSMonitoring/blob/master/doc/AlertManagement/README.md#screenshots). However, it has many options to sort over various values, to filter etc. You can follow the help section below.
 
-FOR LXPLUS USERS
-You can generate a config file using and set the Environment Variable (CONFIG_PATH)
+**FOR LXPLUS USERS**
+You need to generate a config file and set the Environment Variable (CONFIG_PATH). MAKE SURE YOU SET PROPER "cmsmonURL" in config File.
 
 ```alert -generateConfig <WORK_DIR>/.alertconfig.json```
 
@@ -433,6 +433,7 @@ once you download the alertmanager, untar the compressed file using tar util.
 Follow the following steps to run the Alertmanager in background as a service.
 
 ```$ cd alertmanager-<version>.linux-amd64.tar.gz```
+
 ```$ nohup ./alertmanager --config.file=./alertmanager.yml </dev/null 2>&1 > AM.log &```
 
 ### Project Setup
@@ -447,7 +448,7 @@ Extra Environment Variables other than mentioned above which are required for se
 - X509_USER_CERT= **PATH FOR X509_USER_CERT**
 
 TWO IMPORTANT THINGS TO NOTICE
-- Make sure you have write permission in the directory for logging.
-- Make sure to set your PATH variable to <WORK_DIR>/CMSMonitoring/bin, <WORK_DIR>/CMSMonitoring/scripts, <WORK_DIR>/CMSMonitoring/src/python.
+- Make sure you have write permission in the directory for logging. If you don't have permission, then don't setup anything at $HOME directory. Create a directory at $HOME (eg. $HOME/test) and start setting up there only.
+- Make sure to set your PATH variable to <WORK_DIR>/bin, <WORK_DIR>/CMSMonitoring/scripts.
 
 Now you have Alertmanager & Alerting Services running. You can also run the intelligence module using the doc [here](#intelligence-module).
