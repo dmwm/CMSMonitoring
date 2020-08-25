@@ -103,6 +103,7 @@ type annotationDashboard struct {
 	Tags                      []string      `json:"tags"`                      //Tags for the dashboards
 	Token                     string        `json:"token"`                     //Admin's Token required for sending requests
 	DashboardsCacheExpiration time.Duration `json:"dashboardsCacheExpiration"` //Dashboard Cache Expiration in terms of hour(s)
+	IntelligenceModuleTag     string        `json:"intelligenceModuleTag"`     //Tag attached to annotations which reflects it is made by the intelligence module (eg. "cmsmon-int")
 }
 
 //alert data struct
