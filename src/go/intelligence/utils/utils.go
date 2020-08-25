@@ -113,6 +113,7 @@ func ParseConfig(configFile string, verbose int) {
 	ConfigJSON.AnnotationDashboard.DashboardSearchAPI = "/api/search"
 	ConfigJSON.AnnotationDashboard.AnnotationAPI = "/api/annotations"
 	ConfigJSON.AnnotationDashboard.DashboardsCacheExpiration = 1
+	ConfigJSON.AnnotationDashboard.IntelligenceModuleTag = "cmsmon-int"
 
 	ConfigJSON.Alerts.UniqueLabel = "alertname"
 	ConfigJSON.Alerts.SeverityLabel = "severity"

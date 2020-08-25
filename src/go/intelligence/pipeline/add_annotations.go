@@ -110,10 +110,25 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 							var dashboardData models.GrafanaDashboard
 
+							/*Custom tags which consists of intelligence module tag, unique identifier for an alert,
+							and tags of all those dashboards where the alert has been annotated.
+							*/
+							var customTags []string
+
+							customTags = append(customTags, utils.ConfigJSON.AnnotationDashboard.IntelligenceModuleTag) //intelligence module tag (eg. "cmsmon-int")
+
+							if val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel].(string); ok {
+								customTags = append(customTags, val) //Unique identifier for an alert (eg. ssbNumber for SSB alerts, TicketID for GGUS alerts etc.)
+							}
+
+							for _, eachTag := range annotationData.Tags {
+								customTags = append(customTags, eachTag) //Appending all tags of the dashboard where the alert is going to get annotated.
+							}
+
 							dashboardData.DashboardID = dashboard.ID
 							dashboardData.Time = each.StartsAt.Unix() * 1000
 							dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
-							dashboardData.Tags = annotationData.Tags
+							dashboardData.Tags = customTags
 							if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
 								if url, urlOk := each.Annotations[srv.AnnotationMap.URLLabel].(string); urlOk {
 									dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)

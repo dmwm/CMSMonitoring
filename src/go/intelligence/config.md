@@ -76,9 +76,10 @@ Contains all the values required for annotation of Grafana Dashboards.
 - **url** - Grafana Dashboard base URL.
 - **dashboardSearchAPI** - Grafana API endpoint for searching dashboards with given list of tags.
 - **annotationAPI** - Grafana API endpoint for creating annotations.
-- **\* tags** - List of tags for the dashboards where to create annotations.
+- **\* tags** - List of all tags for the dashboards required for annotations (all possible values required for each services and set of keywords) so that we can maintain a Parent Cache for the dashboards' data.
 - **\* token**- Grafana Proxy Token, required for creating a annotation request.
 - **dashboardsCacheExpiration** - Dashboard Cache Expiration (in hours). Intelligence module runs infinitely as a service in background. To increase it's latency and make less request to Grafana dashboards, a cache is maintained which contains all dashboards value and upon expiration the cache gets updated.
+- **intelligenceModuleTag** - Tag attached to annotations which reflects it is created by the intelligence module.
 
 **Fields with * mark are required.**
 
@@ -88,6 +89,7 @@ Contains all the values required for annotation of Grafana Dashboards.
 - **dashboardSearchAPI** - /api/search
 - **annotationAPI** - /api/annotations
 - **dashboardsCacheExpiration** - 1
+- **intelligenceModuleTag** - cmsmon-int
 
 # Alerts
 
@@ -129,8 +131,10 @@ Contains all the values required for annotation of Grafana Dashboards.
 - **severityMap** - Map for severity levels for a service.
 - **annotationMap** - Map for Dashboard annotations' keywords.
     - **# label** - Field in which the intelligence module tries to match keywords for the following actions and systems.
-    - **actions** - List of actions (eg. outage, maintenance, intervention)
-    - **systems** - List of services which are involved (eg. Network, Database, rucio etc.)
+    - **annotations** - Array of information about annotations i.e. A specific set of keywords & set of dashboards to annotate when the keywords are matched in alerts.
+      - **actions** - List of actions (eg. outage, maintenance, intervention)
+      - **systems** - List of services which are involved (eg. Network, Database, rucio etc.)
+      - **tags** - List of tags for the dashboards where to create annotations based on specific set of keywords and service (SSB, GGUS etc.)
     - **urlLabel** - Label for searching URL from the alerts and putting the found URL into text while annotating the dashboards.
 
 **Fields with * mark are required. Fields with # mark should not be changed unless there's any change in the codebase for the same.**
@@ -170,7 +174,7 @@ YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
     "url": "https://monit-grafana.cern.ch",
     "dashboardSearchAPI": "/api/search",
     "annotationAPI": "/api/annotations",
-    * "tags": ["cmsweb-play"],
+    * "tags": ["cmsweb", "jobs", "prod"],
     * "token": "",
     "dashboardsCacheExpiration": 1
   },
@@ -213,9 +217,20 @@ YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
         "down": "urgent"
       },
       "annotationMap": {
-        # "label": "shortDescription",              #DO NOT CHANGE IT, UNIQUE FOR SSB
-        "actions": ["intervention"],
-        "systems": ["network", "database", "db"],
+        "label": "shortDescription",               #DO NOT CHANGE IT, UNIQUE FOR SSB
+        "annotations": [
+          {
+            "actions": ["intervention", "outage"],
+            "systems": ["network", "database", "db"],
+            "tags": ["cmsweb", "prod"]
+          },
+
+          {
+            "actions": ["update", "upgrade"],
+            "systems": ["network", "database", "db"],
+            "tags": ["jobs"]
+          }
+        ],
         "urlLabel": "URL"
       }
     },
@@ -229,10 +244,15 @@ YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
         "urgent": "high",
         "very urgent": "urgent"
       },
-      "annotationMap": {
-        # "label": "Subject",              #DO NOT CHANGE IT, UNIQUE FOR GGUS
-        "actions": ["down", "failure", "outage"],
-        "systems": ["network", "rucio"],
+       "annotationMap": {
+        "label": "Subject",                       #DO NOT CHANGE IT, UNIQUE FOR GGUS
+        "annotations": [
+          {
+            "actions": ["transfer", "outage"],
+            "systems": ["rucio"],
+            "tags": ["prod"]
+          }
+        ],
         "urlLabel": "URL"
       }
     }

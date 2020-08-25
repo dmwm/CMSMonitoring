@@ -24,7 +24,8 @@
     "annotationAPI" : "/api/annotations",
     "tags" : ["cmsweb-play","cmsweb-play2"],
     "token" : "<YOUR-GRAFANA-PROXY-TOKEN>",
-    "dashboardsCacheExpiration" : 1 
+    "dashboardsCacheExpiration" : 1,
+    "intelligenceModuleTag" : "cmsmon-int"
   },
 
   "alerts": {
