@@ -174,7 +174,7 @@ YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
     "url": "https://monit-grafana.cern.ch",
     "dashboardSearchAPI": "/api/search",
     "annotationAPI": "/api/annotations",
-    * "tags": ["cmsweb", "das", "jobs", "prod"],
+    * "tags": ["cmsweb", "jobs", "prod"],
     * "token": "",
     "dashboardsCacheExpiration": 1
   },
@@ -222,7 +222,7 @@ YOU ARE FREE TO SET VALUES FOR NEW SERVICES THOUGH.
           {
             "actions": ["intervention", "outage"],
             "systems": ["network", "database", "db"],
-            "tags": ["cmsweb", "das"]
+            "tags": ["cmsweb", "prod"]
           },
 
           {
