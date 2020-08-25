@@ -48,29 +48,29 @@ type AllSilences struct {
 }
 
 //AllDashboardsFetched is an array of all Dashboards' information having given tags in common
-type AllDashboardsFetched []struct {
-	ID          float64  `json:"id"`
-	UID         string   `json:"uid"`
-	Title       string   `json:"title"`
-	URI         string   `json:"uri"`
-	URL         string   `json:"url"`
-	Slug        string   `json:"slug"`
-	Type        string   `json:"type"`
-	Tags        []string `json:"tags"`
-	IsStarred   bool     `json:"isStarred"`
-	FolderID    float64  `json:"folderId"`
-	FolderUID   string   `json:"folderUid"`
-	FolderTitle string   `json:"folderTitle"`
-	FolderURL   string   `json:"folderUrl"`
+type AllDashboardsFetched struct {
+	ID          float64  `json:"id"`          //ID for the dashboard
+	UID         string   `json:"uid"`         //UID for the dashboard
+	Title       string   `json:"title"`       //Title for the dashboard
+	URI         string   `json:"uri"`         //URI of the dashboard
+	URL         string   `json:"url"`         //URL of the dashboard
+	Slug        string   `json:"slug"`        //Slug of the dashboard
+	Type        string   `json:"type"`        //Type of the dashboard
+	Tags        []string `json:"tags"`        //All tags for the dashboard	(eg. prod, jobs, cmsweb etc.)
+	IsStarred   bool     `json:"isStarred"`   //if dashboard is starred
+	FolderID    float64  `json:"folderId"`    //ID for the folder
+	FolderUID   string   `json:"folderUid"`   //UID for the folder
+	FolderTitle string   `json:"folderTitle"` //Title of the folder
+	FolderURL   string   `json:"folderUrl"`   //URL of the folder
 }
 
 //GrafanaDashboard data struct for storing Annotation's information to each dashboard
 type GrafanaDashboard struct {
-	DashboardID float64  `json:"dashboardId"`
-	Time        int64    `json:"time"`
-	TimeEnd     int64    `json:"timeEnd"`
-	Tags        []string `json:"tags"`
-	Text        string   `json:"text"`
+	DashboardID float64  `json:"dashboardId"` // ID of a dashboard
+	Time        int64    `json:"time"`        //Start Time of the annotation
+	TimeEnd     int64    `json:"timeEnd"`     //End Time of the annotation
+	Tags        []string `json:"tags"`        //Dashboard tags to be annotated (eg. prod, jobs, cmsweb etc.)
+	Text        string   `json:"text"`        //Annotation Text Field
 }
 
 //TestingData data struct
@@ -121,11 +121,17 @@ type silence struct {
 	SilenceStatus []string `json:"silenceStatus"` //Labels for status of the silence
 }
 
+//annotations struct for storing specific set of keywords & set of dashboards to annotate when these keywords are matched in alerts.
+type annotationsData struct {
+	Actions []string `json:"actions"` //A set of keywords of actions taken (eg. outage, intervention, update, upgrade, down etc.)
+	Systems []string `json:"systems"` //A set of keywords of systems affected (eg. network, database, rucio etc.)
+	Tags    []string `json:"tags"`    //A list of tags of dashboards in Grafana
+}
+
 type annotationMap struct {
-	Label    string   `json:"label"`
-	Actions  []string `json:"actions"`
-	Systems  []string `json:"systems"`
-	URLLabel string   `json:"urlLabel"`
+	Label           string            `json:"label"`       //Unique field of the alert Data where descriptive information about it is given so that keywords are matched in here (eg. for SSB --> "shortDescription", for GGUS --> "Subject" etc.)
+	AnnotationsData []annotationsData `json:"annotations"` //annotationsData struct
+	URLLabel        string            `json:"urlLabel"`    //Field which identifies URL in the alert data (eg. "URL" has been set for both GGUS & SSB).
 }
 
 //Service data struct

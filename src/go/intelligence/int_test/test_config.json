@@ -22,7 +22,7 @@
     "url" : "https://monit-grafana.cern.ch",
     "dashboardSearchAPI" : "/api/search",
     "annotationAPI" : "/api/annotations",
-    "tags" : ["cmsweb-play"],
+    "tags" : ["cmsweb-play","cmsweb-play2"],
     "token" : "<YOUR-GRAFANA-PROXY-TOKEN>",
     "dashboardsCacheExpiration" : 1 
   },
@@ -66,8 +66,19 @@
       },
       "annotationMap": {
         "label": "shortDescription",
-        "actions": ["intervention", "outage"],
-        "systems": ["network", "database", "db"],
+        "annotations": [
+          {
+            "actions": ["intervention", "outage"],
+            "systems": ["network", "database", "db"],
+            "tags": ["cmsweb-play"]
+          },
+
+          {
+            "actions": ["update", "upgrade"],
+            "systems": ["network", "database", "db"],
+            "tags": ["cmsweb-play2"]
+          }
+        ],
         "urlLabel": "URL"
       }
     },
@@ -83,8 +94,13 @@
       },
       "annotationMap": {
         "label": "Subject",
-        "actions": ["transfers", "outage"],
-        "systems": ["rucio"],
+        "annotations": [
+          {
+            "actions": ["transfer", "outage"],
+            "systems": ["rucio"],
+            "tags": ["cmsweb-play2"]
+          }
+        ],
         "urlLabel": "URL"
       }
     }
