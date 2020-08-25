@@ -53,7 +53,12 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 						for _, dashboard := range utils.DCache.Dashboards {
 
 							/*
-								getTagsIntersection(annotationDashboardTags, allDashboardsTags []string) bool {} is used for finding intersection between two list of strings each having tags for Grafana Dashboards.
+								ifTagsIntersect(annotationDashboardTags, allDashboardsTags []string) bool {..} is used for checking if there's intersection between two list of strings each having tags for Grafana Dashboards.
+
+								Check is done by finding the length of intersection result.
+
+								If it is greater than 0 --> Means there are some tags after intersection.
+								Else --> there are no tags after intersection
 
 								Each service has annotationMap field, and annotationMap has a "annotation" field which is a list of action & system keywords and tags for dashboards.
 								See below in the example.
@@ -93,12 +98,11 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 										Using example above we can say the intersection result would be,
 
-										["cmsweb-play"] ---> #
-										["das"]			---> *
-
+										["cmsweb-play"] ---> #	since len(["cmsweb-play"]) > 0 returns true
+										["das"]			---> *	since len(["cmsweb-play"]) > 0 returns true
 							*/
 
-							ifCommonTagsFound := getTagsIntersection(annotationData.Tags, dashboard.Tags)
+							ifCommonTagsFound := ifTagsIntersect(annotationData.Tags, dashboard.Tags)
 
 							if ifCommonTagsFound == false {
 								continue
@@ -141,8 +145,8 @@ func makeHTMLhref(url string) string {
 	return "<a target=_blank href=" + url + ">URL</a>"
 }
 
-//getTagsIntersection for finding intersection between two list of dashboard tags.
-func getTagsIntersection(annotationDashboardTags, allDashboardsTags []string) bool {
+//ifTagsIntersect for checking intersection between two list of dashboard tags.
+func ifTagsIntersect(annotationDashboardTags, allDashboardsTags []string) bool {
 
 	var intersectionResult []string
 
