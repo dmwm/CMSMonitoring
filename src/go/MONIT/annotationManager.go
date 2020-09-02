@@ -496,7 +496,6 @@ func addAnnotation(data []byte) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Unable to read JSON Data from Grafana Annotation POST API, error: %v\n", err)
-		return err
 	}
 
 	if configJSON.Verbose > 1 {
