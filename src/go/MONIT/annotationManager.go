@@ -493,7 +493,12 @@ func addAnnotation(data []byte) {
 		}
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Unable to read JSON Data from Grafana Annotation POST API, error: %v\n", err)
+		return err
+	}
+
 	if configJSON.Verbose > 1 {
 		log.Println("response Status:", resp.Status)
 		log.Println("response Headers:", resp.Header)
@@ -594,7 +599,11 @@ func updateAnnotationHelper(annotationID int, data []byte) error {
 	}
 
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Unable to read JSON Data from Grafana Annotation PUT API, error: %v\n", err)
+		return err
+	}
 
 	if configJSON.Verbose > 1 {
 		log.Println("response Status:", resp.Status)
