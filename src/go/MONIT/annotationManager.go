@@ -495,7 +495,7 @@ func addAnnotation(data []byte) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Unable to read JSON Data from Grafana Annotation POST API, error: %v\n", err)
+		log.Fatalf("Unable to read JSON Data from Grafana Annotation POST API, error: %v\n", err)
 	}
 
 	if configJSON.Verbose > 1 {
@@ -548,7 +548,7 @@ func createAnnotation() {
 }
 
 // helper function for updating an annotation which makes PUT request
-func updateAnnotationHelper(annotationID int, data []byte) error {
+func updateAnnotationHelper(annotationID int, data []byte) {
 
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", configJSON.Token)
@@ -565,8 +565,7 @@ func updateAnnotationHelper(annotationID int, data []byte) error {
 	}
 	req, err := http.NewRequest("PUT", apiurl, bytes.NewBuffer(data))
 	if err != nil {
-		log.Printf("Unable to make request to %s, error: %s", apiurl, err)
-		return err
+		log.Fatalf("Unable to make request to %s, error: %s", apiurl, err)
 	}
 	for _, v := range headers {
 		if len(v) == 2 {
@@ -583,8 +582,7 @@ func updateAnnotationHelper(annotationID int, data []byte) error {
 	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Unable to get response from %s, error: %s", apiurl, err)
-		return err
+		log.Fatalf("Unable to get response from %s, error: %s", apiurl, err)
 	}
 	if configJSON.Verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
@@ -594,14 +592,13 @@ func updateAnnotationHelper(annotationID int, data []byte) error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("HTTP Respose error, code: %d", resp.StatusCode)
+		log.Fatalf("HTTP Respose error, code: %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Unable to read JSON Data from Grafana Annotation PUT API, error: %v\n", err)
-		return err
+		log.Fatalf("Unable to read JSON Data from Grafana Annotation PUT API, error: %v\n", err)
 	}
 
 	if configJSON.Verbose > 1 {
@@ -609,8 +606,6 @@ func updateAnnotationHelper(annotationID int, data []byte) error {
 		log.Println("response Headers:", resp.Header)
 		log.Println("response Body:", string(body))
 	}
-
-	return nil
 }
 
 // function which contains the logic of updating an annotation
@@ -638,10 +633,7 @@ func updateAnnotation() {
 		log.Fatalf("Unable to parse Data for Updation, update failed !, error: %v", err)
 	}
 
-	err = updateAnnotationHelper(annotationID, data)
-	if err != nil {
-		log.Fatalf("Unable to update!, error: %v", err)
-	}
+	updateAnnotationHelper(annotationID, data)
 
 	log.Printf("Annotation with id:%d has been updated successfully!\n", annotationID)
 
