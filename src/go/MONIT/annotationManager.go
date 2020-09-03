@@ -8,7 +8,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -91,7 +90,7 @@ type config struct {
 // -------STRUCTS---------
 
 // function for get request grafana annotations endpoint for fetching annotations.
-func getAnnotations(data *[]annotationData, tags []string) error {
+func getAnnotations(data *[]annotationData, tags []string) {
 
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", configJSON.Token)
@@ -125,8 +124,7 @@ func getAnnotations(data *[]annotationData, tags []string) error {
 	}
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		log.Printf("Unable to make request to %s, error: %s", apiURL, err)
-		return err
+		log.Fatalf("Unable to make request to %s, error: %s", apiURL, err)
 	}
 	for _, v := range headers {
 		if len(v) == 2 {
@@ -147,15 +145,14 @@ func getAnnotations(data *[]annotationData, tags []string) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		log.Fatalf("Response Error, error: %v\n", err)
 	}
 	defer resp.Body.Close()
 
 	byteValue, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Printf("Unable to read JSON Data from Grafana Annotation GET API, error: %v\n", err)
-		return err
+		log.Fatalf("Unable to read JSON Data from Grafana Annotation GET API, error: %v\n", err)
 	}
 
 	err = json.Unmarshal(byteValue, &data)
@@ -164,7 +161,6 @@ func getAnnotations(data *[]annotationData, tags []string) error {
 			log.Println(string(byteValue))
 		}
 		log.Fatalf("Unable to parse JSON Data from Grafana Annotation GET API, error: %v\n", err)
-		return err
 	}
 
 	if configJSON.Verbose > 1 {
@@ -173,19 +169,16 @@ func getAnnotations(data *[]annotationData, tags []string) error {
 			log.Println("Response: ", string(dump))
 		}
 	}
-
-	return nil
 }
 
 // function for delete request on grafana annotations endpoint for deleting an annotation.
-func deleteAnnotationHelper(annotationID int) error {
+func deleteAnnotationHelper(annotationID int) {
 
 	apiurl := fmt.Sprintf("%s%s%d", configJSON.GrafanaBaseURL, configJSON.DeleteAnnotationAPI, annotationID)
 
 	req, err := http.NewRequest("DELETE", apiurl, nil)
 	if err != nil {
-		log.Printf("Request Error, error: %v\n", err)
-		return err
+		log.Fatalf("Request Error, error: %v\n", err)
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", configJSON.Token))
@@ -204,12 +197,10 @@ func deleteAnnotationHelper(annotationID int) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("Response Error, error: %v\n", err)
-		return err
+		log.Fatalf("Response Error, error: %v\n", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
-		return errors.New("Http Response Code Error")
+		log.Fatalf("Http Response Code Error, status code: %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
@@ -220,7 +211,6 @@ func deleteAnnotationHelper(annotationID int) error {
 			log.Println("Response: ", string(dump))
 		}
 	}
-	return nil
 }
 
 //
@@ -374,10 +364,7 @@ func tabulate(data []annotationData) {
 func listAnnotation() []annotationData {
 	var aData []annotationData
 	tagList := parseTags(tags)
-	err := getAnnotations(&aData, tagList)
-	if err != nil {
-		log.Fatalf("Unable to fetch annotations, error :%v", err)
-	}
+	getAnnotations(&aData, tagList)
 
 	if len(aData) == 0 {
 		log.Printf("NO ANNOTATION FOUND\n")
@@ -644,12 +631,8 @@ func updateAnnotation() {
 
 // function which contains the logic of deleting an annotation
 func deleteOneAnnotation() {
-	err := deleteAnnotationHelper(annotationID)
-	if err != nil {
-		log.Fatalf("Unable to delete the annotation with ID %d, error :%v", annotationID, err)
-	} else {
-		log.Printf("Annotation with id: %d has been deleted successfully !", annotationID)
-	}
+	deleteAnnotationHelper(annotationID)
+	log.Printf("Annotation with id: %d has been deleted successfully !\n", annotationID)
 }
 
 // function which contains the logic of deleting multiple annotations
@@ -659,13 +642,7 @@ func deleteAllAnnotations() {
 	if aData != nil {
 		log.Printf("DELETING ALL OF THE ALERTS SHOWN ABOVE!!\n")
 		for _, each := range aData {
-			err := deleteAnnotationHelper(each.ID)
-			if err != nil {
-				if configJSON.Verbose > 1 {
-					log.Printf("Annotation Data: %v", each)
-				}
-				log.Fatalf("Unable to delete the annotation, error :%v", err)
-			}
+			deleteAnnotationHelper(each.ID)
 			if configJSON.Verbose > 2 {
 				log.Printf("Annotation Deleted for:\n%+v\n", each)
 			}
@@ -673,7 +650,7 @@ func deleteAllAnnotations() {
 		}
 		log.Printf("Successfully Deleted %d annotations!!\n", noOfDeletedAnnotation)
 	} else {
-		log.Printf("Unable to delete with null data!\n")
+		log.Fatalf("Unable to delete with null data!\n")
 	}
 }
 
@@ -812,12 +789,12 @@ func parseTimes(ifCreatingAnnotation bool) []int64 {
 
 		startTime, err := time.Parse(time.RFC3339, tms[0])
 		if err != nil {
-			log.Printf("Unable to parse time, error: %s", err)
+			log.Fatalf("Unable to parse time, error: %s", err)
 		}
 
 		endTime, err := time.Parse(time.RFC3339, tms[1])
 		if err != nil {
-			log.Printf("Unable to parse time, error: %s", err)
+			log.Fatalf("Unable to parse time, error: %s", err)
 		}
 
 		times = append(times, startTime.Unix()*int64(milliSec))
