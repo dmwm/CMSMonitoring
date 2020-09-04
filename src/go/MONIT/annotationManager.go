@@ -41,7 +41,7 @@ var annotation string
 var annotationID int
 
 // limit for fetching number of annotations at a time
-var grafanaLimit string
+var grafanaLimit int
 
 // tags list seperated by comma
 var tags string
@@ -120,9 +120,11 @@ func getAnnotations(data *[]annotationData, tags []string) {
 		v.Add("tags", strings.Trim(tag, " "))
 	}
 
-	v.Add("limit", strings.Trim(grafanaLimit, " "))
+	v.Add("limit", fmt.Sprintf("%d", grafanaLimit))
 
 	apiURL := fmt.Sprintf("%s%s?%s", configJSON.GrafanaBaseURL, configJSON.ListAnnotationsAPI, v.Encode())
+
+	fmt.Println(apiURL)
 
 	if configJSON.Verbose > 0 {
 		log.Println(apiURL)
@@ -865,7 +867,7 @@ func parseTimes(ifCreatingAnnotation bool) []int64 {
 func main() {
 
 	flag.StringVar(&annotation, "annotation", "", "Annotation text")
-	flag.StringVar(&grafanaLimit, "grafana-limit", "100", "Limit for fetching number of annotations at a time.")
+	flag.IntVar(&grafanaLimit, "grafana-limit", 100, "Limit for fetching number of annotations at a time.")
 	flag.StringVar(&token, "token", "", "Authentication token to use (Optional-can be stored in config file)")
 	flag.StringVar(&tags, "tags", "", "List of tags seperated by comma")
 	flag.StringVar(&action, "action", "", "Action to be performed. [list, create, delete, deleteall, update] Default: list")
