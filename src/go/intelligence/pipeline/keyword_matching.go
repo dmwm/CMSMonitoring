@@ -10,6 +10,8 @@ import (
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
+// Code is based on
+// https://towardsdatascience.com/concurrent-data-pipelines-in-golang-85b18c2eecc2
 
 //KeywordMatching - function finds defined keywords in the shortDescription of alerts and assign severity level accordingly
 func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
