@@ -124,8 +124,6 @@ func getAnnotations(data *[]annotationData, tags []string) {
 
 	apiURL := fmt.Sprintf("%s%s?%s", configJSON.GrafanaBaseURL, configJSON.ListAnnotationsAPI, v.Encode())
 
-	fmt.Println(apiURL)
-
 	if configJSON.Verbose > 0 {
 		log.Println(apiURL)
 	}
