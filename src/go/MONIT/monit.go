@@ -848,8 +848,12 @@ func main() {
 	dbID := dbid
 	var database, dbtype string
 	if strings.Contains(q, "stats") {
-		dbid = 0
-		url = fmt.Sprintf("%s/api/datasources/proxy/monit_prod_cms/_stats/store", url)
+		// per our discussion with MONIT team
+		// https://cern.service-now.com/service-portal?id=ticket&table=u_request_fulfillment&n=RQF1647972
+		// we only need to use some dbid for _stats ES API, here I use
+		// 9573, the id of monit_prod_cms-es-size_raw_elasticsearch collection
+		dbid = 9573
+		url = fmt.Sprintf("%s/api/datasources/proxy/%d/_stats/store", url, dbid)
 	} else {
 		if dbname == "" && url == defaultUrl {
 			log.Fatalf("Please provide valid dbname")
