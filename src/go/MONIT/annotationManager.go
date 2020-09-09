@@ -40,6 +40,9 @@ var annotation string
 // annotation ID for deleting single annotation
 var annotationID int
 
+// limit for fetching number of annotations at a time
+var grafanaLimit int
+
 // tags list seperated by comma
 var tags string
 
@@ -116,6 +119,8 @@ func getAnnotations(data *[]annotationData, tags []string) {
 	for _, tag := range tags {
 		v.Add("tags", strings.Trim(tag, " "))
 	}
+
+	v.Add("limit", fmt.Sprintf("%d", grafanaLimit))
 
 	apiURL := fmt.Sprintf("%s%s?%s", configJSON.GrafanaBaseURL, configJSON.ListAnnotationsAPI, v.Encode())
 
@@ -755,8 +760,18 @@ func parseConfig(verbose int) {
 
 	// if we were given the token we will use it
 	if token != "" {
-		configJSON.Token = token
+
+		if _, err := os.Stat(token); err == nil {
+			tokenData, ioErr := ioutil.ReadFile(token)
+			if ioErr != nil {
+				log.Fatalf("Unable to read token file: %s, error: %v\n", token, ioErr)
+			}
+			configJSON.Token = string(tokenData)
+		} else {
+			configJSON.Token = token
+		}
 	}
+
 	if configJSON.Verbose > 1 {
 		log.Printf("Configuration:\n%+v\n", configJSON)
 	}
@@ -850,6 +865,7 @@ func parseTimes(ifCreatingAnnotation bool) []int64 {
 func main() {
 
 	flag.StringVar(&annotation, "annotation", "", "Annotation text")
+	flag.IntVar(&grafanaLimit, "grafana-limit", 100, "Limit for fetching number of annotations at a time.")
 	flag.StringVar(&token, "token", "", "Authentication token to use (Optional-can be stored in config file)")
 	flag.StringVar(&tags, "tags", "", "List of tags seperated by comma")
 	flag.StringVar(&action, "action", "", "Action to be performed. [list, create, delete, deleteall, update] Default: list")
