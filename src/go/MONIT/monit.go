@@ -584,7 +584,7 @@ func parseTimes(trange string) []int64 {
 				offset = 60 * 60
 			} else if strings.HasSuffix(v, "d") || strings.HasSuffix(v, "day") || strings.HasSuffix(v, "days") {
 				value = strings.Split(v, "d")[0]
-				offset = 60 * 60 * 60
+				offset = 60 * 60 * 24
 			} else {
 				log.Fatalf("Unable to parse given time value: %v\n", v)
 			}
@@ -612,7 +612,7 @@ func findDashboard(base, token, itags string, verbose int) []map[string]interfac
 	// example: /api/search?query=Production%20Overview&starred=true&tag=prod
 	v := url.Values{}
 	for _, tag := range tags {
-		v.Set("tag", strings.Trim(tag, " "))
+		v.Add("tag", strings.Trim(tag, " "))
 	}
 	rurl := fmt.Sprintf("%s/api/search?%s", base, v.Encode())
 	if verbose > 0 {
@@ -693,7 +693,13 @@ func addAnnotation(base, token string, data []byte, verbose int) {
 			log.Println("response:", string(dump))
 		}
 	}
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Unable to read JSON Data POST API, error: %v\n", err)
+	}
+
+	defer resp.Body.Close()
+
 	log.Println("response Status:", resp.Status)
 	log.Println("response Headers:", resp.Header)
 	log.Println("response Body:", string(body))
