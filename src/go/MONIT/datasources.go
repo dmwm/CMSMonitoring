@@ -17,20 +17,17 @@ import (
 	"strings"
 )
 
-// Record represent a MONIT record
-// {"id":9668,"orgId":11,"name":"__test_es_condor","type":"elasticsearch","typeLogoUrl":"public/app/plugins/datasource/elasticsearch/img/elasticsearch.svg","access":"proxy","url":"https://es-monit-st.cern.ch:9203","password":"","user":"","database":"[monit_prod_condor_raw_metric*]","basicAuth":true,"isDefault":false,"jsonData":{"esVersion":70,"interval":"Daily","logLevelField":"","logMessageField":"","maxConcurrentShardRequests":"","timeField":"data.RecordTime"},"readOnly":false}
-type Record struct {
-	Name     string `json:"name"`
+// MonitRecord represents record we write out
+type MonitRecord struct {
 	Id       int    `json:"id"`
 	Type     string `json:"type"`
 	Database string `json:"database"`
 }
 
-// OutRecord represents record we write out
-type OutRecord struct {
-	Id       int    `json:"id"`
-	Type     string `json:"type"`
-	Database string `json:"database"`
+// DSRecord represent a MONIT record
+type DSRecord struct {
+	Name string `json:"name"`
+	MonitRecord
 }
 
 // helper function to get token
@@ -46,7 +43,7 @@ func getToken(r string) string {
 }
 
 // helper function to get datasources
-func datasources(rurl, t string, verbose int) {
+func datasources(rurl, t string, verbose int) map[string]MonitRecord {
 	uri := fmt.Sprintf("%s/api/datasources", rurl)
 	req, err := http.NewRequest("GET", uri, nil)
 	token := getToken(t)
@@ -70,22 +67,18 @@ func datasources(rurl, t string, verbose int) {
 			log.Println("response:", string(dump))
 		}
 	}
-	var records []Record
+	var records []DSRecord
 	defer resp.Body.Close()
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&records); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
-	orec := make(map[string]OutRecord)
+	orec := make(map[string]MonitRecord)
 	for _, r := range records {
-		o := OutRecord{Id: r.Id, Type: r.Type, Database: r.Database}
+		o := MonitRecord{Id: r.Id, Type: r.Type, Database: r.Database}
 		orec[r.Name] = o
 	}
-	data, err := json.MarshalIndent(orec, "", "\t")
-	if err != nil {
-		log.Fatalf("unable to marshal data, error %v\n", err)
-	}
-	fmt.Println(string(data))
+	return orec
 }
 
 func main() {
@@ -96,5 +89,10 @@ func main() {
 	var token string
 	flag.StringVar(&token, "token", "", "Token or token file")
 	flag.Parse()
-	datasources(rurl, token, verbose)
+	rec := datasources(rurl, token, verbose)
+	data, err := json.MarshalIndent(rec, "", "\t")
+	if err != nil {
+		log.Fatalf("unable to marshal data, error %v\n", err)
+	}
+	fmt.Println(string(data))
 }
