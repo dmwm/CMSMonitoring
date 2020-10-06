@@ -28,11 +28,16 @@ import (
 // Record represents MONIT return record {"response":...}
 type Record map[string]interface{}
 
-// DSRecord represents map of Record's
-type DSRecord map[string]Record
+// DSRecord represents record we write out
+type DSRecord struct {
+	Id       int    `json:"id"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Database string `json:"database"`
+}
 
-// DataSources keeps global map of MONIT datasources
-var DataSources DSRecord
+// DataSources provides list of MONIT datasources
+var DataSources []DSRecord
 
 // StompConfig represents stomp configuration. The configuration should contains
 // either Login/Password or Key/Cert pair
@@ -64,39 +69,48 @@ func read(r string) string {
 }
 
 // return CMS Monitoring datasources
-func datasources() (DSRecord, error) {
-	rurl := "https://raw.githubusercontent.com/dmwm/CMSMonitoring/master/static/datasources.json"
-	resp, err := http.Get(rurl)
-	if err != nil {
-		log.Printf("Unable to fetch datasources from %s, error %v\n", rurl, err)
-		return nil, err
+func datasources(rurl, t string, verbose int) []DSRecord {
+	uri := fmt.Sprintf("%s/api/datasources", rurl)
+	req, err := http.NewRequest("GET", uri, nil)
+	token := read(t)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Content-type", "application/x-ndjson")
+	req.Header.Set("Accept", "application/json")
+	if verbose > 0 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("request: ", string(dump))
+		}
 	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Unable to get response from %s, error: %s", rurl, err)
+	}
+	if verbose > 0 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("response:", string(dump))
+		}
+	}
+	var records []DSRecord
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("Unable to read, url: %s, error: %v\n", rurl, err)
-		return nil, err
+	// Deserialize the response into a map.
+	if err := json.NewDecoder(resp.Body).Decode(&records); err != nil {
+		log.Fatalf("Error parsing the response body: %s", err)
 	}
-	var rec DSRecord
-	err = json.Unmarshal(data, &rec)
-	if err != nil {
-		log.Printf("Unable to parse, url: %s, error: %v\n", rurl, err)
-		return nil, err
-	}
-	return rec, nil
+	return records
 }
 
 // helper function to find MONIT datasource id
 func findDataSource(pat string) (int, string, string) {
-	for src, d := range DataSources {
-		if v, ok := d["database"]; ok {
-			db := v.(string)
-			if db == pat || src == pat || (strings.Contains(pat, "*") && strings.Contains(db, pat)) {
-				if did, ok := d["id"]; ok {
-					t, _ := d["type"]
-					return int(did.(float64)), v.(string), t.(string)
-				}
-			}
+	for _, r := range DataSources {
+		db := r.Database
+		did := r.Id
+		dtype := r.Type
+		dbname := r.Name
+		if db == pat || dbname == pat || (strings.Contains(pat, "*") && strings.Contains(db, pat)) {
+			return did, db, dtype
 		}
 	}
 	return 0, "", ""
@@ -438,16 +452,14 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 	indices := data["indices"].(map[string]interface{})
 	cmsIndexes := []string{}
 	for _, d := range DataSources {
-		if v, ok := d["database"]; ok {
-			db := v.(string)
-			arr := strings.Split(db, "]")
-			for _, idx := range arr {
-				idx = strings.Replace(idx, "[", "", -1)
-				idx = strings.Replace(idx, "*", "", -1)
-				idx = strings.Trim(idx, " ")
-				if idx != "" {
-					cmsIndexes = append(cmsIndexes, idx)
-				}
+		db := d.Database
+		arr := strings.Split(db, "]")
+		for _, idx := range arr {
+			idx = strings.Replace(idx, "[", "", -1)
+			idx = strings.Replace(idx, "*", "", -1)
+			idx = strings.Trim(idx, " ")
+			if idx != "" {
+				cmsIndexes = append(cmsIndexes, idx)
 			}
 		}
 	}
@@ -774,7 +786,7 @@ func main() {
 		fmt.Println("   monit -token token -tags=\"cmsweb,das\"")
 		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
-		fmt.Println("   monit -datasources")
+		fmt.Println("   monit -datasources -token")
 	}
 	flag.Parse()
 
@@ -784,7 +796,7 @@ func main() {
 		log.SetFlags(log.LstdFlags)
 	}
 	var e error
-	DataSources, e = datasources()
+	DataSources = datasources(defaultUrl, token, verbose)
 	if listDataSources {
 		data, err := json.MarshalIndent(DataSources, "", "\t")
 		if err == nil {
