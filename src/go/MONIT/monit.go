@@ -786,7 +786,7 @@ func main() {
 		fmt.Println("   monit -token token -tags=\"cmsweb,das\"")
 		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
-		fmt.Println("   monit -datasources -token")
+		fmt.Println("   monit -datasources -token token")
 	}
 	flag.Parse()
 
