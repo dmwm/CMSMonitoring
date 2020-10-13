@@ -106,6 +106,9 @@ func datasources(rurl, t string, verbose int) []DSRecord {
 func findDataSource(pat string) (int, string, string) {
 	for _, r := range DataSources {
 		db := r.Database
+		if strings.Contains(db, "YYYY-MM-DD") {
+			db = strings.Replace(db, "YYYY-MM-DD", "", -1)
+		}
 		did := r.Id
 		dtype := r.Type
 		dbname := r.Name
