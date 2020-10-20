@@ -171,7 +171,7 @@ index.
 ##### Data injection and look-up using monit Go-tool
 We also provide Go tool `monit` which can be used for data injection and data
 look-up. This section provides basic steps how to use it. You may get it either
-under `/cvmfs/cms.cern.ch/cmsmonit-tools` area or build it on your own.
+under `/cvmfs/cms.cern.ch/cmsmon` area or build it on your own.
 ```
 # to inject data to MONIT you need
 
