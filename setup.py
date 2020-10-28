@@ -10,6 +10,19 @@ import subprocess
 
 from distutils.core import setup
 
+def parse_requirements(requirements_file):
+    """
+      Create a list for the 'install_requires' component of the setup function
+      by parsing a requirements file
+    """
+
+    if os.path.exists(requirements_file):
+        # return a list that contains each line of the requirements file
+        return open(requirements_file, 'r').read().splitlines()
+    else:
+        print("ERROR: requirements file " + requirements_file + " not found.")
+        sys.exit(1)
+
 def datafiles(dir, pattern=None):
     """Return list of data files in provided relative dir"""
     files = []
@@ -55,7 +68,7 @@ def main():
         long_description     = 'CMS Monitoring utilities',
         packages             = ['CMSMonitoring'],
         package_dir          = {'CMSMonitoring': 'src/python/CMSMonitoring'},
-        install_requires     = ['jsonschema>=2.6.0', 'genson>=1.0.2', 'stomp.py==4.1.21'],
+        install_requires     = parse_requirements("requirements.txt"),
         scripts              = ['bin/%s'%s for s in os.listdir('bin')],
         url                  = 'https://github.com/dmwm/CMSMonitoring',
         data_files           = [
