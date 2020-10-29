@@ -20,7 +20,7 @@ type AmJSON struct {
 
 // String returns string representation of AmJSON
 func (a *AmJSON) String() string {
-	s := fmt.Sprintf("am data has %d labels %d annotations\n", len(a.Labels), len(a.Annotations))
+	s := fmt.Sprintf("am data has %d labels %d annotations", len(a.Labels), len(a.Annotations))
 	return s
 }
 
