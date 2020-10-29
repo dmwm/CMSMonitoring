@@ -25,7 +25,7 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 1 {
 		log.Printf("Current IfSilenced Map has %d entries", len(utils.IfSilencedMap))
-		if utils.ConfigJSON.Server.Verbose > 1 {
+		if utils.ConfigJSON.Server.Verbose > 2 {
 			log.Printf("Current IfSilenced Map: %v", utils.IfSilencedMap)
 		}
 	}
