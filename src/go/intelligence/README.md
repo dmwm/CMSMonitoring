@@ -7,3 +7,4 @@ This intelligence Module has been developed for the CMS Infra MONIT AlertManagem
 - Table of contents
   * [Installation](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/installation.md) - Read more about the installation.
   * [Configuration](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/config.md) - Detailed information for config file.
+  * [Testing](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/testing.md) - Detailed information about testing procedure of intelligence module.
