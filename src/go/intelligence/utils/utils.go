@@ -261,7 +261,7 @@ func GetSilences() (models.AllSilences, error) {
 		return data, err
 	}
 
-	if ConfigJSON.Server.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
@@ -325,7 +325,7 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, error)
 		return data, err
 	}
 
-	if ConfigJSON.Server.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))
