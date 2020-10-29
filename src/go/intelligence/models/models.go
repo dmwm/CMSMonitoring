@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // Module     : intelligence
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
@@ -10,9 +13,15 @@ import "time"
 //AmJSON AlertManager API acceptable JSON Data
 type AmJSON struct {
 	Labels      map[string]interface{} `json:"labels"`      // Map of Labels for each alert
-	Annotations map[string]interface{} `json:"annotations"` //Map of Annotations for each alert
-	StartsAt    time.Time              `json:"startsAt"`    //Starting time of an alert
-	EndsAt      time.Time              `json:"endsAt"`      //Ending time of an alert
+	Annotations map[string]interface{} `json:"annotations"` // Map of Annotations for each alert
+	StartsAt    time.Time              `json:"startsAt"`    // Starting time of an alert
+	EndsAt      time.Time              `json:"endsAt"`      // Ending time of an alert
+}
+
+// String returns string representation of AmJSON
+func (a *AmJSON) String() string {
+	s := fmt.Sprintf("am data %d labels %d annotations %v %v\n", len(a.Labels), len(a.Annotations), a.StartsAt, a.EndsAt)
+	return s
 }
 
 //AmData data struct, array of AmJSON

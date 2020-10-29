@@ -35,6 +35,9 @@ func FetchAlert() <-chan models.AmJSON {
 	go func() {
 		defer close(fetchedData)
 		for _, each := range data.Data {
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Println(each.String())
+			}
 			fetchedData <- each
 		}
 	}()

@@ -21,12 +21,15 @@ import (
 func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("Silence step", len(data), "records to prcoess")
+		log.Println("Silence step")
 	}
 	silencedData := make(chan models.AmJSON)
 	go func() {
 		defer close(silencedData)
 		for each := range data {
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Println(each.String())
+			}
 			if utils.ConfigJSON.Server.DryRun == false {
 				err := silenceAlert(each)
 				if err != nil {

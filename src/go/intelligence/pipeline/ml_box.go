@@ -15,7 +15,7 @@ import (
 func MlBox(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("MlBox step", len(data), "records to prcoess")
+		log.Println("MlBox step")
 	}
 	/*
 		IMPLEMENT THE LOGIC OF ML PREDICTIONS
@@ -26,6 +26,9 @@ func MlBox(data <-chan models.AmJSON) <-chan models.AmJSON {
 	go func() {
 		defer close(predictedData)
 		for d := range data {
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Println(d.String())
+			}
 			predictedData <- d
 		}
 	}()

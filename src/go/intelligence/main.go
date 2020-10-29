@@ -18,6 +18,9 @@ import (
 // Processing data pipeline module is based on ideas presented in
 // https://towardsdatascience.com/concurrent-data-pipelines-in-golang-85b18c2eecc2
 func run() {
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("### run cmsmon intelligent pipeline")
+	}
 	var processedData []models.AmJSON
 	a := pipeline.DeleteSilence(pipeline.Silence(
 		pipeline.PushAlert(

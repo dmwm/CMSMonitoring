@@ -18,13 +18,16 @@ import (
 func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("KeyworkMatching pipeline", len(data), "records to prcoess")
+		log.Println("KeyworkMatching pipeline")
 	}
 	dataWithSeverity := make(chan models.AmJSON)
 
 	go func() {
 		defer close(dataWithSeverity)
 		for each := range data {
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Println(each.String())
+			}
 			changedData := each
 			for _, service := range utils.ConfigJSON.Services {
 				if changedData.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {

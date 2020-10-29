@@ -14,7 +14,7 @@ import (
 //Preprocess - function make required changes to alerts and filter only SSB and GGUS alerts
 func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("Preprocess step", len(data), "records to prcoess")
+		log.Println("Preprocess step")
 	}
 	utils.IfSilencedMap = make(map[string]utils.SilenceMapVals)
 
@@ -31,6 +31,9 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 	go func() {
 		defer close(preprocessedData)
 		for each := range data {
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Println(each.String())
+			}
 			for _, service := range utils.ConfigJSON.Services {
 				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
 					if val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel].(string); ok {

@@ -23,7 +23,7 @@ import (
 func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("AddAnnotation step", len(data), "records to prcoess")
+		log.Println("AddAnnotation step")
 	}
 
 	dataAfterAnnotation := make(chan models.AmJSON)
@@ -34,6 +34,9 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 		ptr.UpdateDashboardCache()
 
 		for each := range data {
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Println(each.String())
+			}
 			var srv models.Service
 			ifServiceFound := false
 

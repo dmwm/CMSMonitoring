@@ -19,7 +19,7 @@ import (
 func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("DeleteSilence step", len(data), "records to prcoess")
+		log.Println("DeleteSilence step")
 	}
 
 	finalData := make(chan models.AmJSON)
@@ -29,6 +29,9 @@ func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 			deleteSilenceHelper()
 		}
 		for each := range data {
+			if utils.ConfigJSON.Server.Verbose > 1 {
+				log.Println(each.String())
+			}
 			finalData <- each
 		}
 	}()
