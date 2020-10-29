@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -9,6 +10,8 @@ import (
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
+
+var lock sync.RWMutex
 
 //AmJSON AlertManager API acceptable JSON Data
 type AmJSON struct {
@@ -20,7 +23,17 @@ type AmJSON struct {
 
 // String returns string representation of AmJSON
 func (a *AmJSON) String() string {
-	s := fmt.Sprintf("am data has %d labels %d annotations", len(a.Labels), len(a.Annotations))
+	var s string
+	var nlabels, nannotations int
+	lock.RLock()
+	if a.Labels != nil {
+		nlabels = len(a.Labels)
+	}
+	if a.Annotations != nil {
+		nannotations = len(a.Annotations)
+	}
+	lock.RUnlock()
+	s = fmt.Sprintf("am data has %d labels %d annotations", nlabels, nannotations)
 	return s
 }
 

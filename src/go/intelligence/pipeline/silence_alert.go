@@ -77,9 +77,15 @@ func silenceAlert(data models.AmJSON) error {
 
 		if k == utils.ConfigJSON.Alerts.SeverityLabel {
 			for _, service := range utils.ConfigJSON.Services {
-				if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+				lock.RLock()
+				slabel, ok := data.Labels[utils.ConfigJSON.Alerts.ServiceLabel]
+				lock.RUnlock()
+				if ok && slabel == service.Name {
 					severityMatcher.Value = service.DefaultLevel
 				}
+				//                 if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+				//                     severityMatcher.Value = service.DefaultLevel
+				//                 }
 			}
 		}
 	}

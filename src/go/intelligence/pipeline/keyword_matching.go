@@ -30,9 +30,15 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 			}
 			changedData := each
 			for _, service := range utils.ConfigJSON.Services {
-				if changedData.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+				lock.RLock()
+				slabel, ok := each.Labels[utils.ConfigJSON.Alerts.ServiceLabel]
+				lock.RUnlock()
+				if ok && slabel == service.Name {
 					keywordMatchingHelper(&changedData, service)
 				}
+				//                 if changedData.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+				//                     keywordMatchingHelper(&changedData, service)
+				//                 }
 			}
 			dataWithSeverity <- changedData
 		}

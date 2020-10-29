@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,8 @@ import (
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
+
+var lock sync.RWMutex
 
 //AddAnnotation - function for adding annotations to dashboards
 func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
@@ -41,7 +44,10 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 			ifServiceFound := false
 
 			for _, service := range utils.ConfigJSON.Services {
-				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
+				lock.RLock()
+				slabel, ok := each.Labels[utils.ConfigJSON.Alerts.ServiceLabel]
+				lock.RUnlock()
+				if ok && slabel == service.Name {
 					srv = service
 					ifServiceFound = true
 					break
@@ -124,9 +130,19 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 							customTags = append(customTags, utils.ConfigJSON.AnnotationDashboard.IntelligenceModuleTag) //intelligence module tag (eg. "cmsmon-int")
 
-							if val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel].(string); ok {
-								customTags = append(customTags, val) //Unique identifier for an alert (eg. ssbNumber for SSB alerts, TicketID for GGUS alerts etc.)
+							lock.RLock()
+							val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel]
+							lock.RUnlock()
+							if ok {
+								//Unique identifier for an alert
+								// (eg. ssbNumber for SSB alerts, TicketID for GGUS alerts etc.)
+								customTags = append(customTags, val.(string))
 							}
+							/*
+								if val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel].(string); ok {
+									customTags = append(customTags, val) //Unique identifier for an alert (eg. ssbNumber for SSB alerts, TicketID for GGUS alerts etc.)
+								}
+							*/
 
 							for _, eachTag := range annotationData.Tags {
 								customTags = append(customTags, eachTag) //Appending all tags of the dashboard where the alert is going to get annotated.
