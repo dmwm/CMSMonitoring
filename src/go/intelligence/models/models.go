@@ -82,6 +82,12 @@ type GrafanaDashboard struct {
 	Text        string   `json:"text"`        //Annotation Text Field
 }
 
+// String function provide representation of GrafanaDashboard data
+func (g *GrafanaDashboard) String() string {
+	s := fmt.Sprintf("grafana dashboard %d, tags: %v, text %v between [%v-%v]", g.DashboardID, g.Tags, g.Text, g.Time, g.TimeEnd)
+	return s
+}
+
 //TestingData data struct
 type TestingData struct {
 	TestFile             string        `json:"testfile"`             //Test cases file name for testing

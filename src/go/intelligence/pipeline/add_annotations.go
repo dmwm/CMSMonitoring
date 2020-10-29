@@ -149,7 +149,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 								log.Printf("Unable to convert the data into JSON %v, error: %v\n", dashboardData, err)
 							}
 							if utils.ConfigJSON.Server.Verbose > 0 {
-								log.Printf("Annotation: %v", dashboardData)
+								log.Printf("+++ add annotation to %v", dashboardData.String())
 							}
 							addAnnotationHelper(dData)
 						}
