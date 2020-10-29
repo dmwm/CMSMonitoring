@@ -218,7 +218,8 @@ func addAnnotationHelper(data []byte) {
 
 	if utils.ConfigJSON.Server.Verbose > 1 {
 		log.Println("POST", apiURL)
-	} else if utils.ConfigJSON.Server.Verbose > 1 {
+	}
+	if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("request: ", string(dump))
@@ -241,10 +242,12 @@ func addAnnotationHelper(data []byte) {
 	}
 	body, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
-	if utils.ConfigJSON.Server.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 0 {
 		log.Println("response Status:", resp.Status)
 		log.Println("response Headers:", resp.Header)
-		log.Println("response Body:", string(body))
+		if utils.ConfigJSON.Server.Verbose > 1 {
+			log.Println("response Body:", string(body))
+		}
 	}
 
 	if resp.StatusCode == http.StatusForbidden {
