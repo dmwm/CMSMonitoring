@@ -3,6 +3,7 @@ package pipeline
 import (
 	"go/intelligence/models"
 	"go/intelligence/utils"
+	"log"
 	"strings"
 )
 
@@ -16,6 +17,9 @@ import (
 //KeywordMatching - function finds defined keywords in the shortDescription of alerts and assign severity level accordingly
 func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("KeyworkMatching pipeline", len(data), "records to prcoess")
+	}
 	dataWithSeverity := make(chan models.AmJSON)
 
 	go func() {

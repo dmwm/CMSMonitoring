@@ -22,6 +22,10 @@ import (
 //AddAnnotation - function for adding annotations to dashboards
 func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("AddAnnotation step", len(data), "records to prcoess")
+	}
+
 	dataAfterAnnotation := make(chan models.AmJSON)
 
 	go func() {

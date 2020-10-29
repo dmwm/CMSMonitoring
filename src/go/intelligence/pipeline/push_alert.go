@@ -13,6 +13,9 @@ import (
 
 //PushAlert - function for pushing modified alerts back to AlertManager
 func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("PushAlert step", len(data), "records to prcoess")
+	}
 	c := make(chan models.AmJSON)
 
 	go func() {

@@ -2,6 +2,8 @@ package pipeline
 
 import (
 	"go/intelligence/models"
+	"go/intelligence/utils"
+	"log"
 )
 
 // Module     : intelligence
@@ -12,6 +14,9 @@ import (
 //MlBox - Machine Learning predicted Data
 func MlBox(data <-chan models.AmJSON) <-chan models.AmJSON {
 
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("MlBox step", len(data), "records to prcoess")
+	}
 	/*
 		IMPLEMENT THE LOGIC OF ML PREDICTIONS
 		so far we are returning back the data without any predictions.

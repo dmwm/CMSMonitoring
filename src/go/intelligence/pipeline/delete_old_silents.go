@@ -18,6 +18,10 @@ import (
 //DeleteSilence - function for deleting expired silences
 func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("DeleteSilence step", len(data), "records to prcoess")
+	}
+
 	finalData := make(chan models.AmJSON)
 	go func() {
 		defer close(finalData)

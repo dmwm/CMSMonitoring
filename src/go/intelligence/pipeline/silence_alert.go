@@ -20,6 +20,9 @@ import (
 //Silence - function silences the old alert
 func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("Silence step", len(data), "records to prcoess")
+	}
 	silencedData := make(chan models.AmJSON)
 	go func() {
 		defer close(silencedData)

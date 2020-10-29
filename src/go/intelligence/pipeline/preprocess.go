@@ -13,6 +13,9 @@ import (
 
 //Preprocess - function make required changes to alerts and filter only SSB and GGUS alerts
 func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("Preprocess step", len(data), "records to prcoess")
+	}
 	utils.IfSilencedMap = make(map[string]utils.SilenceMapVals)
 
 	err := updateSilencedMap()

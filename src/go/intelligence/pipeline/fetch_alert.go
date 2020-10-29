@@ -15,6 +15,10 @@ import (
 
 //FetchAlert - function for fetching all active alerts from AlertManager
 func FetchAlert() <-chan models.AmJSON {
+	if utils.ConfigJSON.Server.Verbose > 0 {
+		log.Println("FetchAlert step")
+	}
+
 	fetchedData := make(chan models.AmJSON)
 
 	_, err := utils.GetAlerts(utils.ConfigJSON.Server.GetSuppressedAlertsAPI, false)
