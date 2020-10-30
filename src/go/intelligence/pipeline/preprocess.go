@@ -54,7 +54,6 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 						lock.RLock()
 						_, alertFoundInSilencedMap := utils.IfSilencedMap[val]
 						lock.RUnlock()
-						//                         if _, alertFoundInSilencedMap := utils.IfSilencedMap[val]; !alertFoundInSilencedMap {
 						if !alertFoundInSilencedMap {
 							preprocessedData <- each
 						}
