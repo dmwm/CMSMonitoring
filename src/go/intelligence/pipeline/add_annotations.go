@@ -118,6 +118,10 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 							ifCommonTagsFound := ifTagsIntersect(annotationData.Tags, dashboard.Tags)
 
+							if utils.ConfigJSON.Server.Verbose > 0 {
+								log.Printf("add annotation common tags: %v, annotation tags %v, dashbaord tags %v\n", ifCommonTagsFound, annotationData.Tags, dashboard.Tags)
+							}
+
 							if ifCommonTagsFound == false {
 								continue
 							}
@@ -156,10 +160,11 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							dashboardData.Tags = customTags
 
 							lock.RLock()
-							annotationMapLabel := each.Annotations[srv.AnnotationMap.Label]
+							annotationMapLabel, ok := each.Annotations[srv.AnnotationMap.Label]
 							lock.RUnlock()
 
-							if val, ok := annotationMapLabel.(string); ok {
+							if ok {
+								val := annotationMapLabel.(string)
 
 								lock.RLock()
 								annotationMapURLLabel := each.Annotations[srv.AnnotationMap.URLLabel]
