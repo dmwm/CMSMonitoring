@@ -101,9 +101,13 @@ func keywordMatchingHelper(data *models.AmJSON, srv models.Service) {
 	for key := range data.Labels {
 		if key == utils.ConfigJSON.Alerts.SeverityLabel {
 			if assignSeverityLevel != "" {
+				lock.Lock()
 				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = assignSeverityLevel
+				lock.Unlock()
 			} else {
+				lock.Lock()
 				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = utils.ConfigJSON.Alerts.DefaultSeverityLevel
+				lock.Unlock()
 			}
 		}
 	}

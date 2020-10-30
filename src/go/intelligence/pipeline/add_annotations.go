@@ -20,6 +20,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
+// Lock variable for solving Concurrent Read/Write on Map issue.
 var lock sync.RWMutex
 
 //AddAnnotation - function for adding annotations to dashboards
@@ -151,9 +152,20 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							dashboardData.DashboardID = dashboard.ID
 							dashboardData.Time = each.StartsAt.Unix() * 1000
 							dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
+
 							dashboardData.Tags = customTags
-							if val, ok := each.Annotations[srv.AnnotationMap.Label].(string); ok {
-								if url, urlOk := each.Annotations[srv.AnnotationMap.URLLabel].(string); urlOk {
+
+							lock.RLock()
+							annotationMapLabel := each.Annotations[srv.AnnotationMap.Label]
+							lock.RUnlock()
+
+							if val, ok := annotationMapLabel.(string); ok {
+
+								lock.RLock()
+								annotationMapURLLabel := each.Annotations[srv.AnnotationMap.URLLabel]
+								lock.RUnlock()
+
+								if url, urlOk := annotationMapURLLabel.(string); urlOk {
 									dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)
 								} else {
 									dashboardData.Text = srv.Name + ": " + val
@@ -206,7 +218,12 @@ func ifTagsIntersect(annotationDashboardTags, allDashboardsTags []string) bool {
 //checkIfAvailable - function for finding if particular keyword is available or not in the given field of Alerts
 func checkIfAvailable(data []string, amData models.AmJSON, label string) bool {
 	for _, each := range data {
-		if val, ok := amData.Annotations[label].(string); ok {
+
+		lock.RLock()
+		annotationsLabel := amData.Annotations[label]
+		lock.RUnlock()
+
+		if val, ok := annotationsLabel.(string); ok {
 			if strings.Contains(strings.ToLower(val), strings.ToLower(each)) {
 				return true
 			}

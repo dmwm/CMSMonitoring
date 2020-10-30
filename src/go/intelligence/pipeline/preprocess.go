@@ -38,11 +38,25 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 				log.Println(each.String())
 			}
 			for _, service := range utils.ConfigJSON.Services {
-				if each.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
-					if val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel].(string); ok {
+
+				lock.RLock()
+				srvLabel := each.Labels[utils.ConfigJSON.Alerts.ServiceLabel]
+				lock.RUnlock()
+
+				if srvLabel == service.Name {
+
+					lock.RLock()
+					unqLabel := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel]
+					lock.RUnlock()
+
+					if val, ok := unqLabel.(string); ok {
+
+						lock.RLock()
 						if _, alertFoundInSilencedMap := utils.IfSilencedMap[val]; !alertFoundInSilencedMap {
 							preprocessedData <- each
 						}
+						lock.RUnlock()
+
 					}
 				}
 			}
@@ -73,7 +87,9 @@ func updateSilencedMap() error {
 		for _, matcher := range each.Matchers {
 			if matcher.Name == utils.ConfigJSON.Alerts.UniqueLabel {
 				if each.Status.State == utils.ConfigJSON.Silence.SilenceStatus[0] {
+					lock.Lock()
 					utils.IfSilencedMap[matcher.Value] = utils.SilenceMapVals{IfAvail: 1, SilenceID: each.ID}
+					lock.Unlock()
 				}
 			}
 		}
