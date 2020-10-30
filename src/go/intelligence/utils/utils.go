@@ -52,6 +52,8 @@ var DataReadWriteLock sync.RWMutex
 //SuppressedAlertsDataReadWriteLock - Mutex Lock for Concurrent Read/Write on Suppressed Alert Data
 var SuppressedAlertsDataReadWriteLock sync.RWMutex
 
+var lock sync.RWMutex
+
 //DashboardsCache - a cache for storing dashboards and Expiration time for updating the cache
 type DashboardsCache struct {
 	Dashboards map[float64]models.AllDashboardsFetched
@@ -65,6 +67,8 @@ func (dCache *DashboardsCache) UpdateDashboardCache() {
 		return
 	}
 
+	lock.Lock()
+	defer lock.Unlock()
 	dCache.Dashboards = make(map[float64]models.AllDashboardsFetched)
 
 	for _, tag := range ConfigJSON.AnnotationDashboard.Tags {
@@ -72,6 +76,14 @@ func (dCache *DashboardsCache) UpdateDashboardCache() {
 
 		for _, each := range tmp {
 			dCache.Dashboards[each.ID] = each
+		}
+	}
+	if ConfigJSON.Server.Verbose > 0 {
+		log.Println("updated dashboard cache with", len(dCache.Dashboards), "maps")
+		if ConfigJSON.Server.Verbose > 1 {
+			for _, d := range dCache.Dashboards {
+				log.Println(d.String())
+			}
 		}
 	}
 
@@ -176,7 +188,7 @@ func findDashboards(tag string) []models.AllDashboardsFetched {
 	apiURL := fmt.Sprintf("%s%s?%s", ConfigJSON.AnnotationDashboard.URL, ConfigJSON.AnnotationDashboard.DashboardSearchAPI, v.Encode())
 
 	if ConfigJSON.Server.Verbose > 0 {
-		log.Println(apiURL)
+		log.Println("find dashboard info", apiURL)
 	}
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {

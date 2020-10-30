@@ -86,6 +86,11 @@ type AllDashboardsFetched struct {
 	FolderURL   string   `json:"folderUrl"`   //URL of the folder
 }
 
+func (a *AllDashboardsFetched) String() string {
+	s := fmt.Sprintf("dashboard id=%v, uid=%v, title=%s, tags=%v\n", a.ID, a.UID, a.Title, a.Tags)
+	return s
+}
+
 //GrafanaDashboard data struct for storing Annotation's information to each dashboard
 type GrafanaDashboard struct {
 	DashboardID float64  `json:"dashboardId"` // ID of a dashboard

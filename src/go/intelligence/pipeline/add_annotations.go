@@ -31,11 +31,11 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 	}
 
 	dataAfterAnnotation := make(chan models.AmJSON)
+	ptr := &utils.DCache
+	ptr.UpdateDashboardCache()
 
 	go func() {
 		defer close(dataAfterAnnotation)
-		ptr := &utils.DCache
-		ptr.UpdateDashboardCache()
 
 		for each := range data {
 			if utils.ConfigJSON.Server.Verbose > 0 {
