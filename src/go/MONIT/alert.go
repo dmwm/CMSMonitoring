@@ -567,7 +567,7 @@ func openConfigFile(configFilePath string) {
 //function for parsing Configs
 func parseConfig(verbose int) {
 
-	configFilePath = os.Getenv("CONFIG_PATH") //CONFIG_PATH Environment Variable storing config filepath.
+	configFilePath = os.Getenv("ALERT_CONFIG_PATH") // ALERT_CONFIG_PATH Environment Variable storing config filepath.
 	defaultConfigFilePath := os.Getenv("HOME") + "/.alertconfig.json"
 
 	//Defaults in case no config file is provided
@@ -606,7 +606,6 @@ func parseConfig(verbose int) {
 	if configFilePath != "" {
 		openConfigFile(configFilePath)
 	} else if defaultConfigFilePath != "" {
-		fmt.Printf("$CONFIG_PATH is not set. Using config file at %s\n", defaultConfigFilePath)
 		openConfigFile(defaultConfigFilePath)
 	}
 
@@ -648,7 +647,7 @@ func main() {
 		fmt.Println("Usage: alert [options]")
 		flag.PrintDefaults()
 		fmt.Println("\nEnvironments:")
-		fmt.Printf("\tCONFIG_PATH:\t Config to use, default (%s)\n", configPath)
+		fmt.Printf("\tALERT_CONFIG_PATH:\t Config to use, default (%s)\n", configPath)
 		fmt.Println("\nExamples:")
 		fmt.Println("\tGet all alerts:")
 		fmt.Println("\t    alert")
