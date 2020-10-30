@@ -54,7 +54,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 					break
 				}
 			}
-			if utils.ConfigJSON.Server.Verbose > 0 {
+			if utils.ConfigJSON.Server.Verbose > 2 {
 				log.Printf("service found %v %+v\n", ifServiceFound, srv)
 			}
 
@@ -64,12 +64,15 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 					ifActionFound := checkIfAvailable(annotationData.Actions, each, srv.AnnotationMap.Label) //If action keywords match in alerts
 					ifSystemFound := checkIfAvailable(annotationData.Systems, each, srv.AnnotationMap.Label) //If system keywords match in alerts
-					if utils.ConfigJSON.Server.Verbose > 0 {
+					if utils.ConfigJSON.Server.Verbose > 1 {
 						log.Printf("annotation data: actions=%+v systems=%+v\n", ifActionFound, ifSystemFound)
 					}
 
 					if ifActionFound && ifSystemFound {
-						if utils.ConfigJSON.Server.Verbose > 0 {
+						if len(utils.DCache.Dashboards) == 0 {
+							log.Println("No annotation dashboards is provided, annotation will be skipped")
+						}
+						if utils.ConfigJSON.Server.Verbose > 2 {
 							log.Println("dashboards", utils.DCache.Dashboards)
 						}
 
@@ -127,7 +130,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 							ifCommonTagsFound := ifTagsIntersect(annotationData.Tags, dashboard.Tags)
 
-							if utils.ConfigJSON.Server.Verbose > 0 {
+							if utils.ConfigJSON.Server.Verbose > 1 {
 								log.Printf("add annotation common tags: %v, annotation tags %v, dashbaord tags %v\n", ifCommonTagsFound, annotationData.Tags, dashboard.Tags)
 							}
 
