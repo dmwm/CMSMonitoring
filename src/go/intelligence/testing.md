@@ -6,14 +6,14 @@ and use the following command for testing:
 ```
 #!/bin/bash
 aurl="http://cms-monitoring.cern.ch:30093"
-startAt="2020-10-29T17:30:00Z"
-endAt="2020-10-29T18:00:00Z"
+startAt="2020-10-30T19:05:00Z"
+endAt="2020-10-30T19:15:00Z"
 ssbNumber=OTG111112
 stype="Planned Intervention"
 severity="notification"
 amtool alert add ssb-$ssbNumber tag=monitoring  \
-    service=SSB severity=$severity type=$stype \
-    ssbNumber=$ssbNumber \
+    service=SSB severity=$severity type="$stype" \
+    ssbNumber="$ssbNumber" \
     --annotation=shortDescription="TEST ALERT : Network Intervention in building 697" \
     --annotation=description="Network Services" \
     --annotation=type="$stype" \
