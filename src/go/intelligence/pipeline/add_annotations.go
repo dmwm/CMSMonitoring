@@ -38,7 +38,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 		ptr.UpdateDashboardCache()
 
 		for each := range data {
-			if utils.ConfigJSON.Server.Verbose > 1 {
+			if utils.ConfigJSON.Server.Verbose > 0 {
 				log.Println(each.String())
 			}
 			var srv models.Service
@@ -53,6 +53,9 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 					ifServiceFound = true
 					break
 				}
+			}
+			if utils.ConfigJSON.Server.Verbose > 0 {
+				log.Printf("service found %v %+v\n", ifServiceFound, srv)
 			}
 
 			if ifServiceFound {
