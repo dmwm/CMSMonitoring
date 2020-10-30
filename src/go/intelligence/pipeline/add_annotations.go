@@ -64,8 +64,14 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 					ifActionFound := checkIfAvailable(annotationData.Actions, each, srv.AnnotationMap.Label) //If action keywords match in alerts
 					ifSystemFound := checkIfAvailable(annotationData.Systems, each, srv.AnnotationMap.Label) //If system keywords match in alerts
+					if utils.ConfigJSON.Server.Verbose > 0 {
+						log.Printf("annotation data: actions=%+v systems=%+v\n", ifActionFound, ifSystemFound)
+					}
 
 					if ifActionFound && ifSystemFound {
+						if utils.ConfigJSON.Server.Verbose > 0 {
+							log.Println("dashboards", utils.DCache.Dashboards)
+						}
 
 						for _, dashboard := range utils.DCache.Dashboards {
 
