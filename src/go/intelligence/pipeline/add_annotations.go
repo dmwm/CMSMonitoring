@@ -150,13 +150,8 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							}
 
 							dashboardData.DashboardID = dashboard.ID
-							lock.RLock()
 							dashboardData.Time = each.StartsAt.Unix() * 1000
-							lock.RUnlock()
-
-							lock.RLock()
 							dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
-							lock.RUnlock()
 
 							dashboardData.Tags = customTags
 
