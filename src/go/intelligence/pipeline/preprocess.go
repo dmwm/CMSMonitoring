@@ -52,10 +52,12 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 					if val, ok := unqLabel.(string); ok {
 
 						lock.RLock()
-						if _, alertFoundInSilencedMap := utils.IfSilencedMap[val]; !alertFoundInSilencedMap {
+						_, alertFoundInSilencedMap := utils.IfSilencedMap[val]
+						lock.RUnlock()
+						//                         if _, alertFoundInSilencedMap := utils.IfSilencedMap[val]; !alertFoundInSilencedMap {
+						if !alertFoundInSilencedMap {
 							preprocessedData <- each
 						}
-						lock.RUnlock()
 
 					}
 				}
