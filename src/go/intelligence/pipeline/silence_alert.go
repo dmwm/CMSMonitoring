@@ -83,9 +83,6 @@ func silenceAlert(data models.AmJSON) error {
 				if ok && slabel == service.Name {
 					severityMatcher.Value = service.DefaultLevel
 				}
-				//                 if data.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
-				//                     severityMatcher.Value = service.DefaultLevel
-				//                 }
 			}
 		}
 	}

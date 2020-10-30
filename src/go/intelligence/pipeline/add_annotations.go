@@ -62,8 +62,11 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 				for _, annotationData := range srv.AnnotationMap.AnnotationsData {
 
-					ifActionFound := checkIfAvailable(annotationData.Actions, each, srv.AnnotationMap.Label) //If action keywords match in alerts
-					ifSystemFound := checkIfAvailable(annotationData.Systems, each, srv.AnnotationMap.Label) //If system keywords match in alerts
+					//If action keywords match in alerts
+					ifActionFound := checkIfAvailable(annotationData.Actions, each, srv.AnnotationMap.Label)
+					//If system keywords match in alerts
+					ifSystemFound := checkIfAvailable(annotationData.Systems, each, srv.AnnotationMap.Label)
+
 					if utils.ConfigJSON.Server.Verbose > 1 {
 						log.Printf("annotation data: actions=%+v systems=%+v\n", ifActionFound, ifSystemFound)
 					}
@@ -140,29 +143,26 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 							var dashboardData models.GrafanaDashboard
 
-							/*Custom tags which consists of intelligence module tag, unique identifier for an alert,
-							and tags of all those dashboards where the alert has been annotated.
-							*/
+							// Custom tags which consists of intelligence module
+							// tag, unique identifier for an alert, and tags of
+							// all those dashboards where the alert has been annotated.
 							var customTags []string
 
-							customTags = append(customTags, utils.ConfigJSON.AnnotationDashboard.IntelligenceModuleTag) //intelligence module tag (eg. "cmsmon-int")
+							//intelligence module tag (eg. "cmsmon-int")
+							customTags = append(customTags, utils.ConfigJSON.AnnotationDashboard.IntelligenceModuleTag)
 
 							lock.RLock()
 							val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel]
 							lock.RUnlock()
 							if ok {
-								//Unique identifier for an alert
+								// Unique identifier for an alert
 								// (eg. ssbNumber for SSB alerts, TicketID for GGUS alerts etc.)
 								customTags = append(customTags, val.(string))
 							}
-							/*
-								if val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel].(string); ok {
-									customTags = append(customTags, val) //Unique identifier for an alert (eg. ssbNumber for SSB alerts, TicketID for GGUS alerts etc.)
-								}
-							*/
 
 							for _, eachTag := range annotationData.Tags {
-								customTags = append(customTags, eachTag) //Appending all tags of the dashboard where the alert is going to get annotated.
+								// Appending all tags of the dashboard where the alert is going to get annotated.
+								customTags = append(customTags, eachTag)
 							}
 
 							dashboardData.DashboardID = dashboard.ID

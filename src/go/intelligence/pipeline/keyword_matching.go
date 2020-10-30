@@ -36,9 +36,6 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 				if ok && slabel == service.Name {
 					keywordMatchingHelper(&changedData, service)
 				}
-				//                 if changedData.Labels[utils.ConfigJSON.Alerts.ServiceLabel] == service.Name {
-				//                     keywordMatchingHelper(&changedData, service)
-				//                 }
 			}
 			dataWithSeverity <- changedData
 		}
