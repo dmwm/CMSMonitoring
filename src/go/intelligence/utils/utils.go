@@ -188,7 +188,7 @@ func findDashboards(tag string) []models.AllDashboardsFetched {
 	apiURL := fmt.Sprintf("%s%s?%s", ConfigJSON.AnnotationDashboard.URL, ConfigJSON.AnnotationDashboard.DashboardSearchAPI, v.Encode())
 
 	if ConfigJSON.Server.Verbose > 0 {
-		log.Println("find dashboard info", apiURL)
+		log.Println("GET", apiURL)
 	}
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
@@ -213,7 +213,7 @@ func findDashboards(tag string) []models.AllDashboardsFetched {
 	if err != nil {
 		log.Printf("Unable to get response from %s, error: %s", apiURL, err)
 	}
-	if ConfigJSON.Server.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("response: ", string(dump))
@@ -245,7 +245,7 @@ func GetSilences() (models.AllSilences, error) {
 	timeout := time.Duration(ConfigJSON.Server.HTTPTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
-	if ConfigJSON.Server.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 0 {
 		log.Println("GET", apiurl)
 	} else if ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
@@ -309,9 +309,9 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, error)
 	timeout := time.Duration(ConfigJSON.Server.HTTPTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
-	if ConfigJSON.Server.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 0 {
 		log.Println("GET", apiurl)
-	} else if ConfigJSON.Server.Verbose > 2 {
+	} else if ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -406,9 +406,9 @@ func PostAlert(data models.AmJSON) error {
 	timeout := time.Duration(ConfigJSON.Server.HTTPTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
-	if ConfigJSON.Server.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 0 {
 		log.Println("POST", apiurl)
-	} else if ConfigJSON.Server.Verbose > 2 {
+	} else if ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))
@@ -427,7 +427,7 @@ func PostAlert(data models.AmJSON) error {
 
 	defer resp.Body.Close()
 
-	if ConfigJSON.Server.Verbose > 1 {
+	if ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("Response: ", string(dump))

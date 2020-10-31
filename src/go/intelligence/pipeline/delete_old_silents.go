@@ -87,9 +87,9 @@ func deleteSilenceAPICall(silencedAlert, silenceID string) error {
 	timeout := time.Duration(utils.ConfigJSON.Server.HTTPTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
 
-	if utils.ConfigJSON.Server.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 0 {
 		log.Println("DELETE", apiurl)
-	} else if utils.ConfigJSON.Server.Verbose > 2 {
+	} else if utils.ConfigJSON.Server.Verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
 			log.Println("Request: ", string(dump))

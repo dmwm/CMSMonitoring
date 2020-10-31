@@ -273,7 +273,7 @@ func addAnnotationHelper(data []byte) {
 		}
 	}
 
-	if utils.ConfigJSON.Server.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 0 {
 		log.Println("POST", apiURL)
 	}
 	if utils.ConfigJSON.Server.Verbose > 1 {
@@ -291,7 +291,7 @@ func addAnnotationHelper(data []byte) {
 		log.Printf("Unable to get response from %s, error: %s", apiURL, err)
 		return
 	}
-	if utils.ConfigJSON.Server.Verbose > 1 {
+	if utils.ConfigJSON.Server.Verbose > 2 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
 			log.Println("response:", string(dump))
