@@ -30,9 +30,7 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 			}
 			changedData := each
 			for _, service := range utils.ConfigJSON.Services {
-				lock.RLock()
-				slabel, ok := each.Labels[utils.ConfigJSON.Alerts.ServiceLabel]
-				lock.RUnlock()
+				slabel, ok := utils.Get(each.Labels, utils.ConfigJSON.Alerts.ServiceLabel)
 				if ok && slabel == service.Name {
 					keywordMatchingHelper(&changedData, service)
 				}
@@ -98,13 +96,9 @@ func keywordMatchingHelper(data *models.AmJSON, srv models.Service) {
 	for key := range data.Labels {
 		if key == utils.ConfigJSON.Alerts.SeverityLabel {
 			if assignSeverityLevel != "" {
-				lock.Lock()
-				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = assignSeverityLevel
-				lock.Unlock()
+				utils.Set(data.Labels, utils.ConfigJSON.Alerts.SeverityLabel, assignSeverityLevel)
 			} else {
-				lock.Lock()
-				data.Labels[utils.ConfigJSON.Alerts.SeverityLabel] = utils.ConfigJSON.Alerts.DefaultSeverityLevel
-				lock.Unlock()
+				utils.Set(data.Labels, utils.ConfigJSON.Alerts.SeverityLabel, utils.ConfigJSON.Alerts.DefaultSeverityLevel)
 			}
 		}
 	}

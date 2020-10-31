@@ -3,12 +3,9 @@ package pipeline
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"go/intelligence/models"
 	"go/intelligence/utils"
 	"log"
-	"net/http"
-	"net/http/httputil"
 	"time"
 )
 
@@ -17,7 +14,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//Silence - function silences the old alert
+// Silence - function silences the old alert
 func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
@@ -46,22 +43,28 @@ func Silence(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return silencedData
 }
 
-//silenceAlert - helper function for silencing old alerts
+// silenceAlert - helper function for silencing old alerts
 func silenceAlert(data models.AmJSON) error {
 
-	apiurl := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.PostSilenceAPI) // POST API for creating silences.
+	apiURL := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.PostSilenceAPI)
 
 	var sData models.SilenceData
 	var alertnameMatcher models.Matchers
 	var severityMatcher models.Matchers
 
 	if data.StartsAt.After(time.Now()) {
-		sData.StartsAt = time.Now() //Start Time equal to current time if it's starting in future  //So that the silence remains on old alert till the lifetime of the alert
+		// wtart Time equal to current time if it's starting in future
+		// so that the silence remains on old alert till the lifetime of the alert
+		sData.StartsAt = time.Now()
 	} else {
-		sData.StartsAt = data.StartsAt //Start Time equal to main alert	   //So that the silence remains on old alert till the lifetime of the alert
+		// start Time equal to main alert
+		// so that the silence remains on old alert till the lifetime of the alert
+		sData.StartsAt = data.StartsAt
 	}
 
-	sData.EndsAt = data.EndsAt //End Time equal to main alert	  //So that the silence remains on old alert till the lifetime of the alert
+	// end Time equal to main alert
+	// so that the silence remains on old alert till the lifetime of the alert
+	sData.EndsAt = data.EndsAt
 	sData.CreatedBy = utils.ConfigJSON.Silence.CreatedBy
 	sData.Comment = utils.ConfigJSON.Silence.Comment
 
@@ -77,9 +80,7 @@ func silenceAlert(data models.AmJSON) error {
 
 		if k == utils.ConfigJSON.Alerts.SeverityLabel {
 			for _, service := range utils.ConfigJSON.Services {
-				lock.RLock()
-				slabel, ok := data.Labels[utils.ConfigJSON.Alerts.ServiceLabel]
-				lock.RUnlock()
+				slabel, ok := utils.Get(data.Labels, utils.ConfigJSON.Alerts.ServiceLabel)
 				if ok && slabel == service.Name {
 					severityMatcher.Value = service.DefaultLevel
 				}
@@ -90,49 +91,15 @@ func silenceAlert(data models.AmJSON) error {
 	sData.Matchers = append(sData.Matchers, alertnameMatcher)
 	sData.Matchers = append(sData.Matchers, severityMatcher)
 	jsonStr, err := json.Marshal(sData)
-
 	if err != nil {
 		log.Printf("Unable to convert JSON Data, error: %v\n", err)
 		return err
 	}
 
-	req, err := http.NewRequest("POST", apiurl, bytes.NewBuffer(jsonStr))
-	if err != nil {
-		log.Printf("Request Error, error: %v\n", err)
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	timeout := time.Duration(utils.ConfigJSON.Server.HTTPTimeout) * time.Second
-	client := &http.Client{Timeout: timeout}
-
-	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("POST", apiurl)
-	} else if utils.ConfigJSON.Server.Verbose > 1 {
-		dump, err := httputil.DumpRequestOut(req, true)
-		if err == nil {
-			log.Println("Request: ", string(dump))
-		}
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("Response Error, error: %v\n", err)
-		return err
-	}
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
-		return errors.New("Http Response Code Error")
-	}
-
+	var headers [][]string
+	headers = append(headers, []string{"Content-Type", "application/json"})
+	resp := utils.HttpCall("POST", apiURL, headers, bytes.NewBuffer(jsonStr))
 	defer resp.Body.Close()
-
-	if utils.ConfigJSON.Server.Verbose > 2 {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err == nil {
-			log.Println("Response: ", string(dump))
-		}
-	}
 
 	if utils.ConfigJSON.Server.Verbose > 1 {
 		log.Printf("Silence Data:\n%+v\n", string(jsonStr))

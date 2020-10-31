@@ -6,13 +6,9 @@ import (
 	"fmt"
 	"go/intelligence/models"
 	"go/intelligence/utils"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"strings"
-	"sync"
-	"time"
 )
 
 // Module     : intelligence
@@ -20,10 +16,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-// Lock variable for solving Concurrent Read/Write on Map issue.
-var lock sync.RWMutex
-
-//AddAnnotation - function for adding annotations to dashboards
+// AddAnnotation - function for adding annotations to dashboards
 func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
@@ -45,9 +38,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 			ifServiceFound := false
 
 			for _, service := range utils.ConfigJSON.Services {
-				lock.RLock()
-				slabel, ok := each.Labels[utils.ConfigJSON.Alerts.ServiceLabel]
-				lock.RUnlock()
+				slabel, ok := utils.Get(each.Labels, utils.ConfigJSON.Alerts.ServiceLabel)
 				if ok && slabel == service.Name {
 					srv = service
 					ifServiceFound = true
@@ -151,13 +142,10 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							//intelligence module tag (eg. "cmsmon-int")
 							customTags = append(customTags, utils.ConfigJSON.AnnotationDashboard.IntelligenceModuleTag)
 
-							lock.RLock()
-							val, ok := each.Labels[utils.ConfigJSON.Alerts.UniqueLabel]
-							lock.RUnlock()
-							if ok {
+							if val, ok := utils.Get(each.Labels, utils.ConfigJSON.Alerts.UniqueLabel); ok {
 								// Unique identifier for an alert
 								// (eg. ssbNumber for SSB alerts, TicketID for GGUS alerts etc.)
-								customTags = append(customTags, val.(string))
+								customTags = append(customTags, val)
 							}
 
 							for _, eachTag := range annotationData.Tags {
@@ -171,18 +159,8 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 							dashboardData.Tags = customTags
 
-							lock.RLock()
-							annotationMapLabel, ok := each.Annotations[srv.AnnotationMap.Label]
-							lock.RUnlock()
-
-							if ok {
-								val := annotationMapLabel.(string)
-
-								lock.RLock()
-								annotationMapURLLabel := each.Annotations[srv.AnnotationMap.URLLabel]
-								lock.RUnlock()
-
-								if url, urlOk := annotationMapURLLabel.(string); urlOk {
+							if val, ok := utils.Get(each.Annotations, srv.AnnotationMap.Label); ok {
+								if url, urlOk := utils.Get(each.Annotations, srv.AnnotationMap.URLLabel); urlOk {
 									dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)
 								} else {
 									dashboardData.Text = srv.Name + ": " + val
@@ -212,7 +190,7 @@ func makeHTMLhref(url string) string {
 	return "<a target=_blank href=" + url + ">URL</a>"
 }
 
-//ifTagsIntersect for checking intersection between two list of dashboard tags.
+// ifTagsIntersect for checking intersection between two list of dashboard tags.
 func ifTagsIntersect(annotationDashboardTags, allDashboardsTags []string) bool {
 
 	var intersectionResult []string
@@ -232,15 +210,10 @@ func ifTagsIntersect(annotationDashboardTags, allDashboardsTags []string) bool {
 	return len(intersectionResult) > 0
 }
 
-//checkIfAvailable - function for finding if particular keyword is available or not in the given field of Alerts
+// checkIfAvailable - function for finding if particular keyword is available or not in the given field of Alerts
 func checkIfAvailable(data []string, amData models.AmJSON, label string) bool {
 	for _, each := range data {
-
-		lock.RLock()
-		annotationsLabel := amData.Annotations[label]
-		lock.RUnlock()
-
-		if val, ok := annotationsLabel.(string); ok {
+		if val, ok := utils.Get(amData.Annotations, label); ok {
 			if strings.Contains(strings.ToLower(val), strings.ToLower(each)) {
 				return true
 			}
@@ -249,63 +222,18 @@ func checkIfAvailable(data []string, amData models.AmJSON, label string) bool {
 	return false
 }
 
-//addAnnotationHelper - helper function
+// addAnnotationHelper - helper function
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L639
 func addAnnotationHelper(data []byte) {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", utils.ConfigJSON.AnnotationDashboard.Token)
-	h := []string{"Authorization", bearer}
-	headers = append(headers, h)
-	h = []string{"Content-Type", "application/json"}
-	headers = append(headers, h)
+	headers = append(headers, []string{"Authorization", bearer})
+	headers = append(headers, []string{"Content-Type", "application/json"})
 
 	apiURL := utils.ValidateURL(utils.ConfigJSON.AnnotationDashboard.URL, utils.ConfigJSON.AnnotationDashboard.AnnotationAPI)
-
-	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(data))
-	if err != nil {
-		log.Printf("Unable to make request to %s, error: %s", apiURL, err)
-		return
-	}
-	for _, v := range headers {
-		if len(v) == 2 {
-			req.Header.Add(v[0], v[1])
-		}
-	}
-
-	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("POST", apiURL)
-	}
-	if utils.ConfigJSON.Server.Verbose > 1 {
-		dump, err := httputil.DumpRequestOut(req, true)
-		if err == nil {
-			log.Println("request: ", string(dump))
-		}
-	}
-
-	timeout := time.Duration(utils.ConfigJSON.Server.HTTPTimeout) * time.Second
-	client := &http.Client{Timeout: timeout}
-	resp, err := client.Do(req)
-
-	if err != nil {
-		log.Printf("Unable to get response from %s, error: %s", apiURL, err)
-		return
-	}
-	if utils.ConfigJSON.Server.Verbose > 2 {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err == nil {
-			log.Println("response:", string(dump))
-		}
-	}
-	body, _ := ioutil.ReadAll(resp.Body)
+	resp := utils.HttpCall("POST", apiURL, headers, bytes.NewBuffer(data))
 	defer resp.Body.Close()
-	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("response Status:", resp.Status)
-		log.Println("response Headers:", resp.Header)
-		if utils.ConfigJSON.Server.Verbose > 1 {
-			log.Println("response Body:", string(body))
-		}
-	}
 
 	if resp.StatusCode == http.StatusForbidden {
 		utils.ConfigJSON.Server.Testing.AnnotateTestStatus = false

@@ -1,12 +1,9 @@
 package pipeline
 
 import (
-	"errors"
 	"go/intelligence/models"
 	"go/intelligence/utils"
 	"log"
-	"net/http"
-	"net/http/httputil"
 	"time"
 )
 
@@ -15,7 +12,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//DeleteSilence - function for deleting expired silences
+// DeleteSilence - function for deleting expired silences
 func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
@@ -38,7 +35,7 @@ func DeleteSilence(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return finalData
 }
 
-//deleteSilenceHelper - helper function for deleting a silence
+// deleteSilenceHelper - helper function for deleting a silence
 func deleteSilenceHelper() {
 	utils.DataReadWriteLock.RLock()
 	defer utils.DataReadWriteLock.RUnlock()
@@ -56,10 +53,10 @@ func deleteSilenceHelper() {
 	}
 }
 
-//deleteSuppressedAlert - helper function for deleting a suppressed alert
+// deleteSuppressedAlert - helper function for deleting a suppressed alert
 func deleteSuppressedAlert(silencedAlert string) {
-	utils.SuppressedAlertsDataReadWriteLock.RLock()
-	defer utils.SuppressedAlertsDataReadWriteLock.RUnlock()
+	utils.DataReadWriteLock.RLock()
+	defer utils.DataReadWriteLock.RUnlock()
 	if data, ifDataFound := utils.ExtSuppressedAlertsMap[silencedAlert]; ifDataFound {
 		data.EndsAt = time.Now()
 		err := utils.PostAlert(data)
@@ -72,48 +69,16 @@ func deleteSuppressedAlert(silencedAlert string) {
 	}
 }
 
-//deleteSilenceAPICall - helper function for making API call for deleting a silence
+// deleteSilenceAPICall - helper function for making API call for deleting a silence
 func deleteSilenceAPICall(silencedAlert, silenceID string) error {
 
-	apiurl := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.DeleteSilenceAPI) // DELETE API for deleting silences.
-	apiurl = utils.ValidateURL(apiurl, "/"+silenceID)
+	apiURL := utils.ValidateURL(utils.ConfigJSON.Server.CMSMONURL, utils.ConfigJSON.Server.DeleteSilenceAPI)
+	apiURL = utils.ValidateURL(apiURL, "/"+silenceID)
 
-	req, err := http.NewRequest("DELETE", apiurl, nil)
-	if err != nil {
-		log.Printf("Request Error, error: %v\n", err)
-		return err
-	}
-
-	timeout := time.Duration(utils.ConfigJSON.Server.HTTPTimeout) * time.Second
-	client := &http.Client{Timeout: timeout}
-
-	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("DELETE", apiurl)
-	} else if utils.ConfigJSON.Server.Verbose > 1 {
-		dump, err := httputil.DumpRequestOut(req, true)
-		if err == nil {
-			log.Println("Request: ", string(dump))
-		}
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("Response Error, error: %v\n", err)
-		return err
-	}
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
-		return errors.New("Http Response Code Error")
-	}
-
+	var headers [][]string
+	headers = append(headers, []string{"Content-Type", "application/json"})
+	resp := utils.HttpCall("DELETE", apiURL, headers, nil)
 	defer resp.Body.Close()
-
-	if utils.ConfigJSON.Server.Verbose > 2 {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err == nil {
-			log.Println("Response: ", string(dump))
-		}
-	}
 
 	if utils.ConfigJSON.Server.Verbose > 2 {
 		log.Printf("Silence Deleted for:\n%+v\n", silencedAlert)
