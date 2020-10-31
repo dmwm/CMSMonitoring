@@ -320,7 +320,15 @@ func Set(dict map[string]interface{}, key string, value string) {
 
 // helper function to make http call
 func HttpCall(method, apiURL string, headers [][]string, buf *bytes.Buffer) *http.Response {
-	req, err := http.NewRequest(method, apiURL, buf)
+	var req *http.Request
+	var err error
+	if buf != nil {
+		// POST request
+		req, err = http.NewRequest(method, apiURL, buf)
+	} else {
+		// GET, DELETE requests
+		req, err = http.NewRequest(method, apiURL, nil)
+	}
 	if err != nil {
 		log.Printf("Unable to make request to %s, error: %s", apiURL, err)
 	}
