@@ -103,7 +103,7 @@ type GrafanaDashboard struct {
 
 // String function provides representation of GrafanaDashboard data
 func (g *GrafanaDashboard) String() string {
-	s := fmt.Sprintf("grafana dashboard %d, tags: %v, text %v between [%v-%v]", g.DashboardID, g.Tags, g.Text, g.Time, g.TimeEnd)
+	s := fmt.Sprintf("grafana dashboard %v, tags: %v, text %v between [%v-%v]", g.DashboardID, g.Tags, g.Text, g.Time, g.TimeEnd)
 	return s
 }
 
