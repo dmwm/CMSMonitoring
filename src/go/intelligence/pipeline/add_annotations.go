@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Module     : intelligence
@@ -156,7 +157,6 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							dashboardData.DashboardID = dashboard.ID
 							dashboardData.Time = each.StartsAt.Unix() * 1000
 							dashboardData.TimeEnd = each.EndsAt.Unix() * 1000
-
 							dashboardData.Tags = customTags
 
 							if val, ok := utils.Get(each.Annotations, srv.AnnotationMap.Label); ok {
@@ -166,15 +166,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 									dashboardData.Text = srv.Name + ": " + val
 								}
 							}
-
-							dData, err := json.Marshal(dashboardData)
-							if err != nil {
-								log.Printf("Unable to convert the data into JSON %v, error: %v\n", dashboardData, err)
-							}
-							if utils.ConfigJSON.Server.Verbose > 0 {
-								log.Printf("+++ add annotation to %v", dashboardData.String())
-							}
-							addAnnotationHelper(dData)
+							addAnnotationHelper(dashboardData)
 						}
 					}
 				}
@@ -225,14 +217,19 @@ func checkIfAvailable(data []string, amData models.AmJSON, label string) bool {
 // addAnnotationHelper - helper function
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L639
-func addAnnotationHelper(data []byte) {
+func addAnnotationHelper(d models.GrafanaDashboard) {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", utils.ConfigJSON.AnnotationDashboard.Token)
 	headers = append(headers, []string{"Authorization", bearer})
 	headers = append(headers, []string{"Content-Type", "application/json"})
 
 	apiURL := utils.ValidateURL(utils.ConfigJSON.AnnotationDashboard.URL, utils.ConfigJSON.AnnotationDashboard.AnnotationAPI)
-	resp := utils.HttpCall("POST", apiURL, headers, bytes.NewBuffer(data))
+	dData, err := json.Marshal(d)
+	if err != nil {
+		log.Printf("Unable to convert the data into JSON %v, error: %v\n", d, err)
+		return
+	}
+	resp := utils.HttpCall("POST", apiURL, headers, bytes.NewBuffer(dData))
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden {
@@ -242,5 +239,7 @@ func addAnnotationHelper(data []byte) {
 	}
 
 	utils.ConfigJSON.Server.Testing.AnnotateTestStatus = true
-	log.Printf("Annotation Added Successfully to Grafana Dashboards : data %v", string(data))
+	tms := time.Unix(d.Time/1000, 0)    // dashboard time is in milliseconds
+	tme := time.Unix(d.TimeEnd/1000, 0) // dashboard time is in milliseconds
+	log.Printf("add annotation '%s' from %v to %v to dashboard %v tags %v", d.Text, tms, tme, d.DashboardID, d.Tags)
 }
