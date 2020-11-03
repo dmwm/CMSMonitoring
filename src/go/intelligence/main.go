@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"go/intelligence/models"
 	"go/intelligence/pipeline"
 	"go/intelligence/utils"
 	"log"
+	"runtime"
 	"time"
 )
 
@@ -13,6 +15,15 @@ import (
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
+
+// git version of our code
+var version string
+
+func info() string {
+	goVersion := runtime.Version()
+	tstamp := time.Now()
+	return fmt.Sprintf("git=%s go=%s date=%s", version, goVersion, tstamp)
+}
 
 // Function running all logics
 // Processing data pipeline module is based on ideas presented in
@@ -61,6 +72,8 @@ func main() {
 	var verbose int
 	var iter int
 	var configFile string
+	var version bool
+	flag.BoolVar(&version, "version", false, "Show version")
 	flag.StringVar(&configFile, "config", "", "Config File path")
 	flag.IntVar(&iter, "iter", 0, "Custom defined no. of iterations for premature termination")
 	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
@@ -71,6 +84,10 @@ func main() {
 	}
 
 	flag.Parse()
+	if version {
+		fmt.Println("version:", info())
+		return
+	}
 	utils.ParseConfig(configFile, verbose)
 
 	utils.FirstRunSinceRestart = true

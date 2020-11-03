@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"go/intelligence/models"
 	"go/intelligence/pipeline"
 	"go/intelligence/utils"
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -16,6 +18,15 @@ import (
 // Author     : Rahul Indra <indrarahul2013 AT gmail dot com>
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
+
+// git version of our code
+var version string
+
+func info() string {
+	goVersion := runtime.Version()
+	tstamp := time.Now()
+	return fmt.Sprintf("git=%s go=%s date=%s", version, goVersion, tstamp)
+}
 
 func runPipeline() {
 	utils.ChangeCounters = models.ChangeCounters{}
@@ -114,18 +125,6 @@ func runTest() {
 	log.Printf("Testing Successful!\n\n")
 }
 
-func main() {
-	var verbose int
-	var configFile string
-	flag.StringVar(&configFile, "config", "", "Config File path")
-	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
-
-	flag.Parse()
-	utils.ParseConfig(configFile, verbose)
-
-	runTest()
-}
-
 func getAMSnapshot() models.ChangeCounters {
 	currentCounters := models.ChangeCounters{}
 
@@ -158,4 +157,22 @@ func getAMSnapshot() models.ChangeCounters {
 	log.Printf("Number of Pending Silences : %d\n\n", currentCounters.NoOfPendingSilences)
 
 	return currentCounters
+}
+
+func main() {
+	var verbose int
+	var configFile string
+	var version bool
+	flag.BoolVar(&version, "version", false, "Show version")
+	flag.StringVar(&configFile, "config", "", "Config File path")
+	flag.IntVar(&verbose, "verbose", 0, "Verbosity Level, can be overwritten in config")
+
+	flag.Parse()
+	if version {
+		fmt.Println("version:", info())
+		return
+	}
+	utils.ParseConfig(configFile, verbose)
+
+	runTest()
 }
