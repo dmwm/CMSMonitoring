@@ -28,7 +28,7 @@ interval=${5:-1}
 verbose=${6:-0}
 
 while true;  do
-    echo "### monit -query="$query" -dbname=monit_production_ssb_otgs -token=$token -dbid=9474"
+    echo "### monit -query=\"$query\" -dbname=monit_production_ssb_otgs -token=$token -dbid=9474"
     monit -query="$query" -dbname=monit_production_ssb_otgs -token=$token -dbid=9474 > $data_file
     echo "### ssb_alerting -input $data_file -url $cmsmon_url -verbose $verbose"
     ssb_alerting -input $data_file -url $cmsmon_url -verbose $verbose
