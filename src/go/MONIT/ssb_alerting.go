@@ -183,6 +183,9 @@ func (data *ssb) convertData() []byte {
 		temp.StartsAt = _beginTS
 		temp.EndsAt = _endTS
 
+		if verbose > 0 {
+			log.Println("adding", temp.Labels.Alertname, temp.Labels.Severity, temp.Labels.Service, temp.Labels.Tag, temp.Annotations.URL)
+		}
 		finalData = append(finalData, temp)
 
 	}
@@ -339,12 +342,16 @@ func deleteAlerts() {
 }
 
 //function containing all logics for alerting.
-func alert(inp string) {
+func alert(inp string, dryRun bool) {
 
 	jsonData := fetchJSON(inp)
 	var data ssb
 	data.parseJSON(jsonData)
 	jsonStrAM := data.convertData() //JSON data in AlertManager APIs format.
+	if dryRun {
+		fmt.Println(string(jsonStrAM))
+		return
+	}
 	post(jsonStrAM)
 	deleteAlerts()
 
@@ -356,10 +363,12 @@ func main() {
 	severity = "notification" // Acting as a default severity for intelligence module
 	tag = "monitoring"
 	service = "SSB"
+	var dryRun bool
 
 	flag.StringVar(&inp, "input", "", "input filename")
 	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
+	flag.BoolVar(&dryRun, "dryRun", false, "dry run mode, fetch data but do not post it to AM")
 	flag.Parse()
 
 	if inp == "" {
@@ -376,6 +385,6 @@ func main() {
 		log.SetFlags(log.LstdFlags)
 	}
 
-	alert(inp)
+	alert(inp, dryRun)
 
 }
