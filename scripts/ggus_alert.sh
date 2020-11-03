@@ -35,7 +35,9 @@ timeout=${6:-0}
 verbose=${7:-0}
 
 while true;  do
-   ggus_parser -format $ggus_format -out $data_file -timeout $timeout -verbose $verbose
-   ggus_alerting -input $data_file -url $cmsmon_url -vo $vo -verbose $verbose
-   sleep $interval
+    echo "### ggus_parser -format $ggus_format -out $data_file -timeout $timeout -verbose $verbose"
+    ggus_parser -format $ggus_format -out $data_file -timeout $timeout -verbose $verbose
+    echo "### ggus_alerting -input $data_file -url $cmsmon_url -vo $vo -verbose $verbose"
+    ggus_alerting -input $data_file -url $cmsmon_url -vo $vo -verbose $verbose
+    sleep $interval
 done
