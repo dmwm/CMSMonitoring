@@ -1,7 +1,6 @@
 # Installation
 
 - Table of contents
-  * [Setup](#setup)
   * [Build](#build)
     - [Main](#main)
     - [Test](#test)
@@ -10,30 +9,21 @@
     - [Manual](#manual)
     - [Automation](#automation)
 
-## Setup
-
-If you want the compiled binary to reside in CMSMonitoring/bin then set the $GOPATH at /CMSMonitoring by this command.
-
-```  export GOPATH=<WORK_DIR>/CMSMonitoring ```
-
-You may also want to to include following into the PATH variable.
-
-```$GOPATH/bin```
-
-However, You can chose any other path anytime by providing path to $GOPATH, setting the PATH variable.
-
 ## Build
 
 #### Main
-To build the intelligence module run the following command. Upon completion of build the binary file will reside in $GOPATH/bin.
+To build the intelligence module run the following command
 
-`go build go/intelligence`
+`make`
 
 #### Test
 
 Build the test binary residing [here](https://github.com/dmwm/CMSMonitoring/blob/master/src/go/intelligence/int_test/test.go) by running :-
 
-`go build go/intelligence/int_test`
+```
+cd int_test
+make
+```
 
 ## Run
 ```
@@ -44,6 +34,8 @@ Usage: intelligence [options]
     	Custom defined no. of iterations for premature termination
   -verbose int
     	Verbosity Level, can be overwritten in config
+  -version
+    	Show version
 ```
 As $GOPATH/bin has already been set in PATH variable, you can run the intelligence module binary by executing the command below. Config file path flag (-config) is mandatory. However, -verbose and -iter flags are optional.  
 
