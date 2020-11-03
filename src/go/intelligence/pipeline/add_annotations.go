@@ -160,10 +160,9 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 							dashboardData.Tags = customTags
 
 							if val, ok := utils.Get(each.Annotations, srv.AnnotationMap.Label); ok {
+								dashboardData.Text = srv.Name + ": " + val
 								if url, urlOk := utils.Get(each.Annotations, srv.AnnotationMap.URLLabel); urlOk {
 									dashboardData.Text = srv.Name + ": " + val + "\n" + makeHTMLhref(url)
-								} else {
-									dashboardData.Text = srv.Name + ": " + val
 								}
 							}
 							addAnnotationHelper(dashboardData)
