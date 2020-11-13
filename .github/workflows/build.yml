@@ -55,8 +55,11 @@ jobs:
         go build -o nats-exitcodes-termui src/go/NATS/nats-exitcodes-termui.go
         go build -o nats-pub src/go/NATS/nats-pub.go
         go build -o nats-sub src/go/NATS/nats-sub.go
-        tar cfz cmsmon-tools.tar.gz monit alert annotationManager datasources ggus_alerting \
-          ggus_parser intelligence ssb_alerting dbs_vm nats-exitcodes-termui nats-pub nats-sub
+        mkdir cmsmon-tools
+        mv monit alert annotationManager datasources ggus_alerting \
+          ggus_parser intelligence ssb_alerting dbs_vm nats-exitcodes-termui nats-pub nats-sub \
+          cmsmon-tools
+        tar cfz cmsmon-tools.tar.gz cmsmon-tools
 
     - name: Create Release
       id: create_release
