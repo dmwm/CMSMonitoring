@@ -88,21 +88,21 @@ func datasources(rurl, t string, verbose int) ([]DSRecord, error) {
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	if verbose > 0 {
+	if verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			log.Println("response:", string(dump))
+			log.Println("[DEBUG] response:", string(dump))
 		}
 	}
 	if resp.StatusCode == 403 {
-		if verbose > 0 {
-			log.Println("User is not ADMIN")
+		if verbose > 1 {
+			log.Println("[DEBUG] User is not ADMIN")
 		}
 		// User got permission denied http 403, so do not send data
 		return nil, errors.New("Not Admin")
 	}
-	if verbose > 0 {
-		log.Println("User is ADMIN")
+	if verbose > 1 {
+		log.Println("[DEBUG] User is ADMIN")
 	}
 	if err != nil {
 		log.Fatalf("Unable to get response from %s, error: %s", rurl, err)
@@ -113,7 +113,7 @@ func datasources(rurl, t string, verbose int) ([]DSRecord, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&records); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
-	//User is admin, so send the data with empty string error
+	//User is admin, so send the data with nil error
 	return records, nil
 }
 
@@ -122,10 +122,10 @@ func readDS(dsurl string, verbose int) (records []DSRecord) {
 	req, err := http.NewRequest("GET", dsurl, nil)
 	req.Header.Set("Content-type", "application/x-ndjson")
 	req.Header.Set("Accept", "application/json")
-	if verbose > 0 {
+	if verbose > 1 {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
-			log.Println("request: ", string(dump))
+			log.Println("[DEBUG] request: ", string(dump))
 		}
 	}
 	client := &http.Client{}
@@ -133,17 +133,20 @@ func readDS(dsurl string, verbose int) (records []DSRecord) {
 	if err != nil {
 		log.Fatalf("Unable to get response from %s, error: %s", dsurl, err)
 	}
-	if verbose > 0 {
+	if verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			log.Println("response:", string(dump))
+			log.Println("[DEBUG] response:", string(dump))
 		}
 	}
 	dsRecordMaps := make(DSRecordMaps)
 	defer resp.Body.Close()
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&dsRecordMaps); err != nil {
-		log.Fatalf("Error parsing the response body: %s", err)
+		if verbose > 1 {
+			log.Fatalf("[DEBUG] Error parsing the response body: %s", err)
+		}
+		log.Fatalf("Error happened while getting Grafana datasources! Please report this error to admins.")
 	}
 	// Convert map of data sources to DSRecord struct list
 	for k, v := range dsRecordMaps {
@@ -157,7 +160,7 @@ func readDS(dsurl string, verbose int) (records []DSRecord) {
 	if verbose > 1 {
 		data, e := json.Marshal(records)
 		if e == nil {
-			log.Println("DSRecord: \n" + string(data))
+			log.Println("[DEBUG] DSRecord: \n" + string(data))
 		}
 	}
 	return records
@@ -321,7 +324,7 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 		q = query
 	}
 	if verbose > 0 {
-		log.Println(rurl, q)
+		log.Println(rurl, "\n[User Query]:\n" + q)
 	}
 	req, err := http.NewRequest("GET", rurl, strings.NewReader(q))
 	if err != nil {
@@ -360,6 +363,7 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 	var data Record
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		log.Println("Please check your query!")
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 	return data
@@ -805,7 +809,7 @@ func main() {
 	defaultUrl := "https://monit-grafana.cern.ch"
 	deafultDataSourcesUrl := "https://raw.githubusercontent.com/dmwm/CMSMonitoring/master/static/datasources.json"
 	var verbose int
-	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
+	flag.IntVar(&verbose, "verbose", 0, "verbosity level, 2 and above is for debug")
 	var url string
 	flag.StringVar(&url, "url", defaultUrl, "MONIT URL")
 	var dsurl string
