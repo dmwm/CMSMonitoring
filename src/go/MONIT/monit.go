@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -27,6 +28,9 @@ import (
 
 // Record represents MONIT return record {"response":...}
 type Record map[string]interface{}
+
+// DSRecordMaps represents data sources maps {ds1:{id: 1, ...}, ds2:{id:2, ...}}
+type DSRecordMaps map[string]map[string]interface{}
 
 // DSRecord represents record we write out
 type DSRecord struct {
@@ -69,7 +73,7 @@ func read(r string) string {
 }
 
 // return CMS Monitoring datasources
-func datasources(rurl, t string, verbose int) []DSRecord {
+func datasources(rurl, t string, verbose int) ([]DSRecord, error) {
 	uri := fmt.Sprintf("%s/api/datasources", rurl)
 	req, err := http.NewRequest("GET", uri, nil)
 	token := read(t)
@@ -84,14 +88,24 @@ func datasources(rurl, t string, verbose int) []DSRecord {
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("Unable to get response from %s, error: %s", rurl, err)
-	}
-	if verbose > 0 {
+	if verbose > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			log.Println("response:", string(dump))
+			log.Println("[DEBUG] response:", string(dump))
 		}
+	}
+	if resp.StatusCode == 403 {
+		if verbose > 1 {
+			log.Println("[DEBUG] User is not ADMIN")
+		}
+		// User got permission denied http 403, so do not send data
+		return nil, errors.New("Not Admin")
+	}
+	if verbose > 1 {
+		log.Println("[DEBUG] User is ADMIN")
+	}
+	if err != nil {
+		log.Fatalf("Unable to get response from %s, error: %s", rurl, err)
 	}
 	var records []DSRecord
 	defer resp.Body.Close()
@@ -99,7 +113,77 @@ func datasources(rurl, t string, verbose int) []DSRecord {
 	if err := json.NewDecoder(resp.Body).Decode(&records); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
+	//User is admin, so send the data with nil error
+	return records, nil
+}
+
+// Read CMS Monitoring datasources from given url path. Default is datasources file in CMSMonitoring repo.
+func readDS(dsurl string, verbose int) (records []DSRecord) {
+	req, err := http.NewRequest("GET", dsurl, nil)
+	req.Header.Set("Content-type", "application/x-ndjson")
+	req.Header.Set("Accept", "application/json")
+	if verbose > 1 {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("[DEBUG] request: ", string(dump))
+		}
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Unable to get response from %s, error: %s", dsurl, err)
+	}
+	if verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("[DEBUG] response:", string(dump))
+		}
+	}
+	dsRecordMaps := make(DSRecordMaps)
+	defer resp.Body.Close()
+	// Deserialize the response into a map.
+	if err := json.NewDecoder(resp.Body).Decode(&dsRecordMaps); err != nil {
+		if verbose > 1 {
+			log.Fatalf("[DEBUG] Error parsing the response body: %s", err)
+		}
+		log.Fatalf("Error happened while getting Grafana datasources! Please report this error to admins.")
+	}
+	// Convert map of data sources to DSRecord struct list
+	for k, v := range dsRecordMaps {
+		r := new(DSRecord)
+		r.Type = fmt.Sprint(v["type"])
+		r.Id = int(v["id"].(float64))
+		r.Database = fmt.Sprint(v["database"])
+		r.Name = fmt.Sprint(k)
+		records = append(records, *r)
+	}
+	if verbose > 1 {
+		data, e := json.Marshal(records)
+		if e == nil {
+			log.Println("[DEBUG] DSRecord: \n" + string(data))
+		}
+	}
 	return records
+}
+
+// Write data sources to file. Datasources fetched from Grafana.
+func writeDS(fname string) {
+	out := make(map[string]map[string]interface{})
+	for _, rec := range DataSources {
+		r := make(map[string]interface{})
+		r["type"] = rec.Type
+		r["id"] = rec.Id
+		r["database"] = rec.Database
+		out[rec.Name] = r
+	}
+	file, err := json.MarshalIndent(out, "", "\t")
+	if err == nil {
+		err = ioutil.WriteFile(fname, file, 0644)
+		if err != nil {
+			log.Fatalf("Error writing to file: %s error: %s", fname, err)
+			os.Exit(0)
+		}
+	}
 }
 
 // helper function to find MONIT datasource id
@@ -240,7 +324,7 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 		q = query
 	}
 	if verbose > 0 {
-		log.Println(rurl, q)
+		log.Println(rurl, "\n[User Query]:\n" + q)
 	}
 	req, err := http.NewRequest("GET", rurl, strings.NewReader(q))
 	if err != nil {
@@ -279,6 +363,7 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 	var data Record
 	// Deserialize the response into a map.
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		log.Println("Please check your query!")
 		log.Fatalf("Error parsing the response body: %s", err)
 	}
 	return data
@@ -722,10 +807,13 @@ func addAnnotation(base, token string, data []byte, verbose int) {
 
 func main() {
 	defaultUrl := "https://monit-grafana.cern.ch"
+	deafultDataSourcesUrl := "https://raw.githubusercontent.com/dmwm/CMSMonitoring/master/static/datasources.json"
 	var verbose int
-	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
+	flag.IntVar(&verbose, "verbose", 0, "verbosity level, 2 and above is for debug")
 	var url string
 	flag.StringVar(&url, "url", defaultUrl, "MONIT URL")
+	var dsurl string
+	flag.StringVar(&dsurl, "dsurl", deafultDataSourcesUrl, "DataSources URL")
 	var token string
 	flag.StringVar(&token, "token", "", "MONIT token or token file")
 	var dbid int
@@ -755,7 +843,9 @@ func main() {
 	var limit int
 	flag.IntVar(&limit, "limit", 0, "verbosity level")
 	var listDataSources bool
-	flag.BoolVar(&listDataSources, "datasources", false, "List MONIT datasources")
+	flag.BoolVar(&listDataSources, "datasources", false, "list MONIT datasources")
+	var writeDataSourcesTo string
+	flag.StringVar(&writeDataSourcesTo, "writedsto", "", "fetch MONIT datasources from Grafana and write to given file")
 	flag.Usage = func() {
 		fmt.Println("Usage: monit [options]")
 		flag.PrintDefaults()
@@ -790,6 +880,12 @@ func main() {
 		fmt.Println("")
 		fmt.Println("   # look-up all available datasources in MONIT")
 		fmt.Println("   monit -datasources -token token")
+		fmt.Println("")
+		fmt.Println("   # write all datasources in MONIT to given file, requires admin token")
+		fmt.Println("   monit -token admin.token -writedsto datasources.json")
+		fmt.Println("")
+		fmt.Println("   # use different data sources url")
+		fmt.Println("   monit -token admin.token -dsurl \"http://...\" -query=\"stats\"")
 	}
 	flag.Parse()
 
@@ -799,7 +895,21 @@ func main() {
 		log.SetFlags(log.LstdFlags)
 	}
 	var e error
-	DataSources = datasources(defaultUrl, token, verbose)
+	// Fetch data sources from Grafana and write to file. Requires admin token.
+	if writeDataSourcesTo != "" {
+		DataSources, e = datasources(defaultUrl, token, verbose)
+		if e == nil {
+			writeDS(writeDataSourcesTo)
+			fmt.Println("Data sources are written successfully into", writeDataSourcesTo)
+		} else {
+			log.Fatalf("Please provide admin token!")
+		}
+		os.Exit(0)
+	}
+	// If admin token provided, use function datasources, else readDS
+	if DataSources, e = datasources(defaultUrl, token, verbose); e != nil {
+		DataSources = readDS(dsurl, verbose)
+	}
 	if listDataSources {
 		data, err := json.MarshalIndent(DataSources, "", "\t")
 		if err == nil {
