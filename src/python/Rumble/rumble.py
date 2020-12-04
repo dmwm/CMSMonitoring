@@ -17,8 +17,8 @@ class OptionParser:
     def __init__(self):
         """ User based option parser """
         # Max output size is unlimited
-        default_url = "https://cms-monitoring.cern.ch/"
-        uri = default_url + "jsoniq?overwrite=yes&materialization-cap=-1"
+        default_url = "http://cms-monitoring.cern.ch:32002"
+        uri = default_url + "/jsoniq?overwrite=yes&materialization-cap=-1"
         self.parser = argparse.ArgumentParser(prog='PROG')
         self.parser.add_argument("--query", action="store", dest="query", default="", help="Input: file or query")
         self.parser.add_argument("--output", action="store", dest="output", default=None, help="Output file")
@@ -53,7 +53,7 @@ def rumble(server, query, output=None):
                 print(e)
         else:
             for e in response['values']:
-                return json.dumps(e)
+                return json.dumps(response['values'])
     elif 'error-message' in response:
         return response['error-message']
     else:

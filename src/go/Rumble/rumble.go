@@ -98,8 +98,8 @@ func sendRequest(server string, query string, output string, isHdfs bool, verbos
 }
 
 func main() {
-	defaultUrl := "https://cms-monitoring.cern.ch/"
-	uri := defaultUrl + "jsoniq?materialization-cap=-1"
+	defaultUrl := "http://cms-monitoring.cern.ch:32002"
+	uri := defaultUrl + "/jsoniq?materialization-cap=-1"
 	var verbose int
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	var server string
