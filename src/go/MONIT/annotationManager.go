@@ -120,7 +120,7 @@ func getAnnotations(data *[]annotationData, tags []string) {
 	}
 
 	if dashboardID != -1 {
-		v.Add("dashboardId", dashboardID)
+		v.Add("dashboardId", strconv.Itoa(dashboardID))
 	}
 
 	for _, tag := range tags {
