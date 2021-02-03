@@ -61,6 +61,9 @@ var configFilePath string
 // config variable
 var configJSON config
 
+// variable for storing corresponding dashboard ids while filtering
+var dashboardID int
+
 // -------VARIABLES-------
 
 // -------STRUCTS---------
@@ -114,6 +117,10 @@ func getAnnotations(data *[]annotationData, tags []string) {
 			v.Add("from", strings.Trim(strconv.FormatInt(tms[0], 10), " "))
 			v.Add("to", strings.Trim(strconv.FormatInt(time.Now().UTC().Unix()*int64(milliSec), 10), " "))
 		}
+	}
+
+	if dashboardID != -1 {
+		v.Add("dashboardId", strconv.Itoa(dashboardID))
 	}
 
 	for _, tag := range tags {
@@ -868,6 +875,7 @@ func main() {
 	flag.IntVar(&grafanaLimit, "grafana-limit", 100, "Limit for fetching number of annotations at a time.")
 	flag.StringVar(&token, "token", "", "Authentication token to use (Optional-can be stored in config file)")
 	flag.StringVar(&tags, "tags", "", "List of tags seperated by comma")
+	flag.IntVar(&dashboardID, "db", -1, "Dashboard ID to be used for filtering while listing annotations")
 	flag.StringVar(&action, "action", "", "Action to be performed. [list, create, delete, deleteall, update] Default: list")
 	flag.StringVar(&trange, "trange", "", "Time Range for filtering annotations.")
 	flag.IntVar(&annotationID, "annotationID", 0, "Annotation ID required in making delete api call for deleting an annotation")
@@ -892,6 +900,8 @@ func main() {
 		fmt.Println("\t    annotationManager -action=list -tags=das,cmsmon-int -trange=14d-7d")
 		fmt.Println("\n\tGet all annotations with specified tags on time period range (using dates seperated by '--')")
 		fmt.Println("\t    annotationManager -action=list -tags=das,cmsmon-int -trange=2020-09-01T19:49:50.206Z--2020-09-01T19:49:50.206Z")
+		fmt.Println("\n\tGet all annotations with specified tags on time period range with dashboard filter")
+		fmt.Println("\t    annotationManager -action=list -tags=das,cmsmon-int -trange=7d-now -db 1247")
 		fmt.Println("\n\tDelete all annotations once you find appropriate annotations to delete from the above commands.")
 		fmt.Println("\t    annotationManager -action=deleteall -tags=das,cmsmon-int -trange=7d-now")
 		fmt.Println("\t    annotationManager -action=deleteall -tags=das,cmsmon-int -trange=14d-7d")
