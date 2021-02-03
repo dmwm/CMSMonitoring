@@ -11,7 +11,7 @@ It consists of few components:
   and other services
 You can view how these pieces are interconnected in the following
 architectural diagram:
-![cluster architecture](images/CMSMonitoringArchitecture.png)
+![cluster architecture](CMSMonitoringArchitecture.png)
 
 We also provide [NATS](https://nats.io/) cluster for real-time monitoring
 needs.
