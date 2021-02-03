@@ -61,5 +61,5 @@ They inlcude:
 
 ### References
 For complete guide to CMS Monitoring infratructure please refer
-to our [paper](https://doi.org/10.1051/epjconf/202024503022).
+to our [paper](https://doi.org/10.1007/s41781-020-00051-x).
 For a collection of tutorials, FAQs, and documentation about how to inject, access, and visualize data see [here](https://monit-grafana.cern.ch/d/FKrE9_2mk/cms-monitoring-tutorials?orgId=11).
