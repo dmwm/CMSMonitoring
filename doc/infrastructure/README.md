@@ -22,7 +22,7 @@ It provides [PromQL](https://prometheus.io/docs/prometheus/latest/querying/basic
 (Prometheus Query Language) to query your data which is accessible from
 [cms-monitoring.cern.ch](https://cms-monitoring.cern.ch). In our infrastructure
 we use [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
-back-end for Prometheus. It provides a [MetircsQL](https://victoriametrics.github.io/MetricsQL.html)
+back-end for Prometheus. It provides a [MetricsQL](https://victoriametrics.github.io/MetricsQL.html)
 which extends capability of PromQL even further.
 
 ### CMS Monitoring dashboards
@@ -32,8 +32,12 @@ The CMS Monitoring dashboards relies on the following data-sources:
 - [Prometheus](https://prometheus.io/)
 - [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics),
 
-The former two are maintained by CERN MONIT team, while last two are provided
-by CMS. We access Prometheus and VictoriaMetrics data-source either directly,
+The first two are maintained by the CERN MONIT team, while the last two are provided
+by CMS. 
+Access to the ES and influxDB data sources can be done programmatically with a [grafana proxy](http://monit-docs.web.cern.ch/monit-docs/access/monit_grafana.html) or using our [CLI tools](#cms-monitoring-cli-tools). The method can also be used to update documents as discussed in this 
+[ticket](https://its.cern.ch/jira/browse/CMSMONIT-53). Remember you will need a Grafana token for authorization. Ask us if you don't have one. 
+
+We access Prometheus and VictoriaMetrics data-source either directly,
 or indirectly via [promxy](https://github.com/jacksontj/promxy) proxy
 service. Therefore, in promxy data-source you can use either PromQL or MetricsQL in Grafana dashboards.
 We gradually migrate our infratructure to only rely on
@@ -58,3 +62,4 @@ They inlcude:
 ### References
 For complete guide to CMS Monitoring infratructure please refer
 to our [paper](https://doi.org/10.1051/epjconf/202024503022).
+For a collection of tutorials, FAQs, and documentation about how to inject, access, and visualize data see [here](https://monit-grafana.cern.ch/d/FKrE9_2mk/cms-monitoring-tutorials?orgId=11).
