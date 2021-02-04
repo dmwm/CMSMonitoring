@@ -38,11 +38,7 @@ jobs:
         go get github.com/shirou/gopsutil/mem
         go get github.com/shirou/gopsutil/load
         go get github.com/shirou/gopsutil/process
-        mkdir -p $GOPATH/src/github.com/gizak
-        cd $GOPATH/src/github.com/gizak
-        git clone git@github.com:gizak/termui.git
-        #go get github.com/gizak/termui
-        #dep ensure -add github.com/gizak/termui
+        go get github.com/gizak/termui
 
     - name: Build
       run: |
