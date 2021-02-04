@@ -82,3 +82,53 @@ jobs:
         asset_path: ./cmsmon-tools.tar.gz
         asset_name: cmsmon-tools.tar.gz
         asset_content_type: application/octet-stream
+
+    - name: Get the Ref
+      id: get-ref
+      uses: ankitvgupta/ref-to-tag-action@master
+      with:
+        ref: ${{ github.ref }}
+        head_ref: ${{ github.head_ref }}
+
+    - name: Login to Registry
+      uses: docker/login-action@v1.6.0
+      with:
+        registry: docker.pkg.github.com
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: Build cmsmon-intelligence image
+      run: |
+        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-intelligence/Dockerfile
+        sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
+        docker build . --tag docker.pkg.github.com/dmwm/cmsmon-intelligence/cmsmon-intelligence
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        load: true
+        tags: cmssw/cmsmon-intelligence:${{steps.get-ref.outputs.tag}}
+    - run: docker push cmssw/cmsmon-intelligence:${{steps.get-ref.outputs.tag}}
+
+    - name: Build cmsmon-alerts image
+      run: |
+        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-alerts/Dockerfile
+        sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
+        docker build . --tag docker.pkg.github.com/dmwm/cmsmon-alerts/cmsmon-alerts
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        load: true
+        tags: cmssw/cmsmon-alerts:${{steps.get-ref.outputs.tag}}
+    - run: docker push cmssw/cmsmon-alerts:${{steps.get-ref.outputs.tag}}
