@@ -50,10 +50,10 @@ jobs:
         go build -o ggus_parser src/go/MONIT/ggus_parser.go
         go build -o intelligence src/go/MONIT/intelligence.go
         go build -o ssb_alerting src/go/MONIT/ssb_alerting.go
+        go build -o es_exporter src/go/MONIT/es_exporter.go
         go build -o dbs_vm src/go/NATS/dbs_vm.go
         go build -o nats-pub src/go/NATS/nats-pub.go
         go build -o nats-sub src/go/NATS/nats-sub.go
-        go build -o es_exporter src/go/NATS/es_exporter.go
         mkdir cmsmon-tools
         mv monit alert annotationManager datasources ggus_alerting \
           ggus_parser intelligence ssb_alerting dbs_vm nats-pub nats-sub \
