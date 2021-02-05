@@ -118,7 +118,8 @@ func datasources(rurl, t string, verbose int) ([]DSRecord, error) {
 }
 
 // Read CMS Monitoring datasources from given url path. Default is datasources file in CMSMonitoring repo.
-func readDS(dsurl string, verbose int) (records []DSRecord) {
+func readDS(dsurl string, verbose int) []DSRecord {
+	var records []DSRecord
 	req, err := http.NewRequest("GET", dsurl, nil)
 	req.Header.Set("Content-type", "application/x-ndjson")
 	req.Header.Set("Accept", "application/json")
@@ -324,7 +325,7 @@ func queryES(base string, dbid int, dbname, query, esapi string, headers [][]str
 		q = query
 	}
 	if verbose > 0 {
-		log.Println(rurl, "\n[User Query]:\n" + q)
+		log.Println(rurl, "\n[User Query]:\n"+q)
 	}
 	req, err := http.NewRequest("GET", rurl, strings.NewReader(q))
 	if err != nil {
