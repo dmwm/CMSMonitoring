@@ -5,7 +5,7 @@ It consists of a few components:
   [ElasticSearch](https://www.tutorialspoint.com/elasticsearch/index.htm),
   [InfluxDB](https://www.influxdata.com/products/influxdb-overview/),
   [HDFS](https://www.geeksforgeeks.org/hdfs-commands/).
-  See the specific [documentation](../MONIT/readme.md).
+  See the specific [documentation](../MONIT/README.md).
 
 - the CMS Monitoring infrastructure which provides
   [Prometheus](https://prometheus.io/),
@@ -29,19 +29,9 @@ we use [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
 back-end for Prometheus. It provides a [MetricsQL](https://victoriametrics.github.io/MetricsQL.html)
 which extends capability of PromQL even further.
 
-### CMS Monitoring dashboards
-The CMS Monitoring dashboards relies on the following data-sources:
-- [ElasticSearch](https://www.tutorialspoint.com/elasticsearch/index.htm)
-- [InfluxDB](https://www.influxdata.com/products/influxdb-overview/)
-- [Prometheus](https://prometheus.io/)
-- [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics),
+### Access to Prometheus and VictoriaMetrics via dashboards
 
-The first two are maintained by the CERN MONIT team, while the last two are provided
-by CMS. 
-Access to the ES and influxDB data sources can be done programmatically with a [grafana proxy](http://monit-docs.web.cern.ch/monit-docs/access/monit_grafana.html) or using our [CLI tools](#cms-monitoring-cli-tools). The method can also be used to update documents as discussed in this 
-[ticket](https://its.cern.ch/jira/browse/CMSMONIT-53). Remember you will need a Grafana token for authorization. Ask us if you don't have one. 
-
-We access Prometheus and VictoriaMetrics data-source either directly,
+Data from Prometheus/VictoriaMetrics can be visualised in Grafana dashboards by using the appropriate data sources,
 or indirectly via [promxy](https://github.com/jacksontj/promxy) proxy
 service. Therefore, in promxy data-source you can use either PromQL or MetricsQL in Grafana dashboards.
 We gradually migrate our infratructure to only rely on
