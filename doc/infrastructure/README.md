@@ -1,14 +1,18 @@
 # CMS Monitoring infrastructure
-It consists of few components:
+
+It consists of a few components:
 - the CMS MONIT infrastructure which provides
   [ElasticSearch](https://www.tutorialspoint.com/elasticsearch/index.htm),
   [InfluxDB](https://www.influxdata.com/products/influxdb-overview/),
-  [HDFS](https://www.geeksforgeeks.org/hdfs-commands/) infrastructures
+  [HDFS](https://www.geeksforgeeks.org/hdfs-commands/).
+  See the specific [documentation](../MONIT/readme.md).
+
 - the CMS Monitoring infrastructure which provides
   [Prometheus](https://prometheus.io/),
   [AlertManager](https://www.prometheus.io/docs/alerting/latest/alertmanager/),
   [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
-  and other services
+  and other services.
+
 You can view how these pieces are interconnected in the following
 architectural diagram:
 ![cluster architecture](CMSMonitoringHA.png)
@@ -60,6 +64,6 @@ They inlcude:
 - `nats-pub` and `nats-sub` are tools to connect to NATS server
 
 ### References
-For complete guide to CMS Monitoring infratructure please refer
+For complete guide to CMS Monitoring infrastructure please refer
 to our [paper](https://doi.org/10.1007/s41781-020-00051-x).
 For a collection of tutorials, FAQs, and documentation about how to inject, access, and visualize data see [here](https://monit-grafana.cern.ch/d/FKrE9_2mk/cms-monitoring-tutorials?orgId=11).
