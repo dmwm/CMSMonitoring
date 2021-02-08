@@ -5,3 +5,5 @@
 * Documentation for monitoring [operators](operators.md)
 
 Problems? Questions? Please open a [JIRA ticket](https://its.cern.ch/jira/browse/CMSMONIT)
+
+![cluster architecture](infrastructure/CMSMonitoringHA.png)
