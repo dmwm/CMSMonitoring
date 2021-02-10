@@ -6,6 +6,12 @@ Grafana can be used to access data sources in ElasticSearch, InfluxDB, Prometheu
 
 * official [documentation](http://docs.grafana.org/), [Getting Started](http://docs.grafana.org/guides/getting_started/), [screencasts](http://docs.grafana.org/tutorials/screencasts/), [Tutorials](https://grafana.com/tutorials/)
 
+## Grafana token
+
+Access to the Grafana data sources can be done programmatically with a [grafana proxy](http://monit-docs.web.cern.ch/monit-docs/access/monit_grafana.html) or using our [CLI tools](#cms-monitoring-cli-tools). The method can also be used to update documents as discussed in this [ticket](https://its.cern.ch/jira/browse/CMSMONIT-53). 
+
+Remember you will need a Grafana token for authorization. Ask us if you don't have one. 
+
 ## FAQ
 
 * The dashboard I'm looking at shows nothing/weird stuff
