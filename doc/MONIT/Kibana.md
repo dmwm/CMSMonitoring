@@ -11,7 +11,8 @@ Kibana is used as data exploration and visualization tool for ElasticSearch data
 ## FAQ
 
 * Why are there so many Kibana instances and how can I save my visualizations/dashboards?
-  - There are several Kibana instances available to CMS users, with different access and time retention policies, as described [here](#the-cms-instances). To save persistent plots you need to use the appropriate RW kibana instance and you need to be in the appropriate e-group
+  - There are several Kibana instances available to CMS users, with different access and time retention policies, as described [here](#the-cms-instances). 
+  - To save persistent plots you need to use the appropriate RW kibana instance and you need to be in the appropriate e-group.
 
 ## The CMS instances
 
