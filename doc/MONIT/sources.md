@@ -9,7 +9,7 @@
 | SI            | AMQ | /project/monitoring/archive/cms/raw/si_condor_* | [monit_prod_cms_raw_si_condor](https://monit-kibana.cern.ch/kibana/goto/d005ebd4f8efebd7eba33e294617281c) |
 | Popularity    | AMQ | /project/monitoring/archive/popagg/ | monit_prod_popagg_* |
 | WMAgent       | AMQ | /project/monitoring/archive/wmagent/ | [monit_prod_wmagent](https://monit-kibana.cern.ch/kibana/goto/ddb6ac9588fb8dd5ff3015b86c2a8106) |
-| WMArchive     | AMQ | /project/monitoring/archive/wmarchive | [monit_prod_wmarchive](https://monit-kibana.cern.ch/kibana/goto/cfda40d994ab003e17bcde1d7181a2be) |
+| WMArchive     | AMQ | /project/monitoring/archive/wmarchive | [monit_prod_wmarchive](https://monit-kibana.cern.ch/kibana/goto/caba713aae26648bf6bfaebcc4abf708) |
 | XRootD (GLED) | AMQ | /project/monitoring/archive/xrootd/ | [monit_prod_xrootd_enr](https://monit-kibana.cern.ch/kibana/goto/778ca958b0f40c5ab5f0a17ec351bd69) |
 | XRootD (AAA)  | AMQ | | [monit_prod_cms_raw_aaa-test](https://monit-kibana.cern.ch/kibana/goto/cfc7f48530bfcb510b6d557e632bd5ab), [monit_prod_cms_raw_aaa-ng](https://monit-kibana.cern.ch/kibana/goto/f91632d148761038fd314e909ebaeffb) |
 | Rucio logs    | HTTP | | [monit_prod_cms-rucio](https://monit-kibana.cern.ch/kibana/goto/2b4765b7c382b5d37057b0ac520f8ab4) |
