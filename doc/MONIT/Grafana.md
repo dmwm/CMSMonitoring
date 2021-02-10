@@ -16,7 +16,7 @@ Remember you will need a Grafana token for authorization. Ask us if you don't ha
 
 * The dashboard I'm looking at shows nothing/weird stuff
   - check the time range you're looking at (top right) 
-  - check the health of CERN central services, intervations, on the [SSB](https://cern.service-now.com/service-portal/ssb.do?area=IT)>SSB
+  - check the health of CERN central services, intervations, on the [SSB](https://cern.service-now.com/service-portal/ssb.do?area=IT)
 * How are grafana dashboards organised and who can edit them?
   - Grafana dashboards are organised in Production, Development, and Playground folders. Authorization schema is:
     - Playground: everybody has read/write rights. This is meant for everybody to use and experiment with graphana 
