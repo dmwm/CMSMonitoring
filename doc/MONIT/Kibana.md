@@ -1,4 +1,17 @@
-# The CMS Kibana instances
+# Kibana 
+
+## Tutorials
+
+* how to [discover](https://www.elastic.co/guide/en/kibana/current/discover.html) your data, 
+* create [plots/visualisations](https://www.elastic.co/guide/en/kibana/current/visualize.html),
+* make [dashboards](https://www.elastic.co/guide/en/kibana/current/dashboard-getting-started.html).
+
+## FAQ
+
+* Why are there so many Kibana instances and how can I save my visualizations/dashboards?
+  - There are several Kibana instances available to CMS users, with different access and time retention policies, as described [here](the-cms-instances). To save persistent plots you need to use the appropriate RW kibana instance and you need to be in the appropriate e-group
+
+## The CMS instances
 
 | Instance                                                     | Policy        | Access       | Data                         | Time retention 
 | ------------------------------------------------------------ |:-------------:| ------------:|-----------------------------:|------:
