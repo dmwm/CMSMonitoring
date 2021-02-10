@@ -14,7 +14,7 @@
 | WMAgent       | AMQ | /project/monitoring/archive/wmagent/ | [monit_prod_wmagent](https://monit-kibana.cern.ch/kibana/goto/ddb6ac9588fb8dd5ff3015b86c2a8106) |
 | WMArchive     | AMQ | /project/monitoring/archive/wmarchive | [monit_prod_wmarchive](https://monit-kibana.cern.ch/kibana/goto/cfda40d994ab003e17bcde1d7181a2be) |
 | XRootD (GLED) | AMQ | /project/monitoring/archive/xrootd/ | monit_prod_xrootd_enr_* |
-| XRootD (AAA)  | AMQ | | monit_prod_cms_raw_aaa-test_*, monit_prod_cms_raw_aaa-ng_ |
+| XRootD (AAA)  | AMQ | | [monit_prod_cms_raw_aaa-test](https://monit-kibana.cern.ch/kibana/goto/cfc7f48530bfcb510b6d557e632bd5ab), [monit_prod_cms_raw_aaa-ng](https://monit-kibana.cern.ch/kibana/goto/f91632d148761038fd314e909ebaeffb) |
 | Rucio logs    | HTTP | | monit_prod_cms-rucio |
 | Rucio events  | Hermes | | monit_prod_cms-rucio_raw_events* |
 | Production and Reprocessing | AMQ |  /project/monitoring/archive/toolsandint | [monit_prod_toolsandint](https://monit-kibana.cern.ch/kibana/goto/d175ecb6b967a48697d9e5a0ab30e259) |
