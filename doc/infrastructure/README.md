@@ -1,5 +1,7 @@
 # CMS Monitoring infrastructure
 
+### Architecture
+
 It consists of a few components:
 - the CMS MONIT infrastructure which provides
   [ElasticSearch](https://www.tutorialspoint.com/elasticsearch/index.htm),
