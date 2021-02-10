@@ -3,10 +3,19 @@
 ## Data sources and visualisation/access
 
 The CMS MONIT data sources are:
-* [ElasticSearch](https://www.tutorialspoint.com/elasticsearch/index.htm), for raw (time retention 30-40 days) and aggregated data. Can be accessed trough [Kibana](Kibana.md), [Grafana](Grafana.md), [API token](Grafana.md#grafana-token).
+* [ElasticSearch](https://www.tutorialspoint.com/elasticsearch/index.htm), can be accessed trough [Kibana](Kibana.md), [Grafana](Grafana.md), [API token](Grafana.md#grafana-token).
 * [InfluxDB](https://www.influxdata.com/products/influxdb-overview/), can be accessed through [Grafana](Grafana.md), [API token](Grafana.md#grafana-token).
 * [HDFS](https://www.geeksforgeeks.org/hdfs-commands/), can be accessed via spark jobs and SWAN service. Check [here](HDFS.md) for tutorials.
-* A list of CMS data sources is [here](sources.md)
+* A list of CMS data sources is [here](sources.md).
+
+| Source        | Type of data  | Retention  |  Access |
+| ------------- |:-------------:| ----------:|------------:|
+| ES cms        | raw           | 1.5 y      | Kibana/Grafana |
+| ES MONIT      | raw           | 30-40 days | Kibana/Grafana |
+| ES MONIT      | aggregated    | infinite | Kibana/Grafana |
+| InfluxDB      | aggregated    | infinite   |   Grafana |
+| HDFS          | raw           | infinite   |   SWAN/analytix |
+| HDFS          | logs           | 13 months   |   SWAN/analytix |
 
 ## Data injection
 
