@@ -6,7 +6,7 @@ The CMS MONIT data sources are:
 * [ElasticSearch](https://www.tutorialspoint.com/elasticsearch/index.htm), can be accessed trough [Kibana](Kibana.md), [Grafana](Grafana.md), [API token](Grafana.md#grafana-token).
 * [InfluxDB](https://www.influxdata.com/products/influxdb-overview/), can be accessed through [Grafana](Grafana.md), [API token](Grafana.md#grafana-token).
 * [HDFS](https://www.geeksforgeeks.org/hdfs-commands/), can be accessed via spark jobs and SWAN service. Check [here](HDFS.md) for tutorials.
-* List of CMS data [sources](sources.md) and code [repositories](code.md).
+* List of CMS data [sources](sources.md), and [how](code.md) they are produced (and what they contain).
 
 | Source        | Type of data  | Retention  |  Access |
 | ------------- |:-------------:| ----------:|------------:|
