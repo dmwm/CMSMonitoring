@@ -21,7 +21,7 @@
 | XCache        | AMQ | | [monit_prod_cmsxcache_raw_classads](https://monit-kibana.cern.ch/kibana/goto/a94df5af9de3a4d8cb49c12e6cd72db7), [monit_prod_cmsxcache_raw_xrootd](https://monit-kibana.cern.ch/kibana/goto/5655e6a4ba7e2059329eca50e5beaaa2) |
 | FTS log analysis | AMQ | | [monit_prod_cms-fts-logsanalysis_raw_metric](https://monit-kibana.cern.ch/kibana/goto/09ad5774e9e52e9bd862d0621d9f2d5e) |
 | EOS logs         | | /project/monitoring/archive/eos-report/logs/cms | [MONIT timber](https://monit-timber.cern.ch/kibana/goto/3a94bb41d9b9627462565df8f386164c) |
-| ES size | AMQ | | [](https://monit-kibana.cern.ch/kibana/goto/fc44fcd41f4093de9b4d612926984ad4) | 
+| ES size | AMQ | | [monit_prod_cms-es-size_raw_elasticsearch](https://monit-kibana.cern.ch/kibana/goto/fc44fcd41f4093de9b4d612926984ad4) | 
 
 ## CMSWEB logs
 
