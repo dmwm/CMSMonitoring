@@ -20,21 +20,24 @@
 | Production and Reprocessing | AMQ |  /project/monitoring/archive/toolsandint | monit_prod_toolsandint_ |
 | XCache        | AMQ | | monit_prod_cmsxcache_raw_classads, monit_prod_cmsxcache_raw_xrootd |
 | FTS log analysis | AMQ | | monit_prod_cms-fts-logsanalysis_raw_metric |
+| EOS logs         | /project/monitoring/archive/eos-report/logs/cms | |
 
 ## CMSWEB logs
 
-- [monit-timber-cmsweb Read-only](https://monit-timber-cmsweb.cern.ch/kibana) managed by the e-group **es-timber-cmsweb_kibana**
-- [monit-timber-cmsweb RW](https://monit-timber-cmsweb.cern.ch/kibana_rw) managed by the e-group **es-timber-cmsweb_kibana_rw**
-- [monit-timber cmswebk8s](https://monit-timber.cern.ch/kibana/goto/690ddc9d47df06cd915455c1bf616b0a)
-
+- In ElasticSearch:
+  - [monit-timber-cmsweb Read-only](https://monit-timber-cmsweb.cern.ch/kibana) managed by the e-group **es-timber-cmsweb_kibana**
+  - [monit-timber-cmsweb RW](https://monit-timber-cmsweb.cern.ch/kibana_rw) managed by the e-group **es-timber-cmsweb_kibana_rw**
+  - [monit-timber cmswebk8s](https://monit-timber.cern.ch/kibana/goto/690ddc9d47df06cd915455c1bf616b0a)
+- in HDFS:  /project/monitoring/archive/cmsweb/logs, /project/monitoring/archive/cmswebk8s/logs           
+                
 ## Additional data-sources from Sqoop jobs
 
 There are additional data sources on HDFS which are produced by CERN analytics groups or by individual requests, e.g. DBS/PhEDEx databases dumps, etc.
 These sources are produced by [Sqoop jobs](https://gitlab.cern.ch/awg/awg-ETL-crons/tree/master/sqoop) maintained by CERN IT analytics/database groups, e.g.
-- [job-monitoring](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/cms-jm.sh)
-- [jm-data-popularity](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/jm-cms-data-pop.sh)
-- [cmssw popularity](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/cmssw-popularity.sh)
-- [PhEDEx block replicas](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/phedex-blk-replicas-snapshot.sh)
-- [DBS snapshot](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/cms-dbs3-full-copy.sh)
-- [PhEDEx file catalog](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/phedex-file-catalog.sh)
+- [job-monitoring](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/cms-jm.sh) /project/awg/cms/job-monitoring/avro-snappy
+- [jm-data-popularity](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/jm-cms-data-pop.sh) /project/awg/cms/jm-data-popularity/avro-snappy
+- [cmssw popularity](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/cmssw-popularity.sh) /project/awg/cms/cmssw-popularity/avro-snappy
+- [PhEDEx block replicas](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/phedex-blk-replicas-snapshot.sh) /project/awg/cms/phedex/block-replicas-snapshots
+- [DBS snapshot](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/cms-dbs3-full-copy.sh) /project/awg/cms/CMS_DBS3_PROD_GLOBAL/current
+- [PhEDEx file catalog](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/phedex-file-catalog.sh) /project/awg/cms/phedex/catalog
 - [CMS ASO snapshot](https://gitlab.cern.ch/awg/awg-ETL-crons/blob/master/sqoop/cms-aso.sh)
