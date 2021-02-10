@@ -1,6 +1,6 @@
 # CMS Monitoring infrastructure
 
-### Architecture
+## Architecture
 
 It consists of a few components:
 - the CMS MONIT infrastructure which provides
@@ -14,15 +14,15 @@ It consists of a few components:
   [AlertManager](https://www.prometheus.io/docs/alerting/latest/alertmanager/),
   [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
   and other services.
+- the [NATS](https://nats.io/) cluster for real-time monitoring: [documentation](https://github.com/dmwm/CMSMonitoring/blob/master/doc/NATS/nats.md).
 
 You can view how these pieces are interconnected in the following
 architectural diagram:
 ![cluster architecture](CMSMonitoringHA.png)
 
-We also provide [NATS](https://nats.io/) cluster for real-time monitoring
-needs.
 
-### CMS Prometheus services
+
+## CMS Prometheus services
 We use [Prometheus](https://prometheus.io/) to monitor CMS nodes, and services.
 It provides [PromQL](https://prometheus.io/docs/prometheus/latest/querying/basics/)
 (Prometheus Query Language) to query your data which is accessible from
@@ -40,11 +40,15 @@ We gradually migrate our infratructure to only rely on
 [promxy](https://github.com/jacksontj/promxy) proxy service for access to
 dashboards maintaned by Prometheus or VictoriaMetrics services.
 
-### CMS Monitoring CLI tools
-All CMS Monitoring tools are accessible from `/cvmfs/cms.cern.ch/cmsmon` area.
-They inlcude:
-- `monit` allows access to CERN MONIT data-sources like
-  ElasticSearch and InfluxDB.
+ 
+
+## CMS Monitoring CLI tools
+All CMS Monitoring tools are accessible from `/cvmfs/cms.cern.ch/cmsmon` area and in 
+our [github](https://github.com/dmwm/CMSMonitoring) repository. 
+The CMS monitoring tools are written in python and in [Go](https://indico.cern.ch/event/912571/contributions/3837964/note/).
+
+They include:
+- `monit` allows access to CERN MONIT data-sources like ElasticSearch and InfluxDB. Just type "bin/monit --help" for instructions on how to use it. 
 - `promtool` allows to access Prometheus service
 - `amtool` allows to access AlertManager service
 - `annotationManager` allows to manage annotations in dashboards
