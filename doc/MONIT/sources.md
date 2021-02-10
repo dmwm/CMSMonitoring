@@ -39,5 +39,5 @@ There are additional data sources on HDFS which are produced by [Sqoop jobs](htt
 - [PhEDEx block replicas](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/phedex-blk-replicas-snapshot.sh) /project/awg/cms/phedex/block-replicas-snapshots
 - [DBS snapshot](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/cms-dbs3-full-copy.sh) /project/awg/cms/CMS_DBS3_PROD_GLOBAL/current
 - [PhEDEx file catalog](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/phedex-file-catalog.sh) /project/awg/cms/phedex/catalog
-- [CMS ASO snapshot](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/cms-aso.sh)
+- [CMS ASO snapshot](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/cms-aso.sh) /project/awg/cms/CMS_ASO/filetransfersdb
 - [Rucio replicas](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/rucio_replicas.sh)
