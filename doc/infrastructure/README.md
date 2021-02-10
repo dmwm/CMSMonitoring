@@ -40,7 +40,8 @@ We gradually migrate our infratructure to only rely on
 [promxy](https://github.com/jacksontj/promxy) proxy service for access to
 dashboards maintaned by Prometheus or VictoriaMetrics services.
 
- 
+[Instructions](https://gist.github.com/vkuznet/4ba2d063cd68fb2b912e4514b05a7081) to setup terminal based dashboard to monitor remote node with Prometheus.
+
 
 ## CMS Monitoring CLI tools
 All CMS Monitoring tools are accessible from `/cvmfs/cms.cern.ch/cmsmon` area and in 
