@@ -16,11 +16,8 @@ It consists of a few components:
   and other services.
 - the [NATS](https://nats.io/) cluster for real-time monitoring: [documentation](https://github.com/dmwm/CMSMonitoring/blob/master/doc/NATS/nats.md).
 
-You can view how these pieces are interconnected in the following
-architectural diagram:
-![cluster architecture](CMSMonitoringHA.png)
-
-
+A good overview can be found in this [talk](https://indico.cern.ch/event/873410/contributions/3682300/attachments/1966507/3270012/CMS_monitoring_infrastructure.pdf). 
+You can view how all pieces are interconnected in the architectural [diagram](#architectural-diagram).
 
 ## CMS Prometheus services
 We use [Prometheus](https://prometheus.io/) to monitor CMS nodes, and services.
@@ -60,4 +57,7 @@ They include:
 - `stern` is a tool to view kubernetes logs
 - `nats-pub` and `nats-sub` are tools to connect to NATS server
 
+## Architectural diagram
+
+![cluster architecture](CMSMonitoringHA.png)
 
