@@ -32,12 +32,12 @@
                 
 ## Additional data-sources from Sqoop jobs
 
-There are additional data sources on HDFS which are produced by [Sqoop jobs](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/) running on k8s
-- [job-monitoring](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/cms-jm.sh) /project/awg/cms/job-monitoring/avro-snappy
-- [jm-data-popularity](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/jm-cms-data-pop.sh) /project/awg/cms/jm-data-popularity/avro-snappy
-- [cmssw popularity](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/cmssw-popularity.sh) /project/awg/cms/cmssw-popularity/avro-snappy
-- [PhEDEx block replicas](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/phedex-blk-replicas-snapshot.sh) /project/awg/cms/phedex/block-replicas-snapshots
-- [DBS snapshot](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/cms-dbs3-full-copy.sh) /project/awg/cms/CMS_DBS3_PROD_GLOBAL/current
-- [PhEDEx file catalog](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/phedex-file-catalog.sh) /project/awg/cms/phedex/catalog
-- [CMS ASO snapshot](https://github.com/dmwm/CMSKubernetes//docker/sqoop/scripts/cms-aso.sh)
-- [Rucio replicas](https://github.com/dmwm/CMSKubernetes/docker/sqoop/scripts/rucio_replicas.sh)
+There are additional data sources on HDFS which are produced by [Sqoop jobs](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/) running on k8s
+- [job-monitoring](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/cms-jm.sh) /project/awg/cms/job-monitoring/avro-snappy
+- [jm-data-popularity](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/jm-cms-data-pop.sh) /project/awg/cms/jm-data-popularity/avro-snappy
+- [cmssw popularity](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/cmssw-popularity.sh) /project/awg/cms/cmssw-popularity/avro-snappy
+- [PhEDEx block replicas](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/phedex-blk-replicas-snapshot.sh) /project/awg/cms/phedex/block-replicas-snapshots
+- [DBS snapshot](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/cms-dbs3-full-copy.sh) /project/awg/cms/CMS_DBS3_PROD_GLOBAL/current
+- [PhEDEx file catalog](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/phedex-file-catalog.sh) /project/awg/cms/phedex/catalog
+- [CMS ASO snapshot](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/cms-aso.sh)
+- [Rucio replicas](https://github.com/dmwm/CMSKubernetes/tree/master/docker/sqoop/scripts/rucio_replicas.sh)
