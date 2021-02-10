@@ -4,11 +4,11 @@
 | Source        | Injection  | HDFS  |  ES   |
 | ------------- |:-------------:| ----------:|------------:|
 | CRAB          | HTTP (monit-metrics) | /project/monitoring/archive/crab | [monit_prod_crab_raw](https://monit-kibana.cern.ch/kibana/goto/4aca05357c3b9b1863cb48a61ac6c05d) |
-| HTCondor jobs | AMQ   | /project/monitoring/archive/condor/ | monit_prod_condor_raw_metric_* |
+| HTCondor jobs | AMQ   | /project/monitoring/archive/condor/ | [monit_prod_condor_raw_metric](https://monit-kibana.cern.ch/kibana/goto/f481289f8b1c9b5a521809ebb1c73ec9) |
 | SSB           | Web uploader | /project/monitoring/archive/cmssst/ | monit_prod_cmssst_* |
-| Task Monitoring | AMQ | | monit_prod_condor_raw_overview_, monit_prod_condor_raw_task_* |
-| GlideinWMS    | AMQ | /project/monitoring/archive/glideinwms/ | monit_prod_glideinwms_* |
-| SI            | AMQ | /project/monitoring/archive/cms/raw/si_condor_* | monit_prod_cms_raw_si_condor_* |
+| Task Monitoring | AMQ | | [monit_prod_condor_raw_overview](https://monit-kibana.cern.ch/kibana/goto/16641938bdf0e757eb600deff8ec4f58), [monit_prod_condor_raw_task](https://monit-kibana.cern.ch/kibana/goto/e85d02a2411a1646fd33b9973273b7d6) |
+| GlideinWMS    | AMQ | /project/monitoring/archive/glideinwms/ | [monit_prod_glideinwms](https://monit-kibana.cern.ch/kibana/goto/9d0192693b83e42d40e96d0182b9c3f6) |
+| SI            | AMQ | /project/monitoring/archive/cms/raw/si_condor_* | [monit_prod_cms_raw_si_condor](https://monit-kibana.cern.ch/kibana/goto/d005ebd4f8efebd7eba33e294617281c) |
 | Phedex        | AMQ | /project/monitoring/archive/phedex_dbs, /project/monitoring/archive/phedex_replicamon | monit_prod_phedex_dbs_, monit_prod_phedex_replication_* |
 | Popularity    | AMQ | /project/monitoring/archive/popagg/ | monit_prod_popagg_* |
 | WMAgent       | AMQ | /project/monitoring/archive/wmagent/ | [monit_prod_wmagent](https://monit-kibana.cern.ch/kibana/goto/ddb6ac9588fb8dd5ff3015b86c2a8106) |
