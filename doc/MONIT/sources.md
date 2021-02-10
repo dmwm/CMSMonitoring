@@ -3,13 +3,10 @@
 
 | Source        | Injection  | HDFS  |  ES   |
 | ------------- |:-------------:| ----------:|------------:|
-| CRAB          | HTTP (monit-metrics) | /project/monitoring/archive/crab | [monit_prod_crab_raw](https://monit-kibana.cern.ch/kibana/goto/4aca05357c3b9b1863cb48a61ac6c05d) |
 | HTCondor jobs | AMQ   | /project/monitoring/archive/condor/ | [monit_prod_condor_raw_metric](https://monit-kibana.cern.ch/kibana/goto/2c31612fd249dc6b90b282a8e1f5eb11) |
 | SSB           | Web uploader | /project/monitoring/archive/cmssst/ | [monit_prod_cmssst](https://monit-kibana.cern.ch/kibana/goto/84305a2e02d05a91276f176ab0d5d8c0) |
 | Task Monitoring | AMQ | | [monit_prod_condor_raw_overview](https://monit-kibana.cern.ch/kibana/goto/ddfb489e3e0567f8eae9eac58d13a434), [monit_prod_condor_raw_task](https://monit-kibana.cern.ch/kibana/goto/ad9371b752fd0c13e387ac88b3e13c4e) |
-| GlideinWMS    | AMQ | /project/monitoring/archive/glideinwms/ | [monit_prod_glideinwms](https://monit-kibana.cern.ch/kibana/goto/9d0192693b83e42d40e96d0182b9c3f6) |
 | SI            | AMQ | /project/monitoring/archive/cms/raw/si_condor_* | [monit_prod_cms_raw_si_condor](https://monit-kibana.cern.ch/kibana/goto/d005ebd4f8efebd7eba33e294617281c) |
-| Phedex        | AMQ | /project/monitoring/archive/phedex_dbs, /project/monitoring/archive/phedex_replicamon | monit_prod_phedex_dbs_, monit_prod_phedex_replication_* |
 | Popularity    | AMQ | /project/monitoring/archive/popagg/ | monit_prod_popagg_* |
 | WMAgent       | AMQ | /project/monitoring/archive/wmagent/ | [monit_prod_wmagent](https://monit-kibana.cern.ch/kibana/goto/ddb6ac9588fb8dd5ff3015b86c2a8106) |
 | WMArchive     | AMQ | /project/monitoring/archive/wmarchive | [monit_prod_wmarchive](https://monit-kibana.cern.ch/kibana/goto/cfda40d994ab003e17bcde1d7181a2be) |
@@ -22,6 +19,12 @@
 | FTS log analysis | AMQ | | [monit_prod_cms-fts-logsanalysis_raw_metric](https://monit-kibana.cern.ch/kibana/goto/09ad5774e9e52e9bd862d0621d9f2d5e) |
 | EOS logs         | | /project/monitoring/archive/eos-report/logs/cms | [MONIT timber](https://monit-timber.cern.ch/kibana/goto/3a94bb41d9b9627462565df8f386164c) |
 | ES size | AMQ | | [monit_prod_cms-es-size_raw_elasticsearch](https://monit-kibana.cern.ch/kibana/goto/fc44fcd41f4093de9b4d612926984ad4) | 
+
+<!-- OBSOLETE
+| CRAB          | HTTP (monit-metrics) | /project/monitoring/archive/crab | [monit_prod_crab_raw](https://monit-kibana.cern.ch/kibana/goto/4aca05357c3b9b1863cb48a61ac6c05d) | 
+| Phedex        | AMQ | /project/monitoring/archive/phedex_dbs, /project/monitoring/archive/phedex_replicamon | monit_prod_phedex_dbs_, monit_prod_phedex_replication | 
+| GlideinWMS    | AMQ | /project/monitoring/archive/glideinwms/ | [monit_prod_glideinwms](https://monit-kibana.cern.ch/kibana/goto/9d0192693b83e42d40e96d0182b9c3f6) | 
+-->
 
 ## CMSWEB logs
 
