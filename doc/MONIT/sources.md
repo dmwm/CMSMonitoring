@@ -4,8 +4,8 @@
 | Source        | Injection  | HDFS  |  ES   |
 | ------------- |:-------------:| ----------:|------------:|
 | CRAB          | HTTP (monit-metrics) | /project/monitoring/archive/crab | [monit_prod_crab_raw](https://monit-kibana.cern.ch/kibana/goto/4aca05357c3b9b1863cb48a61ac6c05d) |
-| HTCondor jobs | AMQ   | /project/monitoring/archive/condor/ | [monit_prod_condor_raw_metric](https://monit-kibana.cern.ch/kibana/goto/f481289f8b1c9b5a521809ebb1c73ec9) |
-| SSB           | Web uploader | /project/monitoring/archive/cmssst/ | monit_prod_cmssst_* |
+| HTCondor jobs | AMQ   | /project/monitoring/archive/condor/ | [monit_prod_condor_raw_metric](https://monit-kibana.cern.ch/kibana/goto/2c31612fd249dc6b90b282a8e1f5eb11) |
+| SSB           | Web uploader | /project/monitoring/archive/cmssst/ | [monit_prod_cmssst](https://monit-kibana.cern.ch/kibana/goto/84305a2e02d05a91276f176ab0d5d8c0) |
 | Task Monitoring | AMQ | | [monit_prod_condor_raw_overview](https://monit-kibana.cern.ch/kibana/goto/16641938bdf0e757eb600deff8ec4f58), [monit_prod_condor_raw_task](https://monit-kibana.cern.ch/kibana/goto/e85d02a2411a1646fd33b9973273b7d6) |
 | GlideinWMS    | AMQ | /project/monitoring/archive/glideinwms/ | [monit_prod_glideinwms](https://monit-kibana.cern.ch/kibana/goto/9d0192693b83e42d40e96d0182b9c3f6) |
 | SI            | AMQ | /project/monitoring/archive/cms/raw/si_condor_* | [monit_prod_cms_raw_si_condor](https://monit-kibana.cern.ch/kibana/goto/d005ebd4f8efebd7eba33e294617281c) |
