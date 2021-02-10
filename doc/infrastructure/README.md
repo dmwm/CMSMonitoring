@@ -31,9 +31,9 @@ which extends capability of PromQL even further.
 
 ### Access to Prometheus and VictoriaMetrics via dashboards
 
-Data from Prometheus/VictoriaMetrics can be visualised in Grafana dashboards by using the appropriate data sources,
+Data from Prometheus/VictoriaMetrics can be visualised in [Grafana](https://github.com/dmwm/CMSMonitoring/doc/MONIT/Grafana.md) dashboards by using the appropriate data sources,
 or indirectly via [promxy](https://github.com/jacksontj/promxy) proxy
-service. Therefore, in promxy data-source you can use either PromQL or MetricsQL in Grafana dashboards.
+service. In promxy data-source you can use either PromQL or MetricsQL in Grafana dashboards.
 We gradually migrate our infratructure to only rely on
 [promxy](https://github.com/jacksontj/promxy) proxy service for access to
 dashboards maintaned by Prometheus or VictoriaMetrics services.
@@ -53,7 +53,4 @@ They inlcude:
 - `stern` is a tool to view kubernetes logs
 - `nats-pub` and `nats-sub` are tools to connect to NATS server
 
-### References
-For complete guide to CMS Monitoring infrastructure please refer
-to our [paper](https://doi.org/10.1007/s41781-020-00051-x).
-For a collection of tutorials, FAQs, and documentation about how to inject, access, and visualize data see [here](https://monit-grafana.cern.ch/d/FKrE9_2mk/cms-monitoring-tutorials?orgId=11).
+
