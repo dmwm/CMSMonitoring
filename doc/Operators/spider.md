@@ -27,3 +27,9 @@ Logstash/filebeat on vocms0240 processes the spider_cms logs
 and [dashboard2](https://es-cms-logmon.cern.ch/kibana/app/kibana::/discover/8c4d6a70-afa1-11e9-b8f6-95a3ef32a7a6) (only visible inside CERN)
 - documentation/instructions: [here](https://github.com/dmwm/cms-htcondor-es/wiki/Filebeat-Logstash-setup)
 - config files: [here](https://github.com/dmwm/cms-htcondor-es/tree/master/doc/logstash)
+
+# Condor Jobs Data Flow
+
+[![Condor Job Data](https://www.dropbox.com/s/pjzludtd32ie6a2/Condor%20Jobs%20Data%20Monit.png?raw=1)](https://www.dropbox.com/s/2oueo3i9hqnzlk2/Condor%20Jobs%20Data%20Monit.pdf?dl=0)
+
+Click on the image to download the pdf version.
