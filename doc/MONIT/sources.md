@@ -3,7 +3,7 @@
 
 | Source        | Injection  | HDFS  |  ES   |
 | ------------- |:-------------:| ----------:|------------:|
-| CRAB          | HTTP (monit-metrics) | /project/monitoring/archive/crab | monit_prod_crab_raw_* |
+| CRAB          | HTTP (monit-metrics) | /project/monitoring/archive/crab | [monit_prod_crab_raw](https://monit-kibana.cern.ch/kibana/goto/4aca05357c3b9b1863cb48a61ac6c05d) |
 | HTCondor jobs | AMQ   | /project/monitoring/archive/condor/ | monit_prod_condor_raw_metric_* |
 | SSB           | Web uploader | /project/monitoring/archive/cmssst/ | monit_prod_cmssst_* |
 | Task Monitoring | AMQ | | monit_prod_condor_raw_overview_, monit_prod_condor_raw_task_* |
@@ -11,8 +11,8 @@
 | SI            | AMQ | /project/monitoring/archive/cms/raw/si_condor_* | monit_prod_cms_raw_si_condor_* |
 | Phedex        | AMQ | /project/monitoring/archive/phedex_dbs, /project/monitoring/archive/phedex_replicamon | monit_prod_phedex_dbs_, monit_prod_phedex_replication_* |
 | Popularity    | AMQ | /project/monitoring/archive/popagg/ | monit_prod_popagg_* |
-| WMAgent       | AMQ | /project/monitoring/archive/wmagent/ | monit_prod_wmagent_* |
-| WMArchive     | AMQ | /project/monitoring/archive/wmarchive | monit_prod_wmarchive_* |
+| WMAgent       | AMQ | /project/monitoring/archive/wmagent/ | [monit_prod_wmagent](https://monit-kibana.cern.ch/kibana/goto/ddb6ac9588fb8dd5ff3015b86c2a8106) |
+| WMArchive     | AMQ | /project/monitoring/archive/wmarchive | [monit_prod_wmarchive](https://monit-kibana.cern.ch/kibana/goto/cfda40d994ab003e17bcde1d7181a2be) |
 | XRootD (GLED) | AMQ | /project/monitoring/archive/xrootd/ | monit_prod_xrootd_enr_* |
 | XRootD (AAA)  | AMQ | | monit_prod_cms_raw_aaa-test_*, monit_prod_cms_raw_aaa-ng_ |
 | Rucio logs    | HTTP | | monit_prod_cms-rucio |
