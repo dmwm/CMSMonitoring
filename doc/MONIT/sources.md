@@ -13,7 +13,7 @@
 | Popularity    | AMQ | /project/monitoring/archive/popagg/ | monit_prod_popagg_* |
 | WMAgent       | AMQ | /project/monitoring/archive/wmagent/ | [monit_prod_wmagent](https://monit-kibana.cern.ch/kibana/goto/ddb6ac9588fb8dd5ff3015b86c2a8106) |
 | WMArchive     | AMQ | /project/monitoring/archive/wmarchive | [monit_prod_wmarchive](https://monit-kibana.cern.ch/kibana/goto/cfda40d994ab003e17bcde1d7181a2be) |
-| XRootD (GLED) | AMQ | /project/monitoring/archive/xrootd/ | monit_prod_xrootd_enr_* |
+| XRootD (GLED) | AMQ | /project/monitoring/archive/xrootd/ | [monit_prod_xrootd_enr](https://monit-kibana.cern.ch/kibana/goto/778ca958b0f40c5ab5f0a17ec351bd69) |
 | XRootD (AAA)  | AMQ | | [monit_prod_cms_raw_aaa-test](https://monit-kibana.cern.ch/kibana/goto/cfc7f48530bfcb510b6d557e632bd5ab), [monit_prod_cms_raw_aaa-ng](https://monit-kibana.cern.ch/kibana/goto/f91632d148761038fd314e909ebaeffb) |
 | Rucio logs    | HTTP | | [monit_prod_cms-rucio](https://monit-kibana.cern.ch/kibana/goto/2b4765b7c382b5d37057b0ac520f8ab4) |
 | Rucio events  | Hermes | | [monit_prod_cms-rucio_raw_events](https://monit-kibana.cern.ch/kibana/goto/e5cc1445f97161e0083256dc8af0e9ed) [enriched](https://monit-kibana.cern.ch/kibana/goto/62e33e042808261923168f396d792e4c) |
