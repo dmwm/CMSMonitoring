@@ -7,12 +7,16 @@ This is the entry [point](https://monit-grafana.cern.ch/d/000000530/cms-monitori
 ## Documentation
 
 * official [documentation](http://docs.grafana.org/), [Getting Started](http://docs.grafana.org/guides/getting_started/), [screencasts](http://docs.grafana.org/tutorials/screencasts/), [Tutorials](https://grafana.com/tutorials/)
+* Create alerts in grafana: [example from WMA](https://its.cern.ch/jira/secure/attachment/188306/Alerting%20on%20Grafana%20-%20Example.pdf)
+
 
 ## Grafana token
 
 Access to the Grafana data sources can be done programmatically with a [grafana proxy](http://monit-docs.web.cern.ch/monit-docs/access/monit_grafana.html) or using our [CLI tools](https://github.com/dmwm/CMSMonitoring/blob/master/doc/infrastructure/README.md#cms-monitoring-cli-tools). The method can also be used to update documents as discussed in this [ticket](https://its.cern.ch/jira/browse/CMSMONIT-53). 
 
 Remember you will need a Grafana token for authorization. Ask us if you don't have one. 
+
+
 
 ## FAQ
 
