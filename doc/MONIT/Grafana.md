@@ -2,6 +2,8 @@
 
 Grafana can be used to access data sources in ElasticSearch, InfluxDB, Prometheus and VictoriaMetrics.
 
+This is the entry [point](https://monit-grafana.cern.ch/d/000000530/cms-monitoring-project?orgId=11) to our Grafana dashboards.
+
 ## Documentation
 
 * official [documentation](http://docs.grafana.org/), [Getting Started](http://docs.grafana.org/guides/getting_started/), [screencasts](http://docs.grafana.org/tutorials/screencasts/), [Tutorials](https://grafana.com/tutorials/)
