@@ -1,4 +1,4 @@
-# Welcome to the CMS monitoring documentation
+# Welcome to the documentation of the CMS monitoring [project](https://cms-monitoring.cern.ch/)
 
 * Documentation on CERN IT MONIT [infrastructure](MONIT/README.md) (Grafana, Kibana, ElasticSearch, AMQ, HDFS, Spark, CMS data sources and code)
 * Documentation on CMS monitoring [infrastructure](infrastructure/README.md) (Prometheus, AlertManager, NATS, k8s)
