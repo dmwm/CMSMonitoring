@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -18,8 +19,11 @@ import (
 // Created    : Thu, 16 May 2020 16:45:00 GMT
 // Description: SSB Alerting Module for CERN MONIT infrastructure
 
-//URL for AlertManager
-var alertManagerURL string
+//URLs for AlertManager Instances
+var alertManagerURLs string
+
+//List of URLs for AlertManager Instances
+var alertManagerURLList []string
 
 //severity of alerts
 var severity string
@@ -200,8 +204,17 @@ func (data *ssb) convertData() []byte {
 
 }
 
+//helper function for parsing list of alertmanager urls separated by comma
+func parseURLs(urls string) []string {
+	var urlList []string
+	for _, url := range strings.Split(urls, ",") {
+		urlList = append(urlList, strings.Trim(url, " "))
+	}
+	return urlList
+}
+
 //function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
-func get() *ssbData {
+func get(alertManagerURL string) *ssbData {
 
 	var data *ssbData
 
@@ -252,7 +265,7 @@ func get() *ssbData {
 }
 
 //function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
-func post(jsonStr []byte) {
+func post(jsonStr []byte, alertManagerURL string) {
 	apiurl := alertManagerURL + "/api/v1/alerts"
 
 	req, err := http.NewRequest("POST", apiurl, bytes.NewBuffer(jsonStr))
@@ -282,8 +295,8 @@ func post(jsonStr []byte) {
 }
 
 //Function to end alerts for SSB data which had no EndTime and now they are resolved.
-func deleteAlerts() {
-	amData := get()
+func deleteAlerts(alertManagerURL string) {
+	amData := get(alertManagerURL)
 	var finalData []amJSON
 
 	for _, each := range amData.Data {
@@ -338,12 +351,13 @@ func deleteAlerts() {
 		fmt.Println("Deleted Alerts: ", string(jsonStr))
 	}
 
-	post(jsonStr)
+	post(jsonStr, alertManagerURL)
 }
 
 //function containing all logics for alerting.
 func alert(inp string, dryRun bool) {
 
+	alertManagerURLList = parseURLs(alertManagerURLs)
 	jsonData := fetchJSON(inp)
 	var data ssb
 	data.parseJSON(jsonData)
@@ -352,9 +366,10 @@ func alert(inp string, dryRun bool) {
 		fmt.Println(string(jsonStrAM))
 		return
 	}
-	post(jsonStrAM)
-	deleteAlerts()
-
+	for _, alertManagerURL := range alertManagerURLList {
+		post(jsonStrAM, alertManagerURL)
+		deleteAlerts(alertManagerURL)
+	}
 }
 
 func main() {

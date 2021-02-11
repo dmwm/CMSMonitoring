@@ -11,6 +11,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -19,8 +20,11 @@ import (
 // Created    : Thu, 21 May 2020 21:07:32 GMT
 // Description: GGUS Alerting Module for CERN MONIT infrastructure
 
-//URL for AlertManager
-var alertManagerURL string
+//URLs for AlertManager Instances
+var alertManagerURLs string
+
+//List of URLs for AlertManager Instances
+var alertManagerURLList []string
 
 // severity of alerts
 var severity string
@@ -186,8 +190,17 @@ func convertData(data ggus) []byte {
 
 }
 
+//helper function for parsing list of alertmanager urls separated by comma
+func parseURLs(urls string) []string {
+	var urlList []string
+	for _, url := range strings.Split(urls, ",") {
+		urlList = append(urlList, strings.Trim(url, " "))
+	}
+	return urlList
+}
+
 //function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
-func get() *ggusData {
+func get(alertManagerURL string) *ggusData {
 
 	var data *ggusData
 
@@ -238,7 +251,7 @@ func get() *ggusData {
 }
 
 //function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
-func post(jsonStr []byte) {
+func post(jsonStr []byte, alertManagerURL string) {
 	apiurl := alertManagerURL + "/api/v1/alerts"
 
 	req, err := http.NewRequest("POST", apiurl, bytes.NewBuffer(jsonStr))
@@ -268,8 +281,8 @@ func post(jsonStr []byte) {
 }
 
 //Function to end alerts for tickets which are resolved
-func deleteAlerts() {
-	amData := get()
+func deleteAlerts(alertManagerURL string) {
+	amData := get(alertManagerURL)
 	var temp amJSON
 	var finalData []amJSON
 
@@ -322,7 +335,7 @@ func deleteAlerts() {
 		fmt.Println("Deleted Alerts: ", string(jsonStr))
 	}
 
-	post(jsonStr)
+	post(jsonStr, alertManagerURL)
 }
 
 //Machine Learning Logic for Categorizing GGUS Tickets
@@ -333,6 +346,7 @@ func categorizeTicket() {
 //function containing all logics for alerting.
 func alert(inp string, dryRun bool) {
 
+	alertManagerURLList = parseURLs(alertManagerURLs)
 	jsonData := fetchJSON(inp)
 	var data ggus
 	data.parseJSON(jsonData)
@@ -341,8 +355,11 @@ func alert(inp string, dryRun bool) {
 		fmt.Println(string(jsonStrAM))
 		return
 	}
-	post(jsonStrAM)
-	deleteAlerts()
+
+	for _, alertManagerURL := range alertManagerURLList {
+		post(jsonStrAM, alertManagerURL)
+		deleteAlerts(alertManagerURL)
+	}
 
 }
 
@@ -356,7 +373,7 @@ func main() {
 
 	flag.StringVar(&inp, "input", "", "input filename")
 	flag.StringVar(&vo, "vo", "cms", "Required VO attribute in GGUS Ticket")
-	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
+	flag.StringVar(&alertManagerURLs, "urls", "", "list of alertmanager URLs seperated by commas")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	flag.BoolVar(&dryRun, "dryRun", false, "dry run mode, fetch data but do not post it to AM")
 	flag.Parse()
@@ -365,8 +382,8 @@ func main() {
 		log.Fatalf("Input filename missing. Exiting....")
 	}
 
-	if alertManagerURL == "" {
-		log.Fatalf("AlertManager URL missing. Exiting....")
+	if alertManagerURLs == "" {
+		log.Fatalf("AlertManager URLs missing. Exiting....")
 	}
 
 	if verbose > 0 {
