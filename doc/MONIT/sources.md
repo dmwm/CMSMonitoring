@@ -12,8 +12,6 @@
 | XRootD (GLED) | AMQ | /project/monitoring/archive/xrootd/ | [monit_prod_xrootd_enr](https://monit-kibana.cern.ch/kibana/goto/778ca958b0f40c5ab5f0a17ec351bd69) |
 | XRootD (AAA)  | AMQ | | [monit_prod_cms_raw_aaa-test](https://monit-kibana.cern.ch/kibana/goto/cfc7f48530bfcb510b6d557e632bd5ab), [monit_prod_cms_raw_aaa-ng](https://monit-kibana.cern.ch/kibana/goto/f91632d148761038fd314e909ebaeffb) |
 | Rucio         | Hermes | | [monit_prod_cms_rucio_raw_events](https://monit-kibana.cern.ch/kibana/goto/1882cdd15e034c123106d8a48a6cb2fb) [monit_prod_cms_rucio_enr](https://monit-kibana.cern.ch/kibana/goto/8b750743491f12b1aa4cd16086542a5f), [monit_prod_rucio_raw_tracer](https://monit-kibana.cern.ch/kibana/goto/ddc81daf8710baaacef07a290b61add3) |
-| Production and Reprocessing | AMQ |  /project/monitoring/archive/toolsandint | [monit_prod_toolsandint](https://monit-kibana.cern.ch/kibana/goto/d175ecb6b967a48697d9e5a0ab30e259) |
-| XCache        | AMQ | | [monit_prod_cmsxcache_raw_classads](https://monit-kibana.cern.ch/kibana/goto/a94df5af9de3a4d8cb49c12e6cd72db7), [monit_prod_cmsxcache_raw_xrootd](https://monit-kibana.cern.ch/kibana/goto/5655e6a4ba7e2059329eca50e5beaaa2) |
 | FTS log analysis | AMQ | | [monit_prod_cms-fts-logsanalysis_raw_metric](https://monit-kibana.cern.ch/kibana/goto/09ad5774e9e52e9bd862d0621d9f2d5e) |
 | EOS logs         | | /project/monitoring/archive/eos-report/logs/cms | [MONIT timber](https://monit-timber.cern.ch/kibana/goto/3a94bb41d9b9627462565df8f386164c) |
 | ES size | AMQ | | [monit_prod_cms-es-size_raw_elasticsearch](https://monit-kibana.cern.ch/kibana/goto/fc44fcd41f4093de9b4d612926984ad4) | 
@@ -27,6 +25,8 @@
 | GlideinWMS    | AMQ | /project/monitoring/archive/glideinwms/ | [monit_prod_glideinwms](https://monit-kibana.cern.ch/kibana/goto/9d0192693b83e42d40e96d0182b9c3f6) | 
 | Popularity    | AMQ | /project/monitoring/archive/popagg/ | monit_prod_popagg_* |
 | Rucio logs    | HTTP | | [monit_prod_cms-rucio](https://monit-kibana.cern.ch/kibana/goto/2b4765b7c382b5d37057b0ac520f8ab4) |
+| Production and Reprocessing | AMQ |  /project/monitoring/archive/toolsandint | [monit_prod_toolsandint](https://monit-kibana.cern.ch/kibana/goto/d175ecb6b967a48697d9e5a0ab30e259) |
+| XCache        | AMQ | | [monit_prod_cmsxcache_raw_classads](https://monit-kibana.cern.ch/kibana/goto/a94df5af9de3a4d8cb49c12e6cd72db7), [monit_prod_cmsxcache_raw_xrootd](https://monit-kibana.cern.ch/kibana/goto/5655e6a4ba7e2059329eca50e5beaaa2) |
 
 
 ## CMSWEB logs
