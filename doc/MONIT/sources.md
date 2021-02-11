@@ -14,7 +14,7 @@
 | Rucio         | Hermes | | [monit_prod_cms_rucio_raw_events](https://monit-kibana.cern.ch/kibana/goto/1882cdd15e034c123106d8a48a6cb2fb) [monit_prod_cms_rucio_enr](https://monit-kibana.cern.ch/kibana/goto/8b750743491f12b1aa4cd16086542a5f), [monit_prod_rucio_raw_tracer](https://monit-kibana.cern.ch/kibana/goto/ddc81daf8710baaacef07a290b61add3) |
 | FTS log analysis | AMQ | | [monit_prod_cms-fts-logsanalysis_raw_metric](https://monit-kibana.cern.ch/kibana/goto/09ad5774e9e52e9bd862d0621d9f2d5e) |
 | EOS logs         | | /project/monitoring/archive/eos-report/logs/cms | [MONIT timber](https://monit-timber.cern.ch/kibana/goto/3a94bb41d9b9627462565df8f386164c) |
-| ES size | AMQ | | [monit_prod_cms-es-size_raw_elasticsearch](https://monit-kibana.cern.ch/kibana/goto/fc44fcd41f4093de9b4d612926984ad4) | 
+| ES size | AMQ | | [monit_prod_cms-es-size_raw_elasticsearch](https://monit-kibana.cern.ch/kibana_rw/goto/3190e627720efcf9fb5f7b68ae571868), [monit_prod_cms-es-size_raw_hdfs](https://monit-kibana.cern.ch/kibana_rw/goto/7654b8395d8fbc72c7e55cce7834b92a) | 
 
 ### OBSOLETE
 
