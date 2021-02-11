@@ -94,7 +94,7 @@ func NewExporter(ns, path, pattern string, timeoffset, verbose int) *Exporter {
 		Verbose:        verbose,
 		scrapeFailures: prometheus.NewCounter(prometheus.CounterOpts{}),
 		size: prometheus.NewDesc(
-			prometheus.BuildFQName(ns, "", "status"),
+			prometheus.BuildFQName(ns, "", "size"),
 			fmt.Sprintf("Size of the record on path %s", path),
 			nil,
 			nil),
