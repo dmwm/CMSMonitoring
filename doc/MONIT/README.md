@@ -19,7 +19,7 @@ The CMS MONIT data sources are:
 
 ## Data injection
 
-Data injection into MONIT through AMQ. Full instructions and tutorial [here](injection.md) 
+[Tutorial](injection.md) on how to inject data in MONIT though AMQ-
 
 ## Documentation from MONIT
 
