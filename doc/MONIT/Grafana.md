@@ -6,8 +6,10 @@ This is the entry [point](https://monit-grafana.cern.ch/d/000000530/cms-monitori
 
 ## Documentation
 
-* official [documentation](http://docs.grafana.org/), [Getting Started](http://docs.grafana.org/guides/getting_started/), [screencasts](http://docs.grafana.org/tutorials/screencasts/), [Tutorials](https://grafana.com/tutorials/)
-* Create alerts in grafana: [example from WMA](https://its.cern.ch/jira/secure/attachment/188306/Alerting%20on%20Grafana%20-%20Example.pdf)
+* official [documentation](http://docs.grafana.org/), [getting started](http://docs.grafana.org/guides/getting_started/), [screencasts](http://docs.grafana.org/tutorials/screencasts/), [tutorials](https://grafana.com/tutorials/),
+* Create alerts in grafana: [example from WMA](https://its.cern.ch/jira/secure/attachment/188306/Alerting%20on%20Grafana%20-%20Example.pdf),
+* CMS [tutorials](README.md#cms-tutorials).
+
 
 
 ## Grafana token
