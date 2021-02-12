@@ -19,14 +19,18 @@ The CMS MONIT data sources are:
 | ES MONIT      | aggregated    | infinite | Kibana/Grafana |
 | InfluxDB      | aggregated    | infinite   |   Grafana |
 | HDFS          | raw           | infinite   |   SWAN/analytix |
-| HDFS          | logs           | 13 months   |   SWAN/analytix |
+| HDFS          | logs          | 13 months   |   SWAN/analytix |
 
 ## CMS tutorials
 
+ * Step-by-step [tutorial](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/data_injection.md) on 
+    - data injection with Python, 
+    - lookup with the monit [CLI tool](https://github.com/dmwm/CMSMonitoring/blob/master/doc/infrastructure/README.md#cms-monitoring-cli-tools), 
+    - from lxplus for HDFS;
  * [Live](https://indico.cern.ch/event/898664/) tutorial (23.3.2020):
-   - [data injection](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/01.DataInjection.ipynb), 
+   - [data injection](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/01.DataInjection.ipynb) usin SWAN notebook, 
    - [data visualization](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/02.Visualization.md) with Grafana,
-   - [Alerts](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/03.AlertsOnGrafana.md) in Grafana
+   - [Alerts](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/03.AlertsOnGrafana.md) in Grafana.
 
 ## Documentation from MONIT
 
