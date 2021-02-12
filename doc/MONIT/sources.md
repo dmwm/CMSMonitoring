@@ -31,6 +31,7 @@
 
 ## CMSWEB logs
 
+- CMSWEB logs are injected with [Logstash](https://github.com/dmwm/CMSMonitoring/tree/master/doc/logstash)
 - In ElasticSearch:
   - [monit-timber-cmsweb Read-only](https://monit-timber-cmsweb.cern.ch/kibana) managed by the e-group **es-timber-cmsweb_kibana**
   - [monit-timber-cmsweb RW](https://monit-timber-cmsweb.cern.ch/kibana_rw) managed by the e-group **es-timber-cmsweb_kibana_rw**
