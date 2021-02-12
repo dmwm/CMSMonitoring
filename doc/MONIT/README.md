@@ -28,7 +28,7 @@ The CMS MONIT data sources are:
 
 ## CMS tutorials
 
- * [Live](https://indico.cern.ch/event/898664/) tutorial (23.3.2020)
+ * [Live](https://indico.cern.ch/event/898664/) tutorial (23.3.2020), covers data injection, data visualization from ElasticSearch and access to HDSF
 
 ## MONIT Architecture
 ![MONIT architecture](MONIT.png)
