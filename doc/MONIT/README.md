@@ -1,5 +1,9 @@
 # The MONIT infrastructure
 
+## Data injection
+
+Data can be injected into MONIT through AMQ or HTTP (for data producers inside the CERN network). Full set of [instructions](injection.md) for AMQ.
+
 ## Data sources and visualisation/access
 
 The CMS MONIT data sources are:
@@ -17,15 +21,6 @@ The CMS MONIT data sources are:
 | HDFS          | raw           | infinite   |   SWAN/analytix |
 | HDFS          | logs           | 13 months   |   SWAN/analytix |
 
-## Data injection
-
-Data can be injected into MONIT through AMQ or HTTP (for data producers inside the CERN network). Full set of [instructions](injection.md) for AMQ.
-
-## Documentation from MONIT
-
-* [CERN OpenStack Cloud guide](https://clouddocs.web.cern.ch/clouddocs/)
-* [CERN MONIT infrastructure](http://monit-docs.web.cern.ch/monit-docs/overview/index.html)
-
 ## CMS tutorials
 
  * [Live](https://indico.cern.ch/event/898664/) tutorial (23.3.2020):
@@ -33,5 +28,10 @@ Data can be injected into MONIT through AMQ or HTTP (for data producers inside t
    - [data visualization](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/02.Visualization.md) with Grafana,
    - [Alerts](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/03.AlertsOnGrafana.md) in Grafana
 
-## MONIT Architecture
+## Documentation from MONIT
+
+* [CERN OpenStack Cloud guide](https://clouddocs.web.cern.ch/clouddocs/)
+* [CERN MONIT infrastructure](http://monit-docs.web.cern.ch/monit-docs/overview/index.html)
+
+### MONIT Architecture
 ![MONIT architecture](MONIT.png)
