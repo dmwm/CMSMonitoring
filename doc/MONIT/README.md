@@ -2,7 +2,8 @@
 
 ## Data injection
 
-Data can be injected into MONIT through AMQ or HTTP (for data producers inside the CERN network). Full set of [instructions](injection.md) for AMQ.
+- Data can be injected into MONIT through AMQ or HTTP (for data producers inside the CERN network). Full set of [instructions](injection.md) for AMQ.
+- CMSWEB logs are injected with [Logstash](https://github.com/dmwm/CMSMonitoring/tree/master/doc/logstash)
 
 ## Data sources and visualisation/access
 
