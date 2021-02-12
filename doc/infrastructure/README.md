@@ -20,7 +20,7 @@ A good overview can be found in this [talk](https://indico.cern.ch/event/873410/
 You can view how all pieces are interconnected in the architectural [diagram](#architectural-diagram).
 
 ## CMS Prometheus services
-We use [Prometheus](https://prometheus.io/) to monitor CMS nodes, and services.
+We use [Prometheus](https://github.com/dmwm/CMSMonitoring/tree/master/doc/Prometheus) to monitor CMS nodes, and services.
 It provides [PromQL](https://prometheus.io/docs/prometheus/latest/querying/basics/)
 (Prometheus Query Language) to query your data which is accessible from
 [cms-monitoring.cern.ch](https://cms-monitoring.cern.ch). In our infrastructure
