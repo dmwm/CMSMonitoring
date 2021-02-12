@@ -137,18 +137,14 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) error {
 	if err != nil {
 		ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, 0)
 		ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, 0)
-		//         ch <- prometheus.MustNewConstMetric(e.path, prometheus.CounterValue, "")
 		return err
 	}
 
 	for _, r := range records {
 		size := float64(r.Size)
 		timestamp := r.Timestamp
-		//         path := r.Path
 		ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, float64(size))
 		ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, float64(timestamp))
-		//         ch <- prometheus.MustNewConstMetric(e.path, prometheus.CounterValue, path)
-		return nil
 	}
 	return nil
 }
