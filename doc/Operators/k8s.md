@@ -2,11 +2,10 @@
 
 The CMS Monitoring cluster is deployed on CERN OpenStack Kubernetes infrastructure.
 
-## Setup a cluster
+## Setup the CMS monitoring cluster
 
 The full instructions of how to setup the cluster can be found in 
-[CMSKubernetes/kubernetes/monitoring](https://github.com/dmwm/CMSKubernetes/tree/master/kubernetes/monitoring)
-repository.
+[here](https://github.com/dmwm/CMSKubernetes/tree/master/kubernetes/monitoring/README.md).
 
 ## Cluster maintenance
 
