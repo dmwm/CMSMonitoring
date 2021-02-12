@@ -13,10 +13,13 @@ It consists of a few components:
   [Prometheus](https://prometheus.io/),
   [AlertManager](https://www.prometheus.io/docs/alerting/latest/alertmanager/),
   [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
-  and other services.
+  and other services. 
+   - Prometheus and VM [documentation](#cms-prometheus-services),
+   - AlertManager and the intelligent module [documentation](https://github.com/dmwm/CMSMonitoring/tree/master/doc/AlertManagement),
+   - [CLI tools](#cms-monitoring-cli-tools)
 - the [NATS](https://nats.io/) cluster for real-time monitoring: [documentation](https://github.com/dmwm/CMSMonitoring/blob/master/doc/NATS/nats.md).
 
-A good overview can be found in this [talk](https://indico.cern.ch/event/873410/contributions/3682300/attachments/1966507/3270012/CMS_monitoring_infrastructure.pdf). 
+A good overview of the available services can be found in this [talk](https://indico.cern.ch/event/873410/contributions/3682300/attachments/1966507/3270012/CMS_monitoring_infrastructure.pdf). 
 You can view how all pieces are interconnected in the architectural [diagram](#architectural-diagram).
 
 ## CMS Prometheus services
