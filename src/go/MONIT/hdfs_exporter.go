@@ -87,6 +87,7 @@ type Exporter struct {
 }
 
 func NewExporter(ns, path, pattern string, timeoffset, verbose int) *Exporter {
+	var labels = []string{"path"}
 	return &Exporter{
 		Path:           path,
 		Pattern:        pattern,
@@ -96,17 +97,12 @@ func NewExporter(ns, path, pattern string, timeoffset, verbose int) *Exporter {
 		size: prometheus.NewDesc(
 			prometheus.BuildFQName(ns, "", "size"),
 			fmt.Sprintf("Size of the record on path %s", path),
-			nil,
+			labels,
 			nil),
-		//         path: prometheus.NewDesc(
-		//             prometheus.BuildFQName(ns, "", "total"),
-		//             fmt.Sprintf("Record on path %s", path),
-		//             nil,
-		//             nil),
 		timestamp: prometheus.NewDesc(
 			prometheus.BuildFQName(ns, "", "timestamp"),
 			fmt.Sprintf("Timestamp of the record at path: %s", path),
-			nil,
+			labels,
 			nil),
 	}
 }
@@ -143,8 +139,9 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) error {
 	for _, r := range records {
 		size := float64(r.Size)
 		timestamp := r.Timestamp
-		ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, float64(size))
-		ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, float64(timestamp))
+		labels := []string{r.Path}
+		ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, float64(size), labels...)
+		ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, float64(timestamp), labels...)
 	}
 	return nil
 }
