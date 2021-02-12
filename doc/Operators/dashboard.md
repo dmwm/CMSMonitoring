@@ -31,5 +31,7 @@ To see all Teams and Team members consult the [Contact](https://monit-grafana.ce
   - create new grafana data sources 
   - create API keys upon request
   - All of these features are available under the Configuration menu in the left tab. Please refer to the grafana documentation for details.
-
+- Useful scripts: 
+  - [Grafana duplicator](https://github.com/dmwm/CMSMonitoring/blob/master/doc/scripts/GrafanaDuplicator.md)
+  - [Grafana Text propagation](https://github.com/dmwm/CMSMonitoring/blob/master/doc/scripts/GrafanaTextPropagation.md)
 

@@ -20,3 +20,6 @@ First of all you need to get authorised to access a Spark-based cluster at CERN 
 - [CMSSpark SWAN notebook](https://github.com/dmwm/CMSSpark/blob/master/src/notebooks/CMSSparkExample.ipynb) on data popularity
 - [Swan notebook](https://cernbox.cern.ch/index.php/s/gBClptQGPs80CpP) to read in job data (/project/awg/cms/job-monitoring/avro-snappy/)
 
+## Rumble
+
+- [Documentation](https://github.com/dmwm/CMSMonitoring/blob/master/doc/Rumble/README.md)

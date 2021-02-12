@@ -1,12 +1,13 @@
 # Kibana 
 
-Kibana is used as data exploration and visualization tool for ElasticSearch data sources
+Kibana is used as data exploration and visualization tool for ElasticSearch data sources.
 
 ## Tutorials
 
 * how to [discover](https://www.elastic.co/guide/en/kibana/current/discover.html) your data, 
 * create [plots/visualisations](https://www.elastic.co/guide/en/kibana/current/visualize.html),
-* make [dashboards](https://www.elastic.co/guide/en/kibana/current/dashboard-getting-started.html).
+* make [dashboards](https://www.elastic.co/guide/en/kibana/current/dashboard-getting-started.html),
+* CMS [tutorials](README.md#cms-tutorials).
 
 ## FAQ
 
