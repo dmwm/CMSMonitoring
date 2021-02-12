@@ -19,7 +19,7 @@ The CMS MONIT data sources are:
 
 ## Data injection
 
-[Tutorial](injection.md) on how to inject data in MONIT though AMQ-
+Data can be injected into MONIT through AMQ or HTTP (for data producers inside the CERN network). Full set of [instructions](injection.md) for AMQ.
 
 ## Documentation from MONIT
 
@@ -28,7 +28,10 @@ The CMS MONIT data sources are:
 
 ## CMS tutorials
 
- * [Live](https://indico.cern.ch/event/898664/) tutorial (23.3.2020), covers data injection, data visualization from ElasticSearch and access to HDSF
+ * [Live](https://indico.cern.ch/event/898664/) tutorial (23.3.2020):
+   - [data injection](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/01.DataInjection.ipynb), 
+   - [data visualization](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/02.Visualization.md) with Grafana,
+   - [Alerts](https://github.com/dmwm/CMSMonitoring/blob/master/doc/training/tutorials/03.AlertsOnGrafana.md) in Grafana
 
 ## MONIT Architecture
 ![MONIT architecture](MONIT.png)
