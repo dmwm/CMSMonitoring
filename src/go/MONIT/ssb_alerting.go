@@ -381,7 +381,7 @@ func main() {
 	var dryRun bool
 
 	flag.StringVar(&inp, "input", "", "input filename")
-	flag.StringVar(&alertManagerURL, "url", "", "alertmanager URL")
+	flag.StringVar(&alertManagerURLs, "url", "", "alertmanager URLs")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	flag.BoolVar(&dryRun, "dryRun", false, "dry run mode, fetch data but do not post it to AM")
 	flag.Parse()
@@ -390,7 +390,7 @@ func main() {
 		log.Fatalf("Input filename missing. Exiting....")
 	}
 
-	if alertManagerURL == "" {
+	if alertManagerURLs == "" {
 		log.Fatalf("AlertManager URL missing. Exiting....")
 	}
 
