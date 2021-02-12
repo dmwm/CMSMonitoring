@@ -1,11 +1,14 @@
 # The k8s clusters
 
 The CMS Monitoring cluster is deployed on CERN OpenStack Kubernetes infrastructure.
+
+## Setup a cluster
+
 The full instructions of how to setup the cluster can be found in 
 [CMSKubernetes/kubernetes/monitoring](https://github.com/dmwm/CMSKubernetes/tree/master/kubernetes/monitoring)
 repository.
 
-### Cluster maintenance
+## Cluster maintenance
 
 The maintenance of the cluster is quite trivial. The operator expects to follow these steps:
 1. login to `lxplus-cloud`
