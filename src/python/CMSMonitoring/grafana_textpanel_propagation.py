@@ -85,7 +85,7 @@ def main():
         )
         sys.exit(1)
     try:
-        # print(opts)
+        print(opts)
         mgr = grafana_manager(
             grafana_url=opts.url, grafana_token=opts.token
         )
