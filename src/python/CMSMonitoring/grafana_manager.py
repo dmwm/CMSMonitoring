@@ -113,9 +113,9 @@ class grafana_manager:
         _search = f"(?sm){re.escape(start_text)}.*{re.escape(end_text)}"
 
         for panel in _sd["dashboard"]["panels"]:
-            if start_text in panel.get("content"):
+            if start_text in panel.get("options").get("content"):
 
-                _sp_content_match = re.search(_search, panel["content"])
+                _sp_content_match = re.search(_search, panel["options"]["content"])
                 if _sp_content_match:
                     _sp_content = _sp_content_match[0]
                     break
@@ -125,13 +125,23 @@ class grafana_manager:
         to_update = []
         for _dash in _target_dashboards:
             for panel in _dash["dashboard"]["panels"]:
-                if start_text in panel.get("content", ""):
-                    _tp_content = panel["content"]
-                    _tp_content_replaced = re.sub(_search, _sp_content, _tp_content)
-                    if _tp_content != _tp_content_replaced:
-                        panel["content"] = _tp_content_replaced
-                        _dash["message"] = "Updated using the grafana manager"
-                        to_update.append(_dash)
+                # If dashboard json includes "options" which is parent of "content"
+                if "options" in panel:
+                    if start_text in panel.get("options").get("content", ""):
+                        _tp_content = panel["options"]["content"]
+                        _tp_content_replaced = re.sub(_search, _sp_content, _tp_content)
+                        if _tp_content != _tp_content_replaced:
+                            panel["options"]["content"] = _tp_content_replaced
+                            _dash["message"] = "Updated using the grafana manager"
+                            to_update.append(_dash)
+                else:
+                    if start_text in panel.get("content", ""):
+                        _tp_content = panel["content"]
+                        _tp_content_replaced = re.sub(_search, _sp_content, _tp_content)
+                        if _tp_content != _tp_content_replaced:
+                            panel["content"] = _tp_content_replaced
+                            _dash["message"] = "Updated using the grafana manager"
+                            to_update.append(_dash)
         for _dash in to_update:
             self.post_dashboard(_dash)
         return len(to_update)
