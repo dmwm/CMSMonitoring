@@ -1,0 +1,5 @@
+stomp.py==4.1.21
+jsonschema>=2.6.0
+genson>=1.0.2
+tornado>=5.1.1
+nats-client>=0.8.4
