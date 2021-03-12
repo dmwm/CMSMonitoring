@@ -38,8 +38,9 @@ func run() {
 			pipeline.MlBox(
 				pipeline.AddAnnotation(
 					pipeline.KeywordMatching(
-						pipeline.Preprocess(
-							pipeline.FetchAlert())))))))
+						pipeline.Filter(
+							pipeline.Preprocess(
+								pipeline.FetchAlert()))))))))
 
 	for d := range a {
 		processedData = append(processedData, d)

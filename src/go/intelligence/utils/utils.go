@@ -125,6 +125,7 @@ func ParseConfig(configFile string, verbose int) {
 	ConfigJSON.Alerts.SeverityLabel = "severity"
 	ConfigJSON.Alerts.ServiceLabel = "service"
 	ConfigJSON.Alerts.DefaultSeverityLevel = "info"
+	ConfigJSON.Alerts.DurationThreshold = 24 // duration threshold (in hours) used by filter pipeline
 
 	ConfigJSON.Silence.Comment = "maintenance"
 	ConfigJSON.Silence.CreatedBy = "admin"
