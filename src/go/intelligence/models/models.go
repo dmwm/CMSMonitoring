@@ -147,6 +147,7 @@ type alert struct {
 	ServiceLabel         string         `json:"serviceLabel"`         // Label for service of an alert
 	DefaultSeverityLevel string         `json:"defaultSeverityLevel"` // Default severity level value in case service is not able to assign one
 	SeverityLevels       map[string]int `json:"severityLevels"`       // Map for defined severity levels and their priority
+	DurationThreshold    float64        `json:"durationThreshold"`    // defines max duration threshold for alerts
 }
 
 // silence data struct

@@ -28,7 +28,7 @@ func Filter(data <-chan models.AmJSON) <-chan models.AmJSON {
 				log.Println(each.String())
 			}
 			diff := each.EndsAt.Sub(each.StartsAt)
-			if diff.Hours() < utils.ConfigJSON.AlertDurationThreshold {
+			if diff.Hours() < utils.ConfigJSON.Alerts.DurationThreshold {
 				// if our alert time range (defined between starts and ends timestamps)
 				// is less than our threshold we'll keep it, otherwise the alert will be
 				// rejected (i.e. we'll not pass it to next pipeline level)
