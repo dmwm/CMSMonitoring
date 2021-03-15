@@ -355,7 +355,7 @@ func tabulate(data []annotationData) {
 
 	for _, each := range data {
 
-		fmt.Fprintf(w, " %d\t%d\t%s\t%s\t%s",
+		fmt.Fprintf(w, "%d\t%d\t%s\t%s\t%s",
 			each.ID,
 			each.DashboardID,
 			strings.Split(each.Text, "\n<a")[0],
