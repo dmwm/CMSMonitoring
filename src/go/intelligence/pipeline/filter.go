@@ -17,7 +17,7 @@ import (
 func Filter(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
-		log.Println("KeyworkMatching pipeline")
+		log.Println("Filter pipeline")
 	}
 	out := make(chan models.AmJSON)
 
@@ -33,6 +33,8 @@ func Filter(data <-chan models.AmJSON) <-chan models.AmJSON {
 				// is less than our threshold we'll keep it, otherwise the alert will be
 				// rejected (i.e. we'll not pass it to next pipeline level)
 				out <- each
+			} else {
+				log.Println("filter out", each.String())
 			}
 		}
 	}()
