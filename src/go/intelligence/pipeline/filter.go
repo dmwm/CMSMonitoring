@@ -34,7 +34,7 @@ func Filter(data <-chan models.AmJSON) <-chan models.AmJSON {
 				for _, val := range each.Annotations {
 					for _, tag := range utils.ConfigJSON.Alerts.FilterKeywords {
 						if strings.Contains(fmt.Sprintf("%v", val), tag) {
-							log.Printf("filter out:\n%v", each.String())
+							log.Printf("filter alert, matching keyword %v\n%v", tag, each.String())
 						}
 					}
 				}
@@ -47,7 +47,7 @@ func Filter(data <-chan models.AmJSON) <-chan models.AmJSON {
 				// rejected (i.e. we'll not pass it to next pipeline level)
 				out <- each
 			} else {
-				log.Printf("filter out:\n%v", each.String())
+				log.Printf("filter alert, duration %v\n\n%v", diff, each.String())
 			}
 		}
 	}()
