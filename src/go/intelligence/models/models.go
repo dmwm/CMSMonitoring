@@ -148,6 +148,7 @@ type alert struct {
 	DefaultSeverityLevel string         `json:"defaultSeverityLevel"` // Default severity level value in case service is not able to assign one
 	SeverityLevels       map[string]int `json:"severityLevels"`       // Map for defined severity levels and their priority
 	DurationThreshold    float64        `json:"durationThreshold"`    // defines max duration threshold for alerts
+	FilterKeywords       []string       `json:"filterKeywords"`       // list of tags to apply to filter step, e.g. remove alerts with ATLAS keyword in annotation attribute values
 }
 
 // silence data struct

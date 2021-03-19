@@ -98,6 +98,10 @@ Contains all the values required for annotation of Grafana Dashboards.
 - **serviceLabel** - Label for service of an alert.
 - **\* severityLevels** - map for defined severity levels and their priority.
 - **defaultSeverityLevel** - Default severity level value in case intelligence module is not able to assign one.
+- **durationThreshold** - filter alerts whose time span exceed duration
+  threshold, default 24 hour
+- **filterKeywords** - list of keyword values to filter in alert annotations
+  attribute values
 
 **Fields with * mark are required.**
 
