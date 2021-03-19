@@ -20,44 +20,47 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Get dependencies
-      run: |
-        go get github.com/vkuznet/x509proxy
-        go get github.com/buger/jsonparser
-        go get github.com/pkg/profile
-        go get github.com/stretchr/testify
-        go get github.com/go-stomp/stomp
-        go get github.com/elastic/go-elasticsearch
-        go get github.com/nats-io/nats.go
-        go get github.com/dmwm/cmsauth
-        go get github.com/sirupsen/logrus
-        go get github.com/prometheus/client_golang/prometheus
-        go get github.com/prometheus/client_golang/prometheus/promhttp
-        go get github.com/prometheus/common/log
-        go get github.com/prometheus/common/version
-        go get github.com/shirou/gopsutil/cpu
-        go get github.com/shirou/gopsutil/mem
-        go get github.com/shirou/gopsutil/load
-        go get github.com/shirou/gopsutil/process
+#     - name: Get dependencies
+#       run: |
+#         go get github.com/vkuznet/x509proxy
+#         go get github.com/buger/jsonparser
+#         go get github.com/pkg/profile
+#         go get github.com/stretchr/testify
+#         go get github.com/go-stomp/stomp
+#         go get github.com/elastic/go-elasticsearch
+#         go get github.com/nats-io/nats.go
+#         go get github.com/dmwm/cmsauth
+#         go get github.com/sirupsen/logrus
+#         go get github.com/prometheus/client_golang/prometheus
+#         go get github.com/prometheus/client_golang/prometheus/promhttp
+#         go get github.com/prometheus/common/log
+#         go get github.com/prometheus/common/version
+#         go get github.com/shirou/gopsutil/cpu
+#         go get github.com/shirou/gopsutil/mem
+#         go get github.com/shirou/gopsutil/load
+#         go get github.com/shirou/gopsutil/process
 
     - name: Build
       run: |
-        go build -o monit src/go/MONIT/monit.go
-        go build -o alert src/go/MONIT/alert.go
-        go build -o annotationManager src/go/MONIT/annotationManager.go
-        go build -o datasources src/go/MONIT/datasources.go
-        go build -o ggus_alerting src/go/MONIT/ggus_alerting.go
-        go build -o ggus_parser src/go/MONIT/ggus_parser.go
-        go build -o intelligence src/go/MONIT/intelligence.go
-        go build -o ssb_alerting src/go/MONIT/ssb_alerting.go
-        go build -o es_exporter src/go/MONIT/es_exporter.go
-        go build -o dbs_vm src/go/NATS/dbs_vm.go
-        go build -o nats-pub src/go/NATS/nats-pub.go
-        go build -o nats-sub src/go/NATS/nats-sub.go
         mkdir cmsmon-tools
+        cd src/go/MONIT
+        go build -o monit monit.go
+        go build -o alert alert.go
+        go build -o annotationManager annotationManager.go
+        go build -o datasources datasources.go
+        go build -o ggus_alerting ggus_alerting.go
+        go build -o ggus_parser ggus_parser.go
+        go build -o intelligence intelligence.go
+        go build -o ssb_alerting ssb_alerting.go
+        go build -o es_exporter es_exporter.go
         mv monit alert annotationManager datasources ggus_alerting \
-          ggus_parser intelligence ssb_alerting dbs_vm nats-pub nats-sub \
-          es_exporter cmsmon-tools
+          ggus_parser intelligence ssb_alerting ex_exporter ../../../cmsmon-tools
+        cd ../NATS
+        go build -o dbs_vm dbs_vm.go
+        go build -o nats-pub nats-pub.go
+        go build -o nats-sub nats-sub.go
+        mv dbs_vm nats-pub nats-sub ../../../cmsmon-tools
+        cd ../../../
         tar cfz cmsmon-tools.tar.gz cmsmon-tools
 
     - name: Create Release
