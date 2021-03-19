@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -33,7 +34,12 @@ func (a *AmJSON) String() string {
 		nannotations = len(a.Annotations)
 	}
 	lock.RUnlock()
-	s = fmt.Sprintf("am data has %d labels %d annotations", nlabels, nannotations)
+	data, err := json.Marshal(a)
+	if err == nil {
+		return string(data)
+	}
+	diff := a.EndsAt.Sub(a.StartsAt)
+	s = fmt.Sprintf("am data has %d labels %d annotations, duration %v", nlabels, nannotations, diff)
 	return s
 }
 
