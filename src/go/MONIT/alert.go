@@ -6,6 +6,7 @@ package main
 // Description: CERN MONIT infrastructure Alert CLI Tool
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -117,6 +118,18 @@ var configJSON config
 
 //-------STRUCTS---------
 
+// helper function to either read file content or return given string
+func read(r string) string {
+	if _, err := os.Stat(r); err == nil {
+		b, e := ioutil.ReadFile(r)
+		if e != nil {
+			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
+		}
+		return strings.Replace(string(b), "\n", "", -1)
+	}
+	return r
+}
+
 //function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
 func get(data interface{}) {
 
@@ -127,7 +140,8 @@ func get(data interface{}) {
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
 	if configJSON.Token != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("bearer %s", configJSON.Token))
+		token := read(configJSON.Token)
+		req.Header.Add("Authorization", fmt.Sprintf("bearer %s", token))
 	}
 
 	timeout := time.Duration(configJSON.httpTimeout) * time.Second
@@ -542,6 +556,77 @@ func run() {
 	}
 }
 
+// helper function to update alerts attributes
+func updateAlert(starts, ends string) {
+	if ends == "" {
+		log.Println("to update alert please provide valid ends timestamp")
+		return
+	}
+	// converts ends timestamp into time.Time
+	tstamp, err := time.Parse(time.RFC3339, ends)
+	if err != nil {
+		log.Println("invalid alert timestamp, please use RFC3339 format, error", err)
+		return
+	}
+
+	// fetch data
+	var amdata amData
+	get(&amdata)
+	mergeData(amdata)
+
+	// update alert end timestamp (which eventuall will delete alert)
+	alert := alertDetails[name]
+	alert.EndsAt = tstamp
+
+	// if starts is provided we'll update it too
+	if starts != "" {
+		tstamp, err := time.Parse(time.RFC3339, starts)
+		if err != nil {
+			log.Println("invalid alert timestamp, please use RFC3339 format, error", err)
+			return
+		}
+		alert.StartsAt = tstamp
+	}
+
+	var alerts []amJSON
+	alerts = append(alerts, alert)
+
+	data, err := json.Marshal(alerts)
+	if err != nil {
+		log.Printf("Unable to marshal alert details, error: %v\n", err)
+		return
+	}
+	//GET API for fetching only GGUS alerts.
+	apiurl := configJSON.CMSMONURL + "/api/v1/alerts"
+	req, err := http.NewRequest("POST", apiurl, bytes.NewBuffer(data))
+	req.Header.Add("Content-Type", "application/json")
+	if configJSON.Token != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("bearer %s", configJSON.Token))
+	}
+
+	timeout := time.Duration(configJSON.httpTimeout) * time.Second
+	client := &http.Client{Timeout: timeout}
+
+	if configJSON.Verbose > 1 {
+		log.Println("URL", apiurl)
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err == nil {
+			log.Println("Request: ", string(dump))
+		}
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	if configJSON.Verbose > 1 {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			log.Println("Response: ", string(dump))
+		}
+	}
+}
+
 //helper function for parsing Configs
 func openConfigFile(configFilePath string) {
 	jsonFile, e := os.Open(configFilePath)
@@ -641,6 +726,12 @@ func main() {
 	flag.StringVar(&sortLabel, "sort", "", "Sort data on a specific Label")
 	var verbose int
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level, can be overwritten in config")
+	var ends string
+	flag.StringVar(&ends, "ends", "", "alert ends timestamp")
+	var starts string
+	flag.StringVar(&starts, "starts", "", "alert starts timestamp")
+	var amurl string
+	flag.StringVar(&amurl, "amurl", "", "AlertManager url to use")
 
 	flag.Usage = func() {
 		configPath := os.Getenv("HOME") + "/.alertconfig.json"
@@ -675,11 +766,22 @@ func main() {
 		fmt.Println("\t    alert -service=GGUS -severity=high -sort=duration")
 		fmt.Println("\n\tGet all alerts of service=GGUS sorted on severity level:")
 		fmt.Println("\t    alert -service=GGUS -sort=severity")
+		fmt.Println("")
+		fmt.Println("\tUpdate existing alert end time (expired alerts will be removed):")
+		fmt.Println("\t    alert -name=ssb-OTF058113 -ends=\"2020-11-05T20:52:00Z\"")
+		fmt.Println("\t    alert -name=ssb-OTF058113 -starts=\"2020-11-05T20:52:00Z\" -ends=\"2020-11-05T20:52:00Z\"")
 	}
 
 	flag.Parse()
 	parseConfig(verbose)
+	if amurl != "" {
+		configJSON.CMSMONURL = amurl
+	}
 	if !*generateConfig {
-		run()
+		if ends != "" {
+			updateAlert(starts, ends)
+		} else {
+			run()
+		}
 	}
 }
