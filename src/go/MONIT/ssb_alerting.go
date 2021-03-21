@@ -37,8 +37,8 @@ var service string
 //verbose defines verbosity level
 var verbose int
 
-//MAX timeStamp //Saturday, May 24, 3000 3:43:26 PM
-var maxtstmp int64 = 32516091806
+// (max) duration of alert timestamp in hours
+var duration int64 = 24
 
 //Map for storing Existing SSB Data
 var exstSSBData map[string]int
@@ -152,7 +152,9 @@ func (data *ssb) convertData() []byte {
 			_endTS = time.Unix(0, int64(e)*int64(time.Millisecond)).UTC()
 
 		} else {
-			_endTS = time.Unix(maxtstmp, 0).UTC() // If not given EndTime the alert will be open ending. Max TimeStamp value given.
+			// If not given EndTime the alert will have max duration from current timestamp
+			current := time.Now().UTC()
+			_endTS = time.Unix(int64(current.Unix()+duration), 0).UTC()
 		}
 
 		if u, ok := each[15].(float64); ok {
@@ -384,6 +386,7 @@ func main() {
 	flag.StringVar(&alertManagerURLs, "url", "", "alertmanager URLs")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	flag.BoolVar(&dryRun, "dryRun", false, "dry run mode, fetch data but do not post it to AM")
+	flag.Int64Var(&duration, "duration", 24, "max alert duration in hours")
 	flag.Parse()
 
 	if inp == "" {

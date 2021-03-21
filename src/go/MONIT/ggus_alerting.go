@@ -41,8 +41,8 @@ var vo string
 //verbose defines verbosity level
 var verbose int
 
-//MAX timeStamp //Saturday, May 24, 3000 3:43:26 PM
-var maxtstmp int64 = 32516091806
+// (max) duration of alert timestamp in hours
+var duration int64 = 24
 
 //Map for storing Existing Tickets
 var exstTkt map[string]int
@@ -171,7 +171,7 @@ func convertData(data ggus) []byte {
 		temp.Annotations.URL = "https://ggus.eu/?mode=ticket_info&ticket_id=" + strconv.Itoa(each.TicketID)
 
 		temp.StartsAt = _beginRFC3339
-		temp.EndsAt = time.Unix(maxtstmp, 0).UTC()
+		temp.EndsAt = time.Unix(int64(_beginRFC3339.Unix()+duration), 0).UTC()
 
 		if verbose > 0 {
 			log.Println("adding", temp.Labels.Alertname, temp.Labels.Severity, temp.Labels.Service, temp.Labels.Tag, temp.Annotations.URL)
@@ -376,6 +376,7 @@ func main() {
 	flag.StringVar(&alertManagerURLs, "urls", "", "list of alertmanager URLs seperated by commas")
 	flag.IntVar(&verbose, "verbose", 0, "verbosity level")
 	flag.BoolVar(&dryRun, "dryRun", false, "dry run mode, fetch data but do not post it to AM")
+	flag.Int64Var(&duration, "duration", 24, "max alert duration in hours")
 	flag.Parse()
 
 	if inp == "" {
