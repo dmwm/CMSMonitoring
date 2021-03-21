@@ -20,6 +20,8 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/vkuznet/TokenManager"
 )
 
 //-------VARIABLES-------
@@ -140,12 +142,25 @@ func get(data interface{}) {
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("Accept", "application/json")
 	if configJSON.Token != "" {
-		token := read(configJSON.Token)
+		token = TokenManager.ReadToken(configJSON.Token)
 		req.Header.Add("Authorization", fmt.Sprintf("bearer %s", token))
 	}
 
 	timeout := time.Duration(configJSON.httpTimeout) * time.Second
 	client := &http.Client{Timeout: timeout}
+	if token != "" {
+		rootCAs, err := TokenManager.LoadCAs(configJSON.Verbose)
+		if err != nil {
+			log.Println("unable to load CERN ROOT CAs", err)
+			return
+		}
+		tr, err := TokenManager.Transport(rootCAs, configJSON.Verbose)
+		if err != nil {
+			log.Println("unable to initialize HTTP Transport", err)
+			return
+		}
+		client = &http.Client{Transport: tr}
+	}
 
 	if configJSON.Verbose > 1 {
 		log.Println("URL", apiurl)
