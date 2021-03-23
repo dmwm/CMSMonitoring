@@ -133,8 +133,8 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) error {
 	// extract records
 	records, err := run(e.Path, e.Pattern, e.Timeoffset, e.Verbose)
 	if err != nil {
-		ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, 0)
-		ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, 0)
+		//         ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, 0)
+		//         ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, 0)
 		return err
 	}
 
