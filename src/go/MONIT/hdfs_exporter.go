@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -23,6 +24,7 @@ type Record struct {
 }
 
 func run(path, pattern string, timeoffset, verbose int) ([]Record, error) {
+	var records []Record
 	args := []string{"fs", "-ls"}
 	command := "hadoop"
 	now := time.Now().Unix() - int64(timeoffset)
@@ -37,12 +39,12 @@ func run(path, pattern string, timeoffset, verbose int) ([]Record, error) {
 	stdout, err := cmd.Output()
 	if err != nil {
 		msg := fmt.Sprintf("%v %v %v", command, args, err)
-		log.Fatal(msg)
+		log.Println(msg)
+		return records, errors.New(msg)
 	}
 	if verbose > 0 {
 		log.Println(string(stdout))
 	}
-	var records []Record
 	for _, line := range strings.Split(string(stdout), "\n") {
 		var arr []string
 		for _, a := range strings.Split(line, " ") {
