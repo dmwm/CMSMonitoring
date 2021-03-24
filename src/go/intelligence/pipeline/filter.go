@@ -29,15 +29,20 @@ func Filter(data <-chan models.AmJSON) <-chan models.AmJSON {
 			if utils.ConfigJSON.Server.Verbose > 1 {
 				log.Println(each.String())
 			}
+			match := false
 			// filter out each AM message if it contains filter tag
 			if len(utils.ConfigJSON.Alerts.FilterKeywords) > 0 {
 				for _, val := range each.Annotations {
 					for _, tag := range utils.ConfigJSON.Alerts.FilterKeywords {
 						if strings.Contains(fmt.Sprintf("%v", val), tag) {
 							log.Printf("filter alert, matching keyword %v\n%v", tag, each.String())
+							match = true
 						}
 					}
 				}
+			}
+			if match {
+				continue
 			}
 			// filter out alerts which has large duration time
 			diff := each.EndsAt.Sub(each.StartsAt)
