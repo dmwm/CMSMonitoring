@@ -4,6 +4,11 @@
 		"id": 8973,
 		"type": "graphite"
 	},
+	"Ceph ES Access": {
+		"database": "[ceph_s3_access-]YYYY.MM.DD",
+		"id": 9953,
+		"type": "elasticsearch"
+	},
 	"ES_cms_rucio_enr": {
 		"database": "[monit_prod_cms_rucio_enr_events-]YYYY-MM-DD",
 		"id": 9732,
@@ -47,6 +52,21 @@
 	"Prometheus-1": {
 		"database": "",
 		"id": 9537,
+		"type": "prometheus"
+	},
+	"Prometheus-2": {
+		"database": "",
+		"id": 9869,
+		"type": "prometheus"
+	},
+	"Prometheus-3": {
+		"database": "",
+		"id": 9870,
+		"type": "prometheus"
+	},
+	"Prometheus-4": {
+		"database": "",
+		"id": 9872,
 		"type": "prometheus"
 	},
 	"Rucio-graphite-dev": {
@@ -99,6 +119,11 @@
 		"id": 9846,
 		"type": "elasticsearch"
 	},
+	"WMArchive_record_time": {
+		"database": "[monit_prod_wmarchive_*]",
+		"id": 9952,
+		"type": "elasticsearch"
+	},
 	"__test_es_condor": {
 		"database": "[monit_prod_condor_raw_metric*]",
 		"id": 9668,
@@ -108,6 +133,21 @@
 		"database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD",
 		"id": 9707,
 		"type": "elasticsearch"
+	},
+	"cms-monitoring-agg ": {
+		"database": "",
+		"id": 9950,
+		"type": "prometheus"
+	},
+	"cms-monitoring-agg-1h": {
+		"database": "",
+		"id": 9951,
+		"type": "prometheus"
+	},
+	"cmsmonitoring": {
+		"database": "",
+		"id": 9867,
+		"type": "prometheus"
 	},
 	"cmsmonitoring-prometheus": {
 		"database": "",
@@ -169,24 +209,24 @@
 		"id": 9472,
 		"type": "prometheus"
 	},
+	"cmsweb LokiMetrics": {
+		"database": "",
+		"id": 9924,
+		"type": "prometheus"
+	},
 	"cmsweb-k8s": {
 		"database": "",
 		"id": 8488,
 		"type": "prometheus"
 	},
-	"cmsweb-k8s-frontend": {
+	"cmsweb-k8s-prod": {
 		"database": "",
-		"id": 9462,
-		"type": "prometheus"
-	},
-	"cmsweb-k8s-frontend-prod": {
-		"database": "",
-		"id": 9647,
+		"id": 9857,
 		"type": "prometheus"
 	},
 	"cmsweb-k8s-prod-services": {
 		"database": "",
-		"id": 9648,
+		"id": 9871,
 		"type": "prometheus"
 	},
 	"cmsweb-k8s-test6-frontend": {
@@ -199,14 +239,9 @@
 		"id": 9482,
 		"type": "prometheus"
 	},
-	"cmsweb-k8s-testbed-frontend": {
+	"cmsweb-prod": {
 		"database": "",
-		"id": 9483,
-		"type": "prometheus"
-	},
-	"cmsweb-k8s-testbed-services": {
-		"database": "",
-		"id": 9484,
+		"id": 9858,
 		"type": "prometheus"
 	},
 	"cmsweb-prometheus": {
@@ -219,6 +254,31 @@
 		"id": 9463,
 		"type": "prometheus"
 	},
+	"cmsweb-testbed": {
+		"database": "",
+		"id": 9484,
+		"type": "prometheus"
+	},
+	"cmsweb-testbed Loki": {
+		"database": "",
+		"id": 9918,
+		"type": "loki"
+	},
+	"cmsweb-testbed LokiMetrics": {
+		"database": "",
+		"id": 9923,
+		"type": "prometheus"
+	},
+	"cmswg-test": {
+		"database": "[monit_prod_cms-training*]",
+		"id": 9956,
+		"type": "elasticsearch"
+	},
+	"cmweb Loki": {
+		"database": "",
+		"id": 9925,
+		"type": "loki"
+	},
 	"es-cms": {
 		"database": "[cms-20*]",
 		"id": 8983,
@@ -227,6 +287,11 @@
 	"es-cms-cmssdt-relvals": {
 		"database": "cmssdt-relvals_stats_summary-*",
 		"id": 9015,
+		"type": "elasticsearch"
+	},
+	"es-cms-test": {
+		"database": "[cms-test-k8s-20*]",
+		"id": 9919,
 		"type": "elasticsearch"
 	},
 	"monit-central-prometheus": {
@@ -259,6 +324,11 @@
 		"id": 9795,
 		"type": "elasticsearch"
 	},
+	"monit-timber-cms-crab-taskworker_kafka_ts": {
+		"database": "[monit_prod_crab_logs_crabtaskworker-]YYYY-MM-DD",
+		"id": 9851,
+		"type": "elasticsearch"
+	},
 	"monit-timber-cmswebk8s-apache": {
 		"database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD",
 		"id": 9660,
@@ -269,9 +339,19 @@
 		"id": 9706,
 		"type": "elasticsearch"
 	},
+	"monit-timber-si-factory": {
+		"database": "[monit_prod_cms-si-factory_logs_*-]YYYY-MM-DD",
+		"id": 9908,
+		"type": "elasticsearch"
+	},
 	"monit_aaa_subscription": {
 		"database": "[monit_prod_cms_aaa_subscription_raw_metric*]",
 		"id": 9466,
+		"type": "elasticsearch"
+	},
+	"monit_cms_es_xrootd_agg": {
+		"database": "[monit_prod_xrootd_agg_transfer-*]",
+		"id": 9957,
 		"type": "elasticsearch"
 	},
 	"monit_condor": {
