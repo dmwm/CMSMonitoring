@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8" content="origin" name="referrer">
+    <title>Welcome to Rumble Service</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"/>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/easytimer@1.1.1/dist/easytimer.min.js"></script>
+</head>
+<body>
+
+<h1 align="center">Welcome to Rumble Service</h1>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-5">
+        <form method="POST">
+            <div class="form-group">
+                <label for="userid">User ID</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="userid"
+                    name="userid"
+                    placeholder="$userid"
+                />
+            </div>
+            <div class="form-group">
+                <label for="output">HDFS output path</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="output"
+                    name="output"
+                    placeholder="/tmp/rumble/$username/123"
+                />
+            </div>
+            <div class="form-group">
+                <label for="query">JSONiq query</label>
+                <textarea
+                    class="form-control"
+                    id="query"
+                    name="query"
+                    rows="10"
+                    placeholder="JSONiq query"
+                ></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="spark_executor_memory">SparkExecutorMemory(Gb)</label>
+                    <input type="number" class="form-control" id="spark_executor_memory" placeholder=2 value=2>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="spark_executor_instances">SparkExecutorInstances</label>
+                    <input type="number" class="form-control" id="spark_executor_instances" placeholder=2 value=2>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="spark_executor_cores">SparkExecutorCores</label>
+                    <input type="number" class="form-control" id="spark_executor_cores" placeholder=2 value=2>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="spark_driver_memory">SparkDriverMemory(Gb)</label>
+                    <input type="number" class="form-control" id="spark_driver_memory" placeholder=2 value=2>
+                </div>
+            </div>
+            <div class="col-md-2"><label>Verbosity:</label></div>
+            <div class="form-check form-check-inline col-md-1">
+                <input class="form-check-input" type="radio" name="verbosity" id="verbose0"
+                       value=0>
+                <label class="form-check-label" for="verbose0">0</label>
+            </div>
+            <div class="form-check form-check-inline col-md-1">
+                <input class="form-check-input" type="radio" name="verbosity" id="verbose1"
+                       value=1>
+                <label class="form-check-label" for="verbose1">1</label>
+            </div>
+            <div class="form-check form-check-inline col-md-1">
+                <input class="form-check-input" type="radio" name="verbosity" id="verbose2"
+                       value=2 autocomplete="off">
+                <label class="form-check-label" for="verbose2">2</label>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success">
+                    Submit
+                </button>
+            </div>
+        </form>
+
+    </div>
+    <div class="col-md-6">
+        <div> <!--Start Markdown-->
+            <hr>
+            <h1 id="rumble-usage">Rumble Usage</h1>
+            <h6 id="attention-">Attention:</h6>
+            <ul>
+                <li>Rumble getting started: <a href="https://rumble.readthedocs.io/en/latest/Getting%20started/">https://rumble.readthedocs.io/en/latest/Getting%20started/</a></li>
+                <li>JSONiq query language: <a href="https://rumble.readthedocs.io/en/latest/JSONiq/">https://rumble.readthedocs.io/en/latest/JSONiq/</a></li>
+                <li>More advance queries: <a href="https://www.jsoniq.org/docs/JSONiq-usecases/html-single/index.html">https://www.jsoniq.org/docs/JSONiq-usecases/html-single/index.html</a></li>
+                <li>Please define output hdfs path in a public place i.e. <code>/tmp/rumble/username/123</code>.</li>
+                <li>You can reach your data with this command: <code>hadoop fs -cat $output_path/*</code></li>
+                <li>Be careful while copy-pasting below examples. New lines should be exactly same.</li>
+                <li>Please provide satisfying spark parameters considering your query.</li>
+                <li>While using <code>curl</code>, you need to sringify multiline JSONiq query. You can do it in: <a href="https://onlinetexttools.com/json-stringify-text">https://onlinetexttools.com/json-stringify-text</a></li>
+            </ul>
+            <h6 id="examples">Examples</h6>
+            <ol>
+                <li><p>Example JSONiq query</p>
+                    <pre><code><span class="hljs-keyword">for</span> <span class="hljs-variable">$doc</span> <span class="hljs-keyword">in</span> json-file(<span class="hljs-string">"hdfs://analytix/project/monitoring/archive/wmarchive/raw/metric/2020/09/15/*"</span>)
+where <span class="hljs-variable">$doc</span><span class="hljs-selector-class">.data</span><span class="hljs-selector-class">.meta_data</span><span class="hljs-selector-class">.jobstate</span> eq <span class="hljs-string">"success"</span>
+return <span class="hljs-variable">$doc</span><span class="hljs-selector-class">.data</span><span class="hljs-selector-class">.wmaid</span>
+</code></pre></li>
+                <li><p>Example JSONiq query</p>
+                    <pre><code><span class="hljs-keyword">for</span> <span class="hljs-variable">$doc</span> <span class="hljs-keyword">in</span> json-file(<span class="hljs-string">"hdfs://analytix/project/monitoring/archive/wmarchive/raw/metric/2020/12/21/part-00000-8e64eeb5-2dbd-457e-bee0-ccd623641950-c000.json.gz"</span>)
+where <span class="hljs-variable">$doc</span><span class="hljs-selector-class">.data</span><span class="hljs-selector-class">.meta_data</span><span class="hljs-selector-class">.jobstate</span> ne <span class="hljs-string">"success"</span>
+let <span class="hljs-variable">$job</span> := <span class="hljs-variable">$doc</span><span class="hljs-selector-class">.data</span><span class="hljs-selector-class">.meta_data</span><span class="hljs-selector-class">.jobtype</span>
+group by <span class="hljs-variable">$job</span>
+return { <span class="hljs-variable">$job</span> : count( <span class="hljs-variable">$doc</span><span class="hljs-selector-class">.data</span><span class="hljs-selector-class">.wmaid</span> ) }
+</code></pre></li>
+                <li><p>Curl Example:</p>
+                    <pre><code>curl --<span class="hljs-keyword">location</span> <span class="hljs-title">--request</span> POST 'http://cuzunogl-k8s-yjc6wuzsnjes-<span class="hljs-keyword">node</span>-0:<span class="hljs-title">30000</span>/rumble-server' \ --header 'Content-<span class="hljs-keyword">Type</span>: application/json' \ --data-raw '{
+<span class="hljs-string">"query"</span>: <span class="hljs-string">"for $doc in json-file(\"hdfs://analytix/project/monitoring/archive/wmarchive/raw/metric/2020/09/15/*\")\nwhere $doc.data.meta_data.jobstate eq \"success\"\nreturn $doc.data.wmaid"</span>,
+<span class="hljs-string">"output_path"</span>: <span class="hljs-string">"/tmp/rumle/cuzunogl/1122"</span>,
+<span class="hljs-string">"userid"</span>: <span class="hljs-string">"ceyhun uzunoglu"</span>,
+<span class="hljs-string">"verbose"</span>: <span class="hljs-number">1</span>,
+<span class="hljs-string">"spark_conf"</span>: {
+ <span class="hljs-string">"spark_executor_memory"</span>: <span class="hljs-string">"4g"</span>,
+ <span class="hljs-string">"spark_executor_instances"</span>: <span class="hljs-string">"4"</span>,
+ <span class="hljs-string">"spark_executor_cores"</span>: <span class="hljs-string">"4"</span>,
+ <span class="hljs-string">"spark_driver_memory"</span>: <span class="hljs-string">"4g"</span>
+}
+}'
+</code></pre></li>
+                <li><p>rumble_client:</p>
+                    <pre><code>$&gt; git clone https:<span class="hljs-comment">//github.com/mrceyhun/CMSMonitoring.git</span>
+$&gt; cd src/go/Rumble
+$&gt; go build rumble_client<span class="hljs-selector-class">.go</span>
+$&gt; cat ./test<span class="hljs-selector-class">.jq</span> &gt;
+<span class="hljs-keyword">for</span> <span class="hljs-variable">$doc</span> <span class="hljs-keyword">in</span> json-file(<span class="hljs-string">"hdfs://analytix/project/monitoring/archive/wmarchive/raw/metric/2020/09/15/*"</span>)
+where <span class="hljs-variable">$doc</span><span class="hljs-selector-class">.data</span><span class="hljs-selector-class">.meta_data</span><span class="hljs-selector-class">.jobstate</span> eq <span class="hljs-string">"success"</span>
+return <span class="hljs-variable">$doc</span><span class="hljs-selector-class">.data</span><span class="hljs-selector-class">.wmaid</span>
+$&gt; ./rumble_client -user cuzunogl -output /tmp/rumble/cuzunogl/test -query=./test<span class="hljs-selector-class">.jq</span> -verbose <span class="hljs-number">1</span> -timeout <span class="hljs-number">10</span> -executor-memory-g <span class="hljs-number">2</span> -executor-instances <span class="hljs-number">4</span> -executor-cores <span class="hljs-number">2</span> -driver-memory-g <span class="hljs-number">2</span>
+</code></pre></li>
+            </ol>
+
+        </div> <!--Finish Markdown-->
+    </div>
+
+</div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-5">
+        <label>Elapsed time:<span id="elapsed-time">00:00:00</span></label>
+        <pre><code id="request"></code></pre>
+        <pre style="background-color: #feeeee"><code id="result"></code></pre>
+    </div>
+</div>
+</body>
+<script>
+    $(document).ready(function () {
+        $("form").submit(function (event) {
+            document.getElementById("result").textContent = ""
+            document.getElementById("request").textContent = ""
+            var timer = new Timer();
+            timer.start();
+            timer.addEventListener('secondsUpdated', function (e) {
+                $('#elapsed-time').html(timer.getTimeValues().toString());
+            });
+            var formData = {
+                userid: $("#userid").val(),
+                output_path: $("#output").val(),
+                query: $("#query").val(),
+                verbose: parseInt($("input[name=verbosity]:checked").val()),
+                spark_conf: {
+                    spark_executor_memory: $("#spark_executor_memory").val() + "g",
+                    spark_executor_instances: $("#spark_executor_instances").val(),
+                    spark_executor_cores: $("#spark_executor_cores").val(),
+                    spark_driver_memory: $("#spark_driver_memory").val() + "g",
+                }
+            };
+            document.getElementById("request").textContent = "Request sent:\n" + JSON.stringify(formData, null, 2);
+            $.ajax({
+                type: "POST",
+                async: true,
+                url: "http://cuzunogl-k8s-yjc6wuzsnjes-node-0:30000/rumble-server",
+                data: JSON.stringify(formData),
+                dataType: "json",
+                success: function (resp) {
+                    timer.stop();
+                    console.log("Success");
+                    console.log(JSON.stringify(resp));
+                    document.getElementById("result").textContent = "[Success]\n" + "Response body:\n" + JSON.stringify(resp, null, 2);
+                },
+                error: function (resp) {
+                    timer.stop();
+                    document.getElementById("result").textContent = "[Failed]\n" + "Response body:\n" + JSON.stringify(resp.responseJSON, null, 2);
+                },
+            });
+
+            event.preventDefault();
+        });
+    });
+</script>
+</html>
+
