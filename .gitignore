@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Idea
+src/go/Rumble/.idea/
+.idea/
+
 # Distribution / packaging
 .Python
 build/
