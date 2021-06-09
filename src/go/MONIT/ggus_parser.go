@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/vkuznet/x509proxy"
+	"golang.org/x/net/html"
 )
 
 // File       : ggus_parser.go
@@ -46,7 +47,15 @@ type TicketsXML struct {
 		LastUpdate      string `xml:"Last_Update"`
 		Subject         string `xml:"Subject"`
 		Scope           string `xml:"Scope"`
+		Description     string
+		Comments        []TicketComment
 	} `xml:"ticket"`
+}
+
+type TicketComment struct {
+	Date string
+	Time string
+	Text string
 }
 
 //Ticket Data struct (CSV)
@@ -75,7 +84,7 @@ func nullValueHelper(value **string, data string) {
 
 func convertTime(timestamp string) int64 {
 
-	UnixTS, errTime := time.Parse(time.RFC3339, (strings.ReplaceAll(timestamp, " ", "T") + "Z"))
+	UnixTS, errTime := time.Parse(time.RFC3339, strings.ReplaceAll(timestamp, " ", "T")+"Z")
 	if errTime != nil {
 		log.Printf("Unable to parse LastUpdate TimeStamp, error: %v\n", errTime)
 	}
@@ -144,7 +153,6 @@ func (tXml *TicketsXML) parseXML(data io.ReadCloser) {
 func saveJSON(data interface{}, out string) error {
 
 	jsonData, err := json.Marshal(data)
-
 	if err != nil {
 		log.Printf("Unable to convert into JSON format, error: %v\n", err)
 		return err
@@ -262,8 +270,7 @@ func HTTPClient() *http.Client {
 	return &http.Client{Transport: tr}
 }
 
-//processResponse function for fetching data from GGUS endpoint and dumping it into JSON format
-func processResponse(url, format, accept, out string) {
+func ggusRequest(url, accept string) *http.Response {
 	var req *http.Request
 	req, _ = http.NewRequest("GET", url, nil)
 	req.Header.Add("Accept-Encoding", "identity")
@@ -291,14 +298,75 @@ func processResponse(url, format, accept, out string) {
 		}
 	}
 
+	return resp
+}
+
+func retrieveTicketDetails(ticketId int) (string, []TicketComment) {
+	url := fmt.Sprintf("https://ggus.eu/?mode=ticket_info&ticket_id=%d", ticketId)
+	resp := ggusRequest(url, "text/html")
+	fmt.Println(resp)
+
+	doc, _ := html.Parse(resp.Body)
+
+	description := ""
+	var comments []string
+
+	var f func(*html.Node, bool, bool)
+	f = func(n *html.Node, isDescription bool, isHistory bool) {
+		if n.Type == html.TextNode && strings.Trim(n.Data, " \n\t\r") != "" && isDescription {
+			description = description + strings.Trim(n.Data, " \n\t")
+		} else if n.Type == html.TextNode && strings.Trim(n.Data, " \n\t\r") != "" && isHistory {
+			comments = append(comments, strings.Trim(n.Data, " \n\t"))
+		}
+
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			if c.Type == html.CommentNode && c.Data == "#######    Description   #######" {
+				isDescription = true
+			}
+			if c.Type == html.CommentNode && c.Data == "########## History #########" {
+				isHistory = true
+			}
+
+			f(c, isDescription, isHistory)
+		}
+	}
+
+	f(doc, false, false)
+
+	comments = comments[4 : len(comments)-3]
+	var pc []TicketComment
+	for c := 0; c < len(comments)/3; c++ {
+		pc = append(pc, TicketComment{
+			Date: comments[c*3],
+			Time: comments[c*3+1],
+			Text: comments[c*3+2],
+		})
+	}
+
+	return description, pc
+}
+
+//processResponse function for fetching data from GGUS endpoint and dumping it into JSON format
+func processResponse(url, format, accept, out string, detailed bool) {
+	resp := ggusRequest(url, accept)
 	defer resp.Body.Close()
 
 	if format == "csv" {
 		data := parseCSV(resp.Body)
+
 		saveJSON(data, out)
 	} else if format == "xml" {
 		data := &TicketsXML{}
 		data.parseXML(resp.Body)
+
+		if detailed {
+			for t := range data.Ticket {
+				description, comments := retrieveTicketDetails(data.Ticket[t].TicketID)
+				data.Ticket[t].Description = description
+				data.Ticket[t].Comments = comments
+			}
+		}
+
 		saveJSON(data.Ticket, out)
 	}
 }
@@ -306,10 +374,12 @@ func processResponse(url, format, accept, out string) {
 func main() {
 	var format string
 	var out string
+	var detailed bool
 	flag.StringVar(&format, "format", "csv", "GGUS data-format to use (csv or xml)")
 	flag.StringVar(&out, "out", "", "out filename")
 	flag.IntVar(&Verbose, "verbose", 0, "verbosity level")
 	flag.IntVar(&Timeout, "timeout", 0, "http client timeout operation, zero means no timeout")
+	flag.BoolVar(&detailed, "detailed", false, "whether to fetch the detailed description and comments for tickets, might take a while")
 	flag.Parse()
 
 	ggus := "https://ggus.eu/?mode=ticket_search&status=open&date_type=creation+date&tf_radio=1&timeframe=any&orderticketsby=REQUEST_ID&orderhow=desc"
@@ -326,6 +396,5 @@ func main() {
 		log.Fatalf("Output filename missing. Exiting....")
 	}
 
-	processResponse(ggus, format, accept, out)
-
+	processResponse(ggus, format, accept, out, detailed)
 }
