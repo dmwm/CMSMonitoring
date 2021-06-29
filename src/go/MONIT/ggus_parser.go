@@ -14,6 +14,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"os/user"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -301,16 +302,22 @@ func ggusRequest(url, accept string) *http.Response {
 	return resp
 }
 
-func retrieveTicketDetails(ticketId int) (string, []TicketComment) {
+func retrieveTicketDetails(ticketId int, descriptionRgx *regexp.Regexp, commentRgx *regexp.Regexp) (string, []TicketComment) {
 	url := fmt.Sprintf("https://ggus.eu/?mode=ticket_info&ticket_id=%d", ticketId)
 	resp := ggusRequest(url, "text/html")
 	fmt.Println(resp)
 
-	doc, _ := html.Parse(resp.Body)
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		log.Println(err.Error())
+		return "", []TicketComment{}
+	}
 
 	description := ""
 	var comments []string
 
+	// Recursively walk the html node tree to find nodes matching the description and comment regexp provided to the
+	// function. The function f needs to be predeclared so that it may later be recursively called.
 	var f func(*html.Node, bool, bool)
 	f = func(n *html.Node, isDescription bool, isHistory bool) {
 		if n.Type == html.TextNode && strings.Trim(n.Data, " \n\t\r") != "" && isDescription {
@@ -320,10 +327,10 @@ func retrieveTicketDetails(ticketId int) (string, []TicketComment) {
 		}
 
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			if c.Type == html.CommentNode && c.Data == "#######    Description   #######" {
+			if c.Type == html.CommentNode && descriptionRgx.MatchString(c.Data) {
 				isDescription = true
 			}
-			if c.Type == html.CommentNode && c.Data == "########## History #########" {
+			if c.Type == html.CommentNode && commentRgx.MatchString(c.Data) {
 				isHistory = true
 			}
 
@@ -347,7 +354,7 @@ func retrieveTicketDetails(ticketId int) (string, []TicketComment) {
 }
 
 //processResponse function for fetching data from GGUS endpoint and dumping it into JSON format
-func processResponse(url, format, accept, out string, detailed bool) {
+func processResponse(url, format, accept, out string, detailed bool, descriptionRgx *regexp.Regexp, commentRgx *regexp.Regexp) {
 	resp := ggusRequest(url, accept)
 	defer resp.Body.Close()
 
@@ -361,7 +368,7 @@ func processResponse(url, format, accept, out string, detailed bool) {
 
 		if detailed {
 			for t := range data.Ticket {
-				description, comments := retrieveTicketDetails(data.Ticket[t].TicketID)
+				description, comments := retrieveTicketDetails(data.Ticket[t].TicketID, descriptionRgx, commentRgx)
 				data.Ticket[t].Description = description
 				data.Ticket[t].Comments = comments
 			}
@@ -375,11 +382,15 @@ func main() {
 	var format string
 	var out string
 	var detailed bool
+	var descriptionExpr string
+	var commentExpr string
 	flag.StringVar(&format, "format", "csv", "GGUS data-format to use (csv or xml)")
 	flag.StringVar(&out, "out", "", "out filename")
 	flag.IntVar(&Verbose, "verbose", 0, "verbosity level")
 	flag.IntVar(&Timeout, "timeout", 0, "http client timeout operation, zero means no timeout")
 	flag.BoolVar(&detailed, "detailed", false, "whether to fetch the detailed description and comments for tickets, might take a while")
+	flag.StringVar(&descriptionExpr, "description-expr", "#######    Description   #######", "expression to match for to recognize ticket description")
+	flag.StringVar(&commentExpr, "comment-expr", "########## History #########", "expression to match for to recognize ticket comments")
 	flag.Parse()
 
 	ggus := "https://ggus.eu/?mode=ticket_search&status=open&date_type=creation+date&tf_radio=1&timeframe=any&orderticketsby=REQUEST_ID&orderhow=desc"
@@ -396,5 +407,11 @@ func main() {
 		log.Fatalf("Output filename missing. Exiting....")
 	}
 
-	processResponse(ggus, format, accept, out, detailed)
+	descriptionRgx, dErr := regexp.Compile(descriptionExpr)
+	commentRgx, cErr := regexp.Compile(commentExpr)
+	if dErr != nil || cErr != nil {
+		log.Fatalf("Description or comment matching expression not a valid regular expression. Exiting....")
+	}
+
+	processResponse(ggus, format, accept, out, detailed, descriptionRgx, commentRgx)
 }
