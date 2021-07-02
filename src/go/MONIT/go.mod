@@ -3,6 +3,7 @@ module github.com/vkuznet/CMSMonitoring/MONIT
 go 1.16
 
 require (
+	github.com/PuerkitoBio/goquery v1.7.0
 	github.com/go-stomp/stomp v2.1.3+incompatible
 	github.com/prometheus/client_golang v1.10.0
 	github.com/vkuznet/TokenManager v0.0.1

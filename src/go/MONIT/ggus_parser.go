@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/csv"
 	"encoding/json"
 	"encoding/xml"
 	"flag"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,7 +23,6 @@ import (
 	"time"
 
 	"github.com/vkuznet/x509proxy"
-	"golang.org/x/net/html"
 )
 
 // File       : ggus_parser.go
@@ -138,7 +139,10 @@ func (tXml *TicketsXML) parseXML(data io.ReadCloser) {
 		return
 	}
 
-	errp := xml.Unmarshal(byteValue, &tXml)
+	d := xml.NewDecoder(bytes.NewReader(byteValue))
+	d.Strict = false
+
+	errp := d.Decode(&tXml)
 	if errp != nil {
 		log.Printf("Unable to parse XML Data, error: %v\n", errp)
 		return
@@ -302,59 +306,58 @@ func ggusRequest(url, accept string) *http.Response {
 	return resp
 }
 
-func retrieveTicketDetails(ticketId int, descriptionRgx *regexp.Regexp, commentRgx *regexp.Regexp) (string, []TicketComment) {
+func cleanText(t string) string {
+	r, err := regexp.Compile("[\t\n\r ]+")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return strings.Trim(r.ReplaceAllString(t, " "), " ")
+}
+
+func retrieveTicketDetails(ticketId int) (string, []TicketComment) {
 	url := fmt.Sprintf("https://ggus.eu/?mode=ticket_info&ticket_id=%d", ticketId)
 	resp := ggusRequest(url, "text/html")
-	fmt.Println(resp)
 
-	doc, err := html.Parse(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		log.Println(err.Error())
 		return "", []TicketComment{}
 	}
 
 	description := ""
-	var comments []string
+	var comments []TicketComment
 
-	// Recursively walk the html node tree to find nodes matching the description and comment regexp provided to the
-	// function. The function f needs to be predeclared so that it may later be recursively called.
-	var f func(*html.Node, bool, bool)
-	f = func(n *html.Node, isDescription bool, isHistory bool) {
-		if n.Type == html.TextNode && strings.Trim(n.Data, " \n\t\r") != "" && isDescription {
-			description = description + strings.Trim(n.Data, " \n\t")
-		} else if n.Type == html.TextNode && strings.Trim(n.Data, " \n\t\r") != "" && isHistory {
-			comments = append(comments, strings.Trim(n.Data, " \n\t"))
-		}
-
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			if c.Type == html.CommentNode && descriptionRgx.MatchString(c.Data) {
-				isDescription = true
+	s := "tr .ticket_info_h4"
+	doc.Find(s).Each(func(i int, selection *goquery.Selection) {
+		selection.Siblings().Each(func(j int, selection *goquery.Selection) {
+			if i == 0 {
+				description = description + cleanText(selection.Text())
+			} else if i == 1 {
+				selection.Find("tr[class=ticket_info_innertable],tr[class=ticket_info_innertable_light]").Each(func(i int, selection *goquery.Selection) {
+					comment := TicketComment{}
+					selection.Children().Each(func(i int, selection *goquery.Selection) {
+						ct := cleanText(selection.Text())
+						switch i {
+						case 0:
+							comment.Date = ct
+						case 1:
+							comment.Time = ct
+						case 2:
+							comment.Text = ct
+						}
+					})
+					comments = append(comments, comment)
+				})
 			}
-			if c.Type == html.CommentNode && commentRgx.MatchString(c.Data) {
-				isHistory = true
-			}
-
-			f(c, isDescription, isHistory)
-		}
-	}
-
-	f(doc, false, false)
-
-	comments = comments[4 : len(comments)-3]
-	var pc []TicketComment
-	for c := 0; c < len(comments)/3; c++ {
-		pc = append(pc, TicketComment{
-			Date: comments[c*3],
-			Time: comments[c*3+1],
-			Text: comments[c*3+2],
 		})
-	}
+	})
 
-	return description, pc
+	return description, comments
 }
 
 //processResponse function for fetching data from GGUS endpoint and dumping it into JSON format
-func processResponse(url, format, accept, out string, detailed bool, descriptionRgx *regexp.Regexp, commentRgx *regexp.Regexp) {
+func processResponse(url, format, accept, out string, detailed bool) {
 	resp := ggusRequest(url, accept)
 	defer resp.Body.Close()
 
@@ -368,7 +371,7 @@ func processResponse(url, format, accept, out string, detailed bool, description
 
 		if detailed {
 			for t := range data.Ticket {
-				description, comments := retrieveTicketDetails(data.Ticket[t].TicketID, descriptionRgx, commentRgx)
+				description, comments := retrieveTicketDetails(data.Ticket[t].TicketID)
 				data.Ticket[t].Description = description
 				data.Ticket[t].Comments = comments
 			}
@@ -382,15 +385,11 @@ func main() {
 	var format string
 	var out string
 	var detailed bool
-	var descriptionExpr string
-	var commentExpr string
 	flag.StringVar(&format, "format", "csv", "GGUS data-format to use (csv or xml)")
 	flag.StringVar(&out, "out", "", "out filename")
 	flag.IntVar(&Verbose, "verbose", 0, "verbosity level")
 	flag.IntVar(&Timeout, "timeout", 0, "http client timeout operation, zero means no timeout")
 	flag.BoolVar(&detailed, "detailed", false, "whether to fetch the detailed description and comments for tickets, might take a while")
-	flag.StringVar(&descriptionExpr, "description-expr", "#######    Description   #######", "expression to match for to recognize ticket description")
-	flag.StringVar(&commentExpr, "comment-expr", "########## History #########", "expression to match for to recognize ticket comments")
 	flag.Parse()
 
 	ggus := "https://ggus.eu/?mode=ticket_search&status=open&date_type=creation+date&tf_radio=1&timeframe=any&orderticketsby=REQUEST_ID&orderhow=desc"
@@ -407,11 +406,5 @@ func main() {
 		log.Fatalf("Output filename missing. Exiting....")
 	}
 
-	descriptionRgx, dErr := regexp.Compile(descriptionExpr)
-	commentRgx, cErr := regexp.Compile(commentExpr)
-	if dErr != nil || cErr != nil {
-		log.Fatalf("Description or comment matching expression not a valid regular expression. Exiting....")
-	}
-
-	processResponse(ggus, format, accept, out, detailed, descriptionRgx, commentRgx)
+	processResponse(ggus, format, accept, out, detailed)
 }
