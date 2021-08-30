@@ -54,7 +54,7 @@ def main(output_folder=None):
     df["usedsize"] = df["usedsize"] / TB_DENOMINATOR
     df = df.append(total_row, ignore_index=True)
 
-    df = df.rename(columns={"usedsize": "usedsize(TB)", "totalsize": "totalsize(TB)"})
+    df = df.rename(columns={"usedsize": "usedsize(TB)", "totalsize": "quota(TB)", "used/total": "used/quota"})
 
     main_column = df["path"].copy()
     df["path"] = (
@@ -135,7 +135,7 @@ def main(output_folder=None):
           </li>
           <li class="w3-padding-small">
             Script source code: <b>
-            <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos-path-size.py">
+            <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">
                     eos-path-size.py</a></b>
           </li>
         </ul>
@@ -154,7 +154,7 @@ def main(output_folder=None):
         <script>
             $(document).ready(function () {
                 var dt = $('#dataframe').DataTable( {
-                    "order": [[ 0, "asc" ]],
+                    "order": [[ 1, "asc" ]],
                     "pageLength" : 200,
                     "scrollX": false,
                     language: {
