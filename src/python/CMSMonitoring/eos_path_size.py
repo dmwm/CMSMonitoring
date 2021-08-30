@@ -136,7 +136,7 @@ def main(output_folder=None):
           <li class="w3-padding-small">
             Script source code: <b>
             <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">
-                    eos-path-size.py</a></b>
+                    eos_path_size.py</a></b>
           </li>
         </ul>
         </div>
@@ -154,7 +154,7 @@ def main(output_folder=None):
         <script>
             $(document).ready(function () {
                 var dt = $('#dataframe').DataTable( {
-                    "order": [[ 1, "asc" ]],
+                    "order": [[ 1, "desc" ]],
                     "pageLength" : 200,
                     "scrollX": false,
                     language: {
