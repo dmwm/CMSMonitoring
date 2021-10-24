@@ -1,0 +1,141 @@
+##H Daemon for Alerting Tool (CERN SSB Status Board)
+##H Usage: ssb_alert_manage <Actions>
+##H
+##H Actions:
+##H   help        help manual
+##H   start       start the service
+##H   stop        stop the service
+##H   status      output service's status
+##H
+##H Environments:
+##H   QUERY       :   CMS Monit ES/InfluxDB Query              
+##H   TOKEN       :   User's Token
+##H   SSBDATAFILE :   Data json file to use                           default - /tmp/ssb_data.json
+##H   CMSMON_URL  :   CMS Monitoring URL                              default - https://cms-monitoring.cern.ch"
+##H   INTERVAL    :   Time interval for Alerts ingestion & injection  default - 1
+##H   VERBOSE     :   Verbosity level                                 default - 0
+
+
+### ***
+#The following block of code was taken from
+#https://github.com/dmwm/deployment/blob/master/exitcodes/manage#L27
+
+ME=$(basename $(dirname $0))
+TOP=$(cd $(dirname $0)/../../.. && pwd)
+ROOT=$(cd $(dirname $0)/../.. && pwd)
+LOGDIR=$TOP/logs/$ME
+
+### ***
+
+if [ -z "$QUERY" ]; then
+      echo "QUERY is empty. Set it as Environment Variable."
+      if [ -z "$TOKEN" ]; then
+        echo "TOKEN is empty. Set it as Environment Variable."
+        perl -ne '/^##H/ && do { s/^##H ?//; print }' < $0
+        exit 1
+      fi
+      perl -ne '/^##H/ && do { s/^##H ?//; print }' < $0
+      exit 1
+  else
+      if [ -z "$TOKEN" ]; then
+        echo "TOKEN is empty. Set it in Environment Variable."
+        perl -ne '/^##H/ && do { s/^##H ?//; print }' < $0
+        exit 1
+      fi
+fi
+
+if [ ! -d $LOGDIR ]; then
+  echo "Log Directory '$LOGDIR' does not exists. creating..." 
+  
+  if [ ! -w $TOP ]; then
+    echo "can not create $LOGDIR: $USER has no write permission for '$TOP' directory. exiting."
+    exit 1
+  fi 
+  
+  if mkdir -p $LOGDIR; then
+    echo "$LOGDIR created !"
+  else
+    exit 1
+  fi
+fi
+
+if [ ! -w $LOGDIR ]; then 
+    echo "$USER has no write permission for '$LOGDIR' log directory. exiting."
+    exit 1
+fi
+
+## ssb_alert.sh arguments from Environment Variable
+query=$QUERY                                                    ## CMS Monit InfluxDB Query
+token=$TOKEN                                                    ## User's Token
+data_file=${SSBDATAFILE:-"/tmp/ssb_data.json"}                  ## Data json file to use   
+cmsmon_url=${CMSMON_URL:-"https://cms-monitoring.cern.ch"}      ## CMS Monitoring URL 
+interval=${INTERVAL:-1}                                         ## Time interval for Alerts ingestion & injection
+verbose=${VERBOSE:-0}                                           ## Verbosity level
+
+# Actions Logic
+start()
+{
+    echo "Starting SSB Alerting daemon."
+    if [ ! -x "$(command -v rotatelogs)" ]; then
+      echo "rotatelogs not found. Starting without it..."
+      nohup ssb_alert.sh "$query" $token $data_file $cmsmon_url $interval $verbose 2>&1 1>& $LOGDIR/ssb_alerting-`date +%F`-`hostname -s`.log &
+    else
+	    nohup ssb_alert.sh "$query" $token $data_file $cmsmon_url $interval $verbose </dev/null 2>&1 | rotatelogs $LOGDIR/ssb_alerting-%Y-%m-%d-`hostname -s`.log 86400 >/dev/null 2>&1 &
+    fi
+}
+
+stop()
+{
+    local PID=`ps auxwww | egrep "ssb_alert.sh" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
+    echo "Stopping SSB Alerting daemon. PID : ${PID}"
+    if [ -n "${PID}" ]; then
+        kill -9 ${PID}
+    fi
+}
+
+status()
+{
+    local PID=`ps auxwww | egrep "ssb_alert.sh" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
+    
+    if  [ -z "${PID}" ]; then
+        echo $echo_e "SSB Alerting daemon is INACTIVE (DEAD)"
+        return
+    fi
+    
+    if  [ `uname` == "Darwin" ]; then
+       num_threads=`ps -M -p $PID | grep -v USER | wc -l | awk '{print $1}'`
+    else
+       num_threads=`ps -L -p $PID | grep -v PID | wc -l | awk '{print $1}'`
+    fi
+    echo "SSB Alerting daemon running $num_threads thread(s)"
+
+    if [ ! -z "${PID}" ]; then
+        echo $echo_e "SSB Alerting daemon is ACTIVE (RUNNING), PID=${PID}"
+        ps -f -wwww -p ${PID}
+    else
+        echo $echo_e "SSB Alerting daemon is INACTIVE (DEAD)"
+    fi
+}
+
+# All actions 
+case ${1:-status} in
+  start)
+    start
+    ;;
+
+  stop )
+    stop
+    ;;
+
+  status )
+    status
+    ;;
+  
+  help )
+    perl -ne '/^##H/ && do { s/^##H ?//; print }' < $0
+    ;;
+  *)
+    echo "ssb_alert_manage: no action named '$1', please try 'ssb_alert_manage help'" 1>&2
+    exit 1
+    ;;
+esac

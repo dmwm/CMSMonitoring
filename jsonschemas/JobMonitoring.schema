@@ -1,1 +1,2478 @@
-{"$schema": "http://json-schema.org/schema#", "required": ["AccountingGroup", "AutoClusterId", "CMSGroups", "CMSPrimaryDataTier", "CMSSWMajorVersion", "CMSSWReleaseSeries", "CMSSWVersion", "CMS_JobType", "CRAB_AsyncDest", "Campaign", "CommittedCoreHr", "CoreHr", "Country", "CpuBadput", "CpuEff", "CpuTimeHr", "DESIRED_CMSDataset", "DESIRED_Sites", "GlobalJobId", "HasBeenRouted", "HasBeenTimingTuned", "HasSingularity", "MemoryMB", "PilotRestLifeTimeMins", "QueueHrs", "RecordTime", "RequestCpus", "ScheddName", "Site", "Status", "TaskType", "Tier", "Type", "WMAgent_RequestName", "WMAgent_SubTaskName", "WallClockHr", "Workflow", "metadata"], "type": "object", "properties": {"CMS_JobType": {"type": "string"}, "CMSSWReleaseSeries": {"type": "string"}, "CpuTimeHr": {"type": "integer"}, "HasBeenRouted": {"type": "boolean"}, "CoreHr": {"type": "integer"}, "DESIRED_Sites": {"items": {"type": "string"}, "type": "array"}, "CpuEff": {"type": "integer"}, "CMSPrimaryDataTier": {"type": "string"}, "WallClockHr": {"type": "integer"}, "GlobalJobId": {"type": "string"}, "Type": {"type": "string"}, "Status": {"type": "string"}, "WMAgent_SubTaskName": {"type": "string"}, "AutoClusterId": {"type": "string"}, "WMAgent_RequestName": {"type": "string"}, "CpuBadput": {"type": "integer"}, "MemoryMB": {"type": "integer"}, "TaskType": {"type": "string"}, "Tier": {"type": "string"}, "CMSSWMajorVersion": {"type": "string"}, "QueueHrs": {"type": "number"}, "metadata": {"required": ["uuid"], "type": "object", "properties": {"uuid": {"type": "string"}}}, "CommittedCoreHr": {"type": "integer"}, "RecordTime": {"type": "integer"}, "HasSingularity": {"type": "boolean"}, "Country": {"type": "string"}, "ScheddName": {"type": "string"}, "DESIRED_CMSDataset": {"type": "null"}, "RequestCpus": {"type": "integer"}, "PilotRestLifeTimeMins": {"type": "integer"}, "CRAB_AsyncDest": {"type": "string"}, "Campaign": {"type": "string"}, "Workflow": {"type": "string"}, "Site": {"type": "string"}, "CMSGroups": {"type": "string"}, "AccountingGroup": {"type": "string"}, "HasBeenTimingTuned": {"type": "boolean"}, "CMSSWVersion": {"type": "string"}}}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "AccountingGroup": {
+      "type": "string"
+    },
+    "AffiliationCountry": {
+      "type": "string"
+    },
+    "AffiliationInstitute": {
+      "type": "string"
+    },
+    "Args": {
+      "type": "string"
+    },
+    "AutoClusterId": {
+      "type": "string"
+    },
+    "AvoidSystemPeriodicRemove": {
+      "type": "integer"
+    },
+    "Badput": {
+      "type": "number"
+    },
+    "BenchmarkJobDB12": {
+      "type": "number"
+    },
+    "BenchmarkJobHS06": {
+      "type": "number"
+    },
+    "BlockReadBytes": {
+      "type": "integer"
+    },
+    "BlockWriteBytes": {
+      "type": "integer"
+    },
+    "BytesRecvd": {
+      "type": "integer"
+    },
+    "BytesSent": {
+      "type": "integer"
+    },
+    "CMSGroups": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "CMSPrimaryDataTier": {
+      "type": "string"
+    },
+    "CMSPrimaryPrimaryDataset": {
+      "type": "string"
+    },
+    "CMSPrimaryProcessedDataset": {
+      "type": "string"
+    },
+    "CMSSWDone": {
+      "type": "boolean"
+    },
+    "CMSSWEventRate": {
+      "type": "number"
+    },
+    "CMSSWKLumis": {
+      "type": "number"
+    },
+    "CMSSWMajorVersion": {
+      "type": "string"
+    },
+    "CMSSWReleaseSeries": {
+      "type": "string"
+    },
+    "CMSSWTimePerEvent": {
+      "type": "number"
+    },
+    "CMSSWVersion": {
+      "type": "string"
+    },
+    "CMSSWWallHrs": {
+      "type": "number"
+    },
+    "CMSSW_Versions": {
+      "type": "string"
+    },
+    "CMSSite": {
+      "type": "string"
+    },
+    "CMS_JobRetryCount": {
+      "type": "integer"
+    },
+    "CMS_JobType": {
+      "type": "string"
+    },
+    "CMS_SubmissionTool": {
+      "type": "string"
+    },
+    "CMS_TaskType": {
+      "type": "string"
+    },
+    "CMS_Type": {
+      "type": "string"
+    },
+    "CMS_WMTool": {
+      "type": "string"
+    },
+    "CPUModel": {
+      "type": "string"
+    },
+    "CPUModelName": {
+      "type": "string"
+    },
+    "CPUsUsage": {
+      "type": "number"
+    },
+    "CRAB_AlgoArgs": {
+      "type": "string"
+    },
+    "CRAB_AllowOverflow": {
+      "type": "boolean"
+    },
+    "CRAB_AsyncDest": {
+      "type": "string"
+    },
+    "CRAB_Attempt": {
+      "type": "integer"
+    },
+    "CRAB_DashboardTaskType": {
+      "type": "string"
+    },
+    "CRAB_DataBlock": {
+      "type": "string"
+    },
+    "CRAB_FailedNodeLimit": {
+      "type": "integer"
+    },
+    "CRAB_HC": {
+      "type": "boolean"
+    },
+    "CRAB_ISB": {
+      "type": "string"
+    },
+    "CRAB_Id": {
+      "type": "string"
+    },
+    "CRAB_JobArch": {
+      "type": "string"
+    },
+    "CRAB_JobCount": {
+      "type": "integer"
+    },
+    "CRAB_JobLogURL": {
+      "type": "string"
+    },
+    "CRAB_JobReleaseTimeout": {
+      "type": "integer"
+    },
+    "CRAB_JobSW": {
+      "type": "string"
+    },
+    "CRAB_JobType": {
+      "type": "string"
+    },
+    "CRAB_LumiMask": {
+      "type": "string"
+    },
+    "CRAB_MaxPost": {
+      "type": "integer"
+    },
+    "CRAB_NoWNStageout": {
+      "type": "integer"
+    },
+    "CRAB_OutLFNDir": {
+      "type": "string"
+    },
+    "CRAB_PostJobLogURL": {
+      "type": "string"
+    },
+    "CRAB_PostJobStatus": {
+      "type": "string"
+    },
+    "CRAB_PrimaryDataset": {
+      "type": "string"
+    },
+    "CRAB_Publish": {
+      "type": "boolean"
+    },
+    "CRAB_PublishName": {
+      "type": "string"
+    },
+    "CRAB_Retry": {
+      "type": "integer"
+    },
+    "CRAB_SaveLogsFlag": {
+      "type": "boolean"
+    },
+    "CRAB_SiteBlacklist": {
+      "type": "string"
+    },
+    "CRAB_SiteWhitelist": {
+      "type": "string"
+    },
+    "CRAB_SplitAlgo": {
+      "type": "string"
+    },
+    "CRAB_SubmitterIpAddr": {
+      "type": "string"
+    },
+    "CRAB_TaskCreationDate": {
+      "type": "integer"
+    },
+    "CRAB_TaskEndTime": {
+      "type": "integer"
+    },
+    "CRAB_TaskLifetimeDays": {
+      "type": "integer"
+    },
+    "CRAB_TaskSubmitTime": {
+      "type": "integer"
+    },
+    "CRAB_TaskWorker": {
+      "type": "string"
+    },
+    "CRAB_TransferOutputs": {
+      "type": "boolean"
+    },
+    "CRAB_UserGroup": {
+      "type": "string"
+    },
+    "CRAB_UserHN": {
+      "type": "string"
+    },
+    "CRAB_UserRole": {
+      "type": "string"
+    },
+    "CRAB_UserVO": {
+      "type": "string"
+    },
+    "CRAB_Workflow": {
+      "type": "string"
+    },
+    "Campaign": {
+      "type": "string"
+    },
+    "ChirpCMSSWCPUModels": {
+      "type": "string"
+    },
+    "ChirpCMSSWCPUSpeed": {
+      "type": "number"
+    },
+    "ChirpCMSSWDone": {
+      "type": "integer"
+    },
+    "ChirpCMSSWElapsed": {
+      "type": "integer"
+    },
+    "ChirpCMSSWEventRate": {
+      "type": "number"
+    },
+    "ChirpCMSSWEvents": {
+      "type": "integer"
+    },
+    "ChirpCMSSWFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSWLastUpdate": {
+      "type": "integer"
+    },
+    "ChirpCMSSWLumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSWMaxEvents": {
+      "type": "integer"
+    },
+    "ChirpCMSSWMaxFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSWMaxLumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSWReadBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSWReadOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSWReadSegments": {
+      "type": "integer"
+    },
+    "ChirpCMSSWReadTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSWReadVOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSWRuns": {
+      "type": "integer"
+    },
+    "ChirpCMSSWTotalCPU": {
+      "type": "number"
+    },
+    "ChirpCMSSWWriteBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSWWriteTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_SiteIO": {
+      "items": {
+        "properties": {
+          "ChirpString": {
+            "type": "string"
+          },
+          "ReadBytes": {
+            "type": "integer"
+          },
+          "ReadTimeMS": {
+            "type": "integer"
+          },
+          "SiteName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ChirpString",
+          "ReadBytes",
+          "ReadTimeMS",
+          "SiteName"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "ChirpCMSSW_cmsRun1_Done": {
+      "type": "boolean"
+    },
+    "ChirpCMSSW_cmsRun1_Elapsed": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_EventRate": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun1_Events": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_Files": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_LastUpdate": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_Lumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_MaxEvents": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_MaxFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_MaxLumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_ReadBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_ReadOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_ReadSegments": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_ReadTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_ReadVOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_Runs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_TotalCPU": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun1_WriteBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun1_WriteTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_Done": {
+      "type": "boolean"
+    },
+    "ChirpCMSSW_cmsRun2_Elapsed": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_EventRate": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun2_Events": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_Files": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_LastUpdate": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_Lumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_MaxEvents": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_MaxFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_ReadBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_ReadOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_ReadSegments": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_ReadTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_ReadVOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_Runs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_TotalCPU": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun2_WriteBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun2_WriteTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_Done": {
+      "type": "boolean"
+    },
+    "ChirpCMSSW_cmsRun3_Elapsed": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_EventRate": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun3_Events": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_Files": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_LastUpdate": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_Lumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_MaxEvents": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_MaxFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_ReadBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_ReadOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_ReadSegments": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_ReadTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_ReadVOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_Runs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_TotalCPU": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun3_WriteBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun3_WriteTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_Done": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_Elapsed": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_EventRate": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun4_Events": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_Files": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_LastUpdate": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_Lumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_MaxFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_ReadBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_ReadOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_ReadSegments": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_ReadTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_ReadVOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_Runs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_TotalCPU": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun4_WriteBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun4_WriteTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_Done": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_Elapsed": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_EventRate": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_Events": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_Files": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_LastUpdate": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_Lumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_MaxFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_ReadBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_ReadOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_ReadSegments": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_ReadTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_ReadVOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_Runs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_TotalCPU": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun5_WriteBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun5_WriteTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_Done": {
+      "type": "boolean"
+    },
+    "ChirpCMSSW_cmsRun_Elapsed": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_EventRate": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun_Events": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_Files": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_IOSite_T2_BR_SPRACE_ReadTimeMS": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_LastUpdate": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_Lumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_MaxEvents": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_MaxFiles": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_MaxLumis": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_ReadBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_ReadOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_ReadSegments": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_ReadTimeMsecs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_ReadVOps": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_Runs": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_TotalCPU": {
+      "type": "number"
+    },
+    "ChirpCMSSW_cmsRun_WriteBytes": {
+      "type": "integer"
+    },
+    "ChirpCMSSW_cmsRun_WriteTimeMsecs": {
+      "type": "integer"
+    },
+    "Chirp_CRAB3_Job_ExitCode": {
+      "type": "integer"
+    },
+    "Chirp_WMCore_cmsRun1_Exception_Message": {
+      "type": "string"
+    },
+    "Chirp_WMCore_cmsRun1_ExitCode": {
+      "type": "integer"
+    },
+    "Chirp_WMCore_cmsRun2_ExitCode": {
+      "type": "integer"
+    },
+    "Chirp_WMCore_cmsRun3_ExitCode": {
+      "type": "integer"
+    },
+    "Chirp_WMCore_cmsRun4_ExitCode": {
+      "type": "integer"
+    },
+    "Chirp_WMCore_cmsRun5_ExitCode": {
+      "type": "integer"
+    },
+    "Chirp_WMCore_cmsRun_Exception_Message": {
+      "type": "string"
+    },
+    "Chirp_WMCore_cmsRun_ExitCode": {
+      "type": "integer"
+    },
+    "ClaimId": {
+      "type": "string"
+    },
+    "ClusterId": {
+      "type": "integer"
+    },
+    "Cmd": {
+      "type": "string"
+    },
+    "CommittedCoreHr": {
+      "type": "number"
+    },
+    "CommittedSlotTime": {
+      "type": "integer"
+    },
+    "CommittedSuspensionTime": {
+      "type": "integer"
+    },
+    "CommittedTime": {
+      "type": "integer"
+    },
+    "CommittedWallClockHr": {
+      "type": "number"
+    },
+    "CompletedFiles": {
+      "type": "integer"
+    },
+    "CompletionDate": {
+      "type": "integer"
+    },
+    "CondorExitCode": {
+      "type": "integer"
+    },
+    "ConnectClientGeoData": {
+      "type": "string"
+    },
+    "ConnectClientLocalDir": {
+      "type": "string"
+    },
+    "ConnectClientLocalNode": {
+      "type": "string"
+    },
+    "ConnectClientLocalUser": {
+      "type": "string"
+    },
+    "ConnectClientServer": {
+      "type": "string"
+    },
+    "ConnectClientUser": {
+      "type": "string"
+    },
+    "ConnectClientVersion": {
+      "type": "string"
+    },
+    "ConnectWrapper": {
+      "type": "string"
+    },
+    "CoreHr": {
+      "type": "number"
+    },
+    "CoreSize": {
+      "type": "integer"
+    },
+    "Country": {
+      "type": "string"
+    },
+    "CpuBadput": {
+      "type": "number"
+    },
+    "CpuEff": {
+      "type": "number"
+    },
+    "CpuTimeHr": {
+      "type": "number"
+    },
+    "CpusProvisioned": {
+      "type": "integer"
+    },
+    "CronDayOfMonth": {
+      "type": "string"
+    },
+    "CronDayOfWeek": {
+      "type": "string"
+    },
+    "CronHour": {
+      "type": "string"
+    },
+    "CronMinute": {
+      "type": "string"
+    },
+    "CronMonth": {
+      "type": "string"
+    },
+    "CumulativeRemoteSysCpu": {
+      "type": "number"
+    },
+    "CumulativeRemoteUserCpu": {
+      "type": "number"
+    },
+    "CumulativeSlotTime": {
+      "type": "integer"
+    },
+    "CumulativeSuspensionTime": {
+      "type": "integer"
+    },
+    "CurrentHosts": {
+      "type": "integer"
+    },
+    "DAGNodeName": {
+      "type": "string"
+    },
+    "DAGParentNodeNames": {
+      "type": "string"
+    },
+    "DAG_InRecovery": {
+      "type": "integer"
+    },
+    "DAG_NodesDone": {
+      "type": "integer"
+    },
+    "DAG_NodesFailed": {
+      "type": "integer"
+    },
+    "DAG_NodesPostrun": {
+      "type": "integer"
+    },
+    "DAG_NodesPrerun": {
+      "type": "integer"
+    },
+    "DAG_NodesQueued": {
+      "type": "integer"
+    },
+    "DAG_NodesReady": {
+      "type": "integer"
+    },
+    "DAG_NodesTotal": {
+      "type": "integer"
+    },
+    "DAG_NodesUnready": {
+      "type": "integer"
+    },
+    "DAG_Status": {
+      "type": "integer"
+    },
+    "DB12CommittedCoreHr": {
+      "type": "number"
+    },
+    "DB12CoreHr": {
+      "type": "number"
+    },
+    "DB12CpuTimeHr": {
+      "type": "number"
+    },
+    "DB12EventRate": {
+      "type": "number"
+    },
+    "DB12TimePerEvent": {
+      "type": "number"
+    },
+    "DESIRED_Archs": {
+      "type": "string"
+    },
+    "DESIRED_CMSDataLocations": {
+      "type": "string"
+    },
+    "DESIRED_CMSDataset": {
+      "type": "string"
+    },
+    "DESIRED_CMSPileups": {
+      "type": "string"
+    },
+    "DESIRED_Entries": {
+      "type": "string"
+    },
+    "DESIRED_Overflow_Region": {
+      "type": "string"
+    },
+    "DESIRED_SITES_Diff": {
+      "type": "string"
+    },
+    "DESIRED_SITES_Orig": {
+      "type": "string"
+    },
+    "DESIRED_Sites": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "Dashboard_Id": {
+      "type": "integer"
+    },
+    "Dashboard_monitorid": {
+      "type": "string"
+    },
+    "Dashboard_syncid": {
+      "type": "string"
+    },
+    "Dashboard_taskid": {
+      "type": "string"
+    },
+    "DataCollection": {
+      "type": "integer"
+    },
+    "DataCollectionDate": {
+      "type": "integer"
+    },
+    "DataLocations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "DataLocationsCount": {
+      "type": "integer"
+    },
+    "DeferralPrepTime": {
+      "type": "integer"
+    },
+    "DeferralTime": {
+      "type": "integer"
+    },
+    "DeferralWindow": {
+      "type": "integer"
+    },
+    "DelegatedProxyExpiration": {
+      "type": "integer"
+    },
+    "DesiredOS": {
+      "type": "string"
+    },
+    "DesiredSiteCount": {
+      "type": "integer"
+    },
+    "DiskProvisioned": {
+      "type": "integer"
+    },
+    "DiskUsage": {
+      "type": "integer"
+    },
+    "DiskUsageGB": {
+      "type": "number"
+    },
+    "EncryptExecuteDirectory": {
+      "type": "boolean"
+    },
+    "EnteredCurrentStatus": {
+      "type": "integer"
+    },
+    "ErrorClass": {
+      "type": "string"
+    },
+    "ErrorType": {
+      "type": "string"
+    },
+    "EstimatedInputRateKBs": {
+      "type": "integer"
+    },
+    "EstimatedSingleCoreMins": {
+      "type": "integer"
+    },
+    "EstimatedWallTimeJobCount": {
+      "type": "integer"
+    },
+    "EstimatedWallTimeMins": {
+      "type": "integer"
+    },
+    "EventRate": {
+      "type": "number"
+    },
+    "ExeExitCode": {
+      "type": "integer"
+    },
+    "ExecutableSize": {
+      "type": "integer"
+    },
+    "ExitBySignal": {
+      "type": "boolean"
+    },
+    "ExitCode": {
+      "type": "integer"
+    },
+    "ExitReason": {
+      "type": "string"
+    },
+    "ExitSignal": {
+      "type": "integer"
+    },
+    "ExitStatus": {
+      "type": "integer"
+    },
+    "ExtDESIRED_Sites": {
+      "type": "string"
+    },
+    "ExtraMemory": {
+      "type": "integer"
+    },
+    "FERMIHTC_JobType": {
+      "type": "string"
+    },
+    "FERMIHTC_OrigPool": {
+      "type": "string"
+    },
+    "FileSystemDomain": {
+      "type": "string"
+    },
+    "FormattedCrabId": {
+      "type": "string"
+    },
+    "GLIDECLIENT_Name": {
+      "type": "string"
+    },
+    "GLIDEIN_CMSSite": {
+      "type": "string"
+    },
+    "GLIDEIN_ClusterId": {
+      "type": "string"
+    },
+    "GLIDEIN_Cpus": {
+      "type": "string"
+    },
+    "GLIDEIN_Entry_Name": {
+      "type": "string"
+    },
+    "GLIDEIN_Factory": {
+      "type": "string"
+    },
+    "GLIDEIN_Job_Max_Time": {
+      "type": "integer"
+    },
+    "GLIDEIN_MaxMemMBs": {
+      "type": "integer"
+    },
+    "GLIDEIN_Max_Walltime": {
+      "type": "integer"
+    },
+    "GLIDEIN_Memory": {
+      "type": "integer"
+    },
+    "GLIDEIN_Name": {
+      "type": "string"
+    },
+    "GLIDEIN_ProcId": {
+      "type": "integer"
+    },
+    "GLIDEIN_SEs": {
+      "type": "string"
+    },
+    "GLIDEIN_Schedd": {
+      "type": "string"
+    },
+    "GLIDEIN_Site": {
+      "type": "string"
+    },
+    "GLIDEIN_SiteWMS": {
+      "type": "string"
+    },
+    "GLIDEIN_SiteWMS_JobId": {
+      "type": "string"
+    },
+    "GLIDEIN_SiteWMS_Queue": {
+      "type": "string"
+    },
+    "GLIDEIN_SiteWMS_Slot": {
+      "type": "string"
+    },
+    "GLIDEIN_ToDie": {
+      "type": "integer"
+    },
+    "GLIDEIN_ToRetire": {
+      "type": "integer"
+    },
+    "GlobalJobId": {
+      "type": "string"
+    },
+    "GridpackCard": {
+      "type": "string"
+    },
+    "HS06CommittedCoreHr": {
+      "type": "number"
+    },
+    "HS06CoreHr": {
+      "type": "number"
+    },
+    "HS06CpuTimeHr": {
+      "type": "number"
+    },
+    "HS06EventRate": {
+      "type": "number"
+    },
+    "HS06TimePerEvent": {
+      "type": "number"
+    },
+    "HasBeenOverflowRouted": {
+      "type": "boolean"
+    },
+    "HasBeenRouted": {
+      "type": "boolean"
+    },
+    "HasBeenTimingTuned": {
+      "type": "boolean"
+    },
+    "HasSingularity": {
+      "type": "boolean"
+    },
+    "HoldKillSig": {
+      "type": "string"
+    },
+    "HoldReason": {
+      "type": "string"
+    },
+    "HoldReasonCode": {
+      "type": "integer"
+    },
+    "HoldReasonSubCode": {
+      "type": "integer"
+    },
+    "IOWait": {
+      "type": "integer"
+    },
+    "ImageSize": {
+      "type": "integer"
+    },
+    "InputData": {
+      "type": "string"
+    },
+    "InputGB": {
+      "type": "number"
+    },
+    "IsGridpack": {
+      "type": "boolean"
+    },
+    "IsProxyWatcher": {
+      "type": "boolean"
+    },
+    "JOBGLIDEIN_ResourceName": {
+      "type": "string"
+    },
+    "JOB_CMSSite": {
+      "type": "string"
+    },
+    "JOB_EXPECTED_MAX_LIFETIME": {
+      "type": "integer"
+    },
+    "JOB_GLIDEIN_Cpus": {
+      "type": "string"
+    },
+    "JOB_Gatekeeper": {
+      "type": "string"
+    },
+    "JR_PostJobPrio1": {
+      "type": "integer"
+    },
+    "JR_PostJobPrio2": {
+      "type": "integer"
+    },
+    "JobBatchName": {
+      "type": "string"
+    },
+    "JobCoreDumped": {
+      "type": "boolean"
+    },
+    "JobCoreFileName": {
+      "type": "string"
+    },
+    "JobCpus": {
+      "type": "integer"
+    },
+    "JobCurrentStartDate": {
+      "type": "integer"
+    },
+    "JobCurrentStartExecutingDate": {
+      "type": "integer"
+    },
+    "JobCurrentStartTransferOutputDate": {
+      "type": "integer"
+    },
+    "JobDuration": {
+      "type": "number"
+    },
+    "JobExitCode": {
+      "type": "integer"
+    },
+    "JobFailed": {
+      "type": "integer"
+    },
+    "JobFinishedHookDone": {
+      "type": "integer"
+    },
+    "JobFlavour": {
+      "type": "string"
+    },
+    "JobLastStartDate": {
+      "type": "integer"
+    },
+    "JobPid": {
+      "type": "integer"
+    },
+    "JobPrio": {
+      "type": "integer"
+    },
+    "JobRunCount": {
+      "type": "integer"
+    },
+    "JobStartDate": {
+      "type": "integer"
+    },
+    "JobState": {
+      "type": "string"
+    },
+    "JobStatus": {
+      "type": "integer"
+    },
+    "JobUniverse": {
+      "type": "integer"
+    },
+    "KEvents": {
+      "type": "number"
+    },
+    "KillSig": {
+      "type": "string"
+    },
+    "LastHoldReason": {
+      "type": "string"
+    },
+    "LastHoldReasonCode": {
+      "type": "integer"
+    },
+    "LastHoldReasonSubCode": {
+      "type": "integer"
+    },
+    "LastJobLeaseRenewal": {
+      "type": "integer"
+    },
+    "LastJobStatus": {
+      "type": "integer"
+    },
+    "LastMatchTime": {
+      "type": "integer"
+    },
+    "LastMaxWalltimeUpdate_JobDuration": {
+      "type": "number"
+    },
+    "LastRejMatchTime": {
+      "type": "integer"
+    },
+    "LastReleaseReason": {
+      "type": "string"
+    },
+    "LastRemoteHost": {
+      "type": "string"
+    },
+    "LastRouted": {
+      "type": "integer"
+    },
+    "LastSuspensionTime": {
+      "type": "integer"
+    },
+    "LastTimingTuned": {
+      "type": "integer"
+    },
+    "LastVacateTime": {
+      "type": "integer"
+    },
+    "MATCH_Cpus": {
+      "type": "integer"
+    },
+    "MATCH_EXP_JOBGLIDEIN_ResourceName": {
+      "type": "string"
+    },
+    "MATCH_EXP_Used_Gatekeeper": {
+      "type": "string"
+    },
+    "MATCH_EXP_x509userproxy": {
+      "type": "string"
+    },
+    "MATCH_GLIDEIN_Gatekeeper": {
+      "type": "string"
+    },
+    "MATCH_GLIDEIN_ToDie": {
+      "type": "integer"
+    },
+    "MATCH_GLIDEIN_ToRetire": {
+      "type": "integer"
+    },
+    "MachineAttrCpus0": {
+      "type": "integer"
+    },
+    "MachineAttrCpus1": {
+      "type": "integer"
+    },
+    "MachineAttrCpus2": {
+      "type": "integer"
+    },
+    "MachineAttrCpus3": {
+      "type": "integer"
+    },
+    "MachineAttrCpus4": {
+      "type": "integer"
+    },
+    "MachineAttrCpus5": {
+      "type": "integer"
+    },
+    "MachineAttrCpus6": {
+      "type": "integer"
+    },
+    "MachineAttrCpus7": {
+      "type": "integer"
+    },
+    "MachineAttrCpus8": {
+      "type": "integer"
+    },
+    "MachineAttrDIRACBenchmark0": {
+      "type": "number"
+    },
+    "MachineAttrGLIDEIN_CMSSite1": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_CMSSite2": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_CMSSite3": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_CMSSite4": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_CMSSite5": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_CMSSite6": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_CMSSite7": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_CMSSite8": {
+      "type": "string"
+    },
+    "MachineAttrGLIDEIN_ToDie0": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie1": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie2": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie3": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie4": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie5": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie6": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie7": {
+      "type": "integer"
+    },
+    "MachineAttrGLIDEIN_ToDie8": {
+      "type": "integer"
+    },
+    "MachineAttrHAS_SINGULARITY0": {
+      "type": "boolean"
+    },
+    "MachineAttrMJF_JOB_HS06_JOB0": {
+      "type": "number"
+    },
+    "MachineAttrMaxHibernateTime0": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight0": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight1": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight2": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight3": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight4": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight5": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight6": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight7": {
+      "type": "integer"
+    },
+    "MachineAttrSlotWeight8": {
+      "type": "integer"
+    },
+    "MachineAttrTotalSlotCpus0": {
+      "type": "integer"
+    },
+    "MaxCores": {
+      "type": "integer"
+    },
+    "MaxFiles": {
+      "type": "integer"
+    },
+    "MaxHosts": {
+      "type": "integer"
+    },
+    "MaxWallTimeMin_RAWs": {
+      "type": "integer"
+    },
+    "MaxWallTimeMins": {
+      "type": "integer"
+    },
+    "MaxWallTimeMinsProbe": {
+      "type": "integer"
+    },
+    "MaxWallTimeMinsRun": {
+      "type": "integer"
+    },
+    "MaxWallTimeMinsTail": {
+      "type": "integer"
+    },
+    "MegaEvents": {
+      "type": "number"
+    },
+    "MemoryMB": {
+      "type": "number"
+    },
+    "MemoryProvisioned": {
+      "type": "integer"
+    },
+    "MemoryUsage": {
+      "type": "integer"
+    },
+    "MinCores": {
+      "type": "integer"
+    },
+    "MinHosts": {
+      "type": "integer"
+    },
+    "Notification": {
+      "type": "null"
+    },
+    "NumJobCompletions": {
+      "type": "integer"
+    },
+    "NumJobMatches": {
+      "type": "integer"
+    },
+    "NumJobReconnects": {
+      "type": "integer"
+    },
+    "NumJobStarts": {
+      "type": "integer"
+    },
+    "NumPids": {
+      "type": "integer"
+    },
+    "NumRestarts": {
+      "type": "integer"
+    },
+    "NumShadowExceptions": {
+      "type": "integer"
+    },
+    "NumShadowStarts": {
+      "type": "integer"
+    },
+    "NumSystemHolds": {
+      "type": "integer"
+    },
+    "OVERFLOW_CHECK": {
+      "type": "boolean"
+    },
+    "OVERFLOW_IT": {
+      "type": "string"
+    },
+    "OVERFLOW_UK": {
+      "type": "string"
+    },
+    "OVERFLOW_US": {
+      "type": "string"
+    },
+    "OnExitHoldReason": {
+      "type": "string"
+    },
+    "OriginalCpus": {
+      "type": "integer"
+    },
+    "OriginalMaxWallTimeMins": {
+      "type": "integer"
+    },
+    "OriginalMemory": {
+      "type": "integer"
+    },
+    "Original_DESIRED_Sites": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "OtherJobRemoveRequirements": {
+      "type": "integer"
+    },
+    "OutputFiles": {
+      "type": "integer"
+    },
+    "OutputGB": {
+      "type": "number"
+    },
+    "OverflowType": {
+      "type": "string"
+    },
+    "Owner": {
+      "type": "string"
+    },
+    "PeriodicRemoveReason": {
+      "type": "string"
+    },
+    "PilotRestLifeTimeMins": {
+      "type": "integer"
+    },
+    "PostJobPrio1": {
+      "type": "integer"
+    },
+    "PostJobPrio2": {
+      "type": "integer"
+    },
+    "PreJobPrio1": {
+      "type": "integer"
+    },
+    "Pre_DESIRED_Sites": {
+      "type": "string"
+    },
+    "ProcId": {
+      "type": "integer"
+    },
+    "Processor": {
+      "type": "string"
+    },
+    "ProjectName": {
+      "type": "string"
+    },
+    "ProportionalSetSizeKb": {
+      "type": "integer"
+    },
+    "QDate": {
+      "type": "integer"
+    },
+    "QueueHrs": {
+      "type": "number"
+    },
+    "REQUIRED_OS": {
+      "type": "string"
+    },
+    "Rank": {
+      "type": "string"
+    },
+    "ReadOpSegmentPercent": {
+      "type": "number"
+    },
+    "ReadOpsPercent": {
+      "type": "number"
+    },
+    "ReadTimeHrs": {
+      "type": "number"
+    },
+    "ReadTimeMins": {
+      "type": "number"
+    },
+    "RecentBlockReadBytes": {
+      "type": "integer"
+    },
+    "RecentBlockWriteBytes": {
+      "type": "integer"
+    },
+    "RecentStatsLifetime": {
+      "type": "integer"
+    },
+    "RecentStatsLifetimeStarter": {
+      "type": "integer"
+    },
+    "RecordTime": {
+      "type": "integer"
+    },
+    "ReleaseReason": {
+      "type": "string"
+    },
+    "RemoteCondorSetup": {
+      "type": "string"
+    },
+    "RemoteHost": {
+      "type": "string"
+    },
+    "RemotePool": {
+      "type": "string"
+    },
+    "RemoteSlotID": {
+      "type": "integer"
+    },
+    "RemoteSysCpu": {
+      "type": "integer"
+    },
+    "RemoteUserCpu": {
+      "type": "integer"
+    },
+    "RemoteWallClockTime": {
+      "type": "integer"
+    },
+    "RemoveKillSig": {
+      "type": "string"
+    },
+    "RemoveReason": {
+      "type": "string"
+    },
+    "RequestCpus": {
+      "type": "integer"
+    },
+    "RequestDisk": {
+      "type": "integer"
+    },
+    "RequestMaxInputDataSize": {
+      "type": "integer"
+    },
+    "RequestMaxInputRate": {
+      "type": "integer"
+    },
+    "RequestMaxOutputDataSize": {
+      "type": "integer"
+    },
+    "RequestMaxOutputRate": {
+      "type": "integer"
+    },
+    "RequestMemory": {
+      "type": "integer"
+    },
+    "RequestRepackslots": {
+      "type": "integer"
+    },
+    "RequestResizedCpus": {
+      "type": "null"
+    },
+    "Requestgpus": {
+      "type": "integer"
+    },
+    "Requestioslots": {
+      "type": "integer"
+    },
+    "RequeueReason": {
+      "type": "string"
+    },
+    "Require_CVMFS": {
+      "type": "boolean"
+    },
+    "Requirements": {
+      "type": "boolean"
+    },
+    "ResidentSetSize": {
+      "type": "integer"
+    },
+    "RouteType": {
+      "type": "string"
+    },
+    "ScheddBday": {
+      "type": "integer"
+    },
+    "ScheddInterval": {
+      "type": "integer"
+    },
+    "ScheddName": {
+      "type": "string"
+    },
+    "ShadowBday": {
+      "type": "integer"
+    },
+    "ShouldTransferFiles": {
+      "type": "string"
+    },
+    "SinceLastCMSSWUpdateHrs": {
+      "type": "number"
+    },
+    "SingularityAutoLoad": {
+      "type": "boolean"
+    },
+    "SingularityBindCVMFS": {
+      "type": "boolean"
+    },
+    "SingularityBindGPULibs": {
+      "type": "boolean"
+    },
+    "SingularityImage": {
+      "type": "string"
+    },
+    "Site": {
+      "type": "string"
+    },
+    "SpoolOnEvict": {
+      "type": "boolean"
+    },
+    "StageOutHrs": {
+      "type": "number"
+    },
+    "StartdIpAddr": {
+      "type": "string"
+    },
+    "StartdPrincipal": {
+      "type": "string"
+    },
+    "StarterIpAddr": {
+      "type": "string"
+    },
+    "StatsLifetime": {
+      "type": "integer"
+    },
+    "StatsLifetimeStarter": {
+      "type": "integer"
+    },
+    "Status": {
+      "type": "string"
+    },
+    "SubmitFile": {
+      "type": "string"
+    },
+    "TIER0_WF": {
+      "type": "boolean"
+    },
+    "TaskType": {
+      "type": "string"
+    },
+    "TerminationPending": {
+      "type": "boolean"
+    },
+    "Tier": {
+      "type": "string"
+    },
+    "TimePerEvent": {
+      "type": "number"
+    },
+    "TotalSubmitProcs": {
+      "type": "integer"
+    },
+    "TotalSuspensions": {
+      "type": "integer"
+    },
+    "TransferErr": {
+      "type": "boolean"
+    },
+    "TransferInputSizeMB": {
+      "type": "integer"
+    },
+    "TransferOut": {
+      "type": "boolean"
+    },
+    "TransferOutputRemaps": {
+      "type": "string"
+    },
+    "TransferQueued": {
+      "type": "boolean"
+    },
+    "TransferringInput": {
+      "type": "boolean"
+    },
+    "TransferringOutput": {
+      "type": "integer"
+    },
+    "Type": {
+      "type": "string"
+    },
+    "Universe": {
+      "type": "string"
+    },
+    "User": {
+      "type": "string"
+    },
+    "VO": {
+      "type": "string"
+    },
+    "WMAgent_AgentName": {
+      "type": "string"
+    },
+    "WMAgent_JobID": {
+      "type": "integer"
+    },
+    "WMAgent_PostJobPrio1": {
+      "type": "integer"
+    },
+    "WMAgent_PostJobPrio2": {
+      "type": "integer"
+    },
+    "WMAgent_RequestName": {
+      "type": "string"
+    },
+    "WMAgent_SubTaskName": {
+      "type": "string"
+    },
+    "WMAgent_TaskType": {
+      "type": "string"
+    },
+    "WMCore_ResizeJob": {
+      "type": "boolean"
+    },
+    "WallClockCheckpoint": {
+      "type": "integer"
+    },
+    "WallClockHr": {
+      "type": "number"
+    },
+    "WantGracefulRemoval": {
+      "type": "boolean"
+    },
+    "WantIOProxy": {
+      "type": "boolean"
+    },
+    "WhenToTransferOutput": {
+      "type": "string"
+    },
+    "Workflow": {
+      "type": "string"
+    },
+    "WriteTimeHrs": {
+      "type": "number"
+    },
+    "WriteTimeMins": {
+      "type": "number"
+    },
+    "X509UserProxy": {
+      "type": "string"
+    },
+    "jobprio": {
+      "type": "integer"
+    },
+    "metadata": {
+      "properties": {
+        "spider_git_hash": {
+          "type": "string"
+        },
+        "spider_hostname": {
+          "type": "string"
+        },
+        "spider_runtime": {
+          "type": "integer"
+        },
+        "spider_source": {
+          "type": "string"
+        },
+        "spider_username": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "spider_git_hash",
+        "spider_hostname",
+        "spider_runtime",
+        "spider_source",
+        "spider_username"
+      ],
+      "type": "object"
+    },
+    "orig_FERMIHTC_OrigPool": {
+      "type": "string"
+    },
+    "x509UserProxyEmail": {
+      "type": "string"
+    },
+    "x509UserProxyFQAN": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "x509UserProxyFirstFQAN": {
+      "type": "string"
+    },
+    "x509UserProxyVOName": {
+      "type": "string"
+    },
+    "x509userproxysubject": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "AccountingGroup",
+    "AffiliationCountry",
+    "AffiliationInstitute",
+    "Args",
+    "AutoClusterId",
+    "AvoidSystemPeriodicRemove",
+    "Badput",
+    "BenchmarkJobDB12",
+    "BenchmarkJobHS06",
+    "BlockReadBytes",
+    "BlockWriteBytes",
+    "BytesRecvd",
+    "BytesSent",
+    "CMSGroups",
+    "CMSPrimaryDataTier",
+    "CMSPrimaryPrimaryDataset",
+    "CMSPrimaryProcessedDataset",
+    "CMSSWDone",
+    "CMSSWEventRate",
+    "CMSSWKLumis",
+    "CMSSWMajorVersion",
+    "CMSSWReleaseSeries",
+    "CMSSWTimePerEvent",
+    "CMSSWVersion",
+    "CMSSWWallHrs",
+    "CMSSW_Versions",
+    "CMSSite",
+    "CMS_JobRetryCount",
+    "CMS_JobType",
+    "CMS_SubmissionTool",
+    "CMS_TaskType",
+    "CMS_Type",
+    "CMS_WMTool",
+    "CPUModel",
+    "CPUModelName",
+    "CPUsUsage",
+    "CRAB_AlgoArgs",
+    "CRAB_AllowOverflow",
+    "CRAB_AsyncDest",
+    "CRAB_Attempt",
+    "CRAB_DashboardTaskType",
+    "CRAB_DataBlock",
+    "CRAB_FailedNodeLimit",
+    "CRAB_HC",
+    "CRAB_ISB",
+    "CRAB_Id",
+    "CRAB_JobArch",
+    "CRAB_JobCount",
+    "CRAB_JobLogURL",
+    "CRAB_JobReleaseTimeout",
+    "CRAB_JobSW",
+    "CRAB_JobType",
+    "CRAB_LumiMask",
+    "CRAB_MaxPost",
+    "CRAB_NoWNStageout",
+    "CRAB_OutLFNDir",
+    "CRAB_PostJobLogURL",
+    "CRAB_PostJobStatus",
+    "CRAB_PrimaryDataset",
+    "CRAB_Publish",
+    "CRAB_PublishName",
+    "CRAB_Retry",
+    "CRAB_SaveLogsFlag",
+    "CRAB_SiteBlacklist",
+    "CRAB_SiteWhitelist",
+    "CRAB_SplitAlgo",
+    "CRAB_SubmitterIpAddr",
+    "CRAB_TaskCreationDate",
+    "CRAB_TaskEndTime",
+    "CRAB_TaskLifetimeDays",
+    "CRAB_TaskSubmitTime",
+    "CRAB_TaskWorker",
+    "CRAB_TransferOutputs",
+    "CRAB_UserGroup",
+    "CRAB_UserHN",
+    "CRAB_UserRole",
+    "CRAB_UserVO",
+    "CRAB_Workflow",
+    "Campaign",
+    "ChirpCMSSWCPUModels",
+    "ChirpCMSSWCPUSpeed",
+    "ChirpCMSSWDone",
+    "ChirpCMSSWElapsed",
+    "ChirpCMSSWEventRate",
+    "ChirpCMSSWEvents",
+    "ChirpCMSSWFiles",
+    "ChirpCMSSWLastUpdate",
+    "ChirpCMSSWLumis",
+    "ChirpCMSSWMaxEvents",
+    "ChirpCMSSWMaxFiles",
+    "ChirpCMSSWMaxLumis",
+    "ChirpCMSSWReadBytes",
+    "ChirpCMSSWReadOps",
+    "ChirpCMSSWReadSegments",
+    "ChirpCMSSWReadTimeMsecs",
+    "ChirpCMSSWReadVOps",
+    "ChirpCMSSWRuns",
+    "ChirpCMSSWTotalCPU",
+    "ChirpCMSSWWriteBytes",
+    "ChirpCMSSWWriteTimeMsecs",
+    "ChirpCMSSW_SiteIO",
+    "ChirpCMSSW_cmsRun1_Done",
+    "ChirpCMSSW_cmsRun1_Elapsed",
+    "ChirpCMSSW_cmsRun1_EventRate",
+    "ChirpCMSSW_cmsRun1_Events",
+    "ChirpCMSSW_cmsRun1_Files",
+    "ChirpCMSSW_cmsRun1_LastUpdate",
+    "ChirpCMSSW_cmsRun1_Lumis",
+    "ChirpCMSSW_cmsRun1_MaxEvents",
+    "ChirpCMSSW_cmsRun1_MaxFiles",
+    "ChirpCMSSW_cmsRun1_MaxLumis",
+    "ChirpCMSSW_cmsRun1_ReadBytes",
+    "ChirpCMSSW_cmsRun1_ReadOps",
+    "ChirpCMSSW_cmsRun1_ReadSegments",
+    "ChirpCMSSW_cmsRun1_ReadTimeMsecs",
+    "ChirpCMSSW_cmsRun1_ReadVOps",
+    "ChirpCMSSW_cmsRun1_Runs",
+    "ChirpCMSSW_cmsRun1_TotalCPU",
+    "ChirpCMSSW_cmsRun1_WriteBytes",
+    "ChirpCMSSW_cmsRun1_WriteTimeMsecs",
+    "ChirpCMSSW_cmsRun2_Done",
+    "ChirpCMSSW_cmsRun2_Elapsed",
+    "ChirpCMSSW_cmsRun2_EventRate",
+    "ChirpCMSSW_cmsRun2_Events",
+    "ChirpCMSSW_cmsRun2_Files",
+    "ChirpCMSSW_cmsRun2_LastUpdate",
+    "ChirpCMSSW_cmsRun2_Lumis",
+    "ChirpCMSSW_cmsRun2_MaxEvents",
+    "ChirpCMSSW_cmsRun2_MaxFiles",
+    "ChirpCMSSW_cmsRun2_ReadBytes",
+    "ChirpCMSSW_cmsRun2_ReadOps",
+    "ChirpCMSSW_cmsRun2_ReadSegments",
+    "ChirpCMSSW_cmsRun2_ReadTimeMsecs",
+    "ChirpCMSSW_cmsRun2_ReadVOps",
+    "ChirpCMSSW_cmsRun2_Runs",
+    "ChirpCMSSW_cmsRun2_TotalCPU",
+    "ChirpCMSSW_cmsRun2_WriteBytes",
+    "ChirpCMSSW_cmsRun2_WriteTimeMsecs",
+    "ChirpCMSSW_cmsRun3_Done",
+    "ChirpCMSSW_cmsRun3_Elapsed",
+    "ChirpCMSSW_cmsRun3_EventRate",
+    "ChirpCMSSW_cmsRun3_Events",
+    "ChirpCMSSW_cmsRun3_Files",
+    "ChirpCMSSW_cmsRun3_LastUpdate",
+    "ChirpCMSSW_cmsRun3_Lumis",
+    "ChirpCMSSW_cmsRun3_MaxEvents",
+    "ChirpCMSSW_cmsRun3_MaxFiles",
+    "ChirpCMSSW_cmsRun3_ReadBytes",
+    "ChirpCMSSW_cmsRun3_ReadOps",
+    "ChirpCMSSW_cmsRun3_ReadSegments",
+    "ChirpCMSSW_cmsRun3_ReadTimeMsecs",
+    "ChirpCMSSW_cmsRun3_ReadVOps",
+    "ChirpCMSSW_cmsRun3_Runs",
+    "ChirpCMSSW_cmsRun3_TotalCPU",
+    "ChirpCMSSW_cmsRun3_WriteBytes",
+    "ChirpCMSSW_cmsRun3_WriteTimeMsecs",
+    "ChirpCMSSW_cmsRun4_Done",
+    "ChirpCMSSW_cmsRun4_Elapsed",
+    "ChirpCMSSW_cmsRun4_EventRate",
+    "ChirpCMSSW_cmsRun4_Events",
+    "ChirpCMSSW_cmsRun4_Files",
+    "ChirpCMSSW_cmsRun4_LastUpdate",
+    "ChirpCMSSW_cmsRun4_Lumis",
+    "ChirpCMSSW_cmsRun4_MaxFiles",
+    "ChirpCMSSW_cmsRun4_ReadBytes",
+    "ChirpCMSSW_cmsRun4_ReadOps",
+    "ChirpCMSSW_cmsRun4_ReadSegments",
+    "ChirpCMSSW_cmsRun4_ReadTimeMsecs",
+    "ChirpCMSSW_cmsRun4_ReadVOps",
+    "ChirpCMSSW_cmsRun4_Runs",
+    "ChirpCMSSW_cmsRun4_TotalCPU",
+    "ChirpCMSSW_cmsRun4_WriteBytes",
+    "ChirpCMSSW_cmsRun4_WriteTimeMsecs",
+    "ChirpCMSSW_cmsRun5_Done",
+    "ChirpCMSSW_cmsRun5_Elapsed",
+    "ChirpCMSSW_cmsRun5_EventRate",
+    "ChirpCMSSW_cmsRun5_Events",
+    "ChirpCMSSW_cmsRun5_Files",
+    "ChirpCMSSW_cmsRun5_LastUpdate",
+    "ChirpCMSSW_cmsRun5_Lumis",
+    "ChirpCMSSW_cmsRun5_MaxFiles",
+    "ChirpCMSSW_cmsRun5_ReadBytes",
+    "ChirpCMSSW_cmsRun5_ReadOps",
+    "ChirpCMSSW_cmsRun5_ReadSegments",
+    "ChirpCMSSW_cmsRun5_ReadTimeMsecs",
+    "ChirpCMSSW_cmsRun5_ReadVOps",
+    "ChirpCMSSW_cmsRun5_Runs",
+    "ChirpCMSSW_cmsRun5_TotalCPU",
+    "ChirpCMSSW_cmsRun5_WriteBytes",
+    "ChirpCMSSW_cmsRun5_WriteTimeMsecs",
+    "ChirpCMSSW_cmsRun_Done",
+    "ChirpCMSSW_cmsRun_Elapsed",
+    "ChirpCMSSW_cmsRun_EventRate",
+    "ChirpCMSSW_cmsRun_Events",
+    "ChirpCMSSW_cmsRun_Files",
+    "ChirpCMSSW_cmsRun_IOSite_T2_BR_SPRACE_ReadTimeMS",
+    "ChirpCMSSW_cmsRun_LastUpdate",
+    "ChirpCMSSW_cmsRun_Lumis",
+    "ChirpCMSSW_cmsRun_MaxEvents",
+    "ChirpCMSSW_cmsRun_MaxFiles",
+    "ChirpCMSSW_cmsRun_MaxLumis",
+    "ChirpCMSSW_cmsRun_ReadBytes",
+    "ChirpCMSSW_cmsRun_ReadOps",
+    "ChirpCMSSW_cmsRun_ReadSegments",
+    "ChirpCMSSW_cmsRun_ReadTimeMsecs",
+    "ChirpCMSSW_cmsRun_ReadVOps",
+    "ChirpCMSSW_cmsRun_Runs",
+    "ChirpCMSSW_cmsRun_TotalCPU",
+    "ChirpCMSSW_cmsRun_WriteBytes",
+    "ChirpCMSSW_cmsRun_WriteTimeMsecs",
+    "Chirp_CRAB3_Job_ExitCode",
+    "Chirp_WMCore_cmsRun1_Exception_Message",
+    "Chirp_WMCore_cmsRun1_ExitCode",
+    "Chirp_WMCore_cmsRun2_ExitCode",
+    "Chirp_WMCore_cmsRun3_ExitCode",
+    "Chirp_WMCore_cmsRun4_ExitCode",
+    "Chirp_WMCore_cmsRun5_ExitCode",
+    "Chirp_WMCore_cmsRun_Exception_Message",
+    "Chirp_WMCore_cmsRun_ExitCode",
+    "ClaimId",
+    "ClusterId",
+    "Cmd",
+    "CommittedCoreHr",
+    "CommittedSlotTime",
+    "CommittedSuspensionTime",
+    "CommittedTime",
+    "CommittedWallClockHr",
+    "CompletedFiles",
+    "CompletionDate",
+    "CondorExitCode",
+    "ConnectClientGeoData",
+    "ConnectClientLocalDir",
+    "ConnectClientLocalNode",
+    "ConnectClientLocalUser",
+    "ConnectClientServer",
+    "ConnectClientUser",
+    "ConnectClientVersion",
+    "ConnectWrapper",
+    "CoreHr",
+    "CoreSize",
+    "Country",
+    "CpuBadput",
+    "CpuEff",
+    "CpuTimeHr",
+    "CpusProvisioned",
+    "CronDayOfMonth",
+    "CronDayOfWeek",
+    "CronHour",
+    "CronMinute",
+    "CronMonth",
+    "CumulativeRemoteSysCpu",
+    "CumulativeRemoteUserCpu",
+    "CumulativeSlotTime",
+    "CumulativeSuspensionTime",
+    "CurrentHosts",
+    "DAGNodeName",
+    "DAGParentNodeNames",
+    "DAG_InRecovery",
+    "DAG_NodesDone",
+    "DAG_NodesFailed",
+    "DAG_NodesPostrun",
+    "DAG_NodesPrerun",
+    "DAG_NodesQueued",
+    "DAG_NodesReady",
+    "DAG_NodesTotal",
+    "DAG_NodesUnready",
+    "DAG_Status",
+    "DB12CommittedCoreHr",
+    "DB12CoreHr",
+    "DB12CpuTimeHr",
+    "DB12EventRate",
+    "DB12TimePerEvent",
+    "DESIRED_Archs",
+    "DESIRED_CMSDataLocations",
+    "DESIRED_CMSDataset",
+    "DESIRED_CMSPileups",
+    "DESIRED_Entries",
+    "DESIRED_Overflow_Region",
+    "DESIRED_SITES_Diff",
+    "DESIRED_SITES_Orig",
+    "DESIRED_Sites",
+    "Dashboard_Id",
+    "Dashboard_monitorid",
+    "Dashboard_syncid",
+    "Dashboard_taskid",
+    "DataCollection",
+    "DataCollectionDate",
+    "DataLocations",
+    "DataLocationsCount",
+    "DeferralPrepTime",
+    "DeferralTime",
+    "DeferralWindow",
+    "DelegatedProxyExpiration",
+    "DesiredOS",
+    "DesiredSiteCount",
+    "DiskProvisioned",
+    "DiskUsage",
+    "DiskUsageGB",
+    "EncryptExecuteDirectory",
+    "EnteredCurrentStatus",
+    "ErrorClass",
+    "ErrorType",
+    "EstimatedInputRateKBs",
+    "EstimatedSingleCoreMins",
+    "EstimatedWallTimeJobCount",
+    "EstimatedWallTimeMins",
+    "EventRate",
+    "ExeExitCode",
+    "ExecutableSize",
+    "ExitBySignal",
+    "ExitCode",
+    "ExitReason",
+    "ExitSignal",
+    "ExitStatus",
+    "ExtDESIRED_Sites",
+    "ExtraMemory",
+    "FERMIHTC_JobType",
+    "FERMIHTC_OrigPool",
+    "FileSystemDomain",
+    "FormattedCrabId",
+    "GLIDECLIENT_Name",
+    "GLIDEIN_CMSSite",
+    "GLIDEIN_ClusterId",
+    "GLIDEIN_Cpus",
+    "GLIDEIN_Entry_Name",
+    "GLIDEIN_Factory",
+    "GLIDEIN_Job_Max_Time",
+    "GLIDEIN_MaxMemMBs",
+    "GLIDEIN_Max_Walltime",
+    "GLIDEIN_Memory",
+    "GLIDEIN_Name",
+    "GLIDEIN_ProcId",
+    "GLIDEIN_SEs",
+    "GLIDEIN_Schedd",
+    "GLIDEIN_Site",
+    "GLIDEIN_SiteWMS",
+    "GLIDEIN_SiteWMS_JobId",
+    "GLIDEIN_SiteWMS_Queue",
+    "GLIDEIN_SiteWMS_Slot",
+    "GLIDEIN_ToDie",
+    "GLIDEIN_ToRetire",
+    "GlobalJobId",
+    "GridpackCard",
+    "HS06CommittedCoreHr",
+    "HS06CoreHr",
+    "HS06CpuTimeHr",
+    "HS06EventRate",
+    "HS06TimePerEvent",
+    "HasBeenOverflowRouted",
+    "HasBeenRouted",
+    "HasBeenTimingTuned",
+    "HasSingularity",
+    "HoldKillSig",
+    "HoldReason",
+    "HoldReasonCode",
+    "HoldReasonSubCode",
+    "IOWait",
+    "ImageSize",
+    "InputData",
+    "InputGB",
+    "IsGridpack",
+    "IsProxyWatcher",
+    "JOBGLIDEIN_ResourceName",
+    "JOB_CMSSite",
+    "JOB_EXPECTED_MAX_LIFETIME",
+    "JOB_GLIDEIN_Cpus",
+    "JOB_Gatekeeper",
+    "JR_PostJobPrio1",
+    "JR_PostJobPrio2",
+    "JobBatchName",
+    "JobCoreDumped",
+    "JobCoreFileName",
+    "JobCpus",
+    "JobCurrentStartDate",
+    "JobCurrentStartExecutingDate",
+    "JobCurrentStartTransferOutputDate",
+    "JobDuration",
+    "JobExitCode",
+    "JobFailed",
+    "JobFinishedHookDone",
+    "JobFlavour",
+    "JobLastStartDate",
+    "JobPid",
+    "JobPrio",
+    "JobRunCount",
+    "JobStartDate",
+    "JobState",
+    "JobStatus",
+    "JobUniverse",
+    "KEvents",
+    "KillSig",
+    "LastHoldReason",
+    "LastHoldReasonCode",
+    "LastHoldReasonSubCode",
+    "LastJobLeaseRenewal",
+    "LastJobStatus",
+    "LastMatchTime",
+    "LastMaxWalltimeUpdate_JobDuration",
+    "LastRejMatchTime",
+    "LastReleaseReason",
+    "LastRemoteHost",
+    "LastRouted",
+    "LastSuspensionTime",
+    "LastTimingTuned",
+    "LastVacateTime",
+    "MATCH_Cpus",
+    "MATCH_EXP_JOBGLIDEIN_ResourceName",
+    "MATCH_EXP_Used_Gatekeeper",
+    "MATCH_EXP_x509userproxy",
+    "MATCH_GLIDEIN_Gatekeeper",
+    "MATCH_GLIDEIN_ToDie",
+    "MATCH_GLIDEIN_ToRetire",
+    "MachineAttrCpus0",
+    "MachineAttrCpus1",
+    "MachineAttrCpus2",
+    "MachineAttrCpus3",
+    "MachineAttrCpus4",
+    "MachineAttrCpus5",
+    "MachineAttrCpus6",
+    "MachineAttrCpus7",
+    "MachineAttrCpus8",
+    "MachineAttrDIRACBenchmark0",
+    "MachineAttrGLIDEIN_CMSSite1",
+    "MachineAttrGLIDEIN_CMSSite2",
+    "MachineAttrGLIDEIN_CMSSite3",
+    "MachineAttrGLIDEIN_CMSSite4",
+    "MachineAttrGLIDEIN_CMSSite5",
+    "MachineAttrGLIDEIN_CMSSite6",
+    "MachineAttrGLIDEIN_CMSSite7",
+    "MachineAttrGLIDEIN_CMSSite8",
+    "MachineAttrGLIDEIN_ToDie0",
+    "MachineAttrGLIDEIN_ToDie1",
+    "MachineAttrGLIDEIN_ToDie2",
+    "MachineAttrGLIDEIN_ToDie3",
+    "MachineAttrGLIDEIN_ToDie4",
+    "MachineAttrGLIDEIN_ToDie5",
+    "MachineAttrGLIDEIN_ToDie6",
+    "MachineAttrGLIDEIN_ToDie7",
+    "MachineAttrGLIDEIN_ToDie8",
+    "MachineAttrHAS_SINGULARITY0",
+    "MachineAttrMJF_JOB_HS06_JOB0",
+    "MachineAttrMaxHibernateTime0",
+    "MachineAttrSlotWeight0",
+    "MachineAttrSlotWeight1",
+    "MachineAttrSlotWeight2",
+    "MachineAttrSlotWeight3",
+    "MachineAttrSlotWeight4",
+    "MachineAttrSlotWeight5",
+    "MachineAttrSlotWeight6",
+    "MachineAttrSlotWeight7",
+    "MachineAttrSlotWeight8",
+    "MachineAttrTotalSlotCpus0",
+    "MaxCores",
+    "MaxFiles",
+    "MaxHosts",
+    "MaxWallTimeMin_RAWs",
+    "MaxWallTimeMins",
+    "MaxWallTimeMinsProbe",
+    "MaxWallTimeMinsRun",
+    "MaxWallTimeMinsTail",
+    "MegaEvents",
+    "MemoryMB",
+    "MemoryProvisioned",
+    "MemoryUsage",
+    "MinCores",
+    "MinHosts",
+    "Notification",
+    "NumJobCompletions",
+    "NumJobMatches",
+    "NumJobReconnects",
+    "NumJobStarts",
+    "NumPids",
+    "NumRestarts",
+    "NumShadowExceptions",
+    "NumShadowStarts",
+    "NumSystemHolds",
+    "OVERFLOW_CHECK",
+    "OVERFLOW_IT",
+    "OVERFLOW_UK",
+    "OVERFLOW_US",
+    "OnExitHoldReason",
+    "OriginalCpus",
+    "OriginalMaxWallTimeMins",
+    "OriginalMemory",
+    "Original_DESIRED_Sites",
+    "OtherJobRemoveRequirements",
+    "OutputFiles",
+    "OutputGB",
+    "OverflowType",
+    "Owner",
+    "PeriodicRemoveReason",
+    "PilotRestLifeTimeMins",
+    "PostJobPrio1",
+    "PostJobPrio2",
+    "PreJobPrio1",
+    "Pre_DESIRED_Sites",
+    "ProcId",
+    "Processor",
+    "ProjectName",
+    "ProportionalSetSizeKb",
+    "QDate",
+    "QueueHrs",
+    "REQUIRED_OS",
+    "Rank",
+    "ReadOpSegmentPercent",
+    "ReadOpsPercent",
+    "ReadTimeHrs",
+    "ReadTimeMins",
+    "RecentBlockReadBytes",
+    "RecentBlockWriteBytes",
+    "RecentStatsLifetime",
+    "RecentStatsLifetimeStarter",
+    "RecordTime",
+    "ReleaseReason",
+    "RemoteCondorSetup",
+    "RemoteHost",
+    "RemotePool",
+    "RemoteSlotID",
+    "RemoteSysCpu",
+    "RemoteUserCpu",
+    "RemoteWallClockTime",
+    "RemoveKillSig",
+    "RemoveReason",
+    "RequestCpus",
+    "RequestDisk",
+    "RequestMaxInputDataSize",
+    "RequestMaxInputRate",
+    "RequestMaxOutputDataSize",
+    "RequestMaxOutputRate",
+    "RequestMemory",
+    "RequestRepackslots",
+    "RequestResizedCpus",
+    "Requestgpus",
+    "Requestioslots",
+    "RequeueReason",
+    "Require_CVMFS",
+    "Requirements",
+    "ResidentSetSize",
+    "RouteType",
+    "ScheddBday",
+    "ScheddInterval",
+    "ScheddName",
+    "ShadowBday",
+    "ShouldTransferFiles",
+    "SinceLastCMSSWUpdateHrs",
+    "SingularityAutoLoad",
+    "SingularityBindCVMFS",
+    "SingularityBindGPULibs",
+    "SingularityImage",
+    "Site",
+    "SpoolOnEvict",
+    "StageOutHrs",
+    "StartdIpAddr",
+    "StartdPrincipal",
+    "StarterIpAddr",
+    "StatsLifetime",
+    "StatsLifetimeStarter",
+    "Status",
+    "SubmitFile",
+    "TIER0_WF",
+    "TaskType",
+    "TerminationPending",
+    "Tier",
+    "TimePerEvent",
+    "TotalSubmitProcs",
+    "TotalSuspensions",
+    "TransferErr",
+    "TransferInputSizeMB",
+    "TransferOut",
+    "TransferOutputRemaps",
+    "TransferQueued",
+    "TransferringInput",
+    "TransferringOutput",
+    "Type",
+    "Universe",
+    "User",
+    "VO",
+    "WMAgent_AgentName",
+    "WMAgent_JobID",
+    "WMAgent_PostJobPrio1",
+    "WMAgent_PostJobPrio2",
+    "WMAgent_RequestName",
+    "WMAgent_SubTaskName",
+    "WMAgent_TaskType",
+    "WMCore_ResizeJob",
+    "WallClockCheckpoint",
+    "WallClockHr",
+    "WantGracefulRemoval",
+    "WantIOProxy",
+    "WhenToTransferOutput",
+    "Workflow",
+    "WriteTimeHrs",
+    "WriteTimeMins",
+    "X509UserProxy",
+    "jobprio",
+    "metadata",
+    "orig_FERMIHTC_OrigPool",
+    "x509UserProxyEmail",
+    "x509UserProxyFQAN",
+    "x509UserProxyFirstFQAN",
+    "x509UserProxyVOName",
+    "x509userproxysubject"
+  ],
+  "type": "object"
+}

@@ -6,9 +6,9 @@
     "JobType": ["LogCollect", "Merge", "Processing", "Production", "Harvesting", "Cleanup", "Skim", "Repack", "Express", "Analysis"],
     "TaskType": ["Reco", "Digi", "Gen", "GenSimDigi", "scriptExe", "CMSRun", "HCtest", "HCother"],
     "PrimaryInputType": ["MC", "Data", "NONE"],
-    "PrimaryInputLocation": ["Onsite", "Offsite", "Mixed"],
+    "PrimaryInputLocation": ["Onsite", "Offsite", "Mixed", "NONE"],
     "SecondaryInputType": ["MC", "Data", "NONE"],
-    "SecondaryInputLocation": ["Onsite", "Offsite", "Mixed"],
+    "SecondaryInputLocation": ["Onsite", "Offsite", "Mixed", "NONE"],
     "JobFailed": [0, 1],
     "ErrorType": ["Env", "Exe", "Stageout", "Publication", "Internal", "FileOpen", "DataRead", "Others"],
     "ErrorCategory": ["Site", "Application", "WMTool"]

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# find out where CMSMonitoring is installed on a system
+root=$(python -c "import CMSMonitoring; print('/'.join(CMSMonitoring.__file__.split('/')[:-1]))")
+MONIT_HOME="$(cd "$(dirname "$0")" && pwd)"
+export MONIT_DB_DICT_FILE="${MONIT_DB_DICT_FILE:-$MONIT_HOME/../static/datasources.json}"
+# run actual script
+python "$root/monit.py" ${1+"$@"}
