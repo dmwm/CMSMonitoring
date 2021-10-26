@@ -3,7 +3,7 @@ name: Continuous integration testing
 on: [pull_request, push]
 
 jobs:
-  test_json:
+  test:
   
     runs-on: ubuntu-latest
   
@@ -21,19 +21,13 @@ jobs:
           echo "Checking valid json..."
           shopt -s globstar
           ls **/*.json >/dev/null && for j in **/*.json; do python -mjson.tool "$j" > /dev/null || (echo "INVALID $j" >&2; 1>foo ); done
-          ls
           [[ !  -f "foo" ]]
 
-  test_yaml:
-  
-    runs-on: ubuntu-latest
-    
-    steps:
       - name: check valid yaml
         run: |
           echo "Checking valid yaml..."
           shopt -s globstar
-          echo "Checking valid yaml..."
+          
 
 
 
