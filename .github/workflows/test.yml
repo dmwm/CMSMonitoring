@@ -4,16 +4,22 @@ on: [pull_request, push]
 
 jobs:
   test_json:
+  
     runs-on: ubuntu-latest
+  
     steps:
-      - run: | 
-        echo "Checking valid json..."
-        echo "Checking valid json..."
+      - name: check valid json
+        run: |
+          echo "Checking valid json..."
+          echo "Checking valid json..."
 
   test_yaml:
+  
     runs-on: ubuntu-latest
+    
     steps:
-      - run:  echo "Checking valid yaml..."
+      - name: check valid yaml
+        run:  echo "Checking valid yaml..."
 
 
 
