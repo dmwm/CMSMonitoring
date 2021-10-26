@@ -20,13 +20,14 @@ jobs:
         run: |
           echo "Checking valid json..."
           shopt -s globstar
+          # check both json and schema file extensions
           ls **/*.json >/dev/null && for j in **/*.json; do python -mjson.tool "$j" > /dev/null || (echo "INVALID $j" >&2; 1>foo ); done
           ls **/*.schema >/dev/null && for j in **/*.schema; do python -mjson.tool "$j" > /dev/null || (echo "INVALID $j" >&2; 1>foo ); done
           [[ !  -f "foo" ]]
 
       - name: check valid yaml
         run: |
-          echo "Checking valid yaml..."
+          echo "Checking valid yaml..." # even if no yaml is currently in repository
           shopt -s globstar
           ls **/*.yaml >/dev/null && for j in **/*.yaml; do python -c 'import yaml, sys; print(yaml.safe_load(sys.stdin))' <  $j > /dev/null || (echo "INVALID $j" >&2; 1>foo1 ); done
           [[ !  -f "foo1" ]]
