@@ -1,0 +1,19 @@
+name: Continuous integration testing
+
+on: [pull_request, push]
+
+jobs:
+
+  check-json:   
+    - run: |
+      echo "Checking valid json..."
+      shopt -s globstar
+      ls **/*.json >/dev/null && for j in **/*.json; do python -mjson.tool "$j" > /dev/null || (echo "INVALID $j" >&2; 1>foo ); done
+      '[[ !  -f "foo" ]]'
+
+  check-yaml:   # This job runs in the test stage.
+    - run: |
+      echo "Checking valid yaml..."
+      shopt -s globstar
+      ls **/*.yaml >/dev/null && for j in **/*.yaml; do python -c 'import yaml, sys; print(yaml.safe_load(sys.stdin))' <  $j > /dev/null || (echo "INVALID $j" >&2; 1>foo1 ); done
+      '[[ !  -f "foo1" ]]'
