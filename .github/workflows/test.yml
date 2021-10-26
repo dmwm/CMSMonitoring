@@ -12,7 +12,9 @@ jobs:
         run: |
           echo "Checking valid json..."
           shopt -s globstar
+          ls **/*.json >/dev/null && for j in **/*.json; do python -mjson.tool "$j" > /dev/null || (echo "INVALID $j" >&2; 1>foo ); done
           echo "Checking valid json..."
+          '[[ !  -f "foo" ]]'
 
   test_yaml:
   
