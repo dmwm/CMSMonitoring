@@ -19,7 +19,9 @@ jobs:
     
     steps:
       - name: check valid yaml
-        run:  echo "Checking valid yaml..."
+        run: |
+          echo "Checking valid yaml..."
+          echo "Checking valid yaml..."
 
 
 
