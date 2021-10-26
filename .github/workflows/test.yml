@@ -13,8 +13,8 @@ jobs:
           echo "Checking valid json..."
           shopt -s globstar
           pwd
-          ls
-          ls **/*
+          ls -la
+          #ls **/*
           #ls **/*.json >/dev/null && for j in **/*.json; do python -mjson.tool "$j" > /dev/null || (echo "INVALID $j" >&2; 1>foo ); done
           #'[[ !  -f "foo" ]]'
 
