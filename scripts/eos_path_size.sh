@@ -14,6 +14,6 @@ if ! [ "$(python -c 'import sys; print(sys.version_info.major)')" = 3 ]; then
   echo "It seem python version is not 3.X! Exiting..."
 fi
 
-xrdcp root://eoscms.cern.ch//eos/cms/proc/accounting - |
+xrdcp -s root://eoscms.cern.ch//eos/cms/proc/accounting - |
   python $HOME/CMSMonitoring/src/python/CMSMonitoring/eos_path_size.py \
     --output_folder=/eos/user/c/cmsmonit/www/eos-path-size/size.html

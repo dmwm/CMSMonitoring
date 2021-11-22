@@ -111,3 +111,7 @@ venv.bak/
 *token
 *.token
 *.log
+
+
+# JetBrains
+.idea

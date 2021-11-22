@@ -29,32 +29,58 @@ def main(output_folder=None):
 
     df = pd.DataFrame(data['storageservice']['storageshares'])
     df = df[["path", "usedsize", "totalsize"]]
+    df = df.rename(columns={
+        "usedsize": "logical used size",
+        "totalsize": "logical quota",
+    })
+
     # Convert path list to string
     df["path"] = df["path"].apply(lambda x: ",".join(x))
     # Filter out cmst3/*
     df = df[~df["path"].str.contains("|".join(EXCLUDED_PATHS), regex=True)]
 
     # RECYCLE: divide to 2
-    df['usedsize'] = df.apply(lambda x: x["usedsize"] / 2.0 if (x.path == RECYCLE) else x["usedsize"], axis=1)
-    df['totalsize'] = df.apply(lambda x: x["totalsize"] / 2.0 if (x.path == RECYCLE) else x["totalsize"], axis=1)
+    df['logical used size'] = df.apply(
+        lambda x: x["logical used size"] / 2.0 if (x.path == RECYCLE) else x["logical used size"],
+        axis=1
+    )
+    df['logical quota'] = df.apply(
+        lambda x: x["logical quota"] / 2.0 if (x.path == RECYCLE) else x["logical quota"],
+        axis=1
+    )
+
+    # Calculate raw sizes
+    df['raw used size'] = df['logical used size'] * 2.0
+    df['raw quota'] = df['logical quota'] * 2.0
 
     # Calculate totals, after exclusions!
-    total = df[["usedsize", "totalsize"]].sum()
+    total = df[["logical used size", "logical quota", "raw used size", "raw quota"]].sum()
     total_row = {
         'path': 'Total',
-        'usedsize': total["usedsize"] / TB_DENOMINATOR,
-        'totalsize': total["totalsize"] / TB_DENOMINATOR,
-        'used/total': "{:,.1f}%".format((total["usedsize"] / total["totalsize"]) * 100)
+        'logical used size': total["logical used size"] / TB_DENOMINATOR,
+        'logical quota': total["logical quota"] / TB_DENOMINATOR,
+        'raw used size': total["raw used size"] / TB_DENOMINATOR,
+        'raw quota': total["raw quota"] / TB_DENOMINATOR,
+        'used/total': "{:,.1f}%".format((total["logical used size"] / total["logical quota"]) * 100)
     }
-    df["used/total"] = (df["usedsize"] / df["totalsize"]) * 100
+    df["used/total"] = (df["logical used size"] / df["logical quota"]) * 100
     # Clear inf and nan, also arrange percentage
     df["used/total"] = df["used/total"].apply(lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
 
-    df["totalsize"] = df["totalsize"] / TB_DENOMINATOR
-    df["usedsize"] = df["usedsize"] / TB_DENOMINATOR
+    df["logical used size"] = df["logical used size"] / TB_DENOMINATOR
+    df["logical quota"] = df["logical quota"] / TB_DENOMINATOR
+    df["raw used size"] = df["raw used size"] / TB_DENOMINATOR
+    df["raw quota"] = df["raw quota"] / TB_DENOMINATOR
+
     df = df.append(total_row, ignore_index=True)
 
-    df = df.rename(columns={"usedsize": "usedsize(TB)", "totalsize": "quota(TB)", "used/total": "used/quota"})
+    df = df.rename(columns={
+        "logical used size": "logical used size(TB)",
+        "logical quota": "logical quota(TB)",
+        "raw used size": "raw used size(TB)",
+        "raw quota": "raw quota(TB)",
+        "used/total": "used/quota",
+    })
 
     main_column = df["path"].copy()
     df["path"] = (
@@ -111,7 +137,7 @@ def main(output_folder=None):
             <img src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg"
                 alt="CMS" style="width: 5%; float:left">
             <h1 style="width: 95%; float:right">
-                CMS EOS PATH SIZES 
+                EOSCMS quotas and usage monitoring
                 <small>Last Update: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC</small>
             </h1>
         </div>
@@ -141,7 +167,6 @@ def main(output_folder=None):
         </ul>
         </div>
      """
-    # > Tiers table
     html_middle = (
         '''
         <div class="container" style="display:block; width:100%">
