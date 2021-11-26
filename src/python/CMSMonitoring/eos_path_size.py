@@ -61,11 +61,14 @@ def main(output_folder=None):
         'logical quota': total["logical quota"] / TB_DENOMINATOR,
         'raw used size': total["raw used size"] / TB_DENOMINATOR,
         'raw quota': total["raw quota"] / TB_DENOMINATOR,
-        'used/total': "{:,.1f}%".format((total["logical used size"] / total["logical quota"]) * 100)
+        'used/total': "{:,.1f}%".format((total["logical used size"] / total["logical quota"]) * 100),
+        'logical/raw': "{:,.1f}%".format((total["logical used size"] / total["raw used size"]) * 100),
     }
     df["used/total"] = (df["logical used size"] / df["logical quota"]) * 100
+    df["logical/raw"] = (df["logical used size"] / df["raw used size"]) * 100
     # Clear inf and nan, also arrange percentage
     df["used/total"] = df["used/total"].apply(lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
+    df["logical/raw"] = df["logical/raw"].apply(lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
 
     df["logical used size"] = df["logical used size"] / TB_DENOMINATOR
     df["logical quota"] = df["logical quota"] / TB_DENOMINATOR
@@ -80,6 +83,7 @@ def main(output_folder=None):
         "raw used size": "raw used size(TB)",
         "raw quota": "raw quota(TB)",
         "used/total": "used/quota",
+        "logical/raw": "logical/raw",
     })
 
     main_column = df["path"].copy()
@@ -92,7 +96,7 @@ def main(output_folder=None):
     html = df.to_html(escape=False, index=False)
     html = html.replace(
         'table border="1" class="dataframe"',
-        'table id="dataframe" class="display compact" style="width:100%;"',
+        'table id="dataframe" class="display compact" style="width:60%;"',
     )
     html = html.replace('style="text-align: right;"', "")
     # cleanup of the default dump
@@ -126,6 +130,10 @@ def main(output_folder=None):
         }}
         #dataframe tr:nth-child(even) {{
           background-color: #dddfff;
+        }}
+        #dataframe tr td:first-child {{
+          width: 1%;
+          white-space: nowrap;
         }}
         small {{
             font-size : 0.4em;
