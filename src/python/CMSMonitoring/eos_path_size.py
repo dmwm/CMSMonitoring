@@ -2,16 +2,29 @@
 # -*- coding: utf-8 -*-
 # Author: Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
 # Create html table for EOS paths' size as a result of xrdcp command
+#
+# acronjob:
+#       - $HOME/CMSMonitoring/scripts/eos_path_size.sh
+# How it works:
+#       - Gets only paths from XRDCP command
+#       - All used values are results of EOS command
+#       - This script can use direct results of `eos` command or a file that includes the result of `eos` command
+# Parameters:
+#       - --output_file: Sets the output html
+#       - input_eos_file: If provided, the file that contains EOS command results will be used.
+#                         This file is updated every 10 minutes by VOCMS team and they are managing the cron job
+#                         If not provided, make sure that you are a quota admin to run `eos` command
 
-# acronjob: $HOME/CMSMonitoring/scripts/eos_path_size.sh
 
 import json
+import os
 import sys
+from datetime import datetime
 
 import click
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from schema import Schema, Use, SchemaError
 
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", -1)
@@ -21,74 +34,116 @@ RECYCLE = "/eos/cms/proc/recycle/"
 TB_DENOMINATOR = 10 ** 12
 
 
-@click.command()
-@click.option("--output_folder", default=None, required=True, help="For example: /eos/.../www/test/test.html")
-def main(output_folder=None):
-    # Get xrdcp command output as input to python script.
-    data = json.load(sys.stdin)
+def tstamp():
+    """Return timestamp for logging"""
+    return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    df = pd.DataFrame(data['storageservice']['storageshares'])
-    df = df[["path", "usedsize", "totalsize"]]
-    df = df.rename(columns={
-        "usedsize": "logical used size",
-        "totalsize": "logical quota",
-    })
 
-    # Convert path list to string
-    df["path"] = df["path"].apply(lambda x: ",".join(x))
+def get_update_time(input_eos_file):
+    """Create update time depending on reading EOS results from file or directly from command"""
+    if input_eos_file:
+        # Set update time to eos file modification time if file input used
+        try:
+            return datetime.utcfromtimestamp(os.path.getmtime(input_eos_file)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        except OSError as e:
+            print(tstamp(), "ERROR: coul not get last modification time of file:", str(e))
+    else:
+        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+# EOS operation
+def get_validated_eos_results(eos_lines_list):
+    """Validate, convert types and filter
+
+    Example line: "quota=node uid=akhukhun space=/eos/cms/store/ usedbytes=0 ..."
+    Filter: "gid=ALL" or "gid=project" filter is applied
+    """
+
+    schema = Schema(
+        [
+            {
+                'quota': str,
+                'gid': Use(str),
+                'space': Use(str),
+                'usedbytes': Use(float),
+                'usedlogicalbytes': Use(float),
+                'usedfiles': Use(float),
+                'maxbytes': Use(float),
+                'maxlogicalbytes': Use(float),
+                'maxfiles': Use(float),
+                'percentageusedbytes': Use(float),
+                'statusbytes': str,
+                'statusfiles': str,
+                # No 'uid'
+            }
+        ]
+    )
+
+    # Get only rows that contain "gid" and it's value should be "ALL" or "project"
+    dict_array = list(
+        map(
+            lambda line: dict(tuple(s.split("=")) for s in line.strip().split(' ')),
+            [row for row in eos_lines_list if (("gid=ALL" in row) or ("gid=project" in row))]
+        )
+    )
+
+    try:
+        # Validate and convert types
+        return schema.validate(dict_array)
+    except SchemaError as e:
+        print(tstamp(), "Data is not valid:", str(e))
+        sys.exit(1)
+
+
+def get_eos(file_path=None):
+    """Get EOS output raw results from either eos command or from a file that contain those results"""
+    if file_path:
+        print(tstamp(), "EOS file path is provided, reading from file")
+        # Read eos result from file
+        with open(file_path) as file:
+            return get_validated_eos_results(file.readlines())
+    else:
+        print(tstamp(), "EOS file path is NOT provided")
+        print(tstamp(), "Running eos quota ls command")
+        # For VOC team: run eos command and get output
+        try:
+            # export EOSHOME="" is needed to avoid warning messages
+            return get_validated_eos_results(
+                str(os.system('export EOSHOME="" && eos -r 103074 1399 quota ls -m')).split("\n"))
+        except OSError as e:
+            print(tstamp(), 'ERROR: Cannot get the eos quota ls output from EOS:', str(e))
+            sys.exit(1)
+
+
+def create_eos_df(file_path):
+    """Create dataframe from EOS output lines"""
+    df = pd.DataFrame(get_eos(file_path)).rename(columns={'space': 'path'})
+    # Re-order and drop unwanted columns: 'usedfiles', 'statusbytes', 'statusfiles', 'quota', 'gid'
+    return df[['path', 'usedlogicalbytes', 'maxlogicalbytes', 'usedbytes', 'maxbytes', 'percentageusedbytes']]
+
+
+def get_paths_from_xrdcp(json_data):
+    """Get paths from XRDCP command and filter our cmst3 paths """
+    data = json.load(json_data)
+    paths = [elem["path"][0] for elem in data['storageservice']['storageshares']]
     # Filter out cmst3/*
-    df = df[~df["path"].str.contains("|".join(EXCLUDED_PATHS), regex=True)]
+    paths = [path for path in paths if all((exc not in path) for exc in EXCLUDED_PATHS)]
+    return paths
 
-    # RECYCLE: divide to 2
-    df['logical used size'] = df.apply(
-        lambda x: x["logical used size"] / 2.0 if (x.path == RECYCLE) else x["logical used size"],
-        axis=1
-    )
-    df['logical quota'] = df.apply(
-        lambda x: x["logical quota"] / 2.0 if (x.path == RECYCLE) else x["logical quota"],
-        axis=1
-    )
 
-    # Calculate raw sizes
-    df['raw used size'] = df['logical used size'] * 2.0
-    df['raw quota'] = df['logical quota'] * 2.0
+def create_html(df, update_time):
+    """Create html page with given dataframe
 
-    # Calculate totals, after exclusions!
-    total = df[["logical used size", "logical quota", "raw used size", "raw quota"]].sum()
-    total_row = {
-        'path': 'Total',
-        'logical used size': total["logical used size"] / TB_DENOMINATOR,
-        'logical quota': total["logical quota"] / TB_DENOMINATOR,
-        'raw used size': total["raw used size"] / TB_DENOMINATOR,
-        'raw quota': total["raw quota"] / TB_DENOMINATOR,
-        'used/total': "{:,.1f}%".format((total["logical used size"] / total["logical quota"]) * 100),
-        'logical/raw': "{:,.1f}%".format((total["logical used size"] / total["raw used size"]) * 100),
-    }
-    df["used/total"] = (df["logical used size"] / df["logical quota"]) * 100
-    df["logical/raw"] = (df["logical used size"] / df["raw used size"]) * 100
-    # Clear inf and nan, also arrange percentage
-    df["used/total"] = df["used/total"].apply(lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
-    df["logical/raw"] = df["logical/raw"].apply(lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
-
-    df["logical used size"] = df["logical used size"] / TB_DENOMINATOR
-    df["logical quota"] = df["logical quota"] / TB_DENOMINATOR
-    df["raw used size"] = df["raw used size"] / TB_DENOMINATOR
-    df["raw quota"] = df["raw quota"] / TB_DENOMINATOR
-
-    df = df.append(total_row, ignore_index=True)
-
-    df = df.rename(columns={
-        "logical used size": "logical used size(TB)",
-        "logical quota": "logical quota(TB)",
-        "raw used size": "raw used size(TB)",
-        "raw quota": "raw quota(TB)",
-        "used/total": "used/quota",
-        "logical/raw": "logical/raw",
-    })
-
+    Notes :
+        CSS
+            `style="width:60%`: 60% is pretty
+            `dataTables_filter input`: search bar settings
+            `td:nth-child(n+2)`: align numbers to right
+            `white-space: nowrap`: do not carriage return, not break line
+    """
     main_column = df["path"].copy()
     df["path"] = (
-        f'<a class="path">'
+        '<a class="path">'
         + main_column
         + '</a><br>'
     )
@@ -107,74 +162,75 @@ def main(output_folder=None):
     html = html.replace('style="text-align: right;"', "")
 
     html_header = f"""<!DOCTYPE html>
-    <html>
-    <head>
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-    <style>
-        .dataTables_filter input {{
-          border: 7px solid Tomato;
-          width: 400px;
-          font-size: 16px;
-          font-weight: bold;
-        }}
-        table td {{
-        word-break: break-all;
-        }}
-        table td:nth-child(n+2) {{
-            text-align: right;
-        }}
-        table td:nth-child(1) {{
-            font-weight: bold;;
-        }}
-        #dataframe tr:nth-child(even) {{
-          background-color: #dddfff;
-        }}
-        #dataframe tr td:first-child {{
-          width: 1%;
-          white-space: nowrap;
-        }}
-        small {{
-            font-size : 0.4em;
-        }}
-    </style>
-    </head>
-    <body>
-        <div class="cms">
-            <img src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg"
-                alt="CMS" style="width: 5%; float:left">
-            <h1 style="width: 95%; float:right">
-                EOSCMS quotas and usage monitoring
-                <small>Last Update: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC</small>
-            </h1>
-        </div>
-        <div class="w3-container">
-        <ul class="w3-ul w3-small" style="width:70%;margin-left:0%">
-          <li class="w3-padding-small">
-            This page shows the size of CMS EOS paths in TB. Bytes to TB denominator is <b>10^12</b>.
-          </li>
-          <li class="w3-padding-small">
-            Used command to get values: <b><code>xrdcp root://eoscms.cern.ch//eos/cms/proc/accounting -</b>
-          </li>
-          <li class="w3-padding-small">
-            Acronjob: <b><code>xrdcp root://eoscms.cern.ch//eos/cms/proc/accounting - |
-            python eos_path_size.py --output_folder=/eos/user/c/cmsmonit/www/eos-path-size/size.html</b>
-          </li>
-          <li class="w3-padding-small">
-            [NOTE-1]:<b>{"*,".join(EXCLUDED_PATHS) + "*"}</b> paths are filtered out and not used in calculations.
-          </li>
-          <li class="w3-padding-small">
-            [NOTE-2]: The sizes of "/eos/cms/proc/recycle/" are divided by <strong>2</strong> for obvious reasons.
-          </li>
-          <li class="w3-padding-small">
-            Script source code: <b>
-            <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">
-                    eos_path_size.py</a></b>
-          </li>
-        </ul>
-        </div>
-     """
+        <html>
+        <head>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+        <style>
+            .dataTables_filter input {{
+              border: 7px solid Tomato;
+              width: 400px;
+              font-size: 16px;
+              font-weight: bold;
+            }}
+            table td {{
+            word-break: break-all;
+            }}
+            table td:nth-child(n+2) {{
+                text-align: right;
+            }}
+            table td:nth-child(1) {{
+                font-weight: bold;;
+            }}
+            #dataframe tr:nth-child(even) {{
+              background-color: #dddfff;
+            }}
+            #dataframe tr td {{
+              width: 1%;
+              white-space: nowrap;
+            }}
+            small {{
+                font-size : 0.4em;
+            }}
+            .totalRowClass {{
+                background-color: #ffef96 !important;
+            }}
+        </style>
+        </head>
+        <body>
+            <div class="cms">
+                <img src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg"
+                    alt="CMS" style="width: 5%; float:left">
+                <h1 style="width: 95%; float:right">
+                    EOSCMS quotas and usage monitoring
+                    <small>Last Update: {update_time} UTC</small>
+                </h1>
+            </div>
+            <div class="w3-container">
+            <ul class="w3-ul w3-small" style="width:70%;margin-left:0%">
+              <li class="w3-padding-small">
+                This page shows the size of CMS EOS paths in TB. Bytes to TB denominator is <b>10^12</b>.
+              </li>
+              <li class="w3-padding-small">
+                All values come from: <b>eos -r 103074 1399 quota ls -m</b> and paths come from:
+                <b>xrdcp -s root://eoscms.cern.ch//eos/cms/proc/accounting -</b> 
+                 </pre>
+              </li>
+              <li class="w3-padding-small">
+                [NOTE-1]:<b>{"*,".join(EXCLUDED_PATHS) + "*"}</b> paths are filtered out and not used in calculations.
+              </li>
+              <li class="w3-padding-small">
+                [NOTE-2]: The sizes of "/eos/cms/proc/recycle/" are divided by <strong>2</strong> for obvious reasons.
+              </li>
+              <li class="w3-padding-small">
+                Script source code: <b>
+                <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">
+                        eos_path_size.py</a></b>
+              </li>
+            </ul>
+            </div>
+         """
     html_middle = (
         '''
         <div class="container" style="display:block; width:100%">
@@ -187,8 +243,13 @@ def main(output_folder=None):
         <script>
             $(document).ready(function () {
                 var dt = $('#dataframe').DataTable( {
+                    "createdRow": function( row, data, dataIndex ) {
+                        if ( data[0].includes("Total") ) {
+                            $(row).addClass('totalRowClass');
+                        }
+                    },
                     "order": [[ 1, "desc" ]],
-                    "pageLength" : 200,
+                    "pageLength" : 300,
                     "scrollX": false,
                     language: {
                         search: "_INPUT_",
@@ -202,9 +263,92 @@ def main(output_folder=None):
     )
 
     result = html_header + html_middle + html + html_footer
+    return result
 
-    with open(output_folder, "w") as f:
-        f.write(result)
+
+@click.command()
+@click.option("--output_file", default=None, required=True, help="For example: /eos/.../www/test/test.html")
+@click.option("--input_eos_file",
+              default=None,
+              required=False,
+              help="Result of 'eos -r 103074 1399 quota ls -m', i.e.: /eos/cms/store/accounting/eos_quota_ls.txt")
+def main(output_file=None, input_eos_file=None):
+    """
+        Main function combines xrdcp and EOS results then creates HTML page
+    """
+
+    # Get xrdcp command output as input to python script.
+    xrdcp_paths = get_paths_from_xrdcp(sys.stdin)
+
+    # Get EOS values as pandas dataframe either from file or directly from EOS command
+    df = create_eos_df(input_eos_file)
+
+    # Filter dataframe to only include paths from xrdcp
+    df = df[df['path'].isin(xrdcp_paths)]
+
+    # RECYCLE: divide to 2
+    df['usedlogicalbytes'] = df.apply(
+        lambda x: x["usedlogicalbytes"] / 2.0 if (x.path == RECYCLE) else x["usedlogicalbytes"],
+        axis=1
+    )
+    df['maxlogicalbytes'] = df.apply(
+        lambda x: x["maxlogicalbytes"] / 2.0 if (x.path == RECYCLE) else x["maxlogicalbytes"],
+        axis=1
+    )
+    df['usedbytes'] = df.apply(
+        lambda x: x["usedbytes"] / 2.0 if (x.path == RECYCLE) else x["usedbytes"],
+        axis=1
+    )
+    df['maxbytes'] = df.apply(
+        lambda x: x["maxbytes"] / 2.0 if (x.path == RECYCLE) else x["maxbytes"],
+        axis=1
+    )
+
+    # Calculate totals, after exclusions!
+    total = df[["usedlogicalbytes", "maxlogicalbytes", "usedbytes", "maxbytes"]].sum()
+    total_row = {
+        'path': 'Total',
+        'usedlogicalbytes': total["usedlogicalbytes"],
+        'maxlogicalbytes': total["maxlogicalbytes"],
+        'usedbytes': total["usedbytes"],
+        'maxbytes': total["maxbytes"],
+        'percentageusedbytes': (total["usedlogicalbytes"] / total["maxlogicalbytes"]) * 100,
+        'logical/raw used': (total["usedlogicalbytes"] / total["usedbytes"]) * 100,
+        'logical/raw quotas': (total["maxlogicalbytes"] / total["maxbytes"]) * 100,
+    }
+    df = df.append(total_row, ignore_index=True)
+
+    # Clear inf and nan, also arrange percentage
+    df["logical/raw used"] = (df["usedlogicalbytes"] / df["usedbytes"]) * 100
+    df["logical/raw used"] = df["logical/raw used"].apply(
+        lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
+    df["logical/raw quotas"] = (df["maxlogicalbytes"] / df["maxbytes"]) * 100
+    df["logical/raw quotas"] = df["logical/raw quotas"].apply(
+        lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
+    # Arrange percentage of used/quota
+    df["percentageusedbytes"] = df["percentageusedbytes"].apply(lambda x: "{:,.2f}%".format(x))
+
+    # Convert to TB
+    df["usedlogicalbytes"] = df["usedlogicalbytes"] / TB_DENOMINATOR
+    df["maxlogicalbytes"] = df["maxlogicalbytes"] / TB_DENOMINATOR
+    df["usedbytes"] = df["usedbytes"] / TB_DENOMINATOR
+    df["maxbytes"] = df["maxbytes"] / TB_DENOMINATOR
+
+    # Rename columns
+    df = df.rename(columns={
+        "usedlogicalbytes": "logical used(TB)",
+        "maxlogicalbytes": "logical quota(TB)",
+        "usedbytes": "raw used(TB)",
+        "maxbytes": "raw quota(TB)",
+        "percentageusedbytes": "used/quota",
+        "logical/raw used": "logical/raw (used)",
+        "logical/raw quotas": "logical/raw (quotas)",
+    })
+    update_time = get_update_time(input_eos_file)
+    html = create_html(df, update_time)
+
+    with open(output_file, "w") as f:
+        f.write(html)
 
 
 if __name__ == "__main__":
