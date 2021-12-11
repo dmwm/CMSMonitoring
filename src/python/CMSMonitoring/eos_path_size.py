@@ -11,7 +11,7 @@
 #       - This script can use direct results of `eos` command or a file that includes the result of `eos` command
 # Parameters:
 #       - --output_file: Sets the output html
-#       - input_eos_file: If provided, the file that contains EOS command results will be used.
+#       - --input_eos_file: If provided, the file that contains EOS command results will be used.
 #                         This file is updated every 10 minutes by VOCMS team and they are managing the cron job
 #                         If not provided, make sure that you are a quota admin to run `eos` command
 
@@ -131,7 +131,7 @@ def get_paths_from_xrdcp(json_data):
     return paths
 
 
-def create_html(df, update_time):
+def create_html(df, update_time, total_row):
     """Create html page with given dataframe
 
     Notes :
@@ -141,14 +141,32 @@ def create_html(df, update_time):
             `td:nth-child(n+2)`: align numbers to right
             `white-space: nowrap`: do not carriage return, not break line
     """
-    main_column = df["path"].copy()
-    df["path"] = (
-        '<a class="path">'
+
+    total_on_header = """<tr >
+      <th>{Path}</th>
+      <th>{logical used(TB)}</th>
+      <th>{logical quota(TB)}</th>
+      <th>{raw used(TB)}</th>
+      <th>{raw quota(TB)}</th>
+      <th>{used/quota}</th>
+      <th>{logical/raw (used)}</th>
+      <th>{logical/raw (quotas)}</th>
+    </tr>
+ </thead>
+    """.format(**total_row)
+
+    main_column = df["Path"].copy()
+    df["Path"] = (
+        '<a class="Path">'
         + main_column
         + '</a><br>'
     )
 
     html = df.to_html(escape=False, index=False)
+
+    # Add total ro to header. Be careful there should be only one  <thead>...</thead>!
+    html = html.replace(" </thead>", total_on_header)
+
     html = html.replace(
         'table border="1" class="dataframe"',
         'table id="dataframe" class="display compact" style="width:60%;"',
@@ -192,9 +210,6 @@ def create_html(df, update_time):
             }}
             small {{
                 font-size : 0.4em;
-            }}
-            .totalRowClass {{
-                background-color: #ffef96 !important;
             }}
         </style>
         </head>
@@ -243,11 +258,8 @@ def create_html(df, update_time):
         <script>
             $(document).ready(function () {
                 var dt = $('#dataframe').DataTable( {
-                    "createdRow": function( row, data, dataIndex ) {
-                        if ( data[0].includes("Total") ) {
-                            $(row).addClass('totalRowClass');
-                        }
-                    },
+                    "orderCellsTop": true,
+                    "dom": "lifrtip",
                     "order": [[ 1, "desc" ]],
                     "pageLength" : 300,
                     "scrollX": false,
@@ -259,6 +271,7 @@ def create_html(df, update_time):
             });
         </script>
     </body>
+    <!-- final -->
     </html>'''
     )
 
@@ -286,37 +299,26 @@ def main(output_file=None, input_eos_file=None):
     # Filter dataframe to only include paths from xrdcp
     df = df[df['path'].isin(xrdcp_paths)]
 
-    # RECYCLE: divide to 2
-    df['usedlogicalbytes'] = df.apply(
-        lambda x: x["usedlogicalbytes"] / 2.0 if (x.path == RECYCLE) else x["usedlogicalbytes"],
-        axis=1
-    )
-    df['maxlogicalbytes'] = df.apply(
-        lambda x: x["maxlogicalbytes"] / 2.0 if (x.path == RECYCLE) else x["maxlogicalbytes"],
-        axis=1
-    )
-    df['usedbytes'] = df.apply(
-        lambda x: x["usedbytes"] / 2.0 if (x.path == RECYCLE) else x["usedbytes"],
-        axis=1
-    )
-    df['maxbytes'] = df.apply(
-        lambda x: x["maxbytes"] / 2.0 if (x.path == RECYCLE) else x["maxbytes"],
-        axis=1
-    )
+    #  RECYCLE: divide these columns to 2
+    cols_to_divide = ["usedlogicalbytes", "maxlogicalbytes", "usedbytes", "maxbytes"]
+
+    # Resetting index sets index number to 0, so get nested value and divide to 2
+    recycle_dict = {k: v[0] / 2 for k, v in
+                    df.loc[df['path'] == RECYCLE, cols_to_divide].reset_index(drop=True).to_dict().items()}
+    df.loc[df['path'] == RECYCLE, cols_to_divide] = [recycle_dict[x] for x in cols_to_divide]  # Guarantees the order
 
     # Calculate totals, after exclusions!
     total = df[["usedlogicalbytes", "maxlogicalbytes", "usedbytes", "maxbytes"]].sum()
     total_row = {
-        'path': 'Total',
-        'usedlogicalbytes': total["usedlogicalbytes"],
-        'maxlogicalbytes': total["maxlogicalbytes"],
-        'usedbytes': total["usedbytes"],
-        'maxbytes': total["maxbytes"],
-        'percentageusedbytes': (total["usedlogicalbytes"] / total["maxlogicalbytes"]) * 100,
-        'logical/raw used': (total["usedlogicalbytes"] / total["usedbytes"]) * 100,
-        'logical/raw quotas': (total["maxlogicalbytes"] / total["maxbytes"]) * 100,
+        'Path': 'total',
+        'logical used(TB)': "{:,.2f}".format(total["usedlogicalbytes"] / TB_DENOMINATOR),
+        'logical quota(TB)': "{:,.2f}".format(total["maxlogicalbytes"] / TB_DENOMINATOR),
+        'raw used(TB)': "{:,.2f}".format(total["usedbytes"] / TB_DENOMINATOR),
+        'raw quota(TB)': "{:,.2f}".format(total["maxbytes"] / TB_DENOMINATOR),
+        'used/quota': "{:,.2f}%".format((total["usedlogicalbytes"] / total["maxlogicalbytes"]) * 100),
+        'logical/raw (used)': "{:,.1f}%".format((total["usedlogicalbytes"] / total["usedbytes"]) * 100),
+        'logical/raw (quotas)': "{:,.1f}%".format((total["maxlogicalbytes"] / total["maxbytes"]) * 100),
     }
-    df = df.append(total_row, ignore_index=True)
 
     # Clear inf and nan, also arrange percentage
     df["logical/raw used"] = (df["usedlogicalbytes"] / df["usedbytes"]) * 100
@@ -336,6 +338,7 @@ def main(output_file=None, input_eos_file=None):
 
     # Rename columns
     df = df.rename(columns={
+        "path": "Path",
         "usedlogicalbytes": "logical used(TB)",
         "maxlogicalbytes": "logical quota(TB)",
         "usedbytes": "raw used(TB)",
@@ -344,8 +347,12 @@ def main(output_file=None, input_eos_file=None):
         "logical/raw used": "logical/raw (used)",
         "logical/raw quotas": "logical/raw (quotas)",
     })
+    # Reorder
+    df = df[["Path", "logical used(TB)", "logical quota(TB)", "raw used(TB)", "raw quota(TB)", "used/quota",
+             "logical/raw (used)", "logical/raw (quotas)",
+             ]]
     update_time = get_update_time(input_eos_file)
-    html = create_html(df, update_time)
+    html = create_html(df, update_time, total_row)
 
     with open(output_file, "w") as f:
         f.write(html)
