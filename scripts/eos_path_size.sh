@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ##H Script to create CMS Eos path sizes with conditons
 ##H CMSVOC and CMSMONITORING groups are responsible for this script.
 
@@ -21,11 +21,22 @@ if ! [ "$(python -c 'import sys; print(sys.version_info.major)')" = 3 ]; then
     exit 1
 fi
 
+script_dir="$(
+    cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit
+    pwd -P
+)"
+
+py_input_args=(
+    --output_file "/eos/user/c/cmsmonit/www/eos-path-size/size.html"
+    --input_eos_file "/eos/cms/store/accounting/eos_quota_ls.txt"
+    --static_html_dir "${script_dir}/../src/html/eos_path_size"
+)
+
 # Catch	output to not print successful jobs stdout to email, print when failed
-if ! output=$(xrdcp -s root://eoscms.cern.ch//eos/cms/proc/accounting - |
-    python "$HOME"/CMSMonitoring/src/python/CMSMonitoring/eos_path_size.py \
-        --output_file=/eos/user/c/cmsmonit/www/eos-path-size/size.html \
-        --input_eos_file=/eos/cms/store/accounting/eos_quota_ls.txt 2>&1); then
+if ! output=$(
+    xrdcp -s root://eoscms.cern.ch//eos/cms/proc/accounting - |
+        python "$HOME"/CMSMonitoring/src/python/CMSMonitoring/eos_path_size.py "${py_input_args[@]}" 2>&1
+); then
     echo "$output"
     exit $?
 fi

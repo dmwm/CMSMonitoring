@@ -34,21 +34,13 @@ RECYCLE = "/eos/cms/proc/recycle/"
 TB_DENOMINATOR = 10 ** 12
 
 
-def tstamp():
-    """Return timestamp for logging"""
-    return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-
-
-def get_update_time(input_eos_file):
-    """Create update time depending on reading EOS results from file or directly from command"""
-    if input_eos_file:
-        # Set update time to eos file modification time if file input used
-        try:
-            return datetime.utcfromtimestamp(os.path.getmtime(input_eos_file)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        except OSError as e:
-            print(tstamp(), "ERROR: coul not get last modification time of file:", str(e))
-    else:
-        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+def get_paths_from_xrdcp(json_data):
+    """Get paths from XRDCP command and filter our cmst3 paths """
+    data = json.load(json_data)
+    paths = [elem["path"][0] for elem in data['storageservice']['storageshares']]
+    # Filter out cmst3/*
+    paths = [path for path in paths if all((exc not in path) for exc in EXCLUDED_PATHS)]
+    return paths
 
 
 # EOS operation
@@ -58,7 +50,6 @@ def get_validated_eos_results(eos_lines_list):
     Example line: "quota=node uid=akhukhun space=/eos/cms/store/ usedbytes=0 ..."
     Filter: "gid=ALL" or "gid=project" filter is applied
     """
-
     schema = Schema(
         [
             {
@@ -78,7 +69,6 @@ def get_validated_eos_results(eos_lines_list):
             }
         ]
     )
-
     # Get only rows that contain "gid" and it's value should be "ALL" or "project"
     dict_array = list(
         map(
@@ -86,7 +76,6 @@ def get_validated_eos_results(eos_lines_list):
             [row for row in eos_lines_list if (("gid=ALL" in row) or ("gid=project" in row))]
         )
     )
-
     try:
         # Validate and convert types
         return schema.validate(dict_array)
@@ -122,174 +111,85 @@ def create_eos_df(file_path):
     return df[['path', 'usedlogicalbytes', 'maxlogicalbytes', 'usedbytes', 'maxbytes', 'percentageusedbytes']]
 
 
-def get_paths_from_xrdcp(json_data):
-    """Get paths from XRDCP command and filter our cmst3 paths """
-    data = json.load(json_data)
-    paths = [elem["path"][0] for elem in data['storageservice']['storageshares']]
-    # Filter out cmst3/*
-    paths = [path for path in paths if all((exc not in path) for exc in EXCLUDED_PATHS)]
-    return paths
+def tstamp():
+    """Return timestamp for logging"""
+    return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
-def create_html(df, update_time, total_row):
-    """Create html page with given dataframe
+def get_update_time(input_eos_file):
+    """Create update time depending on reading EOS results from file or directly from command"""
+    if input_eos_file:
+        # Set update time to eos file modification time if file input used
+        try:
+            return datetime.utcfromtimestamp(os.path.getmtime(input_eos_file)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        except OSError as e:
+            print(tstamp(), "ERROR: coul not get last modification time of file:", str(e))
+    else:
+        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    Notes :
-        CSS
-            `style="width:60%`: 60% is pretty
-            `dataTables_filter input`: search bar settings
-            `td:nth-child(n+2)`: align numbers to right
-            `white-space: nowrap`: do not carriage return, not break line
+
+def get_html_template(base_html_directory=None):
+    """ Reads partial html file and return it as strings
     """
+    if base_html_directory is None:
+        base_html_directory = os.getcwd()
+    with open(os.path.join(base_html_directory, "main.html")) as f:
+        main_html = f.read()
+    return main_html
 
-    total_on_header = """<tr >
-      <th>{Path}</th>
-      <th>{logical used(TB)}</th>
-      <th>{logical quota(TB)}</th>
-      <th>{raw used(TB)}</th>
-      <th>{raw quota(TB)}</th>
-      <th>{used/quota}</th>
-      <th>{logical/raw (used)}</th>
-      <th>{logical/raw (quotas)}</th>
-    </tr>
- </thead>
+
+def create_html(df, update_time, total_row, base_html_directory):
+    """Create html page with given dataframe
+    """
+    # Get main html
+    main_html = get_html_template(base_html_directory=base_html_directory)
+    main_html = main_html.replace("__UPDATE_TIME__", update_time)
+    main_html = main_html.replace("__EXCLUDED_PATHS__", "*,".join(EXCLUDED_PATHS) + "*")
+    # Total row placeholder
+    total_on_header = """
+                <tr >
+                    <th>{Path}</th>
+                    <th>{logical used(TB)}</th>
+                    <th>{logical quota(TB)}</th>
+                    <th>{raw used(TB)}</th>
+                    <th>{raw quota(TB)}</th>
+                    <th>{used/quota}</th>
+                    <th>{logical/raw (quotas)}</th>
+                </tr>
+            </thead>
     """.format(**total_row)
-
     main_column = df["Path"].copy()
     df["Path"] = (
         '<a class="Path">'
         + main_column
         + '</a><br>'
     )
-
+    # Pandas df to html
     html = df.to_html(escape=False, index=False)
-
     # Add total ro to header. Be careful there should be only one  <thead>...</thead>!
     html = html.replace(" </thead>", total_on_header)
-
+    # cleanup of the default dump
     html = html.replace(
         'table border="1" class="dataframe"',
         'table id="dataframe" class="display compact" style="width:60%;"',
     )
     html = html.replace('style="text-align: right;"', "")
-    # cleanup of the default dump
-    html = html.replace(
-        'table border="1" class="dataframe"',
-        'table id="dataframe" class="display compact" style="width:100%;"',
-    )
-    html = html.replace('style="text-align: right;"', "")
 
-    html_header = f"""<!DOCTYPE html>
-        <html>
-        <head>
-        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-        <style>
-            .dataTables_filter input {{
-              border: 7px solid Tomato;
-              width: 400px;
-              font-size: 16px;
-              font-weight: bold;
-            }}
-            table td {{
-            word-break: break-all;
-            }}
-            table td:nth-child(n+2) {{
-                text-align: right;
-            }}
-            table td:nth-child(1) {{
-                font-weight: bold;;
-            }}
-            #dataframe tr:nth-child(even) {{
-              background-color: #dddfff;
-            }}
-            #dataframe tr td {{
-              width: 1%;
-              white-space: nowrap;
-            }}
-            small {{
-                font-size : 0.4em;
-            }}
-        </style>
-        </head>
-        <body>
-            <div class="cms">
-                <img src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg"
-                    alt="CMS" style="width: 5%; float:left">
-                <h1 style="width: 95%; float:right">
-                    EOSCMS quotas and usage monitoring
-                    <small>Last Update: {update_time} UTC</small>
-                </h1>
-            </div>
-            <div class="w3-container">
-            <ul class="w3-ul w3-small" style="width:70%;margin-left:0%">
-              <li class="w3-padding-small">
-                This page shows the size of CMS EOS paths in TB. Bytes to TB denominator is <b>10^12</b>.
-              </li>
-              <li class="w3-padding-small">
-                All values come from: <b>eos -r 103074 1399 quota ls -m</b> and paths come from:
-                <b>xrdcp -s root://eoscms.cern.ch//eos/cms/proc/accounting -</b> 
-                 </pre>
-              </li>
-              <li class="w3-padding-small">
-                [NOTE-1]:<b>{"*,".join(EXCLUDED_PATHS) + "*"}</b> paths are filtered out and not used in calculations.
-              </li>
-              <li class="w3-padding-small">
-                [NOTE-2]: The sizes of "/eos/cms/proc/recycle/" are divided by <strong>2</strong> for obvious reasons.
-              </li>
-              <li class="w3-padding-small">
-                Script source code: <b>
-                <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">
-                        eos_path_size.py</a></b>
-              </li>
-            </ul>
-            </div>
-         """
-    html_middle = (
-        '''
-        <div class="container" style="display:block; width:100%">
-    ''')
-    html_footer = (
-        '''
-        </div>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-        <script>
-            $(document).ready(function () {
-                var dt = $('#dataframe').DataTable( {
-                    "orderCellsTop": true,
-                    "dom": "lifrtip",
-                    "order": [[ 1, "desc" ]],
-                    "pageLength" : 300,
-                    "scrollX": false,
-                    language: {
-                        search: "_INPUT_",
-                        searchPlaceholder: "--- Search EOS Path ---",
-                    },
-                });
-            });
-        </script>
-    </body>
-    <!-- final -->
-    </html>'''
-    )
-
-    result = html_header + html_middle + html + html_footer
-    return result
+    # Add pandas dataframe html to main body
+    main_html = main_html.replace("____MAIN_BLOCK____", html)
+    return main_html
 
 
 @click.command()
 @click.option("--output_file", default=None, required=True, help="For example: /eos/.../www/test/test.html")
-@click.option("--input_eos_file",
-              default=None,
-              required=False,
+@click.option("--input_eos_file", default=None, required=False,
               help="Result of 'eos -r 103074 1399 quota ls -m', i.e.: /eos/cms/store/accounting/eos_quota_ls.txt")
-def main(output_file=None, input_eos_file=None):
+@click.option("--static_html_dir", default=None, required=True,
+              help="Html directory for main html template. For example: ~/CMSMonitoring/src/html/eos_path_size")
+def main(output_file=None, input_eos_file=None, static_html_dir=None):
     """
         Main function combines xrdcp and EOS results then creates HTML page
     """
-
     # Get xrdcp command output as input to python script.
     xrdcp_paths = get_paths_from_xrdcp(sys.stdin)
 
@@ -316,14 +216,10 @@ def main(output_file=None, input_eos_file=None):
         'raw used(TB)': "{:,.2f}".format(total["usedbytes"] / TB_DENOMINATOR),
         'raw quota(TB)': "{:,.2f}".format(total["maxbytes"] / TB_DENOMINATOR),
         'used/quota': "{:,.2f}%".format((total["usedlogicalbytes"] / total["maxlogicalbytes"]) * 100),
-        'logical/raw (used)': "{:,.1f}%".format((total["usedlogicalbytes"] / total["usedbytes"]) * 100),
         'logical/raw (quotas)': "{:,.1f}%".format((total["maxlogicalbytes"] / total["maxbytes"]) * 100),
     }
 
     # Clear inf and nan, also arrange percentage
-    df["logical/raw used"] = (df["usedlogicalbytes"] / df["usedbytes"]) * 100
-    df["logical/raw used"] = df["logical/raw used"].apply(
-        lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
     df["logical/raw quotas"] = (df["maxlogicalbytes"] / df["maxbytes"]) * 100
     df["logical/raw quotas"] = df["logical/raw quotas"].apply(
         lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
@@ -344,15 +240,16 @@ def main(output_file=None, input_eos_file=None):
         "usedbytes": "raw used(TB)",
         "maxbytes": "raw quota(TB)",
         "percentageusedbytes": "used/quota",
-        "logical/raw used": "logical/raw (used)",
         "logical/raw quotas": "logical/raw (quotas)",
     })
     # Reorder
     df = df[["Path", "logical used(TB)", "logical quota(TB)", "raw used(TB)", "raw quota(TB)", "used/quota",
-             "logical/raw (used)", "logical/raw (quotas)",
-             ]]
+             "logical/raw (quotas)"]]
     update_time = get_update_time(input_eos_file)
-    html = create_html(df, update_time, total_row)
+    html = create_html(df=df,
+                       update_time=update_time,
+                       total_row=total_row,
+                       base_html_directory=static_html_dir)
 
     with open(output_file, "w") as f:
         f.write(html)
