@@ -171,7 +171,7 @@ def create_html(df, update_time, total_row, base_html_directory):
     # cleanup of the default dump
     html = html.replace(
         'table border="1" class="dataframe"',
-        'table id="dataframe" class="display compact" style="width:60%;"',
+        'table id="dataframe" class="display compact" style="width:100%;"',
     )
     html = html.replace('style="text-align: right;"', "")
 
