@@ -1,0 +1,118 @@
+# Ref: https://github.com/dmwm/dbs2go/blob/master/.github/workflows/build.yml
+name: Build
+
+on:
+  push:
+    tags:
+      - 'go-*.*.*'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          mkdir cmsmon-tools
+          cd src/go/MONIT
+          go build -o monit monit.go
+          go build -o alert alert.go
+          go build -o annotationManager annotationManager.go
+          go build -o datasources datasources.go
+          go build -o ggus_alerting ggus_alerting.go
+          go build -o ggus_parser ggus_parser.go
+          go build -o intelligence intelligence.go
+          go build -o ssb_alerting ssb_alerting.go
+          go build -o es_exporter es_exporter.go
+          mv monit alert annotationManager datasources ggus_alerting \
+            ggus_parser intelligence ssb_alerting es_exporter ../../../cmsmon-tools
+          cd ../NATS
+          go build -o dbs_vm dbs_vm.go
+          go build -o nats-pub nats-pub.go
+          go build -o nats-sub nats-sub.go
+          mv dbs_vm nats-pub nats-sub ../../../cmsmon-tools
+          cd ../../../
+          tar cfz cmsmon-tools.tar.gz cmsmon-tools
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload binaries
+        id: upload-cmsmon-tools
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./cmsmon-tools.tar.gz
+          asset_name: cmsmon-tools.tar.gz
+          asset_content_type: application/octet-stream
+
+      # --- Build and push docker images ---
+      - name: Get git tag
+        id: get_tag
+        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
+
+      - name: Build cmsmon-int image
+        run: |
+          echo Image tag: ${{ steps.get_tag.outputs.tag }}
+          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-intelligence/Dockerfile
+          sed -i -e "s,ENV CMSMON_TAG=.*,ENV CMSMON_TAG=${{steps.get_tag.outputs.tag}},g" Dockerfile
+          docker build . --tag docker.pkg.github.com/dmwm/cmsmon-int/cmsmon-int
+          docker tag docker.pkg.github.com/dmwm/cmsmon-int/cmsmon-int registry.cern.ch/cmsmonitoring/cmsmon-int
+
+      - name: Login to registry.cern.ch
+        uses: docker/login-action@v1.6.0
+        with:
+          registry: registry.cern.ch
+          username: ${{ secrets.CERN_LOGIN }}
+          password: ${{ secrets.CERN_TOKEN }}
+
+      - name: Publish cmsmon-int image to registry.cern.ch
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.CERN_LOGIN }}
+          password: ${{ secrets.CERN_TOKEN }}
+          registry: registry.cern.ch
+          repository: cmsmonitoring/cmsmon-int
+          tag_with_ref: true
+
+      - name: Build cmsmon-alerts image
+        run: |
+          echo Image tag: ${{ steps.get_tag.outputs.tag }}
+          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-alerts/Dockerfile
+          sed -i -e "s,ENV CMSMON_TAG=.*,ENV CMSMON_TAG=${{steps.get_tag.outputs.tag}},g" Dockerfile
+          docker build . --tag docker.pkg.github.com/dmwm/cmsmon-alerts/cmsmon-alerts
+          docker tag docker.pkg.github.com/dmwm/cmsmon-alerts/cmsmon-alerts registry.cern.ch/cmsmonitoring/cmsmon-alerts
+
+      - name: Login to registry.cern.ch
+        uses: docker/login-action@v1.6.0
+        with:
+          registry: registry.cern.ch
+          username: ${{ secrets.CERN_LOGIN }}
+          password: ${{ secrets.CERN_TOKEN }}
+
+      - name: Publish cmsmon-alerts image to registry.cern.ch
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.CERN_LOGIN }}
+          password: ${{ secrets.CERN_TOKEN }}
+          registry: registry.cern.ch
+          repository: cmsmonitoring/cmsmon-alerts
+          tag_with_ref: true
