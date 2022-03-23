@@ -28,6 +28,10 @@
         table td:nth-child(1) {
             font-weight: bold;
         }
+        /* Header rows, total and titles, align right */
+        table th:nth-child(n+2) {
+            text-align: right;
+        }
         /* Different background color for even and odd columns  */
         #dataframe tr:nth-child(even) {
           /* background-color: #dddfff; */
@@ -60,7 +64,7 @@
     </div>
     <div id="explanations" style="display: none; margin-top: 2%;">
         <pre>
-    Source code: <a href="https://github.com/dmwm/CMSSpark/blob/master/src/python/CMSSpark/rucio_datasets_last_access_ts.py">CMSSpark/rucio_datasets_last_access_ts.py</a>
+    Source code: <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">CMSMonitoring/eos_path_size.py</a>
     This page shows the size of CMS EOS paths in TB. Bytes to TB denominator is 10^12.
     All values come from: eos -r 103074 1399 quota ls -m and paths come from: xrdcp -s root://eoscms.cern.ch//eos/cms/proc/accounting -
     [NOTE-1]:__EXCLUDED_PATHS__ paths are filtered out and not used in calculations.
