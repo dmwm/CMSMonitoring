@@ -526,6 +526,7 @@ class StompAMQ7(object):
         notification = {}
         notification.update(headers)
         notification['body'] = body
-        notification['body']['metadata'] = metadata
+        if metadata:
+            notification['body']['metadata'] = metadata
 
         return notification, offending_keys, unknown_keys
