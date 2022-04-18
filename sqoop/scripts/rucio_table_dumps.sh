@@ -6,7 +6,7 @@ set -e
 BASE_PATH=/project/awg/cms/rucio/
 JDBC_URL=jdbc:oracle:thin:@cms-nrac-scan.cern.ch:10121/CMSR_CMS_NRAC.cern.ch
 SCHEMA="CMS_RUCIO_PROD"
-RUCIO_TABLES="dids contents rules dataset_locks"
+RUCIO_TABLES="dids contents rules dataset_locks locks rses"
 
 LOG_FILE=log/$(date +'%F_%H%m%S')_$(basename "$0")
 TZ=UTC
@@ -50,8 +50,7 @@ sqoop_full_dump_rucio_cmd() {
         --direct \
         --throw-on-error \
         --connect $JDBC_URL \
-        --num-mappers 100 \
-        --fetch-size 10000 \
+        --num-mappers 40 \
         --as-avrodatafile \
         --target-dir $BASE_PATH"$(date +%Y-%m-%d)"/"$TABLE" \
         --table "$SCHEMA"."$TABLE" \
