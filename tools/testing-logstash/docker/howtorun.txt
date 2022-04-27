@@ -1,0 +1,22 @@
+# Run logstash (new terminal)
+   ## Prerequesites
+     Copy some logs to /data/logs/ directory with ".txt" extensions.
+     You may get from one of the frontend logs in cmsweb cluster with `head -10 /data/srv/logs/frontend/access_log_frontend-x76r7_20220427.txt`
+
+   ## Test logstash.conf
+   logstash -t -f /usr/share/logstash/pipeline/logstash.conf
+
+   ## Run logstash
+   logstash -f /usr/share/logstash/pipeline/logstash.conf
+
+# Run server.py to get final JSON request bodies which will be sent to MONIT
+   python server.py 10012
+
+# Run filebeat
+   /data/filebeat-8.1.3/filebeat -c filebeat.yaml
+
+   First try output.console, then try output.logstash
+   !Attention! after each run of filebeat, clean its registry:
+      rm -rf /data/filebeat-8.1.3/data/
+
+

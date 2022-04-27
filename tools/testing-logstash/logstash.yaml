@@ -17,7 +17,7 @@ spec:
       hostname: logstash
       containers:
       - name: logstash
-        image: mrceyhun/testing-logstash:latest
+        image: mrceyhun/testing-logstash:8.1.3
         imagePullPolicy: Always
         tty: true
         stdin: true
