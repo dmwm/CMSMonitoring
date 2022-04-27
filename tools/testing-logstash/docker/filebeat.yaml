@@ -1,0 +1,20 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/*.txt
+  file_identity.path:
+  scan_frequency: 10s
+  backoff: 5s
+  max_backoff: 10s
+  tags: ["frontend"]
+#output.logstash:
+#  hosts: ["localhost:5044"]
+#  compression_level: 3
+#  worker: 4
+#  bulk_max_size: 4096
+#  pipelining: 2
+output.console:
+  pretty: true
+queue.mem:
+  events: 65536
