@@ -6,7 +6,8 @@ set -e
 BASE_PATH=/project/awg/cms/rucio/
 JDBC_URL=jdbc:oracle:thin:@cms-nrac-scan.cern.ch:10121/CMSR_CMS_NRAC.cern.ch
 SCHEMA="CMS_RUCIO_PROD"
-RUCIO_TABLES="dids contents rules dataset_locks locks rses"
+# Suggested order
+RUCIO_TABLES="replicas dids contents dataset_locks locks rules rules_history rses"
 
 LOG_FILE=log/$(date +'%F_%H%m%S')_$(basename "$0")
 TZ=UTC

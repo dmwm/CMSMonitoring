@@ -16,9 +16,8 @@
 22 03 * * * cd /data/sqoop; ./run.sh ./scripts/phedex-blk-replicas-snapshot.sh
 43 03 * * * cd /data/sqoop; ./run.sh ./scripts/phedex-file-catalog.sh
 
-# Rucio dumps
-30 06 * * * cd /data/sqoop; ./run.sh ./scripts/rucio_replicas.sh
-00 05 * * * cd /data/sqoop; ./run.sh ./scripts/rucio_table_dumps.sh
+# Rucio table dumps
+30 06 * * * cd /data/sqoop; ./run.sh ./scripts/rucio_table_dumps.sh
 
 # DBS dumps
 27 03 * * *   cd /data/sqoop; ./run.sh ./scripts/cms-dbs3-datasets.sh
