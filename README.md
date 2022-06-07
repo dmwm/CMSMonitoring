@@ -16,5 +16,5 @@ infrastructure.
     - Builds `cmsmonitoring/cmsmonit-alert` docker image and push to registry.cern.ch
 - On tag `sqoop-*.*.*` 
     - Builds `cmsmonitoring/sqoop` docker image and push to registry.cern.ch
-- Syntaxcheck on specical condition
+- Syntax check on special conditions
     - Check validations of json and yaml files only that kind of files are changed
