@@ -2,5 +2,6 @@
 """
 CMSMonitoring: set of utils for CMS monitoring
 """
-__version__ = '0.6.1'
+# Check GH actions
+__version__ = "develop"
 __all__ = [__version__]

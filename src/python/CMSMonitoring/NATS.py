@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-#pylint: disable=
+# -*- coding: utf-8 -*-
+
 """
 File       : NATS.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
@@ -34,18 +34,34 @@ import os
 import sys
 import random
 import subprocess
+import traceback
+import asyncio
+from nats.aio.client import Client as NATS
 
-try:
-    # python3 NATS implemenation via asyncio module
-    import asyncio
-    from CMSMonitoring.nats3 import nats
-    NATS2 = False
-except ImportError:
-    # python2 NATS implemenation via tornado module
-    import tornado.ioloop
-    import tornado.gen
-    from CMSMonitoring.nats2 import nats
-    NATS2 = True
+NATS2 = False
+
+
+# python3 implementation of NATS python client
+async def nats(server, subject, msg, loop):
+    """
+    NATS client implemented via asyncio
+    python3 implementation, see
+    https://github.com/nats-io/nats.py
+    """
+    nc = NATS()
+    try:
+        await nc.connect(server, loop=loop, max_reconnect_attempts=3)
+    except Exception as exp:
+        print("failed to connect to server: error {}".format(str(exp)))
+        traceback.print_exc()
+        return
+    if isinstance(msg, list):
+        for item in msg:
+            await nc.publish(subject, item)
+    else:
+        await nc.publish(subject, msg)
+    await nc.close()
+
 
 def nats_encoder(doc, sep='   '):
     "CMS NATS message encoder"
@@ -53,13 +69,15 @@ def nats_encoder(doc, sep='   '):
     msg = sep.join(['{}:{}'.format(k, doc[k]) for k in keys])
     return msg
 
+
 def nats_decoder(msg, sep='   '):
     "CMS NATS message decoder"
     rec = {}
     for pair in msg.split(sep):
         arr = pair.split(':')
-        rec.update({arr[0]:arr[1]})
+        rec.update({arr[0]: arr[1]})
     return rec
+
 
 def def_filter(doc, attrs=None):
     "Default filter function for given doc and attributes"
@@ -71,6 +89,7 @@ def def_filter(doc, attrs=None):
         if attr in doc:
             rec[attr] = doc[attr]
     yield rec
+
 
 def gen_topic(def_topic, key, val, sep=None):
     "Create proper subject topic for NATS"
@@ -84,7 +103,6 @@ def gen_topic(def_topic, key, val, sep=None):
     return topic
 
 
-
 class NATSManager(object):
     """
     NATSManager provide python interface to NATS server. It accepts:
@@ -95,7 +113,9 @@ class NATSManager(object):
     :param stdout: instead of piblishing print all messages on stdout, boolean
     :param cms_filter: name of cms filter function, by default `def_filter` will be used
     """
-    def __init__(self, server=None, topics=None, attrs=None, sep='   ', default_topic='cms', stdout=False, cms_filter=None):
+
+    def __init__(self, server=None, topics=None, attrs=None, sep='   ', default_topic='cms', stdout=False,
+                 cms_filter=None):
         self.topics = topics
         self.server = []
         self.sep = sep
@@ -107,7 +127,12 @@ class NATSManager(object):
         self.cms_filter = cms_filter if cms_filter else def_filter
 
     def __repr__(self):
-        return 'NATSManager@{}, topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)), self.topics, self.def_topic, self.attrs, self.cms_filter, self.stdout)
+        return 'NATSManager@{}, topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)),
+                                                                                                self.topics,
+                                                                                                self.def_topic,
+                                                                                                self.attrs,
+                                                                                                self.cms_filter,
+                                                                                                self.stdout)
 
     def publish(self, data):
         """
@@ -185,7 +210,7 @@ class NATSManager(object):
     def get_server(self):
         "Return random server from server pool"
         if len(self.server) > 1:
-            return self.server[random.randint(0, len(self.server)-1)]
+            return self.server[random.randint(0, len(self.server) - 1)]
         return self.server[0]
 
     def send(self, subject, msg):
@@ -195,14 +220,11 @@ class NATSManager(object):
         else:
             try:
                 server = self.get_server()
-                if NATS2:
-                    tornado.ioloop.IOLoop.current().run_sync(lambda: nats(server, subject, msg))
-                else:
-                    # VK: we need to test initializing asyncio loop in ctor
-                    # and potentially avoid loop creation here
-                    loop = asyncio.get_event_loop()
-                    loop.run_until_complete(nats(server, subject, msg, self.loop))
-                    loop.close()
+                # VK: we need to test initializing asyncio loop in ctor
+                # and potentially avoid loop creation here
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(nats(server, subject, msg, self.loop))
+                loop.close()
             except Exception as exp:
                 print("Failed to send docs to NATS, error: {}".format(str(exp)))
 
@@ -226,14 +248,22 @@ def nats_cmd(cmd, server, subject, msg):
         proc.wait()
         return proc.returncode
 
+
 class NATSManagerCmd(NATSManager):
     "NATS manager based on external publisher tool"
-    def __init__(self, cmd, server=None, topics=None, attrs=None, sep='   ', default_topic='cms', stdout=False, cms_filter=None):
+
+    def __init__(self, cmd, server=None, topics=None, attrs=None, sep='   ', default_topic='cms', stdout=False,
+                 cms_filter=None):
         self.pub = cmd
         super(NATSManagerCmd, self).__init__(server, topics, attrs, sep, default_topic, stdout, cms_filter)
 
     def __repr__(self):
-        return 'NATSManagerCmd@{}, topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)), self.topics, self.def_topic, self.attrs, self.cms_filter, self.stdout)
+        return 'NATSManagerCmd@{}, topics={} def_topic={} attrs={} cms_filter={} stdout={}'.format(hex(id(self)),
+                                                                                                   self.topics,
+                                                                                                   self.def_topic,
+                                                                                                   self.attrs,
+                                                                                                   self.cms_filter,
+                                                                                                   self.stdout)
 
     def send(self, subject, msg):
         "Call NATS function, user can pass either single message or list of messages"
@@ -243,10 +273,11 @@ class NATSManagerCmd(NATSManager):
             server = self.get_server()
             nats_cmd(self.cmd, server, subject, msg)
 
+
 def test():
     "Test function"
     subject = 'cms'
-    doc = {'site':'1', 'attr':'1'}
+    doc = {'site': '1', 'attr': '1'}
     sep = '   '
     msg = nats_encoder(doc, sep)
     rec = nats_decoder(msg)
@@ -254,9 +285,9 @@ def test():
     assert msg == nmsg
     print('--- encoding test OK ---')
 
-    data = [{'site':'T3_US_Test', 'campaign':'campaign-%s' % str(i),
-        'task':'/task%s/part%s' % (i, i), 'system': 'system',
-        'exitCode': i} for i in range(2)]
+    data = [{'site': 'T3_US_Test', 'campaign': 'campaign-%s' % str(i),
+             'task': '/task%s/part%s' % (i, i), 'system': 'system',
+             'exitCode': i} for i in range(2)]
     print('input data: {}'.format(data))
     server = '127.0.0.1'
     attrs = ['site', 'campaign', 'task', 'exitCode']
@@ -287,10 +318,12 @@ def test():
                 rec[attr] = doc[attr]
         rec['enriched'] = True
         yield rec
+
     mgr = NATSManager(server, topics=topics, attrs=attrs, cms_filter=custom_filter, stdout=True)
     print('\n--- custom filter test ---')
     print(mgr)
     mgr.publish(data)
+
 
 if __name__ == '__main__':
     test()

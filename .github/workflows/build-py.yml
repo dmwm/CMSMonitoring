@@ -1,0 +1,41 @@
+# Ref: https://github.com/grst/python-ci-versioneer/blob/master/.github/workflows/python-publish.yml
+# --- Releases CMSMonitoring PyPi module ---
+name: Build
+on:
+  push:
+    tags:
+      - 'py-*.*.*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.x"
+      - name: Set version from git tag
+        run: |
+          # from refs/tags/py-1.2.3 get 1.2.3
+          VERSION=$(echo $GITHUB_REF | sed 's#.*/py-##')
+          PLACEHOLDER='__version__ = "develop"'
+          VERSION_FILE='src/python/CMSMonitoring/__init__.py'
+          grep "$PLACEHOLDER" "$VERSION_FILE"
+          sed -i "s/$PLACEHOLDER/__version__ = \"${VERSION}\"/g" "$VERSION_FILE"
+        shell: bash
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r src/python/requirements.txt
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          cd src/python/
+          echo "TODO - delete this debug message"
+          cat CMSMonitoring/__init__.py
+          python setup.py sdist bdist_wheel
+          twine upload --versbose dist/*
