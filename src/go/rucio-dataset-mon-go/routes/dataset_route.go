@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// DatasetRoute route for "/datasets"
+// DatasetRoute route for "/api/datasets"
 func DatasetRoute(router *gin.Engine) {
-	router.POST("/datasets", controllers.GetDatasets())
+	router.POST("/api/datasets", controllers.GetDatasets())
 }
