@@ -18,9 +18,11 @@ import (
 	"time"
 )
 
-// connection instance for the "datasets" collection
-var datasetCollection = configs.GetCollection(configs.DB, configs.GetEnvVar("COLLECTION_DATASETS"))
-var GlobalTotalRecCount int64
+var (
+	// connection instance for the "datasets" collection
+	datasetCollection   = configs.GetCollection(configs.DB, configs.GetEnvVar("COLLECTION_DATASETS"))
+	GlobalTotalRecCount int64
+)
 
 // MiddlewareReqHandler handles CORS and HTTP request settings for the context router
 func MiddlewareReqHandler() gin.HandlerFunc {
@@ -38,30 +40,29 @@ func MiddlewareReqHandler() gin.HandlerFunc {
 	}
 }
 
+// errorResponse returns error response with given msg and error
+func errorResponse(c *gin.Context, msg string, err error) {
+	log.Printf("[ERROR] %s %s", msg, err)
+	c.JSON(http.StatusInternalServerError,
+		responses.ErrorResponseStruct{
+			Status:  http.StatusInternalServerError,
+			Message: msg,
+			Data:    map[string]string{"data": err.Error()},
+		})
+}
+
 // getRequestBody parse datatable request
 func getRequestBody(c *gin.Context) models.DataTableRequest {
 	// === ~~~~~~ Decode incoming DataTable request json ~~~~~~ ===
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		log.Printf("[ERROR] Request body read failed %s", err)
-		c.JSON(http.StatusInternalServerError,
-			responses.DtErrorResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "Request body read failed",
-				Data:    map[string]interface{}{"data": err.Error()},
-			})
+		errorResponse(c, "Request body read failed", err)
 	}
 	log.Printf("Request Body:\n%#v\n", string(body))
 	var dataTableRequest models.DataTableRequest
 	if err := json.Unmarshal(body, &dataTableRequest); err != nil {
-		log.Printf("[ERROR] Unmarshal request body failed %s", err)
-		c.JSON(http.StatusInternalServerError,
-			responses.DtErrorResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "Unmarshal request body failed",
-				Data:    map[string]interface{}{"data": err.Error()},
-			})
+		errorResponse(c, "Unmarshal request body failed", err)
 	}
 	return dataTableRequest
 }
@@ -71,14 +72,7 @@ func getTotalRecCount(ctx context.Context, c *gin.Context) int64 {
 	if GlobalTotalRecCount == 0 {
 		countTotal, err := datasetCollection.CountDocuments(ctx, bson.M{})
 		if err != nil {
-			log.Printf("[ERROR] TotalRecCount query failed %s", err)
-			c.JSON(http.StatusInternalServerError,
-				responses.DtErrorResponse{
-					Status:  http.StatusInternalServerError,
-					Message: "TotalRecCount query failed",
-					Data:    map[string]interface{}{"data": err.Error()},
-				})
-
+			errorResponse(c, "TotalRecCount query failed", err)
 		}
 		GlobalTotalRecCount = countTotal
 	}
@@ -90,13 +84,7 @@ func getTotalRecCount(ctx context.Context, c *gin.Context) int64 {
 func getFilteredRecCount(ctx context.Context, c *gin.Context, findQuery bson.M) int64 {
 	filteredRecCount, err := datasetCollection.CountDocuments(ctx, findQuery)
 	if err != nil {
-		log.Printf("[ERROR] FilteredRecCount query failed %s", err)
-		c.JSON(http.StatusInternalServerError,
-			responses.DtErrorResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "FilteredRecCount query failed",
-				Data:    map[string]interface{}{"data": err.Error()},
-			})
+		errorResponse(c, "FilteredRecCount query failed", err)
 	}
 	return filteredRecCount
 }
@@ -138,7 +126,6 @@ func generateSortOrder(dataTableRequest models.DataTableRequest) *options.FindOp
 func generateFindQuery(dataTableRequest models.DataTableRequest) bson.M {
 	// DataTable main search request struct
 	dtMainSearch := dataTableRequest.Search
-
 	if dtMainSearch.Value == "" {
 		return bson.M{}
 	} else {
@@ -149,7 +136,6 @@ func generateFindQuery(dataTableRequest models.DataTableRequest) bson.M {
 		// TODO add individual column search
 		return bson.M{"$and": findQuery}
 	}
-
 }
 
 // paginateResults get query results efficiently
@@ -157,38 +143,20 @@ func paginateResults(ctx context.Context, c *gin.Context, findQuery bson.M, sort
 	var datasets []models.Dataset
 	datasetResults, err := datasetCollection.Find(ctx, findQuery, sortOptsOfFind)
 	if err != nil {
-		log.Printf("[ERROR] datasetCollection.Find query failed %s", err)
-		c.JSON(http.StatusInternalServerError,
-			responses.DtErrorResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "datasetCollection.Find query failed",
-				Data:    map[string]interface{}{"data": err.Error()},
-			})
+		errorResponse(c, "datasetCollection.Find query failed", err)
 	}
 
 	// reading from the db in an optimal way
 	defer func(results *mongo.Cursor, ctx context.Context) {
 		if err := results.Close(ctx); err != nil {
-			log.Printf("[ERROR] MongoDB cursor failed %s", err)
-			c.JSON(http.StatusInternalServerError,
-				responses.DtErrorResponse{
-					Status:  http.StatusInternalServerError,
-					Message: "MongoDB cursor failed",
-					Data:    map[string]interface{}{"data": err.Error()},
-				})
+			errorResponse(c, "MongoDB cursor failed", err)
 		}
 	}(datasetResults, ctx)
 
 	for datasetResults.Next(ctx) {
 		var singleDataset models.Dataset
 		if err = datasetResults.Decode(&singleDataset); err != nil {
-			log.Printf("[ERROR] datasetResults.Decode failed %s", err)
-			c.JSON(http.StatusInternalServerError,
-				responses.DtErrorResponse{
-					Status:  http.StatusInternalServerError,
-					Message: "datasetResults.Decode failed",
-					Data:    map[string]interface{}{"data": err.Error()},
-				})
+			errorResponse(c, "datasetResults.Decode failed", err)
 		}
 		datasets = append(datasets, singleDataset)
 	}

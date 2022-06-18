@@ -33,8 +33,8 @@ func EnvMongoURI() string {
 	mongouri = strings.Replace(mongouri, "[USERNAME]", os.Getenv("MONGO_ROOT_USERNAME"), -1)
 	mongouri = strings.Replace(mongouri, "[PASSWORD]", os.Getenv("MONGO_ROOT_PASSWORD"), -1)
 	mongouri = strings.Replace(mongouri, "[DATABASE]", os.Getenv("MONGO_ADMIN_DB"), -1)
-	log.Println("Mongo uri")
-	log.Println(mongouri)
+	// TODO remove in production
+	log.Printf("Mongo uri: %s", mongouri)
 	return mongouri
 }
 
