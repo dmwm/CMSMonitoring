@@ -1,70 +1,22 @@
-## rucio-dataset-mon-go
+## rucio-dataset-mon-go package
 
-### Requirement of the service
+[![Go Report Card](https://goreportcard.com/badge/github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go)](https://goreportcard.com/report/github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go)
+[![GoDoc](https://godoc.org/github.com/dmwm/CMSMonitoring/tree/master/src/go/rucio-dataset-mon-go?status.svg)](https://godoc.org/github.com/dmwm/CMSMonitoring/tree/master/src/go/rucio-dataset-mon-go)
 
-`GO_ENVS_SECRET_PATH` OS environment variable should be set which is the full path of ".env" file:
+The `rucio-dataset-mon-go` package serves [Rucio](https://rucio.readthedocs.io/) aggregated data, imported to MongoDB,
+using JQuery [datatables](https://datatables.net/).
 
-```
-MONGOURI=mongodb://admin:password@cuzunogl-jhpbqba52z6h-node-0:32000/admin?retryWrites=true&w=majority
-MONGO_DATABASE=rucio
-MONGO_CONNECT_TIMEOUT=10
-COLLECTION_DATASETS=datasets
-```
+Package development is in still progress. You may see test page from :
+rocket: [here](http://cmsweb-test1-zone-b-brkegglzfmze-node-1.cern.ch:31280/) :rocket: , beware that some
+functionalities not there yet.
 
-### Example DataTable Json request
+### Docs
 
-Reference: [datatables.net/manual/server-side](https://datatables.net/manual/server-side)
+- [Deployment instructions](docs/Deployment.md)
+- [Datatables example request](docs/example_datatables_json_request.md)
 
-```json
-{
-    "draw": 2,
-    "columns": [
-        {
-            "data": "dataset",
-            "name": "",
-            "searchable": true,
-            "orderable": true,
-            "search": {
-                "value": "",
-                "regex": false
-            }
-        },
-        {
-            "data": "rse",
-            "name": "",
-            "searchable": true,
-            "orderable": true,
-            "search": {
-                "value": "",
-                "regex": false
-            }
-        },
-        {
-            "data": "size",
-            "name": "",
-            "searchable": true,
-            "orderable": true,
-            "search": {
-                "value": "",
-                "regex": false
-            }
-        }
-    ],
-    "order": [
-        {
-            "column": 0,
-            "dir": "asc"
-        }
-    ],
-    "start": 0,
-    "length": 5,
-    "search": {
-        "value": "s",
-        "regex": false
-    }
-}
-```
+###### References
 
-### References
-
-- Reference: https://dev.to/hackmamba/build-a-rest-api-with-golang-and-mongodb-gin-gonic-version-269m
+- https://dev.to/hackmamba/build-a-rest-api-with-golang-and-mongodb-gin-gonic-version-269m
+- https://github.com/dmwm/CMSKubernetes/tree/master/docker/cmsmon-rucio-ds-web
+- https://github.com/dmwm/CMSKubernetes/blob/master/kubernetes/monitoring/services/mongo/cmsmon-rucio-ds-web.yaml

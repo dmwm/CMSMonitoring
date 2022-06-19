@@ -10,10 +10,10 @@ package models
 type DataTableRequest struct {
 	Draw    int           `json:"draw" validate:"required"`   // Just a counter that should be return exactly in the response
 	Columns []DTReqColumn `json:"columns"`                    // Includes user input for columns (like search text for the column)
-	Length  int           `json:"length" validate:"required"` // Number of records that the table can display in the current draw.
+	Length  int64         `json:"length" validate:"required"` // Number of records that the table can display in the current draw.
 	Orders  []DTReqOrder  `json:"order"`                      //
 	Search  DTReqSearch   `json:"search"`                     //
-	Start   int           `json:"start"`                      //
+	Start   int64         `json:"start"`                      //
 }
 
 // DTReqSearch represents main search text which client entered and can be regex or not.
@@ -28,9 +28,9 @@ type DTReqSearch struct {
 type DTReqColumn struct {
 	Data       string      `json:"data"`       // Column name
 	Name       string      `json:"name"`       // Column name to be used in page if it is different from source data
+	Searchable bool        `json:"searchable"` //
 	Orderable  bool        `json:"orderable"`  //
 	Search     DTReqSearch `json:"search"`     // If client requested search against individual column
-	Searchable bool        `json:"searchable"` //
 }
 
 // DTReqOrder represents the selected column direction.
