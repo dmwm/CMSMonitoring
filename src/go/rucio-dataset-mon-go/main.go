@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/configs"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/controllers"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/routes"
 	"golang.org/x/sync/errgroup"
 	"log"
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// connect to database
-	configs.ConnectDB()
+	mongo.GetMongoClient()
 	controllers.GitVersion = gitVersion
 	controllers.ServerInfo = info()
 
