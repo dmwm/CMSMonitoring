@@ -6,7 +6,7 @@ on:
     tags:
       - 'go-*.*.*'
     paths:
-      - src/go/rucio-dataset-mon-go/**
+      - 'src/go/rucio-dataset-mon-go/**'
 
 jobs:
   build:
@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.CERN_TOKEN }}
 
       - name: Publish cmsmon-rucio-ds-web image to registry.cern.ch
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.CERN_LOGIN }}
           password: ${{ secrets.CERN_TOKEN }}

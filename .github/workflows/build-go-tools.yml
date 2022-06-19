@@ -5,6 +5,8 @@ on:
   push:
     tags:
       - 'go-*.*.*'
+    paths-ignore:
+      - 'src/go/rucio-dataset-mon-go/**'
 
 jobs:
   build:
