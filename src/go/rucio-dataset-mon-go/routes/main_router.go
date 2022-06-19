@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/controllers"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,11 +13,12 @@ func MainRouter() http.Handler {
 	e.Use(gin.Recovery())
 
 	// REST
-	e.Use(controllers.MiddlewareReqHandler())
+	e.Use(utils.MiddlewareReqHandler())
 	e.POST("/api/datasets", controllers.GetDatasets())
+	e.Static("/static/img", "./static/img")
 
 	// Static
-	e.LoadHTMLGlob("static/*")
+	e.LoadHTMLGlob("static/index.html")
 	e.GET("/", controllers.GetIndexPage)
 	e.GET("/serverinfo", controllers.GetServerInfo)
 
