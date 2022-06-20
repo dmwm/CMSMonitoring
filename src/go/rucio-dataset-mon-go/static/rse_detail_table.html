@@ -1,0 +1,47 @@
+<div>
+    <table class="details-table table table-striped table-condensed"
+           style="background-color: #e6ffe6; font-size: 12px;">
+        <thead>
+        <tr>
+            <th scope="col">Type</th>
+            <th scope="col">Dataset</th>
+            <th scope="col">RSE</th>
+            <th scope="col">Tier</th>
+            <th scope="col">C</th>
+            <th scope="col">RseKind</th>
+            <th scope="col">SizeBytes</th>
+            <th scope="col">LastAcc</th>
+            <th scope="col">LastAccMs</th>
+            <th scope="col">Fpct</th>
+            <th scope="col">Fcnt</th>
+            <th scope="col">TotFcnt</th>
+            <th scope="col">AccFcnt</th>
+            <th scope="col">ProdLckCnt</th>
+            <th scope="col">OthLckCnt</th>
+            <th scope="col">ProdAccts</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .data}}
+        <tr>
+            <td class="nowrap">{{.Type}}</td>
+            <td>{{.Dataset}}</td>
+            <td>{{.RSE}}</td>
+            <td>{{.Tier}}</td>
+            <td>{{.C}}</td>
+            <td>{{.RseKind}}</td>
+            <td>{{.SizeBytes}}</td>
+            <td>{{.LastAcc}}</td>
+            <td>{{.LastAccMs}}</td>
+            <td>{{.Fpct}}</td>
+            <td>{{.Fcnt}}</td>
+            <td>{{.TotFcnt}}</td>
+            <td>{{.AccFcnt}}</td>
+            <td>{{.ProdLckCnt}}</td>
+            <td>{{.OthLckCnt}}</td>
+            <td>{{.ProdAccts}}</td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+</div>

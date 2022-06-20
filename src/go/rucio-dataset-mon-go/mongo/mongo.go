@@ -7,33 +7,32 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// GetAggQueryResults returns cursor of aggregate query results
-func GetAggQueryResults(ctx context.Context, collection *mongo.Collection, match bson.M, sort bson.D, skip int64, length int64) (*mongo.Cursor, error) {
-	pipeline := []bson.M{
-		{"$match": match},
-		{"$sort": sort},
-		{"$skip": skip},
-		{"$limit": length},
+var MaxLimit = int64(10000)
+
+// GetFindQueryResults returns cursor of find query results
+func GetFindQueryResults(ctx context.Context, coll *mongo.Collection, match bson.M, sort bson.D, skip int64, length int64) (*mongo.Cursor, error) {
+	opts := options.FindOptions{}
+	if len(sort) > 0 {
+		opts.SetSort(sort)
 	}
-	opts := options.AggregateOptions{}
-	opts.SetBatchSize(int32(length))
+	if skip > 0 {
+		opts.SetSkip(skip)
+	}
+	if length <= 0 || length > MaxLimit {
+		length = MaxLimit
+	}
+	opts.SetLimit(length)
 	opts.SetAllowDiskUse(true)
-	cursor, err := collection.Aggregate(ctx, pipeline, &opts)
+	//opts.SetBatchSize(int32(length))
+	cursor, err := coll.Find(ctx, match, &opts)
 	return cursor, err
 }
 
-// GetFindQueryResults returns cursor of find query results
-func GetFindQueryResults(ctx context.Context, collection *mongo.Collection, match bson.M, sort bson.D, skip int64, length int64) (*mongo.Cursor, error) {
-	//pipeline := []bson.M{
-	//	{"$match": match},
-	//}
+// GetFindOnlyMatchResults no sort, skip, limit, just match
+func GetFindOnlyMatchResults(ctx context.Context, coll *mongo.Collection, match bson.M) (*mongo.Cursor, error) {
 	opts := options.FindOptions{}
-	opts.SetBatchSize(int32(length))
-	opts.SetSort(sort)
-	opts.SetSkip(skip)
-	opts.SetLimit(length)
 	opts.SetAllowDiskUse(true)
-	cursor, err := collection.Find(context.TODO(), match, &opts)
+	cursor, err := coll.Find(ctx, match, &opts)
 	return cursor, err
 }
 

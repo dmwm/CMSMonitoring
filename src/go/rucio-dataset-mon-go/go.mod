@@ -4,10 +4,9 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	github.com/joho/godotenv v1.4.0
 	github.com/s-wijaya/gin-timeout v0.1.1
 	go.mongodb.org/mongo-driver v1.9.1
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 )
 
 require (

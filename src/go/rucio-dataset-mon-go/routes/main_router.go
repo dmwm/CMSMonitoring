@@ -23,14 +23,16 @@ func MainRouter() http.Handler {
 	// REST
 	e.Use(utils.MiddlewareReqHandler())
 	e.POST("/api/datasets", controllers.GetDatasets())
-	e.POST("/api/details", controllers.GetDetailedDs())
-	e.Static("/static/img", "./static/img")
+	e.POST("/api/rse-details", controllers.GetDetailedDs())
+	e.POST("/api/rse-detail", controllers.GetSingleDetailedDs())
+	e.GET("/serverinfo", controllers.GetServerInfo)
 
 	// Static
 	e.LoadHTMLGlob("static/*.html")
+	e.Static("/static/img", "./static/img")
 	e.GET("/", controllers.GetIndexPage)
-	e.GET("/details", controllers.GetDetailsPage)
-	e.GET("/serverinfo", controllers.GetServerInfo)
+	e.GET("/rse-details", controllers.GetDetailsPage)
 
+	//
 	return e
 }

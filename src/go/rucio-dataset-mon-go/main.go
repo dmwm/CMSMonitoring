@@ -19,6 +19,7 @@ import (
 var (
 	g          errgroup.Group
 	gitVersion string // version of the code
+	verbose    int
 )
 
 // info function returns version string of the server
@@ -32,17 +33,24 @@ func info() string {
 func main() {
 	var version bool
 	flag.BoolVar(&version, "version", false, "Show version")
+	flag.IntVar(&verbose, "verbose", 0, "Prints verbose logs, 0: warn, 1: info, 2: debug")
 	flag.Parse()
 	if version {
 		fmt.Println(info())
 		os.Exit(0)
-
 	}
-
+	log.Printf("[INFO] Verbosity : %#v", verbose)
+	if verbose > 0 {
+		log.Println("[INFO] ---Settings of go web service using MongoDB")
+		log.Printf("[INFO] MONGO_URI: %s", mongo.URI)
+		log.Printf("[INFO] MONGO_DATABASE: %s", mongo.DB)
+		log.Printf("[INFO] MONGO CONNECTION TIMEOUT: %#v", mongo.ConnectionTimeout)
+	}
 	// connect to database
 	mongo.GetMongoClient()
 	controllers.GitVersion = gitVersion
 	controllers.ServerInfo = info()
+	controllers.Verbose = verbose
 
 	mainServer := &http.Server{
 		Addr:         ":8080",

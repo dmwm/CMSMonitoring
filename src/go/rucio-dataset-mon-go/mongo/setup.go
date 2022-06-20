@@ -9,19 +9,26 @@ import (
 	"time"
 )
 
-// DBClient MongoDb Client instance(mongo.Client)
+// Global variables
+
 var DBClient = GetMongoClient()
+var DB = configs.EnvMongoDB()
+var URI = configs.EnvMongoURI()
+var ConnectionTimeout = 100
+var Timeout = time.Duration(ConnectionTimeout) * time.Second
 
 // GetMongoClient returns mongo client
 func GetMongoClient() *mongo.Client {
+	configs.InitialChecks()
 	var err error
 	var client *mongo.Client
-	opts := options.Client()
-	opts.ApplyURI(configs.EnvMongoURI())
-	opts.SetMaxPoolSize(100)
-	opts.SetConnectTimeout(time.Duration(300) * time.Second)
-	opts.SetMaxConnIdleTime(time.Microsecond * 100000)
-	if client, err = mongo.Connect(context.Background(), opts); err != nil {
+	//opts.SetMaxPoolSize(100)
+	//opts.SetConnectTimeout(time.Duration(ConnectionTimeout) * time.Second)
+	//opts.SetMaxConnIdleTime(time.Microsecond * 100000)
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	defer cancel()
+
+	if client, err = mongo.Connect(ctx, options.Client().ApplyURI(URI).SetConnectTimeout(Timeout)); err != nil {
 		log.Fatal(err)
 	}
 	if err := client.Ping(context.Background(), nil); err != nil {
@@ -32,6 +39,6 @@ func GetMongoClient() *mongo.Client {
 
 // GetCollection returns Mongo db collection with the given collection name
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
-	collection := client.Database(configs.EnvMongoDB()).Collection(collectionName)
+	collection := client.Database(DB).Collection(collectionName)
 	return collection
 }

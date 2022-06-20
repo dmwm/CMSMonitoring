@@ -109,17 +109,14 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
         "value": "",
         "regex": false
     },
-    "custom":
-    {
+    "custom": {
         "dataset": "",
         "rse": "",
         "tier": "",
         "rseCountry": "",
         "rseKind": "",
-        "accounts":
-        [],
-        "rseType":
-        []
+        "accounts": [],
+        "rseType": []
     }
 }
 ```

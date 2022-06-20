@@ -24,6 +24,10 @@
             font-family: 'Trebuchet MS', sans-serif;
         }
 
+        table td {
+            font-size: small;
+        }
+
         /* Type, Dataset, RSE, Tier, C, RseKind */
         table tr td:nth-child(n+1):nth-child(-n+6) {
             text-align: left;
@@ -44,75 +48,79 @@
 </head>
 <body>
 
-<div class="row">
-    <div class="col-xs-6 col-sm-4">
-        <footer>
-            <img alt="CERN CMS O&C" src="../static/img/oc_icon.png" style="padding: 3px;"
-                 width="120"          height="80">
-        </footer>
-    </div>
-    <div class="col-xs-6 col-sm-4 align-self-center">
-        <h3> RUCIO DATASETS MONITORING </h3>
-    </div>
-    <div class="col-xs-6 col-sm-4 text-right">
-        <footer>
-            <img alt="CERN CMS O&C" src="../static/img/oc_icon.png" style="text-align: right; padding: 3px;"
-                 width="120"          height="80">
-        </footer>
+<div class="container-fluid no-padding" style="width: 100%">
+    <div class="row" style="background-color: lightgray">
+        <div class="col-xs-6 col-sm-4">
+            <footer>
+                <img alt="CERN CMS O&C" src="../static/img/oc_icon.png"
+                     width="60"          height="40">
+            </footer>
+        </div>
+        <div class="col-xs-6 col-sm-4 align-self-center">
+            <h3> RUCIO DATASETS MONITORING (detailed) </h3>
+        </div>
+        <div class="col-xs-6 col-sm-4 text-right">
+            <footer>
+                <img alt="CERN CMS O&C" src="../static/img/oc_icon.png" style="text-align: right;"
+                     width="60"          height="40">
+            </footer>
+        </div>
     </div>
 </div>
 
-<div class="row">
-    <hr class="rounded">
-</div>
-
-<div class="row justify-content-md-center mx-auto">
+<div class="container-fluid no-padding" style="width: 96%">
     <div class="row">
-        <div class="col">
-            <label for="select-rse-type">&#128269; RSE Type</label>
-            <select class="selectpicker" data-live-search="true" id="select-rse-type" multiple>
-                <option value="DISK">DISK</option>
-                <option value="TAPE">TAPE</option>
-            </select>
-        </div>
-        <div class="col">
-            <label for="search-dataset">&#128269; Dataset</label>
-            <input class="form-control" id="search-dataset" type="search"/>
-        </div>
-        <div class="col">
-            <label for="search-rse">&#128269; RSE</label>
-            <input class="form-control" id="search-rse" type="search"/>
-        </div>
-        <div class="col">
-            <label for="search-tier">&#128269; Tier</label>
-            <input class="form-control" id="search-tier" type="search"/>
-        </div>
-        <div class="col">
-            <label for="search-country">&#128269; Country</label>
-            <input class="form-control" id="search-country" type="search"/>
-        </div>
-        <div class="col">
-            <label for="search-rse-kind">&#128269; RSE Kind</label>
-            <input class="form-control" id="search-rse-kind" type="search"/>
-        </div>
-        <div class="col">
-            <label for="select-account">&#128269; Lock Accounts</label>
-            <select class="selectpicker" data-live-search="true" id="select-account" multiple
-                    title="Select Lock Accounts">
-                <option value="transfer_ops">transfer_ops</option>
-                <option value="wma_prod">wma_prod</option>
-                <option value="wmcore_output">wmcore_output</option>
-                <option value="wmcore_transferor">wmcore_transferor</option>
-                <option value="crab_tape_recall">crab_tape_recall</option>
-                <option value="sync">sync</option>
-            </select>
+        <hr class="rounded">
+    </div>
+
+    <div class="row custom-filters">
+        <div class="row">
+            <div class="col">
+                <label for="select-rse-type">&#128269; RSE Type</label>
+                <select class="selectpicker" data-live-search="true" id="select-rse-type" multiple>
+                    <option value="DISK">DISK</option>
+                    <option value="TAPE">TAPE</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="search-dataset">&#128269; Dataset</label>
+                <input class="form-control" id="search-dataset" type="search"/>
+            </div>
+            <div class="col">
+                <label for="search-rse">&#128269; RSE</label>
+                <input class="form-control" id="search-rse" type="search"/>
+            </div>
+            <div class="col">
+                <label for="search-tier">&#128269; Tier</label>
+                <input class="form-control" id="search-tier" type="search"/>
+            </div>
+            <div class="col">
+                <label for="search-country">&#128269; Country</label>
+                <input class="form-control " id="search-country" type="search"/>
+            </div>
+            <div class="col">
+                <label for="search-rse-kind">&#128269; RSE Kind</label>
+                <input class="form-control" id="search-rse-kind" type="search"/>
+            </div>
+            <div class="col">
+                <label for="select-account">&#128269; Lock Accounts</label>
+                <select class="selectpicker" data-live-search="true" id="select-account" multiple
+                        title="Select Lock Accounts">
+                    <option value="transfer_ops">transfer_ops</option>
+                    <option value="wma_prod">wma_prod</option>
+                    <option value="wmcore_output">wmcore_output</option>
+                    <option value="wmcore_transferor">wmcore_transferor</option>
+                    <option value="crab_tape_recall">crab_tape_recall</option>
+                    <option value="sync">sync</option>
+                </select>
+            </div>
         </div>
     </div>
     <div class="row justify-content-md-center">
         <hr class="rounded">
     </div>
     <div class="row justify-content-md-center">
-        <button class="btn btn-outline-primary" id="button-search" type="button">Search</button>
+        <button class="btn btn-primary btn-sm font-weight-bold" id="button-search" type="button">Search</button>
     </div>
     <div class="row justify-content-md-center">
         <hr class="rounded">
@@ -188,7 +196,7 @@
             processing: true,
             scrollX: false,
             pageLength: 10,
-            //stateSave: true,
+            order: [], // no initial sorting
             dom: "lirtpB", // no main search ("f"), just individual column search
             language: {processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '},
             aLengthMenu: [
@@ -196,18 +204,11 @@
                 [5, 10, 25, 50, 100]
             ],
             ajax: {
-                url: "../api/details",
+                url: "http://cmsweb-test1-zone-b-brkegglzfmze-node-1.cern.ch:31281/api/rse-details",
                 method: "POST",
                 contentType: 'application/json',
                 data: function (d) {
                     // Customize search
-
-                    // console.log("dataset:", $("#search-dataset").val())
-                    // console.log("rse:", $("#search-rse").val())
-                    // console.log("tier:", $("#search-tier").val())
-                    // console.log("country:", $("#search-country").val())
-                    // console.log("kind:", $("#search-rse-kind").val())
-                    // console.log("account:", $("#select-account").val())
                     // console.log("type:", $("#select-rse-type").val())
                     d.custom = {
                         "dataset": $("#search-dataset").val(),
@@ -247,7 +248,5 @@
         });
     });
 </script>
-
 </body>
-
 </html>

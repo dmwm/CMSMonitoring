@@ -2,7 +2,6 @@ package datasets
 
 import (
 	"context"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/configs"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
 	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
@@ -13,14 +12,14 @@ import (
 )
 
 var (
-	// connection instance for the "datasets" collection
-	datasetsDb       = mymongo.GetCollection(mymongo.DBClient, configs.GetEnvVar("COLLECTION_DATASETS"))
+	CollectionName   = "datasets"
+	collection       = mymongo.GetCollection(mymongo.DBClient, CollectionName)
 	TotalRecCountDs  int64
 	UniqueSortColumn = "_id"
 )
 
-// GetSortBson creates sort object which support multiple column sort
-func GetSortBson(dataTableRequest models.DataTableRequest) bson.D {
+// CreateSortBson creates sort object which support multiple column sort
+func CreateSortBson(dataTableRequest models.DataTableCustomRequest) bson.D {
 	orders := dataTableRequest.Orders
 	columns := dataTableRequest.Columns
 	sortBson := bson.D{}
@@ -38,16 +37,22 @@ func GetSortBson(dataTableRequest models.DataTableRequest) bson.D {
 	return sortBson
 }
 
-// GetSearchBson creates main search query using regex by default
-func GetSearchBson(dataTableRequest models.DataTableRequest) bson.M {
-	// Main search(dataTableRequest.Search) is disabled, only individual column search will be applied
+// CreateSearchBson creates search query
+func CreateSearchBson(dtRequest models.DataTableCustomRequest) bson.M {
 	findQuery := bson.M{}
-	for _, column := range dataTableRequest.Columns {
-		if column.Search.Value != "" {
-			// Add k(column name): v(column search text) pairs to search bson.M
-			findQuery[column.Data] = primitive.Regex{Pattern: column.Search.Value, Options: "im"}
-		}
+
+	customs := dtRequest.Custom
+	if customs.Dataset != "" {
+		findQuery["Dataset"] = primitive.Regex{Pattern: customs.Dataset, Options: "im"}
 	}
+	if customs.Rse != "" {
+		findQuery["RSEs"] = primitive.Regex{Pattern: customs.Rse, Options: "im"}
+	}
+	if len(customs.RseType) == 1 {
+		// If not 1, both DISK and TAPE
+		findQuery["RseType"] = customs.RseType[0]
+	}
+
 	log.Printf("[INFO] Find Query is : %#v", findQuery)
 	return findQuery
 }
@@ -55,9 +60,9 @@ func GetSearchBson(dataTableRequest models.DataTableRequest) bson.M {
 // GetTotalRecCount total document count in the datasetsDb
 func GetTotalRecCount(ctx context.Context, c *gin.Context) int64 {
 	if TotalRecCountDs == 0 {
-		countTotal, err := mymongo.GetCount(ctx, datasetsDb, bson.M{})
+		countTotal, err := mymongo.GetCount(ctx, collection, bson.M{"RseType": "DISK"})
 		if err != nil {
-			utils.ErrorResponse(c, "TotalRecCount query failed", err)
+			utils.ErrorResponse(c, "TotalRecCount query failed", err, "")
 		}
 		TotalRecCountDs = countTotal
 	}
@@ -65,33 +70,28 @@ func GetTotalRecCount(ctx context.Context, c *gin.Context) int64 {
 	return TotalRecCountDs
 }
 
-// GetFilteredRecCount filtered document count in the datasetsDb
-func GetFilteredRecCount(ctx context.Context, c *gin.Context, findQuery bson.M) int64 {
-	filteredRecCount, err := mymongo.GetCount(ctx, datasetsDb, findQuery)
-	if err != nil {
-		utils.ErrorResponse(c, "FilteredRecCount query failed", err)
-	}
-	return filteredRecCount
-}
-
 // GetResults get query results efficiently
-func GetResults(ctx context.Context, c *gin.Context, dataTableRequest models.DataTableRequest) []models.Dataset {
+func GetResults(ctx context.Context, c *gin.Context, r models.DataTableCustomRequest) models.DatatableDatasetsResponse {
 	var datasets []models.Dataset
-	searchQuery := GetSearchBson(dataTableRequest)
-	sortQuery := GetSortBson(dataTableRequest)
-	length := dataTableRequest.Length
-	skip := dataTableRequest.Start
+	searchQuery := CreateSearchBson(r)
+	sortQuery := CreateSortBson(r)
+	length := r.Length
+	skip := r.Start
 
-	datasetsCursor, err := mymongo.GetAggQueryResults(ctx, datasetsDb, searchQuery, sortQuery, skip, length)
+	cursor, err := mymongo.GetFindQueryResults(ctx, collection, searchQuery, sortQuery, skip, length)
 	if err != nil {
-		utils.ErrorResponse(c, "datasetsDb.Find query failed", err)
+		utils.ErrorResponse(c, "datasetsDb.Find query failed", err, "")
 	}
-	for datasetsCursor.Next(ctx) {
-		var singleDataset models.Dataset
-		if err = datasetsCursor.Decode(&singleDataset); err != nil {
-			utils.ErrorResponse(c, "datasetResults.Decode failed", err)
-		}
-		datasets = append(datasets, singleDataset)
+	if err = cursor.All(ctx, &datasets); err != nil {
+		utils.ErrorResponse(c, "datasets cursor failed", err, "")
 	}
-	return datasets
+
+	filteredRecCount := length + skip + 1
+	totalRecCount := GetTotalRecCount(ctx, c)
+	return models.DatatableDatasetsResponse{
+		Draw:            r.Draw,
+		RecordsTotal:    totalRecCount,
+		RecordsFiltered: filteredRecCount,
+		Data:            datasets,
+	}
 }

@@ -2,13 +2,15 @@ package controllers
 
 import (
 	"context"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/configs"
+	"encoding/json"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/datasets"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/detailed_datasets"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/responses"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"log"
 	"net/http"
 	"time"
@@ -19,10 +21,34 @@ var (
 	ServerInfo string
 	// GitVersion git version comes from Makefile
 	GitVersion string
+	Verbose    int
 )
+
+func verboseControllerInitLog(c *gin.Context) {
+	if Verbose > 0 {
+		log.Printf("[INFO] Incoming request to: %s", c.FullPath())
+	}
+}
+
+func verboseControllerOutLog(start time.Time, name string, req any, data any) {
+	if Verbose > 0 {
+		elapsed := time.Since(start)
+		req, _ := json.Marshal(req)
+		r := string(req)
+		if Verbose >= 2 {
+			// Response returns all query results, its verbosity should be at least 2
+			data, _ := json.Marshal(data)
+			d := string(data)
+			log.Printf("[DEBUG] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %s\n\n", name, elapsed, r, d)
+		} else {
+			log.Printf("[INFO] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %#v\n\n", name, elapsed, req, nil)
+		}
+	}
+}
 
 // GetServerInfo provides basic functionality of status response
 func GetServerInfo(c *gin.Context) {
+	verboseControllerInitLog(c)
 	c.JSON(http.StatusOK,
 		responses.ServerInfo{
 			ServiceVersion: GitVersion,
@@ -33,81 +59,100 @@ func GetServerInfo(c *gin.Context) {
 // GetDatasets controller that returns datasets according to DataTable request json
 func GetDatasets() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(configs.EnvConnTimeout())*time.Second)
+		verboseControllerInitLog(c)
+		start := time.Now()
+		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
 		defer cancel()
 
 		// Get request json with validation
-		dtRequest := models.DataTableRequest{}
-		if err := c.ShouldBindJSON(&dtRequest); err != nil {
-			utils.ErrorResponse(c, "Bad request", err)
+		r := models.DataTableCustomRequest{}
+		if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
+			tempReqBody, _ := c.Get(gin.BodyBytesKey)
+			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
 			return
 		}
-		log.Printf("Requst: %#v", dtRequest)
-		totalRecCount := datasets.GetTotalRecCount(ctx, c)
-		filteredRecCount := datasets.GetFilteredRecCount(ctx, c, datasets.GetSearchBson(dtRequest))
-		datasetResults := datasets.GetResults(ctx, c, dtRequest)
-		// Send response in DataTable required format
-		//  - Need to return exactly same "Draw" value that DataTable sent in incoming request
+		datasetsResp := datasets.GetResults(ctx, c, r)
 		c.JSON(http.StatusOK,
-			models.DatatableDatasetsResponse{
-				Draw:            dtRequest.Draw,
-				RecordsTotal:    totalRecCount,
-				RecordsFiltered: filteredRecCount,
-				Data:            datasetResults,
-			},
+			datasetsResp,
 		)
+		verboseControllerOutLog(start, "GetDatasets", r, datasetsResp)
+		return
 	}
 }
 
 // GetDetailedDs controller that returns datasets according to DataTable request json
 func GetDetailedDs() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(configs.EnvConnTimeout())*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
 		defer cancel()
+		verboseControllerInitLog(c)
+		start := time.Now()
 
-		// Get request json with validation
-		dtRequest := models.DataTableCustomRequest{}
-		if err := c.ShouldBindJSON(&dtRequest); err != nil {
-			utils.ErrorResponse(c, "Bad request", err)
+		r := models.DataTableCustomRequest{}
+		if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
+			tempReqBody, _ := c.Get(gin.BodyBytesKey)
+			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
 			return
 		}
-		log.Printf("Requst: %#v", dtRequest)
-		detailedDatasetsResp := detailed_datasets.GetResults(ctx, c, dtRequest)
-
-		// Send response in DataTable required format
-		//  - Need to return exactly same "Draw" value that DataTable sent in incoming request
+		detailedDatasetsResp := detailed_datasets.GetResults(ctx, c, r)
 		c.JSON(http.StatusOK,
 			detailedDatasetsResp,
 		)
+		verboseControllerOutLog(start, "GetDetailedDs", r, detailedDatasetsResp)
+		return
+	}
+}
+
+// GetSingleDetailedDs controller that returns detailed dataset in TAPE or DISK
+func GetSingleDetailedDs() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		verboseControllerInitLog(c)
+		start := time.Now()
+		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
+		defer cancel()
+
+		r := models.SingleDetailedDatasetsRequest{}
+		if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
+			x, _ := c.Get(gin.BodyBytesKey)
+			utils.ErrorResponse(c, "Bad request", err, string(x.([]byte)))
+			return
+		}
+
+		detailedRows := detailed_datasets.GetSingleDataset(ctx, c, r)
+		c.HTML(http.StatusOK,
+			"rse_detail_table.html",
+			gin.H{"data": detailedRows},
+		)
+		verboseControllerOutLog(start, "GetSingleDetailedDs", r, detailedRows)
+		return
 	}
 }
 
 // GetIndexPage serves index.html page
 func GetIndexPage(c *gin.Context) {
-	// Call the HTML method of the Context to render a template
+	start := time.Now()
+	verboseControllerInitLog(c)
 	c.HTML(
-		// Set the HTTP status to 200 (OK)
 		http.StatusOK,
-		// Use the index.html template
 		"index.html",
-		// Pass the data that the page uses (in this case, 'title')
 		gin.H{
 			"title": "Home Page",
 		},
 	)
+	verboseControllerOutLog(start, "GetIndexPage", nil, nil)
+	return
 }
 
 // GetDetailsPage serves details.html page
 func GetDetailsPage(c *gin.Context) {
-	// Call the HTML method of the Context to render a template
+	verboseControllerInitLog(c)
+	start := time.Now()
 	c.HTML(
-		// Set the HTTP status to 200 (OK)
 		http.StatusOK,
-		// Use the index.html template
 		"details.html",
-		// Pass the data that the page uses (in this case, 'title')
 		gin.H{
 			"title": "Detailed Datasets Page",
 		},
 	)
+	verboseControllerOutLog(start, "GetDetailsPage", nil, nil)
 }

@@ -12,10 +12,9 @@ import (
 )
 
 var (
-	// connection instance for the "datasets" collection
-	detailedDsDb     = mymongo.GetCollection(mymongo.DBClient, "detailed_datasets")
-	UniqueSortColumn = "_id"
-	ProdAccounts     = []string{"transfer_ops", "wma_prod", "wmcore_output", "wmcore_transferor", "crab_tape_recall", "sync"}
+	CollectionName = "detailed_datasets"
+	collection     = mymongo.GetCollection(mymongo.DBClient, CollectionName)
+	ProdAccounts   = []string{"transfer_ops", "wma_prod", "wmcore_output", "wmcore_transferor", "crab_tape_recall", "sync"}
 )
 
 // CreateSortBson creates sort object which support multiple column sort
@@ -32,14 +31,13 @@ func CreateSortBson(dtRequest models.DataTableCustomRequest) bson.D {
 			})
 		}
 	}
-	// Always add unique id column at the end to be able to fetch non-unique columns in order
-	sortBson = append(sortBson, bson.E{Key: UniqueSortColumn, Value: 1})
 	return sortBson
 }
 
 // CreateSearchBson creates search query
 func CreateSearchBson(dtRequest models.DataTableCustomRequest) bson.M {
 	findQuery := bson.M{}
+
 	customs := dtRequest.Custom
 	if customs.Dataset != "" {
 		findQuery["Dataset"] = primitive.Regex{Pattern: customs.Dataset, Options: "im"}
@@ -72,16 +70,6 @@ func CreateSearchBson(dtRequest models.DataTableCustomRequest) bson.M {
 	return findQuery
 }
 
-// GetFilteredRecCount filtered document count in the datasetsDb
-func GetFilteredRecCount(ctx context.Context, c *gin.Context, findQuery bson.M) int64 {
-	cnt, err := mymongo.GetCount(ctx, detailedDsDb, findQuery)
-	if err != nil {
-		utils.ErrorResponse(c, "FilteredRecCount query failed", err)
-	}
-	log.Printf("[INFO] Filtered Count %d", cnt)
-	return cnt
-}
-
 // GetResults get query results efficiently
 func GetResults(ctx context.Context, c *gin.Context, dtRequest models.DataTableCustomRequest) models.DatatableDetailedDsResponse {
 	var detailedDatasets []models.DetailedDs
@@ -90,25 +78,32 @@ func GetResults(ctx context.Context, c *gin.Context, dtRequest models.DataTableC
 	length := dtRequest.Length
 	skip := dtRequest.Start
 
-	detailedDsCursor, err := mymongo.GetFindQueryResults(ctx, detailedDsDb, searchQuery, sortQuery, skip, length)
+	cursor, err := mymongo.GetFindQueryResults(ctx, collection, searchQuery, sortQuery, skip, length)
 	if err != nil {
-		utils.ErrorResponse(c, "Find query failed", err)
+		utils.ErrorResponse(c, "Find query failed", err, "")
 	}
-	for detailedDsCursor.Next(ctx) {
-		var singleDetailedDs models.DetailedDs
-		if err = detailedDsCursor.Decode(&singleDetailedDs); err != nil {
-			utils.ErrorResponse(c, "detailedDsCursor.Decode failed", err)
-		}
-		detailedDatasets = append(detailedDatasets, singleDetailedDs)
+	if err = cursor.All(ctx, &detailedDatasets); err != nil {
+		utils.ErrorResponse(c, "detailed datasets cursor failed", err, "")
 	}
 
-	//totalRecCount := GetTotalRecCount(ctx, c)
-	filteredRecCount := GetFilteredRecCount(ctx, c, searchQuery)
-
+	filteredRecCount := length + skip + 1
 	return models.DatatableDetailedDsResponse{
 		Draw:            dtRequest.Draw,
 		RecordsTotal:    filteredRecCount,
 		RecordsFiltered: filteredRecCount,
 		Data:            detailedDatasets,
 	}
+}
+
+// GetSingleDataset returns single dataset filtered with name
+func GetSingleDataset(ctx context.Context, c *gin.Context, r models.SingleDetailedDatasetsRequest) []models.DetailedDataset {
+	var rows []models.DetailedDataset
+	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"Dataset": r.Dataset, "Type": r.Type})
+	if err != nil {
+		utils.ErrorResponse(c, "Find query failed", err, "")
+	}
+	if err = cursor.All(ctx, &rows); err != nil {
+		utils.ErrorResponse(c, "single detailed dataset cursor failed", err, "")
+	}
+	return rows
 }

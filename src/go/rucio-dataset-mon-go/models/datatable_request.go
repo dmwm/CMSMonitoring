@@ -10,7 +10,7 @@ package models
 type DataTableRequest struct {
 	Draw    int           `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
 	Columns []DTReqColumn `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
-	Length  int64         `json:"length" validate:"required" binding:"required"`  // Number of records that the table can display in the current draw.
+	Length  int64         `json:"length"`                                         // Number of records that the table can display in the current draw.
 	Orders  []DTReqOrder  `json:"order"`                                          //
 	Search  DTReqSearch   `json:"search"`                                         //
 	Start   int64         `json:"start"`                                          //
