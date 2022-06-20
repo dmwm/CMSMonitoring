@@ -16,17 +16,10 @@ import argparse
 import requests
 import traceback
 
-try:
-    import urllib.request as ulib  # python 3.X
-    import urllib.parse as parser
-except ImportError:
-    import urllib2 as ulib  # python 2.X
-    import urllib as parser
-
 
 class OptionParser:
     def __init__(self):
-        "User based option parser"
+        """User based option parser"""
         desc = "CMS MONIT query tool to query "
         desc += "MONIT datatabases via ES/Influx DB queries or key:val pairs\n"
         desc += "The file containing the definition of the datasources is set using "
@@ -59,7 +52,8 @@ class OptionParser:
             action="store",
             dest="dbname",
             default="",
-            help="Name of the datasource in grafana, e.g. monit_condor, you can list the datasources using the option --list_dbs",
+            help="Name of the datasource in grafana, e.g. monit_condor, "
+                 "you can list the datasources using the option --list_dbs",
         )
         self.parser.add_argument(
             "--query",
@@ -168,20 +162,21 @@ def run(url, token, dbid, dbname, query, idx=0, limit=10, verbose=0):
 
 
 def query_idb(base, dbid, dbname, query, headers, verbose=0):
-    "Method to query InfluxDB"
+    """Method to query InfluxDB"""
     uri = base + "/api/datasources/proxy/{}/query?db={}&q={}".format(
         dbid, dbname, query
     )
     response = requests.get(uri, headers=headers)
     try:
         return json.loads(response.text)
-    except:
+    except Exception as e:
+        print(e)
         print(response.text)
         sys.exit(1)
 
 
 def query_es(base, dbid, query, headers, verbose=0):
-    "Method to query ES DB"
+    """Method to query ES DB"""
     # see https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-multi-search.html
     headers.update(
         {"Content-type": "application/x-ndjson", "Accept": "application/json"}
@@ -192,7 +187,8 @@ def query_es(base, dbid, query, headers, verbose=0):
     response = requests.get(uri, data=query, headers=headers)
     try:
         return json.loads(response.text)
-    except:
+    except Exception as e:
+        print(e)
         print("response: %s" % response.text)
         traceback.print_exc()
 
@@ -232,14 +228,12 @@ def __infer_index(_db, dbname):
         if _db
         else dbname
     )
-    values = [
-        index + "*" if not "*" in index else index for index in _name_str.split(",")
-    ]
+    values = [index + "*" if "*" not in index else index for index in _name_str.split(",")]
     return values
 
 
 def main():
-    "Main function"
+    """Main function"""
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     if opts.list_dbs:

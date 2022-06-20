@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-#pylint: disable=C0301,R0903,R0912,W0703,C0103
+# -*- coding: utf-8 -*-
+# pylint: disable=C0301,R0903,R0912,W0703,C0103
 """
 File       : Validator.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
@@ -23,13 +23,15 @@ import logging
 
 try:
     import jsonschema
+
     JSONSCHEMA = True
 except ImportError:
     JSONSCHEMA = False
 
+
 def md5hash(rec):
-    "Return md5 hash of given query"
-    if  not isinstance(rec, dict):
+    """Return md5 hash of given query"""
+    if not isinstance(rec, dict):
         raise NotImplementedError
     # discard timestamp fields from hash calculations since they're dynamic
     record = dict(rec)
@@ -37,15 +39,18 @@ def md5hash(rec):
     keyhash = hashlib.md5()
     try:
         keyhash.update(rec)
-    except TypeError: # python3
+    except TypeError:  # python3
         keyhash.update(rec.encode('ascii'))
     return keyhash.hexdigest()
+
 
 # global pool of validators
 VALIDATORS = {}
 
+
 class JsonSchemaValidator(object):
     "Python 2.X implementation of validator based on jsonschema package"
+
     def __init__(self, schema, logger=None):
         logging.basicConfig(level=logging.WARNING)
         self.logger = logger if logger else logging.getLogger('JsonSchemaValidator')
@@ -67,8 +72,10 @@ class JsonSchemaValidator(object):
             return False
         return True
 
+
 class Schemas(object):
     "Schemas object provides access to CMSMonitoring schema files"
+
     def __init__(self, update=3600, jsonschemas=False):
         self.tstamp = time.time()
         self.update = update
@@ -77,7 +84,7 @@ class Schemas(object):
 
     def schemas(self):
         "Return all known CMSMonitoring schemas"
-        if self.sdict and (time.time()-self.tstamp) < self.update:
+        if self.sdict and (time.time() - self.tstamp) < self.update:
             return self.sdict
         if 'CMSMONITORING_SCHEMAS' in os.environ:
             fdir = os.environ['CMSMONITORING_SCHEMAS']
@@ -108,6 +115,7 @@ class Schemas(object):
             self.sdict[sname] = json.load(open(os.path.join(fdir, sname)))
         return self.sdict
 
+
 def validate_jsonschema(schema, doc, logger=None):
     """
     Jsonschema implementation of validate schema of a given document
@@ -116,6 +124,7 @@ def validate_jsonschema(schema, doc, logger=None):
     """
     validator = JsonSchemaValidator(schema, logger)
     return validator.validate_schema(doc)
+
 
 def etype(val):
     "Helper function to deduce type of given value either from python based type or jsonschema"
@@ -133,6 +142,7 @@ def etype(val):
         return (float, int)
 
     return type(val)
+
 
 def _validate_schema(schema, doc, logger):
     """
@@ -171,18 +181,24 @@ def _validate_schema(schema, doc, logger):
                 continue
 
             if not isinstance(val[0], etype(expect[0])):
-                msg = "{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(base, key, repr(val), type(val[0]), etype(expect[0]))
+                msg = "{}: for key={} val={} has incorrect data-type in list, found {} expect {}".format(base, key,
+                                                                                                         repr(val),
+                                                                                                         type(val[0]),
+                                                                                                         etype(
+                                                                                                             expect[0]))
                 logger.warn(msg)
                 offending_keys.append(key)
                 continue
 
         if val != None and not isinstance(val, etype(expect)):
-            msg = "{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, repr(val), type(val), etype(expect))
+            msg = "{}: for key={} val={} has incorrect data-type, found {} expect {}".format(base, key, repr(val),
+                                                                                             type(val), etype(expect))
             logger.warn(msg)
             offending_keys.append(key)
             continue
 
     return offending_keys, unknown_keys
+
 
 def validate_schema(schema, doc, logger):
     """
@@ -196,10 +212,12 @@ def validate_schema(schema, doc, logger):
     logger.debug("using python based validator")
     return _validate_schema(schema, doc, logger)
 
+
 class Validator(object):
     """
     Validator class
     """
+
     def __init__(self, schema, logger=None):
         if not schema:
             raise Exception('{}: unknown schema'.format(__file__))
@@ -226,10 +244,12 @@ class Validator(object):
         "Validate schema of a given document"
         return validate_schema(self.schema, doc, self.logger)
 
+
 class ClassAdsValidator(Validator):
     """
     ClassAdsValidation class
     """
+
     def __init__(self, schema=None):
         if not schema:
             schema = os.environ.get('CLASSADS_SCHEMA', '')

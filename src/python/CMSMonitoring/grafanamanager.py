@@ -7,7 +7,7 @@ import re
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
 
 
-class grafana_manager:
+class GrafanaManager:
     """An interface with the grafana API
     Attributes:
         GRAFANA_TOKEN
@@ -75,7 +75,6 @@ class grafana_manager:
             }
             new_dashboard["dashboard"]["id"] = None
             new_dashboard["dashboard"]["uid"] = None
-            new_dashboard
             new_title = (
                 title
                 if replace_title

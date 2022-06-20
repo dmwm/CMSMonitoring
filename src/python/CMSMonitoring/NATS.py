@@ -5,9 +5,6 @@
 File       : NATS.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: python implementation of NATS publisher manager based on
-- python2 implemenation via tornado module, see
-  https://github.com/nats-io/nats.py2
-  https://pypi.org/project/nats-client/
 - python3 implementation via asyncio module, see
   https://github.com/nats-io/nats.py
   https://pypi.org/project/asyncio-nats-client/
@@ -29,20 +26,16 @@ Basic usage instructions:
     mgr.publish(data)
 """
 
-# system modules
 import os
-import sys
 import random
 import subprocess
 import traceback
 import asyncio
 from nats.aio.client import Client as NATS
 
-NATS2 = False
-
 
 # python3 implementation of NATS python client
-async def nats(server, subject, msg, loop):
+async def nats(server, subject, msg):
     """
     NATS client implemented via asyncio
     python3 implementation, see
@@ -50,7 +43,7 @@ async def nats(server, subject, msg, loop):
     """
     nc = NATS()
     try:
-        await nc.connect(server, loop=loop, max_reconnect_attempts=3)
+        await nc.connect(server, max_reconnect_attempts=3)
     except Exception as exp:
         print("failed to connect to server: error {}".format(str(exp)))
         traceback.print_exc()
@@ -64,14 +57,14 @@ async def nats(server, subject, msg, loop):
 
 
 def nats_encoder(doc, sep='   '):
-    "CMS NATS message encoder"
+    """CMS NATS message encoder"""
     keys = sorted(doc.keys())
     msg = sep.join(['{}:{}'.format(k, doc[k]) for k in keys])
     return msg
 
 
 def nats_decoder(msg, sep='   '):
-    "CMS NATS message decoder"
+    """CMS NATS message decoder"""
     rec = {}
     for pair in msg.split(sep):
         arr = pair.split(':')
@@ -80,7 +73,7 @@ def nats_decoder(msg, sep='   '):
 
 
 def def_filter(doc, attrs=None):
-    "Default filter function for given doc and attributes"
+    """Default filter function for given doc and attributes"""
     rec = {}
     if not attrs:
         yield doc
@@ -92,7 +85,7 @@ def def_filter(doc, attrs=None):
 
 
 def gen_topic(def_topic, key, val, sep=None):
-    "Create proper subject topic for NATS"
+    """Create proper subject topic for NATS"""
     if sep:
         val = str(val).replace(sep, '.')
         if val.startswith('.'):
@@ -110,7 +103,7 @@ class NATSManager(object):
     :param topics: list of topics, i.e. where messages will be published
     :param attrs: list of attributes to select for publishing
     :param default_topic: default topic 'cms'
-    :param stdout: instead of piblishing print all messages on stdout, boolean
+    :param stdout: instead of publishing print all messages on stdout, boolean
     :param cms_filter: name of cms filter function, by default `def_filter` will be used
     """
 
@@ -139,19 +132,19 @@ class NATSManager(object):
         Publish given set of docs to specific topics.
 
         We use the following logic to publish messages. If this class is instantiated
-        with set of topics the messages will be send to those topics, otherwise
+        with set of topics the messages will be sent to those topics, otherwise
         we compose nested structure of topics starting from default_topic root (cms),
         e.g. cms.site.T3.US.Cornell, cms.task.taskName, cms.exitCode.123
         The sub-topics are based on given document attributes. Moreover, if
         document carry on system attribute key its value will be used as
         sub-root topic, e.g. if document has the form {..., "system":"dbs"},
-        then topics will start from cms.dbs root where cms represents
+        then topics will start from "cms.dbs" root where cms represent
         root topic, and dbs represents sub-root topic, respectively.
         """
         if isinstance(data, dict):
             data = [data]
         if not isinstance(data, list):
-            print("NATS: invalid data type '%s', expect dict ot list of dicts" % type(data))
+            print("NATS: invalid data type '%s', expect dict or list of dicts" % type(data))
         all_msgs = []
         mdict = {}
         subject = self.def_topic
@@ -178,7 +171,7 @@ class NATSManager(object):
                             topic = gen_topic(subject, key, val, '/')
                         else:
                             if str(val):
-                                # collect messages on invidual topics
+                                # collect messages on individual topics
                                 topic = gen_topic(subject, key, val)
                             else:
                                 topic = ''
@@ -200,7 +193,7 @@ class NATSManager(object):
             self.send(topic, msgs)
 
     def send_stdout(self, subject, msg):
-        "send subject/msg to stdout"
+        """send subject/msg to stdout"""
         if isinstance(msg, list):
             for item in msg:
                 print("{}: {}".format(subject, item))
@@ -208,13 +201,13 @@ class NATSManager(object):
             print("{}: {}".format(subject, msg))
 
     def get_server(self):
-        "Return random server from server pool"
+        """Return random server from server pool"""
         if len(self.server) > 1:
             return self.server[random.randint(0, len(self.server) - 1)]
         return self.server[0]
 
     def send(self, subject, msg):
-        "send given message to subject topic"
+        """send given message to subject topic"""
         if self.stdout:
             self.send_stdout(subject, msg)
         else:
@@ -223,14 +216,14 @@ class NATSManager(object):
                 # VK: we need to test initializing asyncio loop in ctor
                 # and potentially avoid loop creation here
                 loop = asyncio.get_event_loop()
-                loop.run_until_complete(nats(server, subject, msg, self.loop))
+                loop.run_until_complete(nats(server, subject, msg))
                 loop.close()
             except Exception as exp:
                 print("Failed to send docs to NATS, error: {}".format(str(exp)))
 
 
 def nats_cmd(cmd, server, subject, msg):
-    "NATS publisher via external nats cmd tool"
+    """NATS publisher via external nats cmd tool"""
     if not os.path.exists(cmd):
         print("Unable to locate publisher tool '{}' on local file system".format(cmd))
         return
@@ -239,7 +232,7 @@ def nats_cmd(cmd, server, subject, msg):
         return
     if isinstance(msg, list):
         for item in msg:
-            pcmd = '{} -s {} {} "{}"'.format(cmd, server, subject, msg)
+            pcmd = '{} -s {} {} "{}"'.format(cmd, server, subject, item)
             proc = subprocess.Popen(pcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=os.environ)
             proc.wait()
     else:
@@ -250,7 +243,7 @@ def nats_cmd(cmd, server, subject, msg):
 
 
 class NATSManagerCmd(NATSManager):
-    "NATS manager based on external publisher tool"
+    """NATS manager based on external publisher tool"""
 
     def __init__(self, cmd, server=None, topics=None, attrs=None, sep='   ', default_topic='cms', stdout=False,
                  cms_filter=None):
@@ -266,17 +259,17 @@ class NATSManagerCmd(NATSManager):
                                                                                                    self.stdout)
 
     def send(self, subject, msg):
-        "Call NATS function, user can pass either single message or list of messages"
+        """Call NATS function, user can pass either single message or list of messages"""
         if self.stdout:
             self.send_stdout(subject, msg)
         else:
             server = self.get_server()
-            nats_cmd(self.cmd, server, subject, msg)
+            nats_cmd(self.pub, server, subject, msg)
 
 
 def test():
-    "Test function"
-    subject = 'cms'
+    """Test function"""
+    subject = 'cms'  # default topic
     doc = {'site': '1', 'attr': '1'}
     sep = '   '
     msg = nats_encoder(doc, sep)

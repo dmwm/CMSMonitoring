@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.x"
+          python-version: ">=3.7"
       - name: Set version from git tag
         run: |
           # from refs/tags/py-1.2.3 get 1.2.3
@@ -38,4 +38,5 @@ jobs:
           echo "TODO - delete this debug message"
           cat CMSMonitoring/__init__.py
           python setup.py sdist bdist_wheel
-          twine upload --versbose dist/*
+          twine upload --verbose dist/*
+          # twine upload --verbose dist/* -u $TWINE_USERNAME -p $TWINE_PASSWORD

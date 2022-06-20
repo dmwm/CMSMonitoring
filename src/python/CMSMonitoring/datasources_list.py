@@ -7,17 +7,10 @@ import json
 import argparse
 import requests
 
-try:
-    import urllib.request as ulib  # python 3.X
-    import urllib.parse as parser
-except ImportError:
-    import urllib2 as ulib  # python 2.X
-    import urllib as parser
-
 
 class OptionParser:
     def __init__(self):
-        "User based option parser"
+        """User based option parser"""
         desc = """
 This app creates a json file with the name, id, and type of datasource in the user organization. 
 It requires a admin token from grafana. The token can be set either using the --token option 
@@ -50,7 +43,7 @@ def get_datasources(token, base="https://monit-grafana.cern.ch"):
     response = requests.get(uri, headers=headers)
     try:
         fullResponse = json.loads(response.text)
-    except:
+    except Exception as e:
         print("Fail to load HTTP response as JSON")
         print(response.text)
         sys.exit(1)
@@ -61,12 +54,12 @@ def get_datasources(token, base="https://monit-grafana.cern.ch"):
 
 
 def main():
-    "Main function"
+    """Main function"""
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     token = os.getenv("GRAFANA_ADMIN_TOKEN", opts.token)
-    if os.path.exists(token): # if token is a file
-        token = open(token).readline().replace('\n','')
+    if os.path.exists(token):  # if token is a file
+        token = open(token).readline().replace('\n', '')
     output = opts.output
     base = opts.url
     if not token:

@@ -2,19 +2,17 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import requests
-import json
 import argparse
 import traceback
 import logging
-from grafana_manager import grafana_manager
+from grafanamanager import GrafanaManager
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
 
 
 class OptionParser:
     def __init__(self):
-        "User based option parser"
+        """User based option parser"""
         desc = """
 This app allows to create a copy of one (using the uid parameter) 
 or a set of dashboards (using the query parameter) 
@@ -54,7 +52,8 @@ allowing to change the datasource and the id and the title.
             action="store",
             dest="new_title",
             default=None,
-            help="if --uid is specified, this will be the title of the new dashboard, if --query is used this value will be used as postfix",
+            help="if --uid is specified, this will be the title of the new dashboard, "
+                 "if --query is used this value will be used as postfix",
         )
         self.parser.add_argument(
             "--datasource_replacement",
@@ -62,9 +61,9 @@ allowing to change the datasource and the id and the title.
             nargs=2,
             dest="replacements",
             default=None,
-            help="""pairs of values, 'orig' 'new_ds', to replace a datasource in the dashboard(s).
-you can use several values using --datasource_replacement "cmsweb-k8s" "cmsweb-k8s-new" --datasource_replacement "monit_es_condor_2019" "monit_es_condor" 
-""",
+            help="pairs of values, 'orig' 'new_ds', to replace a datasource in the dashboard(s). "
+                 "you can use several values using --datasource_replacement 'cmsweb-k8s' 'cmsweb-k8s-new' "
+                 "--datasource_replacement 'monit_es_condor_2019' 'monit_es_condor'",
         )
         self.parser.add_argument(
             "--query",
@@ -88,16 +87,15 @@ def main():
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     if not opts.token:
-        print(
-            "A grafana token is required (either using the --grafana_token option or seting the GRAFANA_TOKEN environment variable"
-        )
+        print("A grafana token is required (either using the "
+              "--grafana_token option or seting the GRAFANA_TOKEN environment variable")
         sys.exit(1)
     if not (opts.dashboard_uid or opts.dashboards_query):
         print("You need to set either --uid or --query")
         sys.exit(1)
     try:
         # print(opts)
-        mgr = grafana_manager(
+        mgr = GrafanaManager(
             grafana_url=opts.url, grafana_token=opts.token, output_folder=opts.output
         )
         mgr.dashboard_duplicator(
