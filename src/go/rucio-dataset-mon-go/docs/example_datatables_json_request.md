@@ -5,15 +5,13 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
 ```json
 {
     "draw": 1,
-    "columns":
-    [
+    "columns": [
         {
             "data": "Id",
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -23,8 +21,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -34,8 +31,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -45,8 +41,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -56,8 +51,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -67,8 +61,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -78,8 +71,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -89,8 +81,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
@@ -100,15 +91,13 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "name": "",
             "searchable": true,
             "orderable": true,
-            "search":
-            {
+            "search": {
                 "value": "",
                 "regex": false
             }
         }
     ],
-    "order":
-    [
+    "order": [
         {
             "column": 0,
             "dir": "asc"
@@ -116,10 +105,21 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
     ],
     "start": 0,
     "length": 20,
-    "search":
-    {
+    "search": {
         "value": "",
         "regex": false
+    },
+    "custom":
+    {
+        "dataset": "",
+        "rse": "",
+        "tier": "",
+        "rseCountry": "",
+        "rseKind": "",
+        "accounts":
+        [],
+        "rseType":
+        []
     }
 }
 ```

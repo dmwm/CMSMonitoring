@@ -33,12 +33,13 @@ func MiddlewareReqHandler() gin.HandlerFunc {
 // ErrorResponse returns error response with given msg and error
 func ErrorResponse(c *gin.Context, msg string, err error) {
 	log.Printf("[ERROR] %s %s", msg, err)
-	c.JSON(http.StatusInternalServerError,
+	c.AbortWithStatusJSON(http.StatusBadRequest,
 		ErrorResponseStruct{
-			Status:  http.StatusInternalServerError,
+			Status:  http.StatusBadRequest,
 			Message: msg,
 			Data:    map[string]string{"data": err.Error()},
 		})
+	return
 }
 
 // ConvertOrderEnumToMongoInt converts DataTable enums ("asc" and "desc") to Mongo sorting integer definitions (1,-1)

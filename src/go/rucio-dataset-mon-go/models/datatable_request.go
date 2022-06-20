@@ -8,12 +8,12 @@ package models
 // DataTableRequest main ajax request that come from DataTable, which includes user inputs
 //     For full field descriptions, please see https://datatables.net/manual/server-side#Sent-parameters
 type DataTableRequest struct {
-	Draw    int           `json:"draw" validate:"required"`   // Just a counter that should be return exactly in the response
-	Columns []DTReqColumn `json:"columns"`                    // Includes user input for columns (like search text for the column)
-	Length  int64         `json:"length" validate:"required"` // Number of records that the table can display in the current draw.
-	Orders  []DTReqOrder  `json:"order"`                      //
-	Search  DTReqSearch   `json:"search"`                     //
-	Start   int64         `json:"start"`                      //
+	Draw    int           `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
+	Columns []DTReqColumn `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
+	Length  int64         `json:"length" validate:"required" binding:"required"`  // Number of records that the table can display in the current draw.
+	Orders  []DTReqOrder  `json:"order"`                                          //
+	Search  DTReqSearch   `json:"search"`                                         //
+	Start   int64         `json:"start"`                                          //
 }
 
 // DTReqSearch represents main search text which client entered and can be regex or not.
@@ -37,4 +37,26 @@ type DTReqColumn struct {
 type DTReqOrder struct {
 	Column int    `json:"column"`                       // Column index number in the columns list (order not changes)
 	Dir    string `json:"dir" binding:"oneof=asc desc"` // asc or desc
+}
+
+// Custom represents custom fields that added for details page
+type Custom struct {
+	Dataset    string   `json:"dataset"`
+	Rse        string   `json:"rse"`
+	Tier       string   `json:"tier"`
+	RseCountry string   `json:"rseCountry"`
+	RseKind    string   `json:"rseKind"`
+	Accounts   []string `json:"accounts"`
+	RseType    []string `json:"rseType"`
+}
+
+// DataTableCustomRequest customized ajax request that come from DataTable
+type DataTableCustomRequest struct {
+	Draw    int           `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
+	Columns []DTReqColumn `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
+	Length  int64         `json:"length"`                                         // Number of records that the table can display in the current draw.
+	Orders  []DTReqOrder  `json:"order"`                                          //
+	Search  DTReqSearch   `json:"search"`                                         //
+	Start   int64         `json:"start"`                                          //
+	Custom  Custom        `json:"custom"`                                         // Custom
 }

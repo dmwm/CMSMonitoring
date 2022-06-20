@@ -21,63 +21,35 @@
             font-family: 'Trebuchet MS', sans-serif;
         }
 
-        /* Search bar */
-        .dataTables_filter input {
-            border: 7px solid Tomato;
-            width: 400px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
         table td {
             word-break: break-all;
+            width: auto;
+            table-layout: fixed;
+        }
+
+        /* Id */
+        table tr td:nth-child(1) {
+            text-align: left;
         }
 
         /* RseType */
-        table tr td:nth-child(1) {
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        /* Dataset */
         table tr td:nth-child(2) {
             text-align: left;
         }
 
-        /* LastAccess */
+        /* Dataset */
         table tr td:nth-child(3) {
-            text-align: right;
-            white-space: nowrap;
+            text-align: left;
+            width: 30%;
         }
 
-        /* LastAccessMs */
-        table tr td:nth-child(4) {
-            text-align: right;
-            white-space: nowrap;
+        table tr td:nth-child(n+4):nth-child(-n+5) {
+            text-align: center;
         }
 
-        /* Max */
-        table tr td:nth-child(5) {
+        /* LastAccess, LastAccessMs, Max, Min, Avg, Sum, MaxTB, MinTB, AvgTB, SumTB */
+        table tr td:nth-child(n+6):nth-child(-n+8) {
             text-align: right;
-            white-space: nowrap;
-        }
-
-        /* Min */
-        table tr td:nth-child(6) {
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        /* Avg */
-        table tr td:nth-child(7) {
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        /* Sum */
-        table tr td:nth-child(8) {
-            text-align: right;
-            white-space: nowrap;
         }
 
         /* RSEs */
@@ -106,31 +78,31 @@
     </h3>
 </div>
 
-<div class="container compact display" style="width:100%;">
-    <table class="go-datatable display" style="width:100%">
+<div class="container" style="display:block; width:100%">
+    <table class="go-datatable display compact" style="width:100%">
         <thead>
         <tr>
             <th>RseType</th>
             <th>Dataset</th>
             <th>LastAccess</th>
             <th>LastAccessMs</th>
-            <th>MaxDatasetSizeInRsesGB</th>
-            <th>MinDatasetSizeInRsesGB</th>
-            <th>AvgDatasetSizeInRsesGB</th>
-            <th>SumDatasetSizeInRsesGB</th>
+            <th>MaxTB</th>
+            <th>MinTB</th>
+            <th>AvgTB</th>
+            <th>SumTB</th>
             <th>RSEs</th>
         </tr>
         </thead>
-        <tfoot>
+        <tfoot style="color: cornflowerblue">
         <tr>
             <th>RseType</th>
             <th>Dataset</th>
             <th>LastAccess</th>
             <th>LastAccessMs</th>
-            <th>MaxDatasetSizeInRsesGB</th>
-            <th>MinDatasetSizeInRsesGB</th>
-            <th>AvgDatasetSizeInRsesGB</th>
-            <th>SumDatasetSizeInRsesGB</th>
+            <th>MaxTB</th>
+            <th>MinTB</th>
+            <th>AvgTB</th>
+            <th>SumTB</th>
             <th>RSEs</th>
         </tr>
         </tfoot>
@@ -149,17 +121,25 @@
 
 <script>
     $(document).ready(function () {
+        // Add a text input to each column footer cell
+        $('.go-datatable tfoot th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+        });
+
         var table = $('.go-datatable').DataTable({
             processing: true,
             serverSide: true,
-            scrollX: false,
-            pageLength: 20,
-            dom: "fBrtpli",
+            scrollX: true,
+            pageLength: 10,
+            dom: "Brtpli", // no main search ("f"), just individual column search
             aLengthMenu: [
                 [5, 10, 25, 50, 100],
                 [5, 10, 25, 50, 100]
             ],
+
             ajax: {
+                // Server side ajax
                 url: "../api/datasets",
                 method: "POST",
                 contentType: 'application/json',
@@ -168,23 +148,38 @@
                 },
                 processData: true,
                 dataType: "json",
-                searchDelay: 400,
-                // "processData": false,
-                // "contentType": 'application/json',
+                searchDelay: 3000,
             },
+
+            initComplete: function () {
+                // Column search
+                var api = this.api();
+                api.columns().every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change', $.fn.dataTable.util.throttle(
+                            function (val) {
+                                if (that.search() !== this.value) {
+                                    that.search(this.value).draw();
+                                }
+                            },
+                            1000 // Period: https://datatables.net/reference/api/%24.fn.dataTable.util.throttle()
+                        )
+                    );
+                });
+            },
+
             columns: [
                 {data: "RseType"},
                 {data: "Dataset"},
                 {data: "LastAccess"},
                 {data: "LastAccessMs"},
-                {data: "MaxDatasetSizeInRsesGB"},
-                {data: "MinDatasetSizeInRsesGB"},
-                {data: "AvgDatasetSizeInRsesGB"},
-                {data: "SumDatasetSizeInRsesGB"},
+                {data: "MaxTB"},
+                {data: "MinTB"},
+                {data: "AvgTB"},
+                {data: "SumTB"},
                 {data: "RSEs"}
             ]
         });
-
     });
 </script>
 

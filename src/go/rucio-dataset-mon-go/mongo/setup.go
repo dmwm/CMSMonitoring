@@ -19,7 +19,8 @@ func GetMongoClient() *mongo.Client {
 	opts := options.Client()
 	opts.ApplyURI(configs.EnvMongoURI())
 	opts.SetMaxPoolSize(100)
-	opts.SetConnectTimeout(time.Duration(configs.EnvConnTimeout()) * time.Second)
+	opts.SetConnectTimeout(time.Duration(300) * time.Second)
+	opts.SetMaxConnIdleTime(time.Microsecond * 100000)
 	if client, err = mongo.Connect(context.Background(), opts); err != nil {
 		log.Fatal(err)
 	}
