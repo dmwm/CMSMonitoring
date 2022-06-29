@@ -45,7 +45,7 @@ Sometimes we need to experiment/test our clients with local NATS server.
 It is trivial to do. Please follow these steps:
 ```
 # get nats server code
-go get github.com/nats-io/nats-server
+go install github.com/nats-io/nats-server
 
 # create area with certificates
 mkdir ~/certificates

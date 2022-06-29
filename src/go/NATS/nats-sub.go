@@ -246,12 +246,12 @@ func main() {
 			os.Exit(1)
 		}
 		defer file.Close()
-		bytes, err := ioutil.ReadAll(file)
+		bytesRead, err := ioutil.ReadAll(file)
 		if err != nil {
 			fmt.Printf("Unable to read '%s' cms-auth file\n", fname)
 			os.Exit(1)
 		}
-		auth = strings.Replace(string(bytes), "\n", "", -1)
+		auth = strings.Replace(string(bytesRead), "\n", "", -1)
 	}
 	var servers []string
 	for _, v := range strings.Split(*urls, ",") {
@@ -367,8 +367,8 @@ func setupConnOptions(opts []nats.Option) []nats.Option {
 
 	opts = append(opts, nats.ReconnectWait(reconnectDelay))
 	opts = append(opts, nats.MaxReconnects(int(totalWait/reconnectDelay)))
-	opts = append(opts, nats.DisconnectHandler(func(nc *nats.Conn) {
-		log.Printf("Disconnected: will attempt reconnects for %.0fm", totalWait.Minutes())
+	opts = append(opts, nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
+		log.Printf("Disconnected: will attempt reconnects for %.0fm - error: %s", totalWait.Minutes(), err)
 	}))
 	opts = append(opts, nats.ReconnectHandler(func(nc *nats.Conn) {
 		log.Printf("Reconnected")
