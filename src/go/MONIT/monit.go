@@ -182,7 +182,6 @@ func writeDS(fname string) {
 		err = ioutil.WriteFile(fname, file, 0644)
 		if err != nil {
 			log.Fatalf("Error writing to file: %s error: %s", fname, err)
-			os.Exit(0)
 		}
 	}
 }
