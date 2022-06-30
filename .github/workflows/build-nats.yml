@@ -1,14 +1,13 @@
-# Ref: https://github.com/dmwm/dbs2go/blob/master/.github/workflows/build.yml
 name: Build
 
 on:
   push:
     tags:
-      - 'rgo-*.*.*'
+      - 'go-*.*.*'
 
 jobs:
   build:
-    name: Build rucio-mon
+    name: Build nats-sub
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
@@ -23,13 +22,13 @@ jobs:
         id: get_tag
         run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
 
-      - name: Build cmsmon-rucio-ds-web docker image
+      - name: Build nats-sub docker image
         run: |
           echo Image tag: ${{ steps.get_tag.outputs.tag }}
-          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-rucio-ds-web/Dockerfile
+          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/nats-sub/Dockerfile
           sed -i -e "s,ENV CMSMON_TAG=.*,ENV CMSMON_TAG=${{steps.get_tag.outputs.tag}},g" Dockerfile
-          docker build . --tag docker.pkg.github.com/dmwm/cmsmon-rucio-ds-web/cmsmon-rucio-ds-web
-          docker tag docker.pkg.github.com/dmwm/cmsmon-rucio-ds-web/cmsmon-rucio-ds-web registry.cern.ch/cmsmonitoring/cmsmon-rucio-ds-web
+          docker build . --tag docker.pkg.github.com/dmwm/nats-sub/nats-sub
+          docker tag docker.pkg.github.com/dmwm/nats-sub/nats-sub registry.cern.ch/cmsmonitoring/nats-sub
 
       - name: Login to registry.cern.ch
         uses: docker/login-action@v2
@@ -38,11 +37,11 @@ jobs:
           username: ${{ secrets.CERN_LOGIN }}
           password: ${{ secrets.CERN_TOKEN }}
 
-      - name: Publish cmsmon-rucio-ds-web image to registry.cern.ch
+      - name: Publish nats-sub image to registry.cern.ch
         uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.CERN_LOGIN }}
           password: ${{ secrets.CERN_TOKEN }}
           registry: registry.cern.ch
-          repository: cmsmonitoring/cmsmon-rucio-ds-web
+          repository: cmsmonitoring/nats-sub
           tag_with_ref: true
