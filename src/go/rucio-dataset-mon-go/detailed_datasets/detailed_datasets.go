@@ -8,12 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
 
 var (
-	CollectionName = "detailed_datasets"
-	collection     = mymongo.GetCollection(mymongo.DBClient, CollectionName)
+	collectionName = "detailed_datasets"
+	collection     *mongo.Collection
 	ProdAccounts   = []string{"transfer_ops", "wma_prod", "wmcore_output", "wmcore_transferor", "crab_tape_recall", "sync"}
 )
 
@@ -72,6 +73,7 @@ func CreateSearchBson(dtRequest models.DataTableCustomRequest) bson.M {
 
 // GetResults get query results efficiently
 func GetResults(ctx context.Context, c *gin.Context, dtRequest models.DataTableCustomRequest) models.DatatableDetailedDsResponse {
+	collection = mymongo.GetCollection(mymongo.DBClient, collectionName)
 	var detailedDatasets []models.DetailedDs
 	searchQuery := CreateSearchBson(dtRequest)
 	sortQuery := CreateSortBson(dtRequest)
@@ -97,6 +99,7 @@ func GetResults(ctx context.Context, c *gin.Context, dtRequest models.DataTableC
 
 // GetSingleDataset returns single dataset filtered with name
 func GetSingleDataset(ctx context.Context, c *gin.Context, r models.SingleDetailedDatasetsRequest) []models.DetailedDataset {
+	collection = mymongo.GetCollection(mymongo.DBClient, collectionName)
 	var rows []models.DetailedDataset
 	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"Dataset": r.Dataset, "Type": r.Type})
 	if err != nil {

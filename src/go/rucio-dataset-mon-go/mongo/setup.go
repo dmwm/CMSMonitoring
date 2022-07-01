@@ -11,15 +11,14 @@ import (
 
 // Global variables
 
-var DBClient = GetMongoClient()
-var DB = configs.EnvMongoDB()
-var URI = configs.EnvMongoURI()
+var DBClient *mongo.Client
+var DB string
+var URI string
 var ConnectionTimeout = 100
 var Timeout = time.Duration(ConnectionTimeout) * time.Second
 
 // GetMongoClient returns mongo client
 func GetMongoClient() *mongo.Client {
-	configs.InitialChecks()
 	var err error
 	var client *mongo.Client
 	//opts.SetMaxPoolSize(100)
@@ -41,4 +40,12 @@ func GetMongoClient() *mongo.Client {
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
 	collection := client.Database(DB).Collection(collectionName)
 	return collection
+}
+
+// InitializeClient setup client connection in main function
+func InitializeClient() {
+	configs.InitialChecks()
+	DB = configs.EnvMongoDB()
+	URI = configs.EnvMongoURI()
+	DBClient = GetMongoClient()
 }

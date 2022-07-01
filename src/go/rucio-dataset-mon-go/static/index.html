@@ -164,7 +164,7 @@
                 }
                 //console.log(JSON.stringify(single_dataset_request))
                 $.ajax({
-                    url: 'http://cmsweb-test1-zone-b-brkegglzfmze-node-1.cern.ch:31281/api/rse-detail',
+                    url: '../api/rse-detail',
                     type: 'post',
                     dataType: 'html',
                     contentType: 'application/json',
@@ -194,7 +194,7 @@
             ],
 
             ajax: {
-                url: "http://cmsweb-test1-zone-b-brkegglzfmze-node-1.cern.ch:31281/api/datasets",
+                url: "../api/datasets",
                 method: "POST",
                 contentType: 'application/json',
                 data: function (d) {

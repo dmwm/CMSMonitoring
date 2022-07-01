@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/configs"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/controllers"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/routes"
@@ -20,6 +21,7 @@ var (
 	g          errgroup.Group
 	gitVersion string // version of the code
 	verbose    int
+	envFile    string
 )
 
 // info function returns version string of the server
@@ -34,7 +36,18 @@ func main() {
 	var version bool
 	flag.BoolVar(&version, "version", false, "Show version")
 	flag.IntVar(&verbose, "verbose", 0, "Prints verbose logs, 0: warn, 1: info, 2: debug")
+	flag.StringVar(&envFile, "env", "", "Environment secret files")
 	flag.Parse()
+
+	// Initials
+	configs.EnvFile = envFile
+	configs.InitialChecks()
+
+	controllers.Verbose = verbose
+	controllers.GitVersion = gitVersion
+	controllers.ServerInfo = info()
+	mongo.InitializeClient()
+
 	if version {
 		fmt.Println(info())
 		os.Exit(0)
@@ -46,11 +59,6 @@ func main() {
 		log.Printf("[INFO] MONGO_DATABASE: %s", mongo.DB)
 		log.Printf("[INFO] MONGO CONNECTION TIMEOUT: %#v", mongo.ConnectionTimeout)
 	}
-	// connect to database
-	mongo.GetMongoClient()
-	controllers.GitVersion = gitVersion
-	controllers.ServerInfo = info()
-	controllers.Verbose = verbose
 
 	mainServer := &http.Server{
 		Addr:         ":8080",

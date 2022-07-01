@@ -1,11 +1,18 @@
 package configs
 
 import (
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 )
 
+var EnvFile string
+
 func InitialChecks() {
+	err := godotenv.Load(EnvFile)
+	if err != nil {
+		log.Fatalf("Error loading %s env file", EnvFile)
+	}
 	CheckEnvVar("MONGOURI")
 	CheckEnvVar("MONGO_DATABASE")
 }

@@ -8,12 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
 
 var (
-	CollectionName   = "datasets"
-	collection       = mymongo.GetCollection(mymongo.DBClient, CollectionName)
+	collectionName   = "datasets"
+	collection       *mongo.Collection
 	TotalRecCountDs  int64
 	UniqueSortColumn = "_id"
 )
@@ -72,6 +73,7 @@ func GetTotalRecCount(ctx context.Context, c *gin.Context) int64 {
 
 // GetResults get query results efficiently
 func GetResults(ctx context.Context, c *gin.Context, r models.DataTableCustomRequest) models.DatatableDatasetsResponse {
+	collection = mymongo.GetCollection(mymongo.DBClient, collectionName)
 	var datasets []models.Dataset
 	searchQuery := CreateSearchBson(r)
 	sortQuery := CreateSortBson(r)
