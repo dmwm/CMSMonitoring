@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ">=3.7"
       - name: Set version from git tag
@@ -35,7 +35,6 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           cd src/python/
-          echo "TODO - delete this debug message"
           cat CMSMonitoring/__init__.py
           python setup.py sdist bdist_wheel
           twine upload --verbose dist/*

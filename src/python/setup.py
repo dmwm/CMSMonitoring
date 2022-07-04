@@ -3,13 +3,13 @@
 """
 Standard python setup.py file for CMSMonitoring
 """
-import os
-import sys
-import shutil
 import fnmatch
+import os
+import shutil
 import subprocess
+import sys
 
-from distutils.core import setup
+from setuptools import setup
 
 
 def parse_requirements(requirements_file):
@@ -56,10 +56,8 @@ def main():
         import CMSMonitoring
         version = CMSMonitoring.__version__
     except Exception as e:
-        version = '0.0.0'
-        init_file = 'CMSMonitoring/__init__.py'
-        if os.path.exists(init_file):
-            version = get_version_str(init_file)
+        print("[ERROR] Please set correct '__version__' variable in src/python/CMSMonitoring/__init__.py : ", str(e))
+        sys.exit(1)
 
     ver = sys.version.split(' ')[0]
     pver = '.'.join(ver.split('.')[:-1])
@@ -81,7 +79,7 @@ def main():
         ('jsonschemas', datafiles('CMSMonitoring/jsonschemas', '*.schema')),
     ]
 
-    dist = setup(
+    setup(
         name='CMSMonitoring',
         version=version,
         author='Valentin Kuznetsov',
@@ -89,13 +87,15 @@ def main():
         license='MIT',
         description='CMS Monitoring utilities',
         long_description='CMS Monitoring utilities',
-        packages=['CMSMonitoring'],
-        package_dir={'CMSMonitoring': 'CMSMonitoring'},
+        packages=['CMSMonitoring', 'CMSMonitoring.jsonschemas'],
+        package_dir={
+            'CMSMonitoring': 'CMSMonitoring',
+            'CMSMonitoring.jsonschemas': 'CMSMonitoring/jsonschemas'},
+        package_data={'CMSMonitoring.jsonschemas': ['CMSMonitoring/jsonschemas/*.schema']},
         install_requires=parse_requirements("requirements.txt"),
         scripts=['bin/%s' % s for s in os.listdir('bin')],
         url='https://github.com/dmwm/CMSMonitoring',
         include_package_data=True,
-        data_files=data_files,
         classifiers=[
             "Programming Language :: Python",
             "Operating System :: OS Independent",
@@ -108,29 +108,8 @@ def main():
         shutil.rmtree('CMSMonitoring/jsonschemas')
 
 
-def read_init(init_file):
-    "Read package init file and return its content"
-    init = None
-    with open(init_file) as istream:
-        init = istream.read()
-    return init
-
-
-def write_version(init_file, init_content):
-    "Write package init file with given content"
-    if not init_content:
-        init_content = \
-            """
-            __version__ = '0.0.0'
-            __all__ = []
-            """
-    if init_file:
-        with open(init_file, 'w') as ostream:
-            ostream.write(init_content)
-
-
-def version():
-    "Return git tag version of the package or custom version"
+def get_version():
+    """Return git tag version of the package or custom version"""
     cmd = 'git tag --list | tail -1'
     ver = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     ver = str(ver.decode("utf-8")).replace('\n', '')
@@ -139,15 +118,6 @@ def version():
 
 
 if __name__ == "__main__":
-    # This part is used by `python setup.py sdist` to build package tar-ball
-    # read git version
-    # ver = version()
-    # read package init file
-    # init_file = 'CMSMonitoring/__init__.py'
-    # init = read_init(init_file)
-    # replace package init file with our version
-    # write_version(init_file, init.replace('0.0.0', ver))
-    # execute setup main
+    # This part is used by `python setup.py sdist bdist_wheel` to build package tar-ball
+    # It supports 3.7<=,<=3.9 ; after python 3.10, this file should be modified
     main()
-    # put back original content of package init file
-    # write_version(init_file, init.replace(ver, '0.0.0'))
