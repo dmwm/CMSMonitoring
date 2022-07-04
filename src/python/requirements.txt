@@ -1,8 +1,9 @@
+setuptools
+click
 stomp.py>=6.1.1,<8.0.0
 jsonschema>=4
 nats-py ; python_version >= '3.7' # Ref https://github.com/nats-io/nats.py
 # requests
-# click
 # numpy
 # pandas
 # schema
