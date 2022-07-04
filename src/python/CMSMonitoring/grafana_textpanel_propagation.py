@@ -2,22 +2,21 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import requests
 import json
 import argparse
 import traceback
 import logging
-from grafana_manager import grafana_manager
+from grafanamanager import GrafanaManager
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
 
 
 class OptionParser:
     def __init__(self):
-        "User based option parser"
+        """User based option parser"""
         desc = """
 This app allows update text on panels from several dashboards
-based on a template, given than the texpanels have a fixed start_text/end_text.
+based on a template, given than the text panels have a fixed start_text/end_text.
                """
         self.parser = argparse.ArgumentParser(prog="grafana text propagation", usage=desc)
         self.parser.add_argument(
@@ -40,7 +39,8 @@ based on a template, given than the texpanels have a fixed start_text/end_text.
             action="store",
             dest="source_query",
             default='{"query":"HomeTabs"}',
-            help="""query string for the source dashboard, it must have json format, and contain at least one of the following keys:
+            help="""query string for the source dashboard, it must have json format, 
+            and contain at least one of the following keys:
             - query
             - tags
             - uid
@@ -52,7 +52,8 @@ based on a template, given than the texpanels have a fixed start_text/end_text.
             action="store",
             dest="target_query",
             default='{"tags":"home"}',
-            help="""query string for the target dashboards, it must have json format, and contain at least one of the following keys:
+            help="""query string for the target dashboards, it must have json format, 
+            and contain at least one of the following keys:
             - query
             - tags
             - uid
@@ -81,16 +82,17 @@ def main():
     opts = optmgr.parser.parse_args()
     if not opts.token:
         print(
-            "A grafana token is required (either using the --grafana_token option or seting the GRAFANA_TOKEN environment variable"
+            "A grafana token is required (either using the --grafana_token option "
+            "or setting the GRAFANA_TOKEN environment variable"
         )
         sys.exit(1)
     try:
         print(opts)
-        mgr = grafana_manager(
+        mgr = GrafanaManager(
             grafana_url=opts.url, grafana_token=opts.token
         )
         updated_db = mgr.text_template_replace(
-            json.loads(opts.source_query), 
+            json.loads(opts.source_query),
             json.loads(opts.target_query),
             start_text=opts.start_text,
             end_text=opts.end_text)
