@@ -25,6 +25,8 @@ func MainRouter() http.Handler {
 	e.POST("/api/datasets", controllers.GetDatasets())
 	e.POST("/api/rse-details", controllers.GetDetailedDs())
 	e.POST("/api/rse-detail", controllers.GetSingleDetailedDs())
+	e.POST("/api/short-url", controllers.GetShortUrlParam())
+	e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId())
 	e.GET("/serverinfo", controllers.GetServerInfo)
 
 	// Static

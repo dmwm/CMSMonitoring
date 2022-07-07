@@ -10,12 +10,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
+	"reflect"
 )
 
 var (
 	collectionName   = "datasets"
 	collection       *mongo.Collection
-	TotalRecCountDs  int64
+	GQuery           bson.M // search query to store last query
+	GFilteredCount   int64  // count number to store last query filtered count
 	UniqueSortColumn = "_id"
 )
 
@@ -58,17 +60,24 @@ func CreateSearchBson(dtRequest models.DataTableCustomRequest) bson.M {
 	return findQuery
 }
 
-// GetTotalRecCount total document count in the datasetsDb
-func GetTotalRecCount(ctx context.Context, c *gin.Context) int64 {
-	if TotalRecCountDs == 0 {
-		countTotal, err := mymongo.GetCount(ctx, collection, bson.M{"RseType": "DISK"})
+// GetFilteredCount total document count in the datasetsDb
+func GetFilteredCount(ctx context.Context, c *gin.Context, query bson.M, draw int) int64 {
+	if draw < 1 {
+		log.Fatalf("Datatables draw value cannot be less than 1, it is: %d", draw)
+	} else if (draw == 1) || (!reflect.DeepEqual(GQuery, query)) {
+		// First opening of the page or search query is different thand the previous one
+		cnt, err := mymongo.GetCount(ctx, collection, query)
 		if err != nil {
 			utils.ErrorResponse(c, "TotalRecCount query failed", err, "")
 		}
-		TotalRecCountDs = countTotal
+		GFilteredCount = cnt
+		GQuery = query
+		log.Println("[INFO] Filter query comparison: MIS-MATCH")
+	} else {
+		// If search query is still same, count should be same, so return GFilteredCount
+		log.Println("[INFO] Filter query comparison: MATCH")
 	}
-	log.Printf("[INFO] Total Count %d", TotalRecCountDs)
-	return TotalRecCountDs
+	return GFilteredCount
 }
 
 // GetResults get query results efficiently
@@ -89,7 +98,7 @@ func GetResults(ctx context.Context, c *gin.Context, r models.DataTableCustomReq
 	}
 
 	filteredRecCount := length + skip + 1
-	totalRecCount := GetTotalRecCount(ctx, c)
+	totalRecCount := GetFilteredCount(ctx, c, searchQuery, r.Draw)
 	return models.DatatableDatasetsResponse{
 		Draw:            r.Draw,
 		RecordsTotal:    totalRecCount,

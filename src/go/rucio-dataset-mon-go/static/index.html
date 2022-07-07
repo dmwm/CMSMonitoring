@@ -13,16 +13,14 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css"
           rel="stylesheet"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
 
     <!--  Please do not delete below CSSes, important for pretty view -->
     <style>
-        .go-datatable td {
-            /*word-break: break-all;*/
-        }
-
         table td {
             font-size: small;
         }
@@ -38,9 +36,15 @@
         }
 
         /*  */
-        .table-striped > tbody > tr > td.rse-details-style {
-            color: darkred;
+        .table > tbody > tr > td.rse-details-style {
+            color: #DC3220;
+        !important;
         }
+
+        /*.go-datatable > tbody > tr:nth-child(odd) > td,*/
+        /*.go-datatable > tbody > tr:nth-child(odd) > th {*/
+        /*    background-color: #F9ECEC;*/
+        /*}*/
 
         .custom-input {
             /*height: 30px !important;*/
@@ -53,13 +57,26 @@
             font-weight: bolder;
         }
 
+        #timestamp-hover-button:hover {
+            border-color: #005AB5;
+            border-block-start-width: thick;
+            /*background-color: ;*/
+        }
+
+        /*Hover text for timestamp*/
+        .tooltip > .tooltip-inner {
+            background-color: white;
+            color: black;
+            font-family: 'Trebuchet MS', sans-serif;
+            font-size: small;
+        }
 
     </style>
 </head>
 <body>
 
 <div class="container-fluid no-padding" style="width: 100%">
-    <div class="row" style="background-color: lightgray">
+    <div class="row" style="background-color: #ECF2F9">
         <div class="col-xs-6 col-sm-4">
             <footer>
                 <img alt="CERN CMS O&C" src="../static/img/oc_icon.png"
@@ -78,7 +95,7 @@
     </div>
 </div>
 
-<div class="container-fluid no-padding" style="width: 96%">
+<div class="container-fluid no-padding" style="width: 96%; background-color: #F9F9F9">
     <div class="row">
         <hr class="rounded">
     </div>
@@ -99,40 +116,52 @@
         <div class="col">
             <button class="btn btn-primary font-weight-bold" id="button-search" type="button">Search</button>
         </div>
+        <div class="col">
+            <button id="timestamp-hover-button" type="button" class="glyphicon glyphicon-time btn btn-sm"
+                    data-toggle="tooltip" data-placement="bottom"
+                    style="color: #DC3220; font-size: medium"
+                    title="This table is produced with the data of Rucio and DBS sqoop dumps runs in between 6:30AM-7:15AM CERN time">
+                DataTimestamp: {{.data_timestamp}}
+            </button>
+        </div>
     </div>
 
     <div class="row justify-content-md-center">
         <hr class="rounded">
     </div>
-    <table class="go-datatable table table-sm table-bordered table-hover table-striped">
+    <table class="go-datatable table table-sm table-bordered table-hover " style="border:3px solid #F0D9DA;">
         <!-- table table-sm-->
-        <thead class="thead-dark">
+        <thead style="background-color: #C8D9EB; color: black; font-size: medium">
         <tr>
-            <th>RseType</th>
+            <th></th>
+            <th>Rse Type</th>
             <th>Dataset</th>
-            <th>LastAccess</th>
-            <th>LastAccessMs</th>
-            <th>MaxTB</th>
-            <th>MinTB</th>
-            <th>AvgTB</th>
-            <th>SumTB</th>
+            <th>Last Access</th>
+            <th>Max</th>
+            <th>Min</th>
+            <th>Avg</th>
+            <th>Sum</th>
             <th>RSEs</th>
         </tr>
         </thead>
         <tfoot hidden>
         <tr>
-            <th>RseType</th>
+            <th></th>
+            <th>Rse Type</th>
             <th>Dataset</th>
-            <th>LastAccess</th>
-            <th>LastAccessMs</th>
-            <th>MaxTB</th>
-            <th>MinTB</th>
-            <th>AvgTB</th>
-            <th>SumTB</th>
+            <th>Last Access</th>
+            <th>Max</th>
+            <th>Min</th>
+            <th>Avg</th>
+            <th>Sum</th>
             <th>RSEs</th>
         </tr>
         </tfoot>
     </table>
+</div>
+
+<div class="footer" style="bottom: 0px; width: 100%;background-color: #262626;border-top: 1px solid #333;">
+    <img src='../static/img/LogoOutline-White.svg' alt='CERN' style="height: 70px;margin: 20px;">
 </div>
 
 <!-- prepared using https://datatables.net/download/ -->
@@ -147,8 +176,62 @@
 </script>
 
 <script>
+    // Global variable to catch latest datatables request
+    var global_dt_request_holder = null;
+    // Define short url will be used or not
+    var isShortUrl = ({{.is_short_url}} === "true");
+    console.log(isShortUrl)
+
+    // Required to show text on hover
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+
+    bytesToHumanely = function (input_bytes) {
+        if (input_bytes === 0) {
+            return "0.00 B";
+        }
+        var e = Math.floor(Math.log(input_bytes) / Math.log(1024));
+        return (input_bytes / Math.pow(1024, e)).toFixed(2) + ' ' + ' KMGTPEZY'.charAt(e) + 'B';
+    }
+
+    function copyToClipboard(message) {
+        var textArea = document.createElement("textarea");
+        textArea.value = message;
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            var successful = document.execCommand('copy');
+            var msg = successful ? 'successful' : 'unsuccessful';
+            alert('Copying successful:' + message);
+        } catch (err) {
+            alert('Unable to copy value , error : ' + err.message);
+        }
+        document.body.removeChild(textArea);
+    }
+
+    // Get short url hash id by sending current page's datatables request object
+    function getShortUrl() {
+        $.ajax({
+            url: '../api/short-url',
+            type: 'post',
+            contentType: 'application/json',
+            data: global_dt_request_holder,
+            success: function(data) {
+                // Call copy clipboard here
+                origin = window.location.origin
+                copyToClipboard(origin + '/short-url/' + data);
+            },
+            error: function() {
+                alert('Copy failed');
+            }
+        });
+    }
+
     $(document).ready(function () {
-        function toggleDetails() {
+        function showRseDetails() {
             var tr = $(this).closest("tr");
             dataset_name = $(tr).find("td.details-value-dataset").text()
             type_name = $(tr).find("td.details-value-type").text()
@@ -156,7 +239,9 @@
             d_class = "details-show"
             row = table.row(tr)
             if (!row.child.isShown()) {
+                default_bg_color = $(tr).css("background-color");
                 $(tr).addClass(d_class)
+                $(tr).css("background-color", "#F9ECEC")
                 row.child("<div id='" + type_name + random_str + "'>loading</div>").show()
                 var single_dataset_request = {
                     "dataset": dataset_name,
@@ -168,14 +253,16 @@
                     type: 'post',
                     dataType: 'html',
                     contentType: 'application/json',
+                    data: JSON.stringify(single_dataset_request),
                     success: function (data) {
-                        //$('#target').html(data.msg);
+                        // just to assign random div id
                         $("#" + type_name + random_str).html(data);
                     },
-                    data: JSON.stringify(single_dataset_request),
                 });
+                tr.addClass('selected-row-color')
             } else {
                 $(tr).removeClass(d_class)
+                $(tr).css("background-color", default_bg_color)
                 row.child.hide()
             }
         }
@@ -186,7 +273,7 @@
             scrollX: false,
             pageLength: 10,
             order: [], // no initial sorting
-            dom: "Brtpli", // no main search ("f"), just individual column search
+            dom: "iBplrt", // no main search ("f"), just individual column search
             //language: {processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '},
             aLengthMenu: [
                 [5, 10, 25, 50, 100],
@@ -199,45 +286,105 @@
                 contentType: 'application/json',
                 data: function (d) {
                     // Customize search
-                    // console.log("type:", $("#select-rse-type").val())
                     d.custom = {
                         "dataset": $("#search-dataset").val(),
                         "rse": $("#search-rse").val(),
                         "rseType": $("#select-rse-type").val(),
                     }
-                    return JSON.stringify(d);
+
+                    if (isShortUrl === true) {
+                        // Set datatable request from saved short-url request using go template
+                        d = {{.dt_request_short_url}}
+                        global_dt_request_holder = JSON.stringify();
+                    }
+
+                    global_dt_request_holder = JSON.stringify(d);
+                    return global_dt_request_holder;
                 },
                 // processData: false,
                 dataType: "json",
             },
 
             columns: [
-                {data: "RseType", className: "details-value-type",},
                 {
-                    data: "Dataset",
-                    className: "details-value-dataset",
+                    // Details button
+                    data: null, className: 'dt-control', orderable: false, defaultContent: '',
+                },
+                {data: "RseType", className: "details-value-type", name: 'Rse Type'},
+                {data: "Dataset", className: "details-value-dataset"},
+                {data: "LastAccess"},
+                {
+                    data: "Max",
                     render: function (data, type, row, meta) {
-                        return '<a href="javascript:void(0);" class="btn-details">' + data + '</a>';
+                        return bytesToHumanely(data);
+                    },
+                    orderSequence: ["desc", "asc"],
+                },
+                {
+                    data: "Min",
+                    render: function (data, type, row, meta) {
+                        return bytesToHumanely(data);
+                    },
+                    orderSequence: ["desc", "asc"],
+                },
+                {
+                    data: "Avg",
+                    render: function (data, type, row, meta) {
+                        return bytesToHumanely(data);
+                    },
+                    orderSequence: ["desc", "asc"],
+                },
+                {
+                    data: "Sum",
+                    render: function (data, type, row, meta) {
+                        return bytesToHumanely(data);
+                    },
+                    orderSequence: ["desc", "asc"],
+                },
+                {data: "RSEs", className: "rse-details-style"}
+            ],
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    className: "btn btn-primary",
+                    exportOptions: {
+                        columns: ':visible'
                     }
                 },
-                {data: "LastAccess"},
-                {data: "LastAccessMs"},
-                {data: "MaxTB"},
-                {data: "MinTB"},
-                {data: "AvgTB"},
-                {data: "SumTB"},
-                {data: "RSEs", className: "rse-details-style"}
+                {
+                    extend: 'excelHtml5',
+                    className: "btn btn-primary",
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: "btn btn-primary",
+                    exportOptions: {
+                        columns: ':visible'
+                    }
+                },
+                {
+                    extend: 'colvis',
+                    className: "btn btn-primary",
+                },
+                {
+                    text: 'Copy state link to clipboard',
+                    className: "btn btn-primary",
+                    action: function (e, dt, node, config) {
+                        getShortUrl();
+                        // navigator.clipboard.writeText is not working because of https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts ,golang template
+                    }
+                },
             ]
         });
         // ~~  --  Custom search draw  -- ~~
         $('#button-search').click(function () {
             table.draw();
         });
-        $('table tbody tr').on('click', 'td a.btn-details', toggleDetails)
-        //
-        table.on('draw', function () {
-            $('table tbody tr').off('click').on('click', 'td a.btn-details', toggleDetails)
-        })
+        // Add event listener for opening and closing details
+        table.on('click', 'td.dt-control', showRseDetails);
     });
 </script>
 </body>

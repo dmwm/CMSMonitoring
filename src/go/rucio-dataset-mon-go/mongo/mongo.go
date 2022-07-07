@@ -41,3 +41,9 @@ func GetCount(ctx context.Context, collection *mongo.Collection, match bson.M) (
 	count, err := collection.CountDocuments(context.TODO(), match)
 	return count, err
 }
+
+// Insert returns count of query result
+func Insert(ctx context.Context, collection *mongo.Collection, data interface{}) error {
+	_, err := collection.InsertOne(ctx, data)
+	return err
+}

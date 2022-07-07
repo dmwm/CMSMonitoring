@@ -3,11 +3,13 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/data_timestamp"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/datasets"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/detailed_datasets"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/responses"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/short_url"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -28,6 +30,20 @@ func verboseControllerInitLog(c *gin.Context) {
 	if Verbose > 0 {
 		log.Printf("[INFO] Incoming request to: %s", c.FullPath())
 	}
+}
+
+func controllerInitialize(c *gin.Context) (context.Context, context.CancelFunc, time.Time, models.DataTableCustomRequest) {
+	verboseControllerInitLog(c)
+	start := time.Now()
+	ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
+
+	// Get request json with validation
+	r := models.DataTableCustomRequest{}
+	if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
+		tempReqBody, _ := c.Get(gin.BodyBytesKey)
+		utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
+	}
+	return ctx, cancel, start, r
 }
 
 func verboseControllerOutLog(start time.Time, name string, req any, data any) {
@@ -59,23 +75,14 @@ func GetServerInfo(c *gin.Context) {
 // GetDatasets controller that returns datasets according to DataTable request json
 func GetDatasets() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		verboseControllerInitLog(c)
-		start := time.Now()
-		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
+		ctx, cancel, start, req := controllerInitialize(c)
 		defer cancel()
 
-		// Get request json with validation
-		r := models.DataTableCustomRequest{}
-		if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
-			tempReqBody, _ := c.Get(gin.BodyBytesKey)
-			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
-			return
-		}
-		datasetsResp := datasets.GetResults(ctx, c, r)
+		datasetsResp := datasets.GetResults(ctx, c, req)
 		c.JSON(http.StatusOK,
 			datasetsResp,
 		)
-		verboseControllerOutLog(start, "GetDatasets", r, datasetsResp)
+		verboseControllerOutLog(start, "GetDatasets", req, datasetsResp)
 		return
 	}
 }
@@ -83,22 +90,55 @@ func GetDatasets() gin.HandlerFunc {
 // GetDetailedDs controller that returns datasets according to DataTable request json
 func GetDetailedDs() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
+		ctx, cancel, start, req := controllerInitialize(c)
 		defer cancel()
-		verboseControllerInitLog(c)
-		start := time.Now()
-
-		r := models.DataTableCustomRequest{}
-		if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
-			tempReqBody, _ := c.Get(gin.BodyBytesKey)
-			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
-			return
-		}
-		detailedDatasetsResp := detailed_datasets.GetResults(ctx, c, r)
+		detailedDatasetsResp := detailed_datasets.GetResults(ctx, c, req)
 		c.JSON(http.StatusOK,
 			detailedDatasetsResp,
 		)
-		verboseControllerOutLog(start, "GetDetailedDs", r, detailedDatasetsResp)
+		verboseControllerOutLog(start, "GetDetailedDs", req, detailedDatasetsResp)
+		return
+	}
+}
+
+// GetShortUrlParam controller that returns short url param which is md5 hash of the datatables request
+func GetShortUrlParam() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel, start, req := controllerInitialize(c)
+		defer cancel()
+		requestHash := short_url.GetShortUrl(ctx, c, req)
+		c.JSON(http.StatusOK,
+			requestHash,
+		)
+		verboseControllerOutLog(start, "GetShortUrlParam", req, requestHash)
+		return
+	}
+}
+
+// GetIndexPageFromShortUrlId controller that returns page from short url hash id
+func GetIndexPageFromShortUrlId() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		verboseControllerInitLog(c)
+		start := time.Now()
+		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
+		defer cancel()
+
+		hashId := c.Param("id")
+		log.Printf("[INFO] Hash Id: %s", hashId)
+		dtRequest := short_url.GetRequestFromShortUrl(ctx, c, hashId)
+
+		dataTimestamp := data_timestamp.GetDataSourceTimestamp(ctx, c)
+		c.HTML(
+			http.StatusOK,
+			"index.html",
+			gin.H{
+				"title":                "Home Page",
+				"is_short_url":         "true",
+				"dt_request_short_url": dtRequest,
+				"data_timestamp":       dataTimestamp.CreatedAt,
+			},
+		)
+		verboseControllerOutLog(start, "GetIndexPageFromShortUrlId", dtRequest, hashId)
 		return
 	}
 }
@@ -132,14 +172,21 @@ func GetSingleDetailedDs() gin.HandlerFunc {
 func GetIndexPage(c *gin.Context) {
 	start := time.Now()
 	verboseControllerInitLog(c)
+	ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
+	defer cancel()
+
+	// get source data creation time
+	dataTimestamp := data_timestamp.GetDataSourceTimestamp(ctx, c)
 	c.HTML(
 		http.StatusOK,
 		"index.html",
 		gin.H{
-			"title": "Home Page",
+			"title":          "Home Page",
+			"is_short_url":   "false",
+			"data_timestamp": dataTimestamp.CreatedAt,
 		},
 	)
-	verboseControllerOutLog(start, "GetIndexPage", nil, nil)
+	verboseControllerOutLog(start, "GetIndexPage", nil, dataTimestamp)
 	return
 }
 
