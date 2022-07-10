@@ -1,5 +1,7 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 // DataTable sends specific request json to ajax=>url endpoint.
 //    - It is basically a nested json and can be organised with below structs.
 //    - Reference: comment in https://datatables.net/forums/discussion/68295/go-golang-unmarshal-json-sent-by-post-method
@@ -14,6 +16,18 @@ type DataTableRequest struct {
 	Orders  []DTReqOrder  `json:"order"`                                          //
 	Search  DTReqSearch   `json:"search"`                                         //
 	Start   int64         `json:"start"`                                          //
+}
+
+// DataTableCustomRequest customized ajax request that come from DataTable
+type DataTableCustomRequest struct {
+	Draw          int                  `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
+	Columns       []DTReqColumn        `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
+	Length        int64                `json:"length"`                                         // Number of records that the table can display in the current draw.
+	Orders        []DTReqOrder         `json:"order"`                                          //
+	Search        DTReqSearch          `json:"search"`                                         //
+	Start         int64                `json:"start"`                                          //
+	Custom        Custom               `json:"custom"`                                         // Custom
+	SearchBuilder SearchBuilderRequest `json:"search_builder"`                                 // SearchBuilder
 }
 
 // DTReqSearch represents main search text which client entered and can be regex or not.
@@ -48,15 +62,4 @@ type Custom struct {
 	RseKind    string   `json:"rseKind"`
 	Accounts   []string `json:"accounts"`
 	RseType    []string `json:"rseType"`
-}
-
-// DataTableCustomRequest customized ajax request that come from DataTable
-type DataTableCustomRequest struct {
-	Draw    int           `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
-	Columns []DTReqColumn `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
-	Length  int64         `json:"length"`                                         // Number of records that the table can display in the current draw.
-	Orders  []DTReqOrder  `json:"order"`                                          //
-	Search  DTReqSearch   `json:"search"`                                         //
-	Start   int64         `json:"start"`                                          //
-	Custom  Custom        `json:"custom"`                                         // Custom
 }

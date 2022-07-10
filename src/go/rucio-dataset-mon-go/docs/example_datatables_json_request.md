@@ -120,3 +120,111 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
     }
 }
 ```
+
+
+### Example SearchBuilder request
+```json
+{
+    "criteria":
+    [
+        {
+            "condition": "contains",
+            "data": "Rse Type",
+            "origData": "RseType",
+            "type": "string",
+            "value":
+            [
+                "asdasdas"
+            ]
+        },
+        {
+            "condition": "contains",
+            "data": "Dataset",
+            "origData": "Dataset",
+            "type": "string",
+            "value":
+            [
+                "asdasd"
+            ]
+        },
+        {
+            "condition": "<",
+            "data": "Last Access",
+            "origData": "LastAccess",
+            "type": "date",
+            "value":
+            [
+                "2022-07-05"
+            ]
+        },
+        {
+            "condition": ">",
+            "data": "Last Access",
+            "origData": "LastAccess",
+            "type": "date",
+            "value":
+            [
+                "2022-07-20"
+            ]
+        },
+        {
+            "condition": "between",
+            "data": "Last Access",
+            "origData": "LastAccess",
+            "type": "date",
+            "value":
+            [
+                "2022-07-05",
+                "2022-07-21"
+            ]
+        },
+        {
+            "condition": "null",
+            "data": "Last Access",
+            "origData": "LastAccess",
+            "type": "date",
+            "value":
+            []
+        },
+        {
+            "condition": "!null",
+            "data": "Last Access",
+            "origData": "LastAccess",
+            "type": "date",
+            "value":
+            []
+        },
+        {
+            "condition": "<",
+            "data": "Max",
+            "origData": "Max",
+            "type": "num",
+            "value":
+            [
+                "11111"
+            ]
+        },
+        {
+            "condition": ">",
+            "data": "Max",
+            "origData": "Max",
+            "type": "num",
+            "value":
+            [
+                "2222222"
+            ]
+        },
+        {
+            "condition": "contains",
+            "data": "RSEs",
+            "origData": "RSEs",
+            "type": "string",
+            "value":
+            [
+                "sdassasada"
+            ]
+        }
+    ],
+    "logic": "AND"
+}
+```

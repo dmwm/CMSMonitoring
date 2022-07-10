@@ -13,6 +13,8 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css"
           rel="stylesheet"/>
+
+    <link rel="stylesheet" href="https://nightly.datatables.net/responsive/css/responsive.dataTables.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -21,56 +23,52 @@
 
     <!--  Please do not delete below CSSes, important for pretty view -->
     <style>
+        /*Main table font*/
         table td {
             font-size: small;
         }
 
-        /* Type, Dataset, RSE, Tier, C, RseKind */
+        /* RseType, Dataset, LastAccess */
         table tr td:nth-child(n+1):nth-child(-n+4) {
             text-align: left;
         }
 
-        /* SizeBytes, LastAcc, LastAccMs, Fpct, Fcnt, TotFcnt, AccFcnt, ProdLckCnt, OthLckCnt */
+        /* LastAccess, Max, Min, Avg, Sum */
         table tr td:nth-child(n+5):nth-child(-n+9) {
             text-align: right;
         }
 
-        /*  */
-        .table > tbody > tr > td.rse-details-style {
+        /*  RSEs special color*/
+        .table > tbody > tr > td.rses-style {
             color: #DC3220;
         !important;
         }
 
-        /*.go-datatable > tbody > tr:nth-child(odd) > td,*/
-        /*.go-datatable > tbody > tr:nth-child(odd) > th {*/
-        /*    background-color: #F9ECEC;*/
+        /*SearchBuilder title*/
+        .dtsb-titleRow {
+            background-color: #F2D7D9;!important;
+        }
+
+        /*SearchBuilder group*/
+        .dtsb-searchBuilder {
+            border-color: #F2D7D9;
+            border-bottom-width: 3px;
+        }
+
+        /*Data timestamp button style*/
+        /*#timestamp-hover-button:hover {*/
+        /*    border-color: #005AB5;*/
+        /*    border-block-start-width: thick;*/
+        /*    !*background-color: ;*!*/
         /*}*/
 
-        .custom-input {
-            /*height: 30px !important;*/
-            /*max-height: 30px !important;*/
-            /*background-color: gold;*/
-        }
-
-        .custom-filters {
-            /*background-color: lightslategray;*/
-            font-weight: bolder;
-        }
-
-        #timestamp-hover-button:hover {
-            border-color: #005AB5;
-            border-block-start-width: thick;
-            /*background-color: ;*/
-        }
-
-        /*Hover text for timestamp*/
+        /*Hover text for data timestamp*/
         .tooltip > .tooltip-inner {
             background-color: white;
             color: black;
             font-family: 'Trebuchet MS', sans-serif;
             font-size: small;
         }
-
     </style>
 </head>
 <body>
@@ -100,35 +98,6 @@
         <hr class="rounded">
     </div>
 
-    <div class="row custom-filters">
-        <div class="col">
-            <select class="selectpicker custom-input" id="select-rse-type" multiple title="RSE Type">
-                <option value="DISK">DISK</option>
-                <option value="TAPE">TAPE</option>
-            </select>
-        </div>
-        <div class="col">
-            <input class="form-control input-sm custom-input" id="search-dataset" placeholder="Dataset" type="search"/>
-        </div>
-        <div class="col">
-            <input class="form-control input-sm custom-input" id="search-rse" placeholder="RSE" type="search"/>
-        </div>
-        <div class="col">
-            <button class="btn btn-primary font-weight-bold" id="button-search" type="button">Search</button>
-        </div>
-        <div class="col">
-            <button id="timestamp-hover-button" type="button" class="glyphicon glyphicon-time btn btn-sm"
-                    data-toggle="tooltip" data-placement="bottom"
-                    style="color: #DC3220; font-size: medium"
-                    title="This table is produced with the data of Rucio and DBS sqoop dumps runs in between 6:30AM-7:15AM CERN time">
-                DataTimestamp: {{.data_timestamp}}
-            </button>
-        </div>
-    </div>
-
-    <div class="row justify-content-md-center">
-        <hr class="rounded">
-    </div>
     <table class="go-datatable table table-sm table-bordered table-hover " style="border:3px solid #F0D9DA;">
         <!-- table table-sm-->
         <thead style="background-color: #C8D9EB; color: black; font-size: medium">
@@ -165,47 +134,61 @@
 </div>
 
 <!-- prepared using https://datatables.net/download/ -->
-<script
-    src="https://cdn.datatables.net/v/bs5/jq-3.6.0/jszip-2.5.0/dt-1.12.1/b-2.2.3/b-colvis-2.2.3/b-html5-2.2.3/b-print-2.2.3/date-1.1.2/fc-4.1.0/fh-3.2.4/r-2.3.0/sc-2.0.7/sb-1.3.4/sp-2.0.2/sl-1.4.0/sr-1.1.1/datatables.min.js">
-</script>
+<script src="https://cdn.datatables.net/v/bs5/jq-3.6.0/jszip-2.5.0/dt-1.12.1/b-2.2.3/b-colvis-2.2.3/b-html5-2.2.3/b-print-2.2.3/date-1.1.2/fc-4.1.0/fh-3.2.4/r-2.3.0/sc-2.0.7/sb-1.3.4/sp-2.0.2/sl-1.4.0/sr-1.1.1/datatables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js" type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/multiple-select/1.1.0/jquery.multiple.select.min.js"
-        type="text/javascript">
-</script>
+<script src="https://nightly.datatables.net/responsive/js/dataTables.responsive.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/multiple-select/1.1.0/jquery.multiple.select.min.js" type="text/javascript"></script>
+<script src="https://cdn.datatables.net/searchbuilder/1.3.4/js/dataTables.searchBuilder.min.js" type="text/javascript"></script>
 
 <script>
+    // This counter will be used to get the first opening of the page.
+    //     If short url is used, parent URL will be changed to main pages (../)
+    var global_initialization_counter = 0
+
     // Global variable to catch latest datatables request
     var global_dt_request_holder = null;
+
     // Define short url will be used or not
     var isShortUrl = ({{.is_short_url}} === "true");
-    // holds saved state json string
-    var global_saved_state_holder;
+
+    // hHlds saved state json string
     var global_saved_state_setter = null;
 
+    // If short url, get saved state from the GoLang controller Template
     if (isShortUrl === true) {
-        // Get saved state from template
         global_saved_state_setter = {{.dt_saved_state}};
         global_saved_state_setter = JSON.stringify(global_saved_state_setter);
     }
 
-    console.log(isShortUrl)
+    console.log("Is short url: " + isShortUrl);
 
-    // Required to show text on hover
+    // ---------~~~~~~~~~  FUNCTIONS AND MAIN DEFINITIONS ~~~~~~~~~---------
+    // Required to show text on hover, used for data timestamp hover setting
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
     })
 
-    bytesToHumanely = function (input_bytes) {
+    /*
+     * helperBytesToHumanely
+     *   Converts bytes to human-readable format KB,MB,GB,TB,PB,EB(max) with 2 decimals
+     *   If you want to implement ZB, YB, etc., you need to modify Go controller that parses these values
+     *   Size data stored as bytes in integer format.
+     */
+    helperBytesToHumanely = function (input_bytes) {
         if (input_bytes === 0) {
             return "0.00 B";
         }
         var e = Math.floor(Math.log(input_bytes) / Math.log(1024));
-        return (input_bytes / Math.pow(1024, e)).toFixed(2) + ' ' + ' KMGTPEZY'.charAt(e) + 'B';
+        return (input_bytes / Math.pow(1024, e)).toFixed(2) + ' ' + ' KMGTPE'.charAt(e) + 'B';
     }
 
-    function copyToClipboard(message) {
+    /*
+     * helperCopyToClipboard
+     *   Helper function to copy given data to clipboard
+     */
+    function helperCopyToClipboard(message) {
         var textArea = document.createElement("textarea");
         textArea.value = message;
         textArea.style.opacity = "0";
@@ -222,7 +205,17 @@
         document.body.removeChild(textArea);
     }
 
-    // Get short url hash id by sending current page's datatables request and saved state objects
+    /*
+     * getShortUrl
+     *   Mainly it gets short url from '../api/short-url' API call when "Copy state link to clipboard" button clicked.
+     *     short url creation requires a request which should be a JSON object {"dt_request": .., "saved_state": .. }
+     *     "dt_request" holds saved last fired datatables request
+     *     "saved_state" holds last state(HTML, CSS, DataTables, SearchBuilder, page, sort order, etc.) ...
+     *      ... which is important to share the exact state(page number, sort order, etc).
+     *     Go controller gets this request, converts to json string and gets its MD5 hash to not save same requests again and again
+     *     Go controller returns MD5 hash id to JS ajax call below
+     *     And function writes MD5 hash id to clipboard with page origin url
+     */
     function getShortUrl() {
         $.ajax({
             url: '../api/short-url',
@@ -235,7 +228,7 @@
             success: function(data) {
                 // Call copy clipboard here
                 origin = window.location.origin
-                copyToClipboard(origin + '/short-url/' + data);
+                helperCopyToClipboard(origin + '/short-url/' + data);
             },
             error: function() {
                 alert('Copy failed');
@@ -243,11 +236,34 @@
         });
     }
 
+    /*
+     * DataTables engine is starting to run ...
+     */
     $(document).ready(function () {
+
+        /*
+        * showRseDetails
+        *   Shows detailed individual dataset information when green "+" button clicked
+        *   It uses a Go controller which returns data from detailed_datasets collection
+        *   How it works:
+        *     Gets closest "tr" row of the clicked "+" button
+        *     Gets dataset value from this "tr" dom element.
+        *       This is tricky because, "details-value-dataset" Class should be added to "Dataset" td(column) dom.
+        *       Thanks to DataTables, we can add html class to column elements using "className" in the DT columns array
+        *     Gets RseType value from this "tr" dom element same with "Dataset" using className.
+        *     Creates a random string to create a temporary div with unique ID for each clicked row.
+        *     Stores default background color, changes it to our color and after row is collapsed restore its background color
+        *     Sends ajax request to  `../api/rse-detail' API with a JSON request body: {"dataset": .., "type": ..} which defines the dataset.
+        *     Gets html response which is sent by the Go controller.
+        *        Go controller uses "rse_detail_table.html" template which is also uses DataTables to show pretty table
+        *        To not mix current DataTable CSS and "rse_detail_table" CSS, we used random ids and other tricks like "!important;".
+        *     And with ".html" function call, response html element showed in the dom.
+        *     Thanks to "dt-control", it allows to collapse and expand with green/red color changes.
+        */
         function showRseDetails() {
             var tr = $(this).closest("tr");
             dataset_name = $(tr).find("td.details-value-dataset").text()
-            type_name = $(tr).find("td.details-value-type").text()
+            type_name = $(tr).find("td.details-value-rse-type").text()
             random_str = Math.random().toString(36).slice(-10)
             d_class = "details-show"
             row = table.row(tr)
@@ -280,82 +296,210 @@
             }
         }
 
+        /*
+         * DataTables engine is running at full speed ...
+         *    All below settings are important, even a single character.
+         *    Please read lots of nice documentation, examples, blogs, great community Q&A in https://datatables.net/
+         *      to understand what it is happening.
+         */
         var table = $('.go-datatable').DataTable({
             serverSide: true,
             processing: true,
+            stateSave: true,
+            select: true,
             scrollX: false,
             pageLength: 10,
             order: [], // no initial sorting
-            dom: "iBplrt", // no main search ("f"), just individual column search
-            //language: {processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '},
+            dom: "iBQplrt", // no main search ("f"), just individual column search
+            language: {
+                searchBuilder: {
+                    title: 'Search Builder | <span style="font-size: 10px">please hit enter after all conditions</span'
+                },
+            },
+            stateSaveCallback: function (settings, data) {
+                // Save the last state to "global_saved_state_holder" variable to use in the short url call
+                global_saved_state_holder = JSON.stringify(data)
+                console.log(global_saved_state_holder);
+            },
+            stateLoadCallback: function (settings) {
+                // "global_saved_state_setter" given by Go Template, so it restore same state for the shared users.
+                console.log(global_saved_state_setter)
+                return JSON.parse(global_saved_state_setter);
+            },
+            // stateLoadParams: function (settings, data) {
+            // },
+            // stateSaveParams: function (setting, data){
+            // },
             aLengthMenu: [
                 [5, 10, 25, 50, 100],
                 [5, 10, 25, 50, 100]
             ],
-
             ajax: {
                 url: "../api/datasets",
                 method: "POST",
                 contentType: 'application/json',
                 data: function (d) {
-                    // Customize search
-                    d.custom = {
-                        "dataset": $("#search-dataset").val(),
-                        "rse": $("#search-rse").val(),
-                        "rseType": $("#select-rse-type").val(),
-                    }
+                    // What is d: d is main DataTable request which will be sent to API
 
+                    // Increment counter, to control first opening of the page
+                    global_initialization_counter++;
+
+                    // SearchBuilder request holder variable
+                    var sbRequest = null;
+
+                    // Check if user created a search builder query using SB Conditions
+                    try {
+                        sbRequest = table.searchBuilder.getDetails(true);
+                        console.log(JSON.stringify(sbRequest));
+                    } catch (error){
+                        // User did not create SearchBuilder query, so set the request holder variable as null
+                        sbRequest = null;
+                    }
+                    // Add SearchBuilder JSON object to DataTable main request
+                    d.search_builder = sbRequest;
+
+                    // Check if short url is used
                     if (isShortUrl === true) {
                         // Set datatable request from saved short-url request using go template
+                        // So we modify the DataTable request with the shared url request stored and fetched from MongoDB
                         d = {{.dt_request_short_url}}
                         global_dt_request_holder = JSON.stringify(d);
+
+                        // Since all operations for short url is done, we need to set it to false
+                        isShortUrl = false;
+
+                        // Change origin url to main page for further request of users who used short url
+                        if (global_initialization_counter===1 ) {
+                            window.history.pushState('', 'Title', '../');
+                        }
                     }else{
                         global_dt_request_holder = JSON.stringify(d);
                     }
-
+                    console.log(global_dt_request_holder);
                     return global_dt_request_holder;
                 },
-                // processData: false,
                 dataType: "json",
             },
-
+            search: {
+                // Run search on enter effectively, works in SearchBuilder too
+                return: true
+            },
+            searchBuilder: {
+                // SearchBuilder customizations to limit conditions
+                greyscale: true,
+                conditions:{
+                    // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
+                    // that's why we use "html" type, but it will be used in numeric columns
+                    html:{
+                        // "num" type will have only "starts":Greater Than" and "ends":"Less Than" conditions
+                        'starts': {
+                            conditionName: 'Greater Than',
+                        },
+                        'ends': {
+                            conditionName: 'Less Than',
+                        },
+                        '=': null,
+                        '!=': null,
+                        '!starts': null,
+                        '!contains': null,
+                        '!ends': null,
+                        'null': null,
+                        '!null': null,
+                        'contains': null,
+                    },
+                    string:{
+                        // "string" type will have only "contains" condition which will use Regex search in Go controller.
+                        '=': null,
+                        '!=': null,
+                        'starts': null,
+                        '!starts': null,
+                        '!contains': null,
+                        'ends': null,
+                        '!ends': null,
+                        'null': null,
+                        '!null': null,
+                        'contains': {
+                            conditionName: 'regex',
+                        },
+                    },
+                    date:{
+                        // "date" type will have only ">", "<", "between", "null" and "!null" conditions
+                        '=': null,
+                        '!=': null,
+                        '!between': null,
+                    }
+                }
+            },
             columns: [
                 {
-                    // Details button
+                    // Details green/red "+"/"-" button
                     data: null, className: 'dt-control', orderable: false, defaultContent: '',
                 },
-                {data: "RseType", className: "details-value-type", name: 'Rse Type'},
-                {data: "Dataset", className: "details-value-dataset"},
-                {data: "LastAccess"},
+                {
+                    data: "RseType",
+                    className: "details-value-rse-type",
+                    name: 'Rse Type',
+                    searchBuilder: {
+                        defaultCondition: "contains"
+                    },
+                },
+                {
+                    data: "Dataset",
+                    className: "details-value-dataset",
+                    searchBuilder: {
+                        defaultCondition: "contains"
+                    },
+                },
+                {
+                    data: "LastAccess",
+                    searchBuilder: {
+                        defaultCondition: ">"
+                    },
+                },
                 {
                     data: "Max",
                     render: function (data, type, row, meta) {
-                        return bytesToHumanely(data);
+                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        return type === 'display'? helperBytesToHumanely(data) : data;
                     },
+                    // orderSequence defines first option when clicked to Columns sort button. We set first as "desc", default was "asc".
                     orderSequence: ["desc", "asc"],
+                    searchBuilderType: 'html',
                 },
                 {
                     data: "Min",
                     render: function (data, type, row, meta) {
-                        return bytesToHumanely(data);
+                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        return type === 'display'? helperBytesToHumanely(data) : data;
                     },
                     orderSequence: ["desc", "asc"],
+                    searchBuilderType: 'html',
                 },
                 {
                     data: "Avg",
                     render: function (data, type, row, meta) {
-                        return bytesToHumanely(data);
+                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        return type === 'display'? helperBytesToHumanely(data) : data;
                     },
                     orderSequence: ["desc", "asc"],
+                    searchBuilderType: 'html',
                 },
                 {
                     data: "Sum",
                     render: function (data, type, row, meta) {
-                        return bytesToHumanely(data);
+                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        return type === 'display'? helperBytesToHumanely(data) : data;
                     },
                     orderSequence: ["desc", "asc"],
+                    searchBuilderType: 'html',
                 },
-                {data: "RSEs", className: "rse-details-style"}
+                {
+                    data: "RSEs",
+                    className: "rses-style",
+                    searchBuilder: {
+                        defaultCondition: "contains"
+                    },
+                }
             ],
             buttons: [
                 {
@@ -388,22 +532,20 @@
                     className: "btn btn-primary",
                     action: function (e, dt, node, config) {
                         getShortUrl();
-                        // navigator.clipboard.writeText is not working because of https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts ,golang template
+                        // navigator.clipboard.writeText is not working because of https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts
                     }
                 },
-            ],
-            stateSave: true,
-            stateSaveCallback: function (settings, data) {
-                global_saved_state_holder = JSON.stringify(data)
-                console.log(global_saved_state_holder);
-            },
-            stateLoadCallback: function (settings) {
-                return global_saved_state_setter;
-            }
-        });
-        // ~~  --  Custom search draw  -- ~~
-        $('#button-search').click(function () {
-            table.draw();
+                {
+                    className: 'btn btn-light glyphicon glyphicon-time',
+                    text: 'DataTimestamp: {{.data_timestamp}}',
+                    titleAttr: "This table is produced with the data of Rucio and DBS sqoop dumps runs in between 6:30AM-7:15AM CERN time",
+                },
+                {
+                    className: 'btn btn-light',
+                    text: '<a href="https://github.com/dmwm/CMSMonitoring/tree/master/src/go/rucio-dataset-mon-go">GitHub Repo</a>',
+                    titleAttr: "If you see any bug, please open issue!",
+                }
+            ]
         });
         // Add event listener for opening and closing details
         table.on('click', 'td.dt-control', showRseDetails);

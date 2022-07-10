@@ -1,5 +1,7 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 // Dataset struct which includes Rucio and DBS calculated values
 type Dataset struct {
 	RseType    string  `bson:"RseType,omitempty" validate:"required"`

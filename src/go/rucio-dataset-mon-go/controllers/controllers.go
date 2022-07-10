@@ -1,5 +1,7 @@
 package controllers
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"context"
 	"encoding/json"
@@ -40,8 +42,12 @@ func controllerInitialize(c *gin.Context) (context.Context, context.CancelFunc, 
 	// Get request json with validation
 	r := models.DataTableCustomRequest{}
 	if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
-		tempReqBody, _ := c.Get(gin.BodyBytesKey)
-		utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
+		tempReqBody, exists := c.Get(gin.BodyBytesKey)
+		if !exists {
+			utils.ErrorResponse(c, "Bad request", err, "Request body does not exist in Gin context")
+		} else {
+			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
+		}
 	}
 	return ctx, cancel, start, r
 }
@@ -49,15 +55,23 @@ func controllerInitialize(c *gin.Context) (context.Context, context.CancelFunc, 
 func verboseControllerOutLog(start time.Time, name string, req any, data any) {
 	if Verbose > 0 {
 		elapsed := time.Since(start)
-		req, _ := json.Marshal(req)
-		r := string(req)
-		if Verbose >= 2 {
-			// Response returns all query results, its verbosity should be at least 2
-			data, _ := json.Marshal(data)
-			d := string(data)
-			log.Printf("[DEBUG] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %s\n\n", name, elapsed, r, d)
+		req, err := json.Marshal(req)
+		if err != nil {
+			log.Printf("[ERROR] ------ Cannot marshall request, err:%s", err)
 		} else {
-			log.Printf("[INFO] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %#v\n\n", name, elapsed, req, nil)
+			r := string(req)
+			if Verbose >= 2 {
+				// Response returns all query results, its verbosity should be at least 2
+				data, err1 := json.Marshal(data)
+				if err1 != nil {
+					log.Printf("[ERROR] ------ Cannot marshall additional verbose log data, err:%s", err1)
+				} else {
+					d := string(data)
+					log.Printf("[DEBUG] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %s\n\n", name, elapsed, r, d)
+				}
+			} else {
+				log.Printf("[INFO] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %#v\n\n", name, elapsed, req, nil)
+			}
 		}
 	}
 }
@@ -75,14 +89,56 @@ func GetServerInfo(c *gin.Context) {
 // GetDatasets controller that returns datasets according to DataTable request json
 func GetDatasets() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel, start, req := controllerInitialize(c)
+		verboseControllerInitLog(c)
+		start := time.Now()
+		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
 		defer cancel()
 
-		datasetsResp := datasets.GetResults(ctx, c, req)
-		c.JSON(http.StatusOK,
-			datasetsResp,
-		)
-		verboseControllerOutLog(start, "GetDatasets", req, datasetsResp)
+		// Get request json with validation
+		var datasetsResp any
+
+		// 1- Try custom request
+		rCustom := models.DataTableCustomRequest{}
+		errCustom := c.ShouldBindBodyWith(&rCustom, binding.JSON)
+		if errCustom == nil {
+			// If error is nil, it means that this is the request that binds with rCustom, so process it
+			datasetsResp = datasets.GetResults(ctx, c, rCustom)
+			c.JSON(http.StatusOK,
+				datasetsResp,
+			)
+			verboseControllerOutLog(start, "GetDatasets", rCustom, datasetsResp)
+			return
+		} else {
+			// This is not the request that binds with rCustom
+			tempReqBody, exists := c.Get(gin.BodyBytesKey)
+			if !exists {
+				log.Printf("[WARN] Request body for logging purpose does not exist")
+			} else {
+				log.Printf("[WARN] Request could not bind with custom DT request %#v", string(tempReqBody.([]byte)))
+			}
+		}
+
+		// 2- Try plain request which is fired in first opening of the page
+		rPlain := models.DataTableRequest{}
+		errPlain := c.ShouldBindBodyWith(&rPlain, binding.JSON)
+		if errPlain == nil {
+			// If error is nil, it means that this is the request that binds with rPlain, so process it
+			datasetsResp = datasets.GetResults(ctx, c, rCustom)
+			c.JSON(http.StatusOK,
+				datasetsResp,
+			)
+			verboseControllerOutLog(start, "GetDatasets", rPlain, datasetsResp)
+			return
+		} else {
+			tempReqBody, exists := c.Get(gin.BodyBytesKey)
+			if !exists {
+				log.Printf("[WARN] Request body for logging purpose does not exist")
+			} else {
+				log.Printf("[ERROR] Request could not bind with custom DT request %#v", string(tempReqBody.([]byte)))
+			}
+			// Since this is the last try, after this point, it is certain that incoming request does not bind any request struct
+			utils.ErrorResponse(c, "Bad request", errCustom, string(tempReqBody.([]byte)))
+		}
 		return
 	}
 }
@@ -112,8 +168,12 @@ func GetShortUrlParam() gin.HandlerFunc {
 		// Get request json with validation
 		req := models.ShortUrlRequest{}
 		if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
-			tempReqBody, _ := c.Get(gin.BodyBytesKey)
-			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
+			tempReqBody, exists := c.Get(gin.BodyBytesKey)
+			if !exists {
+				utils.ErrorResponse(c, "Bad request", err, "Request body for logging purpose does not exist")
+			} else {
+				utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
+			}
 		}
 		defer cancel()
 		requestHash := short_url.GetShortUrl(ctx, c, req)
@@ -164,11 +224,14 @@ func GetSingleDetailedDs() gin.HandlerFunc {
 
 		r := models.SingleDetailedDatasetsRequest{}
 		if err := c.ShouldBindBodyWith(&r, binding.JSON); err != nil {
-			x, _ := c.Get(gin.BodyBytesKey)
-			utils.ErrorResponse(c, "Bad request", err, string(x.([]byte)))
+			x, exists := c.Get(gin.BodyBytesKey)
+			if !exists {
+				utils.ErrorResponse(c, "Bad request", err, "Request body for logging purpose does not exist")
+			} else {
+				utils.ErrorResponse(c, "Bad request", err, string(x.([]byte)))
+			}
 			return
 		}
-
 		detailedRows := detailed_datasets.GetSingleDataset(ctx, c, r)
 		c.HTML(http.StatusOK,
 			"rse_detail_table.html",
@@ -193,7 +256,7 @@ func GetIndexPage(c *gin.Context) {
 		"index.html",
 		gin.H{
 			"title":          "Home Page",
-			"is_short_url":   "false",
+			"is_short_url":   "false", // Should be set as string since it will be required by JS in index.html
 			"data_timestamp": dataTimestamp.CreatedAt,
 		},
 	)

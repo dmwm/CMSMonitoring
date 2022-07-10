@@ -1,9 +1,12 @@
 package datasets
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"context"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
 	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/search_builder"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -43,17 +46,20 @@ func CreateSortBson(dataTableRequest models.DataTableCustomRequest) bson.D {
 // CreateSearchBson creates search query
 func CreateSearchBson(dtRequest models.DataTableCustomRequest) bson.M {
 	findQuery := bson.M{}
-
-	customs := dtRequest.Custom
-	if customs.Dataset != "" {
-		findQuery["Dataset"] = primitive.Regex{Pattern: customs.Dataset, Options: "im"}
-	}
-	if customs.Rse != "" {
-		findQuery["RSEs"] = primitive.Regex{Pattern: customs.Rse, Options: "im"}
-	}
-	if len(customs.RseType) == 1 {
-		// If not 1, both DISK and TAPE
-		findQuery["RseType"] = customs.RseType[0]
+	if !reflect.DeepEqual(dtRequest.SearchBuilder, models.SearchBuilderRequest{}) {
+		findQuery = search_builder.GetSearchBuilderBson(dtRequest.SearchBuilder)
+	} else {
+		customs := dtRequest.Custom
+		if customs.Dataset != "" {
+			findQuery["Dataset"] = primitive.Regex{Pattern: customs.Dataset, Options: "im"}
+		}
+		if customs.Rse != "" {
+			findQuery["RSEs"] = primitive.Regex{Pattern: customs.Rse, Options: "im"}
+		}
+		if len(customs.RseType) == 1 {
+			// If not 1, both DISK and TAPE
+			findQuery["RseType"] = customs.RseType[0]
+		}
 	}
 
 	log.Printf("[INFO] Find Query is : %#v", findQuery)
@@ -65,7 +71,7 @@ func GetFilteredCount(ctx context.Context, c *gin.Context, query bson.M, draw in
 	if draw < 1 {
 		log.Fatalf("Datatables draw value cannot be less than 1, it is: %d", draw)
 	} else if (draw == 1) || (!reflect.DeepEqual(GQuery, query)) {
-		// First opening of the page or search query is different thand the previous one
+		// First opening of the page or search query is different from the previous one
 		cnt, err := mymongo.GetCount(ctx, collection, query)
 		if err != nil {
 			utils.ErrorResponse(c, "TotalRecCount query failed", err, "")

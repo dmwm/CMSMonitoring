@@ -1,4 +1,41 @@
+/*
+Package main
+
+Rucio dataset monitoring using aggregated Spark data
+
+What is this
+    Main aim of the project is to show all Rucio dataset information in a web page with required functionalities
+
+What is used
+    DataTables: very popular JQuery library to show pretty tables with nice UI and search/query functionalities
+    MongoDB: used to store following data in separate collections
+                - aggregated Rucio datasets results,
+                - detailed dataset results,
+                - short url hash_id:request binding
+                - data source timestamp
+             multiple MongoDB indexes are created to use full performance of it
+    JQuery/JS: to manipulate and customize DataTables, JQuery and JS used
+
+What Go service provide
+    `gin-gonic` web framework is used to both
+        - MongoDB APIs, see `routes.main_router`
+        - serve html pages using Go templates
+
+Main page functionalities
+    Main page provides
+        - Sort
+        - Detailed RSE functionality: green "+" button
+        - Paging
+        - Count of search result
+        - Search using SearchBuilder conditions: "Add condition". Even though SB allows nested conditions, now it supports depth=1
+        - Buttons:copy, excel,PDF,column visibility
+        - Short URL: which is the advanced functionality of this service. Please see its documentation for more details.
+
+*/
 package main
+
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+// Reference: https://github.com/gin-gonic/gin/issues/346
 
 import (
 	"flag"
@@ -14,8 +51,6 @@ import (
 	"runtime"
 	"time"
 )
-
-// Reference: https://github.com/gin-gonic/gin/issues/346
 
 var (
 	g          errgroup.Group

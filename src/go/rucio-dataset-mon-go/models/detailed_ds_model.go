@@ -1,5 +1,7 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 // DetailedDs struct which includes Rucio and DBS calculated values for detailed datasets info

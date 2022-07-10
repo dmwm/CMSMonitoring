@@ -1,5 +1,7 @@
 package configs
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"github.com/joho/godotenv"
 	"log"

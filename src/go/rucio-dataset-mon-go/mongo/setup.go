@@ -1,5 +1,7 @@
 package mongo
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"context"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/configs"

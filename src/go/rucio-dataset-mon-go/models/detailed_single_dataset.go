@@ -1,5 +1,7 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 // DetailedDataset struct which includes Rucio and DBS calculated values for detailed datasets info
 type DetailedDataset struct {
 	Type       string  `bson:"Type" validate:"required"`

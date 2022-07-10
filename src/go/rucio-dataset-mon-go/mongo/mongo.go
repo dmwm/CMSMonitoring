@@ -1,5 +1,7 @@
 package mongo
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"

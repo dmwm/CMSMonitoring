@@ -1,6 +1,6 @@
 <div>
     <table class="details-table table table-condensed" id="detailed-datasets"
-           style="background-color: white; font-size: 12px; border:2px solid #005AB5;">
+           style="background-color: white; font-size: 12px; border:2px solid rgba(30,41,255,0.13);">
         <thead>
         <tr>
             <th scope="col">Type</th>
@@ -52,7 +52,10 @@
         return (input_bytes / Math.pow(1024, e)).toFixed(2) + ' ' + ' KMGTPEZY'.charAt(e) + 'B';
     }
     $(document).ready(function () {
-        $('#detailed-datasets').DataTable({
+        // To be able to expand/collapse multiple rows, each datatable ID should be different
+        random_detailed_id_str = Math.random().toString(36).slice(-10)
+        document.getElementById("detailed-datasets").setAttribute("id", random_detailed_id_str);
+        $('#'+random_detailed_id_str).DataTable({
             dom: "it",
             pageLength: 500,
             order: [[5, 'desc']],

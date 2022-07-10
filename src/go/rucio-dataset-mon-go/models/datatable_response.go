@@ -1,5 +1,7 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 // DatatableDatasetsResponse datatable response struct. Full description https://datatables.net/manual/server-side#Returned-data
 type DatatableDatasetsResponse struct {
 	Draw            int       `json:"draw" validate:"required"`            // The value that came in DataTable request, same should be returned

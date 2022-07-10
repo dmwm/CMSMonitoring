@@ -1,5 +1,7 @@
 package routes
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/controllers"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"

@@ -1,5 +1,7 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 // ShortUrl struct is used for key:value couples of unique id and datatables request
 type ShortUrl struct {
 	HashId     string                 `bson:"hash_id,omitempty" validate:"required"`

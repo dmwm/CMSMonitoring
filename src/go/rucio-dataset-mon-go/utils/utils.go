@@ -1,5 +1,7 @@
 package utils
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"github.com/gin-gonic/gin"
 	"log"
