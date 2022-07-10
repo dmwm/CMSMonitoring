@@ -1,11 +1,10 @@
 package short_url
 
 import (
-	"bytes"
 	"context"
 	"crypto/md5"
-	"encoding/gob"
 	"encoding/hex"
+	"encoding/json"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
 	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
@@ -20,14 +19,13 @@ var (
 )
 
 // getRequestHash returns MD5 hash of datatable request
-func getRequestHash(c *gin.Context, req models.DataTableCustomRequest) string {
-	var encBuff bytes.Buffer
-	enc := gob.NewEncoder(&encBuff)
-	if err := enc.Encode(req); err != nil {
-		utils.ErrorResponse(c, "Encode error", err, "")
+func getRequestHash(c *gin.Context, req models.ShortUrlRequest) string {
+	out, err := json.Marshal(req)
+	if err != nil {
+		utils.ErrorResponse(c, "Json marshall error", err, "")
 	}
 	md5Instance := md5.New()
-	md5Instance.Write(encBuff.Bytes())
+	md5Instance.Write(out)
 	return hex.EncodeToString(md5Instance.Sum(nil))
 }
 
@@ -42,15 +40,14 @@ func checkIdHashExists(ctx context.Context, c *gin.Context, hashId string) int64
 }
 
 // GetShortUrl get query results efficiently
-func GetShortUrl(ctx context.Context, c *gin.Context, req models.DataTableCustomRequest) string {
+func GetShortUrl(ctx context.Context, c *gin.Context, req models.ShortUrlRequest) string {
 	collection = mymongo.GetCollection(mymongo.DBClient, collectionName)
-	req.Draw = 1 // Set Draw value as 1 which is default
 	requestHash := getRequestHash(c, req)
 	if checkIdHashExists(ctx, c, requestHash) > 0 {
 		// Request exists
 		return requestHash
 	} else {
-		if err := mymongo.Insert(ctx, collection, models.ShortUrl{HashId: requestHash, Request: req}); err != nil {
+		if err := mymongo.Insert(ctx, collection, models.ShortUrl{HashId: requestHash, Request: req.Request, SavedState: req.SavedState}); err != nil {
 			utils.ErrorResponse(c, "ShortUrl insert failed", err, "")
 		}
 		return requestHash
@@ -58,7 +55,7 @@ func GetShortUrl(ctx context.Context, c *gin.Context, req models.DataTableCustom
 }
 
 // GetRequestFromShortUrl get query results efficiently
-func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, hashId string) models.DataTableCustomRequest {
+func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, hashId string) models.ShortUrl {
 	var shortUrlList []models.ShortUrl
 	collection = mymongo.GetCollection(mymongo.DBClient, collectionName)
 	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"hash_id": hashId})
@@ -68,5 +65,5 @@ func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, hashId string) 
 	if err = cursor.All(ctx, &shortUrlList); err != nil {
 		utils.ErrorResponse(c, "ShortUrl cursor failed", err, "")
 	}
-	return shortUrlList[0].Request // return only one, should be only one
+	return shortUrlList[0] // return only one, should be only one
 }

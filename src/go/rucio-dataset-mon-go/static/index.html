@@ -180,6 +180,16 @@
     var global_dt_request_holder = null;
     // Define short url will be used or not
     var isShortUrl = ({{.is_short_url}} === "true");
+    // holds saved state json string
+    var global_saved_state_holder;
+    var global_saved_state_setter = null;
+
+    if (isShortUrl === true) {
+        // Get saved state from template
+        global_saved_state_setter = {{.dt_saved_state}};
+        global_saved_state_setter = JSON.stringify(global_saved_state_setter);
+    }
+
     console.log(isShortUrl)
 
     // Required to show text on hover
@@ -212,13 +222,16 @@
         document.body.removeChild(textArea);
     }
 
-    // Get short url hash id by sending current page's datatables request object
+    // Get short url hash id by sending current page's datatables request and saved state objects
     function getShortUrl() {
         $.ajax({
             url: '../api/short-url',
             type: 'post',
             contentType: 'application/json',
-            data: global_dt_request_holder,
+            data: JSON.stringify({
+                "dt_request": JSON.parse(global_dt_request_holder),
+                "saved_state": JSON.parse(global_saved_state_holder),
+            }),
             success: function(data) {
                 // Call copy clipboard here
                 origin = window.location.origin
@@ -295,10 +308,11 @@
                     if (isShortUrl === true) {
                         // Set datatable request from saved short-url request using go template
                         d = {{.dt_request_short_url}}
-                        global_dt_request_holder = JSON.stringify();
+                        global_dt_request_holder = JSON.stringify(d);
+                    }else{
+                        global_dt_request_holder = JSON.stringify(d);
                     }
 
-                    global_dt_request_holder = JSON.stringify(d);
                     return global_dt_request_holder;
                 },
                 // processData: false,
@@ -377,7 +391,15 @@
                         // navigator.clipboard.writeText is not working because of https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts ,golang template
                     }
                 },
-            ]
+            ],
+            stateSave: true,
+            stateSaveCallback: function (settings, data) {
+                global_saved_state_holder = JSON.stringify(data)
+                console.log(global_saved_state_holder);
+            },
+            stateLoadCallback: function (settings) {
+                return global_saved_state_setter;
+            }
         });
         // ~~  --  Custom search draw  -- ~~
         $('#button-search').click(function () {

@@ -104,7 +104,17 @@ func GetDetailedDs() gin.HandlerFunc {
 // GetShortUrlParam controller that returns short url param which is md5 hash of the datatables request
 func GetShortUrlParam() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel, start, req := controllerInitialize(c)
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+		verboseControllerInitLog(c)
+		start := time.Now()
+		ctx, cancel := context.WithTimeout(context.Background(), mongo.Timeout)
+
+		// Get request json with validation
+		req := models.ShortUrlRequest{}
+		if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
+			tempReqBody, _ := c.Get(gin.BodyBytesKey)
+			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
+		}
 		defer cancel()
 		requestHash := short_url.GetShortUrl(ctx, c, req)
 		c.JSON(http.StatusOK,
@@ -125,7 +135,7 @@ func GetIndexPageFromShortUrlId() gin.HandlerFunc {
 
 		hashId := c.Param("id")
 		log.Printf("[INFO] Hash Id: %s", hashId)
-		dtRequest := short_url.GetRequestFromShortUrl(ctx, c, hashId)
+		shortUrlObj := short_url.GetRequestFromShortUrl(ctx, c, hashId)
 
 		dataTimestamp := data_timestamp.GetDataSourceTimestamp(ctx, c)
 		c.HTML(
@@ -134,11 +144,12 @@ func GetIndexPageFromShortUrlId() gin.HandlerFunc {
 			gin.H{
 				"title":                "Home Page",
 				"is_short_url":         "true",
-				"dt_request_short_url": dtRequest,
+				"dt_request_short_url": shortUrlObj.Request,
+				"dt_saved_state":       shortUrlObj.SavedState,
 				"data_timestamp":       dataTimestamp.CreatedAt,
 			},
 		)
-		verboseControllerOutLog(start, "GetIndexPageFromShortUrlId", dtRequest, hashId)
+		verboseControllerOutLog(start, "GetIndexPageFromShortUrlId", shortUrlObj, hashId)
 		return
 	}
 }
