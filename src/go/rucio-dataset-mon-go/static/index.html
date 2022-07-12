@@ -106,6 +106,7 @@
             <th>Rse Type</th>
             <th>Dataset</th>
             <th>Last Access</th>
+            <th>LastAccessMs</th>
             <th>Max</th>
             <th>Min</th>
             <th>Avg</th>
@@ -119,6 +120,7 @@
             <th>Rse Type</th>
             <th>Dataset</th>
             <th>Last Access</th>
+            <th>LastAccessMs</th>
             <th>Max</th>
             <th>Min</th>
             <th>Avg</th>
@@ -386,6 +388,7 @@
             },
             searchBuilder: {
                 // SearchBuilder customizations to limit conditions
+                columns: [1,2,3,5,6,7,8,9,10], // Remove LastAccessMs from search builder columns since we'll use only LastAccess
                 greyscale: true,
                 conditions:{
                     // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
@@ -455,11 +458,16 @@
                     searchBuilder: {
                         defaultCondition: ">"
                     },
+                    orderData: 4,
+                },
+                {
+                    data: "LastAccessMs",
+                    visible: false,
                 },
                 {
                     data: "Max",
                     render: function (data, type, row, meta) {
-                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        // SearchBuilder will use raw data as search values, but display will be human-readable size format.
                         return type === 'display'? helperBytesToHumanely(data) : data;
                     },
                     // orderSequence defines first option when clicked to Columns sort button. We set first as "desc", default was "asc".
@@ -469,7 +477,7 @@
                 {
                     data: "Min",
                     render: function (data, type, row, meta) {
-                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        // SearchBuilder will use raw data as search values, but display will be human-readable size format.
                         return type === 'display'? helperBytesToHumanely(data) : data;
                     },
                     orderSequence: ["desc", "asc"],
@@ -478,7 +486,7 @@
                 {
                     data: "Avg",
                     render: function (data, type, row, meta) {
-                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        // SearchBuilder will use raw data as search values, but display will be human-readable size format.
                         return type === 'display'? helperBytesToHumanely(data) : data;
                     },
                     orderSequence: ["desc", "asc"],
@@ -487,7 +495,7 @@
                 {
                     data: "Sum",
                     render: function (data, type, row, meta) {
-                        // SearchBuilder will use raw data as search values, but display will be human readable size format.
+                        // SearchBuilder will use raw data as search values, but display will be human-readable size format.
                         return type === 'display'? helperBytesToHumanely(data) : data;
                     },
                     orderSequence: ["desc", "asc"],

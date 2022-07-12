@@ -22,6 +22,6 @@ type SingleCriteria struct {
 // SearchBuilderRequest datatables search builder request format
 type SearchBuilderRequest struct {
 	Criteria []SingleCriteria `json:"criteria"`
-	// There are  "OR" and "AND" options. We accept only AND condition for now
+	// There are  "OR" and "AND" options.
 	Logic string `json:"logic"`
 }

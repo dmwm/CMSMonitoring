@@ -127,11 +127,18 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 	return bson.M{}
 }
 
-// GetSearchBuilderBson iterates over all criteria(s) and creates "AND" bson.M query
+// GetSearchBuilderBson iterates over all criteria(s) and creates "AND"/"OR" bson.M query
 func GetSearchBuilderBson(sb models.SearchBuilderRequest) bson.M {
 	var andQuery []bson.M
 	for _, condition := range sb.Criteria {
 		andQuery = append(andQuery, searchBsonSelections(condition))
 	}
-	return bson.M{"$and": andQuery}
+	switch sb.Logic {
+	case "AND":
+		return bson.M{"$and": andQuery}
+	case "OR":
+		return bson.M{"$or": andQuery}
+	default:
+		return bson.M{}
+	}
 }
