@@ -160,6 +160,8 @@ class StompAMQ7(object):
     :param loglevel: logging level, default is logging.WARNING
     :param timeout_interval: provides timeout interval to failed broker
     :param ipv4_only: use ipv4 servers only
+    :param send_timeout: heartbeat send timeout in milliseconds
+    :param recv_timeout: heartbeat receive timeout in milliseconds
     """
 
     # Version number is to be added in header
@@ -177,7 +179,9 @@ class StompAMQ7(object):
                  key=None,
                  loglevel=logging.WARNING,
                  timeout_interval=600,
-                 ipv4_only=True):
+                 ipv4_only=True,
+                 send_timeout=4000,
+                 recv_timeout=4000):
         # Set logger
         logging.basicConfig(format="%(asctime)s.%(msecs)03dZ [%(levelname)s] %(filename)s:%(lineno)d %(message)s ",
                             datefmt="%Y-%m-%dT%H:%M:%S",
@@ -217,7 +221,7 @@ class StompAMQ7(object):
             for idx in range(len(self.ip_and_ports)):
                 host_and_ports = [self.ip_and_ports[idx]]
                 try:
-                    conn = stomp.Connection(host_and_ports=host_and_ports)
+                    conn = stomp.Connection(host_and_ports=host_and_ports, heartbeats=(send_timeout, recv_timeout))
                     desc = f"host: {host_and_ports}"
                     if self._use_ssl:
                         conn.set_ssl(for_hosts=host_and_ports, key_file=self._key, cert_file=self._cert)
@@ -230,7 +234,7 @@ class StompAMQ7(object):
                     self.logger.warning(msg)
         else:
             try:
-                conn = stomp.Connection(host_and_ports=self._host_and_ports)
+                conn = stomp.Connection(host_and_ports=self._host_and_ports, heartbeats=(send_timeout, recv_timeout))
                 desc = f"host: {self._host_and_ports}"
                 if self._use_ssl:
                     conn.set_ssl(for_hosts=self._host_and_ports, key_file=self._key, cert_file=self._cert)
