@@ -121,8 +121,8 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
 }
 ```
 
-
 ### Example SearchBuilder request
+
 ```json
 {
     "criteria":

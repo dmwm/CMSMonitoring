@@ -40,7 +40,7 @@ func GetFindOnlyMatchResults(ctx context.Context, coll *mongo.Collection, match 
 
 // GetCount returns count of query result
 func GetCount(ctx context.Context, collection *mongo.Collection, match bson.M) (int64, error) {
-	count, err := collection.CountDocuments(context.TODO(), match)
+	count, err := collection.CountDocuments(ctx, match)
 	return count, err
 }
 

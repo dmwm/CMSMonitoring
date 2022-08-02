@@ -4,7 +4,6 @@ package mongo
 
 import (
 	"context"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/configs"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -46,8 +45,8 @@ func GetCollection(client *mongo.Client, collectionName string) *mongo.Collectio
 
 // InitializeClient setup client connection in main function
 func InitializeClient() {
-	configs.InitialChecks()
-	DB = configs.EnvMongoDB()
-	URI = configs.EnvMongoURI()
+	InitialChecks()
+	DB = EnvMongoDB()
+	URI = EnvMongoURI()
 	DBClient = GetMongoClient()
 }

@@ -55,7 +55,7 @@
         // To be able to expand/collapse multiple rows, each datatable ID should be different
         random_detailed_id_str = Math.random().toString(36).slice(-10)
         document.getElementById("detailed-datasets").setAttribute("id", random_detailed_id_str);
-        $('#'+random_detailed_id_str).DataTable({
+        $('#' + random_detailed_id_str).DataTable({
             dom: "it",
             pageLength: 500,
             order: [[5, 'desc']],

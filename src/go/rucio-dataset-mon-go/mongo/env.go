@@ -1,4 +1,4 @@
-package configs
+package mongo
 
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 

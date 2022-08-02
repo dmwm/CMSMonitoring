@@ -26,7 +26,6 @@ Please open [GitHub issue](https://github.com/dmwm/CMSMonitoring/issues)
 - https://github.com/dmwm/CMSKubernetes/tree/master/docker/cmsmon-rucio-ds-web
 - https://github.com/dmwm/CMSKubernetes/blob/master/kubernetes/monitoring/services/mongo/cmsmon-rucio-ds-web.yaml
 
-
 ###### Special Thanks
 
 - Special thanks to [Valentin](https://github.com/vkuznet) for his suggestions, reviews and guidance.

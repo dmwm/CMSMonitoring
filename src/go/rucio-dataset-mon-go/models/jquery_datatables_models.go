@@ -18,16 +18,26 @@ type DataTableRequest struct {
 	Start   int64         `json:"start"`                                          //
 }
 
+// DataTableSearchBuilderRequest customized ajax request that come from DataTable
+type DataTableSearchBuilderRequest struct {
+	Draw          int                  `json:"draw" validate:"required" binding:"required"`                     // Just a counter that should be return exactly in the response
+	Columns       []DTReqColumn        `json:"columns" validate:"required" binding:"required"`                  // Includes user input for columns (like search text for the column)
+	Length        int64                `json:"length"`                                                          // Number of records that the table can display in the current draw.
+	Orders        []DTReqOrder         `json:"order"`                                                           //
+	Search        DTReqSearch          `json:"search"`                                                          //
+	Start         int64                `json:"start"`                                                           //
+	SearchBuilder SearchBuilderRequest `json:"search_builder,omitempty" validate:"required" binding:"required"` // SearchBuilder
+}
+
 // DataTableCustomRequest customized ajax request that come from DataTable
 type DataTableCustomRequest struct {
-	Draw          int                  `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
-	Columns       []DTReqColumn        `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
-	Length        int64                `json:"length"`                                         // Number of records that the table can display in the current draw.
-	Orders        []DTReqOrder         `json:"order"`                                          //
-	Search        DTReqSearch          `json:"search"`                                         //
-	Start         int64                `json:"start"`                                          //
-	Custom        Custom               `json:"custom"`                                         // Custom
-	SearchBuilder SearchBuilderRequest `json:"search_builder"`                                 // SearchBuilder
+	Draw    int           `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
+	Columns []DTReqColumn `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
+	Length  int64         `json:"length"`                                         // Number of records that the table can display in the current draw.
+	Orders  []DTReqOrder  `json:"order"`                                          //
+	Search  DTReqSearch   `json:"search"`                                         //
+	Start   int64         `json:"start"`                                          //
+	Custom  Custom        `json:"custom"`                                         // Custom
 }
 
 // DTReqSearch represents main search text which client entered and can be regex or not.

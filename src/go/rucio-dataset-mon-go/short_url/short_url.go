@@ -1,6 +1,7 @@
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 /*
-Package short_url
-This package creates short url using incoming request's MD5 hash and MongoDB collection to store hash and request match
+Package short_url This controller creates short url using incoming request's MD5 hash and MongoDB collection to store hash and request match
 
 In Short:
     - Create a MD5 hash from incoming request
@@ -9,10 +10,10 @@ In Short:
 
 How to create short url works:
     - When user clicked the "Copy state link to clipboard" button, DataTables sends request to short_url API
-    - You can see incoming requst structure: models.ShortUrlRequest
+    - You can see incoming request structure: models.ShortUrlRequest
     - This JSOn request converted to JSON string and an MD5 hash is created from this string in `getRequestHash` function
     - This hash id is checked if there is an already matching hash id in MongoDB `short_url` collection
-    - If not, `GetShortUrl` function inserts models.ShortUrl to MongoDB.
+    - If not, `getShortUrl` function inserts models.ShortUrl to MongoDB.
     - models.ShortUrl contains all we need to restore the DataTables page state: shared query and shared state(HTML/CSS)
     - After insertion, hash id can be shared safely with other users.
 
@@ -23,8 +24,6 @@ How to use short url:
     - Mainly Go template helps to modify JavaScript variables/objects and HTML
 */
 package short_url
-
-// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
 	"context"
@@ -39,10 +38,34 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var (
-	collectionName = "short_url"
-	collection     *mongo.Collection
-)
+// GetShortUrl get query results efficiently
+func GetShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName string, req models.ShortUrlRequest) string {
+	collection := mymongo.GetCollection(mymongo.DBClient, shortUrlCollectionName)
+	requestHash := getRequestHash(c, req)
+	if checkIdHashExists(ctx, c, collection, requestHash) > 0 {
+		// Request exists
+		return requestHash
+	} else {
+		if err := mymongo.Insert(ctx, collection, models.ShortUrl{HashId: requestHash, Request: req.Request, SavedState: req.SavedState}); err != nil {
+			utils.ErrorResponse(c, "ShortUrl insert failed", err, "")
+		}
+		return requestHash
+	}
+}
+
+// GetRequestFromShortUrl get query results efficiently
+func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName string, hashId string) models.ShortUrl {
+	var shortUrlList []models.ShortUrl
+	collection := mymongo.GetCollection(mymongo.DBClient, shortUrlCollectionName)
+	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"hash_id": hashId})
+	if err != nil {
+		utils.ErrorResponse(c, "getRequestFromShortUrl find query failed", err, "")
+	}
+	if err = cursor.All(ctx, &shortUrlList); err != nil {
+		utils.ErrorResponse(c, "ShortUrl cursor failed", err, "")
+	}
+	return shortUrlList[0] // return only one, should be only one
+}
 
 // getRequestHash returns MD5 hash of datatable request
 func getRequestHash(c *gin.Context, req models.ShortUrlRequest) string {
@@ -56,40 +79,11 @@ func getRequestHash(c *gin.Context, req models.ShortUrlRequest) string {
 }
 
 // checkIdHashExists check if request hash is exists in the MongoDB collection
-func checkIdHashExists(ctx context.Context, c *gin.Context, hashId string) int64 {
+func checkIdHashExists(ctx context.Context, c *gin.Context, collection *mongo.Collection, hashId string) int64 {
 	count, err := mymongo.GetCount(ctx, collection, bson.M{"hash_id": hashId})
 	if err != nil {
 		utils.ErrorResponse(c, "ShortUrl checkIdHashExists failed", err, "")
 		return 0
 	}
 	return count
-}
-
-// GetShortUrl get query results efficiently
-func GetShortUrl(ctx context.Context, c *gin.Context, req models.ShortUrlRequest) string {
-	collection = mymongo.GetCollection(mymongo.DBClient, collectionName)
-	requestHash := getRequestHash(c, req)
-	if checkIdHashExists(ctx, c, requestHash) > 0 {
-		// Request exists
-		return requestHash
-	} else {
-		if err := mymongo.Insert(ctx, collection, models.ShortUrl{HashId: requestHash, Request: req.Request, SavedState: req.SavedState}); err != nil {
-			utils.ErrorResponse(c, "ShortUrl insert failed", err, "")
-		}
-		return requestHash
-	}
-}
-
-// GetRequestFromShortUrl get query results efficiently
-func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, hashId string) models.ShortUrl {
-	var shortUrlList []models.ShortUrl
-	collection = mymongo.GetCollection(mymongo.DBClient, collectionName)
-	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"hash_id": hashId})
-	if err != nil {
-		utils.ErrorResponse(c, "GetRequestFromShortUrl find query failed", err, "")
-	}
-	if err = cursor.All(ctx, &shortUrlList); err != nil {
-		utils.ErrorResponse(c, "ShortUrl cursor failed", err, "")
-	}
-	return shortUrlList[0] // return only one, should be only one
 }

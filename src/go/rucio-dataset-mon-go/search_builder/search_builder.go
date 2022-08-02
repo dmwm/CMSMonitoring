@@ -3,8 +3,8 @@ package search_builder
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
-	"fmt"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
@@ -32,16 +32,16 @@ func strToFloat(str string, typeAbbreviation string) float64 {
 	str = strings.ReplaceAll(str, typeAbbreviation, "")
 	f, err := strconv.ParseFloat(str, 10)
 	if err != nil {
-		log.Printf("[ERROR] Cannot parse string to int: %s", str)
+		utils.ErrorLog("Cannot parse string to int: %s", str)
 		return 0
 	}
-	log.Printf("strToFloat %f", f)
+	utils.InfoLogV1("strToFloat %f", f)
 	return f
 }
 
 // humanSizeToBytes converts user defined size string to bytes
 func humanSizeToBytes(input string) int64 {
-	log.Printf("INOUT %s", input)
+	utils.InfoLogV1("humanSizeToBytes input: %s", input)
 	input = strings.ToUpper(input)
 	switch {
 	case strings.Contains(input, "KB"):
@@ -83,7 +83,7 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 		case "contains": // String type should have only "contains" and regex applies
 			return bson.M{criterion.OrigData: primitive.Regex{Pattern: criterion.Value[0], Options: "im"}}
 		default:
-			log.Println("FAIL")
+			utils.ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	case "html":
 		switch criterion.Condition {
@@ -101,7 +101,7 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 			log.Println(bytesFilter)
 			return bson.M{criterion.OrigData: bson.M{"$lte": bytesFilter}}
 		default:
-			fmt.Println("FAIL")
+			utils.ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	case "date":
 		// TODO change the logic to use LastAccessMs
@@ -121,7 +121,7 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 		case "!null":
 			return bson.M{criterion.OrigData: bson.M{"$exists": true}}
 		default:
-			fmt.Println("FAIL")
+			utils.ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	}
 	return bson.M{}

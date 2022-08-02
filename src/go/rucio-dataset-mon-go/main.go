@@ -40,10 +40,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/configs"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/controllers"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/routes"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
 	"golang.org/x/sync/errgroup"
 	"log"
 	"net/http"
@@ -75,25 +75,23 @@ func main() {
 	flag.Parse()
 
 	// Initials
-	configs.EnvFile = envFile
-	configs.InitialChecks()
+	mongo.EnvFile = envFile
+	mongo.InitialChecks()
 
 	controllers.Verbose = verbose
+	utils.Verbose = verbose
 	controllers.GitVersion = gitVersion
 	controllers.ServerInfo = info()
 	mongo.InitializeClient()
 
 	if version {
-		fmt.Println(info())
+		utils.InfoLogV0(info())
 		os.Exit(0)
 	}
-	log.Printf("[INFO] Verbosity : %#v", verbose)
-	if verbose > 0 {
-		log.Println("[INFO] ---Settings of go web service using MongoDB")
-		log.Printf("[INFO] MONGO_URI: %s", mongo.URI)
-		log.Printf("[INFO] MONGO_DATABASE: %s", mongo.DB)
-		log.Printf("[INFO] MONGO CONNECTION TIMEOUT: %#v", mongo.ConnectionTimeout)
-	}
+	utils.InfoLogV0("Verbosity : %#v", verbose)
+	utils.InfoLogV1("MONGO_URI: %s", mongo.URI)
+	utils.InfoLogV1("MONGO_DATABASE: %s", mongo.DB)
+	utils.InfoLogV1("MONGO CONNECTION TIMEOUT: %#v", mongo.ConnectionTimeout)
 
 	mainServer := &http.Server{
 		Addr:         ":8080",
