@@ -15,8 +15,18 @@ functionalities not there yet.
 - [Deployment instructions](docs/Deployment.md)
 - [Datatables example request](docs/example_datatables_json_request.md)
 
+###### Bug Report & Contribution
+
+Please open [GitHub issue](https://github.com/dmwm/CMSMonitoring/issues)
+
 ###### References
 
+- https://github.com/dmwm/das2go
 - https://dev.to/hackmamba/build-a-rest-api-with-golang-and-mongodb-gin-gonic-version-269m
 - https://github.com/dmwm/CMSKubernetes/tree/master/docker/cmsmon-rucio-ds-web
 - https://github.com/dmwm/CMSKubernetes/blob/master/kubernetes/monitoring/services/mongo/cmsmon-rucio-ds-web.yaml
+
+###### Special Thanks
+
+- Special thanks to [Valentin](https://github.com/vkuznet) for his suggestions, reviews and guidance.
+- Many thanks to Danilo Piparo for bringing up the idea of this project

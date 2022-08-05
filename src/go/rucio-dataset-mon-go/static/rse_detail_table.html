@@ -1,0 +1,88 @@
+<div>
+    <table class="details-table table table-condensed" id="detailed-datasets"
+           style="background-color: white; font-size: 12px; border:2px solid rgba(30,41,255,0.13);">
+        <thead>
+        <tr>
+            <th scope="col">Type</th>
+            <th scope="col">Dataset</th>
+            <th scope="col">RSE</th>
+            <th scope="col">Tier</th>
+            <th scope="col">Rse Kind</th>
+            <th scope="col">SizeBytes</th>
+            <th scope="col">Size</th>
+            <th scope="col">Last Access</th>
+            <th scope="col">#Files in RSE</th>
+            <th scope="col">#Files Total of Dataset</th>
+            <th scope="col">%Files in RSE</th>
+            <th scope="col">#Accessed Files</th>
+            <th scope="col">#Locked Files by Prod Accnt</th>
+            <th scope="col">#Locked Files by Other Accnt</th>
+            <th scope="col">Prod Accounts</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .data}}
+        <tr>
+            <td class="nowrap">{{.Type}}</td>
+            <td>{{.Dataset}}</td>
+            <td>{{.RSE}}</td>
+            <td>{{.Tier}}</td>
+            <td>{{.RseKind}}</td>
+            <td>{{.SizeBytes}}</td>
+            <td>{{.SizeBytes}}</td>
+            <td>{{.LastAcc}}</td>
+            <td>{{.Fcnt}}</td>
+            <td>{{.TotFcnt}}</td>
+            <td>{{.Fpct}}</td>
+            <td>{{.AccFcnt}}</td>
+            <td>{{.ProdLckCnt}}</td>
+            <td>{{.OthLckCnt}}</td>
+            <td>{{.ProdAccts}}</td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+</div>
+<script>
+    bytesToHumanelyDetailDt = function (input_bytes) {
+        if (input_bytes === 0) {
+            return "0.00 B";
+        }
+        var e = Math.floor(Math.log(input_bytes) / Math.log(1024));
+        return (input_bytes / Math.pow(1024, e)).toFixed(2) + ' ' + ' KMGTPEZY'.charAt(e) + 'B';
+    }
+    $(document).ready(function () {
+        // To be able to expand/collapse multiple rows, each datatable ID should be different
+        random_detailed_id_str = Math.random().toString(36).slice(-10)
+        document.getElementById("detailed-datasets").setAttribute("id", random_detailed_id_str);
+        $('#' + random_detailed_id_str).DataTable({
+            dom: "it",
+            pageLength: 500,
+            order: [[5, 'desc']],
+            columnDefs: [
+                {
+                    // SizeBytes will be hidden
+                    target: 5, visible: false, searchable: false
+                },
+                {
+                    // Size will use SizeBytes to correctly order
+                    data: "Size",
+                    target: 6,
+                    orderData: 5,
+                    render: function (data, type, row, meta) {
+                        return bytesToHumanelyDetailDt(data);
+                    },
+                    orderSequence: ["desc", "asc"],
+                },
+                {
+                    // Fpct(%Files in RSE)
+                    target: 10,
+                    render: function (data, type, row, meta) {
+                        return data + '%';
+                    },
+                    orderSequence: ["desc", "asc"],
+                },
+            ],
+        });
+    });
+</script>
