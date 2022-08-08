@@ -1,4 +1,4 @@
-package routes
+package server
 
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
@@ -12,8 +12,7 @@ import (
 )
 
 // MainRouter main request router
-func MainRouter() http.Handler {
-
+func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 	responseBodyTimeout := gin.H{
 		"code":    http.StatusRequestTimeout,
 		"message": "request timeout, response is sent from middleware"}
@@ -24,17 +23,17 @@ func MainRouter() http.Handler {
 
 	// REST
 	e.Use(utils.MiddlewareReqHandler())
-	e.POST("/api/datasets", controllers.GetDatasets())
-	e.POST("/api/rse-details", controllers.GetDetailedDs())
-	e.POST("/api/rse-detail", controllers.GetSingleDetailedDs())
-	e.POST("/api/short-url", controllers.GetShortUrlParam())
-	e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId())
-	e.GET("/serverinfo", controllers.GetServerInfo)
+	e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
+	e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
+	e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
+	e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+	e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp))
+	e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
 
 	// Static
-	e.LoadHTMLGlob("static/*.html")
+	e.LoadHTMLGlob("static/templates/*.tmpl")
 	e.Static("/static/img", "./static/img")
-	e.GET("/", controllers.GetIndexPage)
+	e.GET("/", controllers.GetIndexPage(mongoColNames.DatasourceTimestamp))
 	e.GET("/rse-details", controllers.GetDetailsPage)
 
 	//

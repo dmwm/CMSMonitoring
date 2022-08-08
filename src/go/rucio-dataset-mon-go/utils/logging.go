@@ -1,5 +1,7 @@
 package utils
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"log"
 )
@@ -9,7 +11,6 @@ var Verbose int
 
 // InfoLogV0 prints logs with verbosity >= 0
 func InfoLogV0(s string, v ...any) {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if Verbose >= 0 {
 		log.Printf("[INFO] "+s, v)
 	}
@@ -17,7 +18,6 @@ func InfoLogV0(s string, v ...any) {
 
 // InfoLogV1 prints logs with verbosity >= 1
 func InfoLogV1(s string, v ...any) {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if Verbose >= 1 {
 		log.Printf("[INFO] "+s, v)
 	}
@@ -25,7 +25,6 @@ func InfoLogV1(s string, v ...any) {
 
 // InfoLogV2 prints logs with verbosity >= 2
 func InfoLogV2(s string, v ...any) {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	if Verbose >= 2 {
 		log.Printf("[DEBUG] "+s, v)
 	}
@@ -33,12 +32,10 @@ func InfoLogV2(s string, v ...any) {
 
 // WarnLog prints warning logs
 func WarnLog(s string, v ...any) {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("[WARN] "+s, v)
 }
 
 // ErrorLog prints error logs, but not exit the process like log.Fatal
 func ErrorLog(s string, v ...any) {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("[ERROR] "+s, v)
 }

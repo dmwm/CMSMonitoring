@@ -11,10 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// getDataSourceTimestamp gets the creation time of used data in MongoDB (sqoop dumps)
-func getDataSourceTimestamp(ctx context.Context, c *gin.Context, sourceTimeCollectionName string) models.DataSourceTS {
+// GetDataSourceTimestamp gets the creation time of used data in MongoDB (sqoop dumps)
+func GetDataSourceTimestamp(ctx context.Context, c *gin.Context, sourceTimeCollectionName string) models.DataSourceTS {
 	var dataTimestampLst []models.DataSourceTS
-	collection := mymongo.GetCollection(mymongo.DBClient, sourceTimeCollectionName)
+	collection := mymongo.GetCollection(sourceTimeCollectionName)
 	failTimeStamp := models.DataSourceTS{CreatedAt: "0000-00-00"}
 
 	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{})

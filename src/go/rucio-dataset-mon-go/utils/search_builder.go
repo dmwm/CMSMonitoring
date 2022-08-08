@@ -1,10 +1,9 @@
-package search_builder
+package utils
 
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
@@ -32,16 +31,16 @@ func strToFloat(str string, typeAbbreviation string) float64 {
 	str = strings.ReplaceAll(str, typeAbbreviation, "")
 	f, err := strconv.ParseFloat(str, 10)
 	if err != nil {
-		utils.ErrorLog("Cannot parse string to int: %s", str)
+		ErrorLog("Cannot parse string to int: %s", str)
 		return 0
 	}
-	utils.InfoLogV1("strToFloat %f", f)
+	InfoLogV1("strToFloat %f", f)
 	return f
 }
 
 // humanSizeToBytes converts user defined size string to bytes
 func humanSizeToBytes(input string) int64 {
-	utils.InfoLogV1("humanSizeToBytes input: %s", input)
+	InfoLogV1("humanSizeToBytes input: %s", input)
 	input = strings.ToUpper(input)
 	switch {
 	case strings.Contains(input, "KB"):
@@ -83,7 +82,7 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 		case "contains": // String type should have only "contains" and regex applies
 			return bson.M{criterion.OrigData: primitive.Regex{Pattern: criterion.Value[0], Options: "im"}}
 		default:
-			utils.ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
+			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	case "html":
 		switch criterion.Condition {
@@ -101,7 +100,7 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 			log.Println(bytesFilter)
 			return bson.M{criterion.OrigData: bson.M{"$lte": bytesFilter}}
 		default:
-			utils.ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
+			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	case "date":
 		// TODO change the logic to use LastAccessMs
@@ -121,14 +120,14 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 		case "!null":
 			return bson.M{criterion.OrigData: bson.M{"$exists": true}}
 		default:
-			utils.ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
+			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	}
 	return bson.M{}
 }
 
 // GetSearchBuilderBson iterates over all criteria(s) and creates "AND"/"OR" bson.M query
-func GetSearchBuilderBson(sb models.SearchBuilderRequest) bson.M {
+func GetSearchBuilderBson(sb *models.SearchBuilderRequest) bson.M {
 	var andQuery []bson.M
 	for _, condition := range sb.Criteria {
 		andQuery = append(andQuery, searchBsonSelections(condition))
