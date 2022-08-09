@@ -1,4 +1,4 @@
-module github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go
+module github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring
 
 go 1.18
 

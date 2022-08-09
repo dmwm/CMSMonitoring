@@ -3,8 +3,8 @@ package server
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/controllers"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/controllers"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	timeout "github.com/s-wijaya/gin-timeout"
 	"net/http"

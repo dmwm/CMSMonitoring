@@ -7,7 +7,7 @@ vet:
 	go vet .
 
 build:
-	go clean; rm -rf pkg rucio-dataset-mon-go*; go build ${flags}
+	go clean; rm -rf pkg rucio-dataset-monitoring*; go build ${flags}
 
 install:
 	go install

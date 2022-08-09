@@ -3,7 +3,7 @@ package utils
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"

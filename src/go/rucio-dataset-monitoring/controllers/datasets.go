@@ -4,9 +4,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
-	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/models"
+	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/mongo"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

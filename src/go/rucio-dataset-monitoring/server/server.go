@@ -6,8 +6,8 @@ package server
 
 import (
 	"fmt"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/mongo"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
 	"golang.org/x/sync/errgroup"
 	"log"
 	"net/http"

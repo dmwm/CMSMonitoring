@@ -7,7 +7,7 @@ package models
 // DataTable sends specific request json to ajax=>url endpoint.
 //    - It is basically a nested json and can be organised with below structs.
 //    - Reference: comment in https://datatables.net/forums/discussion/68295/go-golang-unmarshal-json-sent-by-post-method
-//    - See example request in `rucio-dataset-mon-go/README.md`
+//    - See example request in `rucio-dataset-monitoring/README.md`
 
 // DataTableRequest main ajax request that come from DataTable, which includes user inputs
 //     For full field descriptions, please see https://datatables.net/manual/server-side#Sent-parameters

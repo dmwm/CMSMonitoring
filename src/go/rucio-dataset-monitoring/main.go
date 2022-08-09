@@ -5,7 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/server"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/server"
 	"os"
 	"runtime"
 	"time"
@@ -18,7 +18,7 @@ var gitVersion string //
 func info() string {
 	goVersion := runtime.Version()
 	tstamp := time.Now().Format("2006-02-01")
-	return fmt.Sprintf("rucio-dataset-mon-go git=%s go=%s date=%s", gitVersion, goVersion, tstamp)
+	return fmt.Sprintf("rucio-dataset-monitoring git=%s go=%s date=%s", gitVersion, goVersion, tstamp)
 }
 
 // main

@@ -4,8 +4,8 @@ package controllers
 
 import (
 	"context"
-	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/mongo"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
+	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/mongo"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"

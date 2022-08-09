@@ -3,7 +3,7 @@ package controllers
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

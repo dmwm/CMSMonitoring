@@ -1,8 +1,8 @@
 package mongo
 
 import (
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/models"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-mon-go/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/models"
+	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
