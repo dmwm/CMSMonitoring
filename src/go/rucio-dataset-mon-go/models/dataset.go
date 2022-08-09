@@ -12,5 +12,7 @@ type Dataset struct {
 	Min          float64 `bson:"Min"`
 	Avg          float64 `bson:"Avg"`
 	Sum          float64 `bson:"Sum"`
+	RealSize     float64 `bson:"RealSize"`
+	TotalFileCnt int64   `bson:"TotalFileCnt"`
 	RSEs         string  `bson:"RSEs"`
 }

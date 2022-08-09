@@ -22,6 +22,21 @@ const (
 	EB
 )
 
+// strToInt converts user string to int
+func strToInt(str string) int {
+	// Remove space
+	if strings.Contains(str, " ") {
+		str = strings.ReplaceAll(str, " ", "")
+	}
+	i, err := strconv.Atoi(str)
+	if err != nil {
+		ErrorLog("Cannot parse string to int: %s", str)
+		return 0
+	}
+	InfoLogV1("strToInt %f", i)
+	return i
+}
+
 // strToFloat converts user string to float64
 func strToFloat(str string, typeAbbreviation string) float64 {
 	// Remove space
@@ -31,7 +46,7 @@ func strToFloat(str string, typeAbbreviation string) float64 {
 	str = strings.ReplaceAll(str, typeAbbreviation, "")
 	f, err := strconv.ParseFloat(str, 10)
 	if err != nil {
-		ErrorLog("Cannot parse string to int: %s", str)
+		ErrorLog("Cannot parse string to float: %s", str)
 		return 0
 	}
 	InfoLogV1("strToFloat %f", f)
@@ -61,7 +76,13 @@ func humanSizeToBytes(input string) int64 {
 }
 
 // searchBsonSelections creates bson.M using SearchBuilder request
-//   In main DataTables, there are 3 types in our data: string,num,date
+//   In main DataTables, there are 3 types in our data: string,html,date,num
+//   IN SHORT (DataTables type vs Actual column type):
+//     - string: string type columns
+//     - html  : float type columns
+//     - date  : date type columns
+//     - num   : integer type columns
+//   Details:
 //   - string:
 //       It only has "contains" condition which is behaved as ReGex.
 //       Since regex is powerful, we don't need starts with, ends with etc. conditions
@@ -75,6 +96,8 @@ func humanSizeToBytes(input string) int64 {
 //       In other words: before, after, between, empty, not empty
 //       TODO Currently it operates on string level, using LastAccessMs column(integer unix timestamp)
 //           we can convert user date string to unix ts and use it in MongoDb query on LastAccessMs column
+//   - num:
+//       It has only "<", ">", "between", "null", "!null" conditions. Used for integer columns like `TotalFileCnt`
 func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 	switch criterion.Type {
 	case "string":
@@ -114,6 +137,25 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 				"$and": []bson.M{
 					{criterion.OrigData: bson.M{"$gte": criterion.Value[0]}},
 					{criterion.OrigData: bson.M{"$lte": criterion.Value[1]}},
+				}}
+		case "null":
+			return bson.M{criterion.OrigData: bson.M{"$exists": false}}
+		case "!null":
+			return bson.M{criterion.OrigData: bson.M{"$exists": true}}
+		default:
+			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
+		}
+	case "num":
+		switch criterion.Condition {
+		case "<":
+			return bson.M{criterion.OrigData: bson.M{"$lte": strToInt(criterion.Value[0])}}
+		case ">":
+			return bson.M{criterion.OrigData: bson.M{"$gte": strToInt(criterion.Value[0])}}
+		case "between":
+			return bson.M{
+				"$and": []bson.M{
+					{criterion.OrigData: bson.M{"$gte": strToInt(criterion.Value[0])}},
+					{criterion.OrigData: bson.M{"$lte": strToInt(criterion.Value[0])}},
 				}}
 		case "null":
 			return bson.M{criterion.OrigData: bson.M{"$exists": false}}

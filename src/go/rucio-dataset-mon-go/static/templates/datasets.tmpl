@@ -34,7 +34,7 @@
         }
 
         /* LastAccess, Max, Min, Avg, Sum */
-        table tr td:nth-child(n+5):nth-child(-n+9) {
+        table tr td:nth-child(n+5):nth-child(-n+11) {
             text-align: right;
         }
 
@@ -110,6 +110,8 @@
             <th>Min</th>
             <th>Avg</th>
             <th>Sum</th>
+            <th>RealSize</th>
+            <th>TotalFileCnt</th>
             <th>RSEs</th>
         </tr>
         </thead>
@@ -124,6 +126,8 @@
             <th>Min</th>
             <th>Avg</th>
             <th>Sum</th>
+            <th>RealSize</th>
+            <th>TotalFileCnt</th>
             <th>RSEs</th>
         </tr>
         </tfoot>
@@ -390,11 +394,15 @@
             },
             searchBuilder: {
                 // SearchBuilder customizations to limit conditions
-                columns: [1, 2, 3, 5, 6, 7, 8, 9, 10], // Remove LastAccessMs from search builder columns since we'll use only LastAccess
+                columns: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12], // Remove LastAccessMs from search builder columns since we'll use only LastAccess
                 greyscale: true,
                 conditions: {
                     // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                     // that's why we use "html" type, but it will be used in numeric columns
+                    // IN SHORT:
+                    //     - html: float type columns
+                    //     - date: date type columns
+                    //     - num:  integer type columns
                     html: {
                         // "num" type will have only "starts":Greater Than" and "ends":"Less Than" conditions
                         'starts': {
@@ -432,6 +440,14 @@
                         '=': null,
                         '!=': null,
                         '!between': null,
+                    },
+                    num: {
+                        // "int" type will have only ">", "<", "between", "null" and "!null" conditions
+                        '=': null,
+                        '!=': null,
+                        '!between': null,
+                        '<=': null,
+                        '>=': null,
                     }
                 }
             },
@@ -460,9 +476,11 @@
                     searchBuilder: {
                         defaultCondition: ">"
                     },
+                    // orderData uses 4th column "LastAccessMs" as ordering column, arrange it accordingly
                     orderData: 4,
                 },
                 {
+                    // "LastAccess" column uses this column ordering column, arrange it accordingly
                     data: "LastAccessMs",
                     visible: false,
                 },
@@ -502,6 +520,19 @@
                     },
                     orderSequence: ["desc", "asc"],
                     searchBuilderType: 'html',
+                },
+                {
+                    data: "RealSize",
+                    render: function (data, type, row, meta) {
+                        // SearchBuilder will use raw data as search values, but display will be human-readable size format.
+                        return type === 'display' ? helperBytesToHumanely(data) : data;
+                    },
+                    orderSequence: ["desc", "asc"],
+                    searchBuilderType: 'html',
+                },
+                {
+                    data: "TotalFileCnt",
+                    searchBuilderType: 'num',
                 },
                 {
                     data: "RSEs",
