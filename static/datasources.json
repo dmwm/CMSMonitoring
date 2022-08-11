@@ -1,737 +1,882 @@
 {
-    "ES_cms_rucio_raw_events": {
-        "type": "elasticsearch", 
-        "id": 9269, 
-        "database": "[monit_prod_cms_rucio_raw_events*]"
-    }, 
-    "monit_idb_monitoring": {
-        "type": "influxdb", 
-        "id": 9109, 
-        "database": "monit_production_monitoring"
-    }, 
-    "cmsweb-testbed Loki": {
-        "type": "loki", 
-        "id": 9918, 
-        "database": ""
-    }, 
-    "cmssdt-jenkins": {
-        "type": "elasticsearch", 
-        "id": 9287, 
-        "database": "cmssdt-jenkins-jobs-*"
-    }, 
-    "cmsweb LokiMetrics": {
-        "type": "prometheus", 
-        "id": 9924, 
-        "database": ""
-    }, 
-    "Prometheus-FL": {
-        "type": "prometheus", 
-        "id": 10012, 
-        "database": ""
-    }, 
-    "monit_prod_cms_aaa-ng": {
-        "type": "elasticsearch", 
-        "id": 9231, 
-        "database": "[monit_prod_cms_raw_aaa-ng*]"
-    }, 
-    "monit_idb_collectd_heartbeat": {
-        "type": "influxdb", 
-        "id": 9086, 
-        "database": "monit_production_collectd"
-    }, 
-    "TASKWORKER": {
-        "type": "elasticsearch", 
-        "id": 8981, 
-        "database": "[monit_prod_crab_raw_taskworker-*]"
-    }, 
-    "es-cms": {
-        "type": "elasticsearch", 
-        "id": 8983, 
-        "database": "[cms-20*]"
-    }, 
-    "monit_es_sitemon_site-stats": {
-        "type": "elasticsearch", 
-        "id": 9842, 
-        "database": "[monit_prod_sitemon_agg_site-stats*]"
-    }, 
-    "cmsweb-testbed LokiMetrics": {
-        "type": "prometheus", 
-        "id": 9923, 
-        "database": ""
-    }, 
-    "SI-frontend": {
-        "type": "elasticsearch", 
-        "id": 9710, 
-        "database": "[monit_prod_cms_raw_si_frontend*]"
-    }, 
-    "monit_aaa_subscription": {
-        "type": "elasticsearch", 
-        "id": 9466, 
-        "database": "[monit_prod_cms_aaa_subscription_raw_metric*]"
-    }, 
-    "cmssdt-jenkins-ibs": {
-        "type": "elasticsearch", 
-        "id": 9301, 
-        "database": "cmssdt-jenkins-ibs-*"
-    }, 
-    "monit_idb_availability": {
-        "type": "influxdb", 
-        "id": 9107, 
-        "database": "monit_production_service_availability"
-    }, 
-    "monit_idb_collectd_mig": {
-        "type": "influxdb", 
-        "id": 9534, 
-        "database": "monit_production_mig"
-    }, 
-    "InfluxDB": {
-        "type": "influxdb", 
-        "id": 9827, 
-        "database": ""
-    }, 
-    "monit_idb_eos": {
-        "type": "influxdb", 
-        "id": 8531, 
-        "database": "monit_production_eos"
-    }, 
-    "monit_idb_xsls": {
-        "type": "influxdb", 
-        "id": 8036, 
-        "database": "monit_production_xsls"
-    }, 
-    "monit_idb_alarms": {
-        "type": "influxdb", 
-        "id": 8528, 
-        "database": "monit_production_alarm"
-    }, 
-    "monit_es_cmssw_pop_kafka_ts": {
-        "type": "elasticsearch", 
-        "id": 9845, 
-        "database": "[monit_prod_cmssw_pop_raw_metric-]YYYY-MM-DD"
-    }, 
-    "monit_idb_sam": {
-        "type": "influxdb", 
-        "id": 9364, 
-        "database": "monit_production_availability"
-    }, 
-    "monit_es_fts_agg": {
-        "type": "elasticsearch", 
-        "id": 9733, 
-        "database": "[monit_prod_fts_agg*]"
-    }, 
-    "monit-timber-cmswebk8s-apache": {
-        "type": "elasticsearch", 
-        "id": 9660, 
-        "database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD"
-    }, 
-    "monit_es_xcache_xrootd": {
-        "type": "elasticsearch", 
-        "id": 9332, 
-        "database": "[monit_prod_cmsxcache_raw_xrootd_v001-*]"
-    }, 
-    "monit_cmpwg": {
-        "type": "elasticsearch", 
-        "id": 9960, 
-        "database": "[monit_prod_cms-cmpwg_raw_profiling_document-*]"
-    }, 
-    "monit_prod_tier0wmagent": {
-        "type": "elasticsearch", 
-        "id": 9113, 
-        "database": "[monit_prod_tier0wmagent_raw_metric_v0.3*]"
-    }, 
-    "Prometheus-3": {
-        "type": "prometheus", 
-        "id": 9870, 
-        "database": ""
-    }, 
-    "Prometheus-2": {
-        "type": "prometheus", 
-        "id": 9869, 
-        "database": ""
-    }, 
-    "Prometheus-1": {
-        "type": "prometheus", 
-        "id": 9537, 
-        "database": ""
-    }, 
-    "monit_es_transfers": {
-        "type": "elasticsearch", 
-        "id": 9756, 
-        "database": "[monit_prod_transfers]"
-    }, 
-    "Prometheus-5": {
-        "type": "prometheus", 
-        "id": 10011, 
-        "database": ""
-    }, 
-    "Prometheus-4": {
-        "type": "prometheus", 
-        "id": 9872, 
-        "database": ""
-    }, 
-    "monit_idb_collectd_interface": {
-        "type": "influxdb", 
-        "id": 9090, 
-        "database": "monit_production_collectd"
-    }, 
-    "Stackdriver": {
-        "type": "stackdriver", 
-        "id": 9527, 
-        "database": ""
-    }, 
-    "cmssdt-ib-matrix": {
-        "type": "elasticsearch", 
-        "id": 9285, 
-        "database": "cmssdt-ib-matrix*"
-    }, 
-    "monit_idb_collectd_tcpconnections": {
-        "type": "influxdb", 
-        "id": 9098, 
-        "database": "monit_production_collectd"
-    }, 
-    "monit_idb_collectd_protocol": {
-        "type": "influxdb", 
-        "id": 9094, 
-        "database": "monit_production_collectd"
-    }, 
-    "monit_idb_collectd_memory": {
-        "type": "influxdb", 
-        "id": 9092, 
-        "database": "monit_production_collectd"
-    }, 
-    "cmsmonitoring-prometheus-ha2": {
-        "type": "prometheus", 
-        "id": 9961, 
-        "database": ""
-    }, 
-    "monit_idb_collectd_monit": {
-        "type": "influxdb", 
-        "id": 9731, 
-        "database": "monit_production_collectd_service"
-    }, 
-    "monit-timber-cms-auth": {
-        "type": "elasticsearch", 
-        "id": 9741, 
-        "database": "[monit_private_cmsweb_logs_auth-]YYYY-MM-DD"
-    }, 
-    "monit_prod_phedex_dbs": {
-        "type": "elasticsearch", 
-        "id": 7571, 
-        "database": "[monit_prod_phedex_dbs_*]"
-    }, 
-    "monit-timber-si-factory": {
-        "type": "elasticsearch", 
-        "id": 9908, 
-        "database": "[monit_prod_cms-si-factory_logs_*-]YYYY-MM-DD"
-    }, 
-    "cmssdt-apache-cmssdt": {
-        "type": "elasticsearch", 
-        "id": 9283, 
-        "database": "cmssdt-apache-cmssdt-*"
-    }, 
-    "monit_es_sitemon_endpoint": {
-        "type": "elasticsearch", 
-        "id": 9839, 
-        "database": "[monit_prod_sitemon_agg_endpoint-*]"
-    }, 
-    "monit_es_cmssst": {
-        "type": "elasticsearch", 
-        "id": 9475, 
-        "database": "[monit_prod_cmssst*]"
-    }, 
-    "monit-timber-cms-apache": {
-        "type": "elasticsearch", 
-        "id": 9229, 
-        "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
-    }, 
-    "cmsmonitoring-prometheus": {
-        "type": "prometheus", 
-        "id": 9454, 
-        "database": ""
-    }, 
-    "monit_es_ftsloganalysis": {
-        "type": "elasticsearch", 
-        "id": 9558, 
-        "database": "[monit_prod_cms-fts-logsanalysis_raw_metric*]"
-    }, 
-    "monit_es_sam3_enr": {
-        "type": "elasticsearch", 
-        "id": 9677, 
-        "database": "monit_prod_sam3_enr_*"
-    }, 
-    "cmsmonitoring-victoriametrics": {
-        "type": "prometheus", 
-        "id": 9455, 
-        "database": ""
-    }, 
-    "cmsweb-prometheus": {
-        "type": "prometheus", 
-        "id": 9041, 
-        "database": ""
-    }, 
-    "SI-condor": {
-        "type": "elasticsearch", 
-        "id": 8993, 
-        "database": "[monit_prod_cms_raw_si_condor*]"
-    }, 
-    "monit_condor": {
-        "type": "elasticsearch", 
-        "id": 7668, 
-        "database": "[monit_prod_condor*]"
-    }, 
-    "monit_idb_collectd_cpu": {
-        "type": "influxdb", 
-        "id": 9088, 
-        "database": "monit_production_collectd"
-    }, 
-    "ES_cms_rucio_enr": {
-        "type": "elasticsearch", 
-        "id": 9732, 
-        "database": "[monit_prod_cms_rucio_enr_events-]YYYY-MM-DD"
-    }, 
-    "cmsweb-prometheus-vm": {
-        "type": "prometheus", 
-        "id": 9463, 
-        "database": ""
-    }, 
-    "monit_es_condor_2": {
-        "type": "elasticsearch", 
-        "id": 9847, 
-        "database": "[monit_prod_condor_raw_metric-*]YYYY-MM-DD"
-    }, 
-    "monit_prod_cms-es-size_raw_elasticsearch": {
-        "type": "elasticsearch", 
-        "id": 9573, 
-        "database": "[monit_prod_cms-es-size_raw_elasticsearch*]"
-    }, 
-    "monit_crab": {
-        "type": "elasticsearch", 
-        "id": 8978, 
-        "database": "[monit_prod_crab_*]"
-    }, 
-    "monit_es_sitemon_agg": {
-        "type": "elasticsearch", 
-        "id": 9673, 
-        "database": "monit_prod_sitemon_agg_*"
-    }, 
-    "monit_es_cmssst_test": {
-        "type": "elasticsearch", 
-        "id": 9980, 
-        "database": "[monit_prod_cmssst*]"
-    }, 
-    "monit_idb_cmsaaa": {
-        "type": "influxdb", 
-        "id": 9788, 
-        "database": "monit_production_cmsaaa"
-    }, 
-    "cmsweb-k8s-prod": {
-        "type": "prometheus", 
-        "id": 9857, 
-        "database": ""
-    }, 
-    "monit_es_cmsjm_hist": {
-        "type": "elasticsearch", 
-        "id": 9683, 
-        "database": "[monit_prod_condor-hist_agg_metric*]"
-    }, 
-    "SI-codor-test": {
-        "type": "elasticsearch", 
-        "id": 9480, 
-        "database": "[monit_prod_cms-test_raw_si_condor*]"
-    }, 
-    "monit-timber-cms-crab-publisher": {
-        "type": "elasticsearch", 
-        "id": 9830, 
-        "database": "[monit_prod_crab_logs_publisher-]YYYY-MM-DD"
-    }, 
-    "Elasticsearch-1": {
-        "type": "elasticsearch", 
-        "id": 9702, 
-        "database": ""
-    }, 
-    "monit_idb_collectd_vmem": {
-        "type": "influxdb", 
-        "id": 9105, 
-        "database": "monit_production_collectd"
-    }, 
-    "Elasticsearch-2": {
-        "type": "elasticsearch", 
-        "id": 9703, 
-        "database": ""
-    }, 
-    "test-vm-agg": {
-        "type": "prometheus", 
-        "id": 9970, 
-        "database": ""
-    }, 
-    "monit_es_xcache_classads": {
-        "type": "elasticsearch", 
-        "id": 9331, 
-        "database": "[monit_prod_cmsxcache_raw_classads_v001-*]"
-    }, 
-    "cmssdt-scram": {
-        "type": "elasticsearch", 
-        "id": 9288, 
-        "database": "cmssdt-scram-access*"
-    }, 
-    "monit_idb_collectd_df": {
-        "type": "influxdb", 
-        "id": 9089, 
-        "database": "monit_production_collectd"
-    }, 
-    "monit_idb_collectd_swap": {
-        "type": "influxdb", 
-        "id": 9096, 
-        "database": "monit_production_collectd"
-    }, 
-    "monit_es_cmsjm_agg": {
-        "type": "elasticsearch", 
-        "id": 9582, 
-        "database": "[monit_prod_condor_agg_metric-*]"
-    }, 
-    "monit_es_toolsandint": {
-        "type": "elasticsearch", 
-        "id": 9040, 
-        "database": "[monit_prod_toolsandint*]"
-    }, 
-    "cmssdt-ibs": {
-        "type": "elasticsearch", 
-        "id": 9286, 
-        "database": "cmssdt-ibs*"
-    }, 
-    "monit_idb_transfers": {
-        "type": "influxdb", 
-        "id": 8035, 
-        "database": "monit_production_transfer"
-    }, 
-    "monit_prod_wmagentqa": {
-        "type": "elasticsearch", 
-        "id": 8429, 
-        "database": "[monit_prod_wmagentqa_*]"
-    }, 
-    "monit_es_cmssw_pop": {
-        "type": "elasticsearch", 
-        "id": 9751, 
-        "database": "[monit_prod_cmssw_pop_raw_metric-]YYYY-MM-DD"
-    }, 
-    "monit_kpi": {
-        "type": "elasticsearch", 
-        "id": 8533, 
-        "database": "[monit_prod_kpi*]"
-    }, 
-    "es-cms-logmon": {
-        "type": "elasticsearch", 
-        "id": 9999, 
-        "database": "cms-logmon-*"
-    }, 
-    "monit_idb_cric": {
-        "type": "influxdb", 
-        "id": 9577, 
-        "database": "monit_production_cric"
-    }, 
-    "monit_idb_kpis": {
-        "type": "influxdb", 
-        "id": 8532, 
-        "database": "monit_production_kpi"
-    }, 
     "__test_es_condor": {
-        "type": "elasticsearch", 
-        "id": 9668, 
+        "id": 9668,
+        "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_metric*]"
-    }, 
-    "monit_es_condor-test": {
-        "type": "elasticsearch", 
-        "id": 9307, 
-        "database": "[monit_prod_condor-test_raw_metric*]"
-    }, 
-    "cmsweb-k8s-prod-services": {
-        "type": "prometheus", 
-        "id": 9871, 
-        "database": ""
-    }, 
-    "cmssdt-generic": {
-        "type": "elasticsearch", 
-        "id": 9282, 
-        "database": "cmssdt-*"
-    }, 
-    "monit_idb_databases": {
-        "type": "influxdb", 
-        "id": 8530, 
-        "database": "monit_production_databases"
-    }, 
-    "Timelion": {
-        "type": "grafana-timelion-datasource", 
-        "id": 9526, 
-        "database": ""
-    }, 
-    "es-cms-cmssdt-relvals": {
-        "type": "elasticsearch", 
-        "id": 9015, 
-        "database": "cmssdt-relvals_stats_summary-*"
-    }, 
-    "monit_grafana_config": {
-        "type": "mysql", 
-        "id": 9589, 
-        "database": "grafana_config"
-    }, 
-    "monit_es_sitemon_site": {
-        "type": "elasticsearch", 
-        "id": 9841, 
-        "database": "[monit_prod_sitemon_agg_site-*]"
-    }, 
-    "monit_cms_es_xrootd_agg": {
-        "type": "elasticsearch", 
-        "id": 9957, 
-        "database": "[monit_prod_xrootd_agg_transfer-*]"
-    }, 
-    "MySQL": {
-        "type": "mysql", 
-        "id": 9485, 
-        "database": ""
-    }, 
-    "cms-monitoring-agg-1h": {
-        "type": "prometheus", 
-        "id": 9951, 
-        "database": ""
-    }, 
-    "monit_idb_cmst0": {
-        "type": "influxdb", 
-        "id": 9698, 
-        "database": "monit_production_cmst0"
-    }, 
-    "cms-monitoring-agg ": {
-        "type": "prometheus", 
-        "id": 9950, 
-        "database": ""
-    }, 
-    "Rucio-graphite-dev": {
-        "type": "graphite", 
-        "id": 9259, 
-        "database": ""
-    }, 
-    "monit-timber-cmswebk8s-apache-2": {
-        "type": "elasticsearch", 
-        "id": 9706, 
-        "database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD"
-    }, 
-    "cmsweb-prod": {
-        "type": "prometheus", 
-        "id": 9858, 
-        "database": ""
-    }, 
-    "es-cms-test": {
-        "type": "elasticsearch", 
-        "id": 9919, 
-        "database": "[cms-test-k8s-20*]"
-    }, 
-    "monit_es_condor_tasks": {
-        "type": "elasticsearch", 
-        "id": 9039, 
-        "database": "[monit_prod_condor_raw_task-*]"
-    }, 
-    "monit_idb_ssb_outages": {
-        "type": "influxdb", 
-        "id": 9474, 
-        "database": "monit_production_ssb_otgs"
-    }, 
-    "monit_idb_rebus": {
-        "type": "influxdb", 
-        "id": 9115, 
-        "database": "monit_production_rebus"
-    }, 
-    "monit-timber-cms-crab-taskworker": {
-        "type": "elasticsearch", 
-        "id": 9795, 
-        "database": "[monit_prod_crab_logs_crabtaskworker-]YYYY-MM-DD"
-    }, 
-    "cmssdt-ib-dataset": {
-        "type": "elasticsearch", 
-        "id": 9284, 
-        "database": "cmssdt-ib-dataset*"
-    }, 
-    "monit-timber-cms-apache-2": {
-        "type": "elasticsearch", 
-        "id": 9704, 
-        "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
-    }, 
-    "monit_prod_cms-es-size_raw_hdfs": {
-        "type": "elasticsearch", 
-        "id": 9574, 
-        "database": "[monit_prod_cms-es-size_raw_hdfs*]"
-    }, 
-    "cmsweb-k8s": {
-        "type": "prometheus", 
-        "id": 8488, 
-        "database": ""
-    }, 
-    "monit_idb_collectd_processes": {
-        "type": "influxdb", 
-        "id": 9093, 
-        "database": "monit_production_collectd"
-    }, 
-    "monit_idb_elastic_service": {
-        "type": "influxdb", 
-        "id": 9656, 
-        "database": "monit_production_elasticsearch"
-    }, 
-    "cmsmonitoring": {
-        "type": "prometheus", 
-        "id": 9867, 
-        "database": ""
-    }, 
-    "cmsweb-testbed": {
-        "type": "prometheus", 
-        "id": 9484, 
-        "database": ""
-    }, 
-    "WMArchive_kafka_ts": {
-        "type": "elasticsearch", 
-        "id": 9846, 
-        "database": "[monit_prod_wmarchive_*]"
-    }, 
-    "monit_prod_cms-training": {
-        "type": "elasticsearch", 
-        "id": 9411, 
-        "database": "[monit_prod_cms-training*]"
-    }, 
-    "monit_prod_fts": {
-        "type": "elasticsearch", 
-        "id": 9233, 
-        "database": "[monit_prod_fts_*]"
-    }, 
-    "cmswg-test": {
-        "type": "elasticsearch", 
-        "id": 9956, 
-        "database": "[monit_prod_cms-training*]"
-    }, 
-    "monit-central-prometheus": {
-        "type": "prometheus", 
-        "id": 9540, 
-        "database": ""
-    }, 
-    "Prometheus": {
-        "type": "prometheus", 
-        "id": 9528, 
-        "database": ""
-    }, 
-    "monit_es_factory_pilot_data": {
-        "type": "elasticsearch", 
-        "id": 9509, 
-        "database": "[monit_prod_cms_raw_factory_*_data*]"
-    }, 
-    "cmstest-victoriametrics": {
-        "type": "prometheus", 
-        "id": 9472, 
-        "database": ""
-    }, 
-    "monit_idb_collectd_load": {
-        "type": "influxdb", 
-        "id": 9091, 
-        "database": "monit_production_collectd"
-    }, 
-    "WMArchive_record_time": {
-        "type": "elasticsearch", 
-        "id": 9952, 
-        "database": "[monit_prod_wmarchive_*]"
-    }, 
-    "monit_es_sitemon_latest": {
-        "type": "elasticsearch", 
-        "id": 10007, 
-        "database": "monit_prod_sitemon_enr_latest*"
-    }, 
+    },
     "__test_timber_cms_apache": {
-        "type": "elasticsearch", 
-        "id": 9707, 
+        "id": 9707,
+        "type": "elasticsearch",
         "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
-    }, 
-    "cmsmonitoring-promxy": {
-        "type": "prometheus", 
-        "id": 9850, 
-        "database": ""
-    }, 
-    "monit_es_condor": {
-        "type": "elasticsearch", 
-        "id": 8787, 
-        "database": "[monit_prod_condor_raw_metric-*]YYYY-MM-DD"
-    }, 
-    "monit_prod_wmagent": {
-        "type": "elasticsearch", 
-        "id": 7617, 
-        "database": "[monit_prod_wmagent_*]"
-    }, 
-    "cmsweb-k8s-test6-frontend": {
-        "type": "prometheus", 
-        "id": 9481, 
-        "database": ""
-    }, 
-    "Elasticsearch": {
-        "type": "elasticsearch", 
-        "id": 9679, 
-        "database": ""
-    }, 
-    "CMSWEB": {
-        "type": "graphite", 
-        "id": 8973, 
-        "database": ""
-    }, 
-    "monit_es_condor_overview": {
-        "type": "elasticsearch", 
-        "id": 9236, 
-        "database": "[monit_prod_condor_raw_overview*]"
-    }, 
-    "monit_idb_cmsunified": {
-        "type": "influxdb", 
-        "id": 9822, 
-        "database": "monit_production_cmsunified"
-    }, 
-    "SCHEDD": {
-        "type": "elasticsearch", 
-        "id": 8980, 
-        "database": "[monit_prod_crab_raw_schedd-*]"
-    }, 
-    "cmsweb-k8s-test6-services": {
-        "type": "prometheus", 
-        "id": 9482, 
-        "database": ""
-    }, 
-    "monit-timber-cms-crab-taskworker_kafka_ts": {
-        "type": "elasticsearch", 
-        "id": 9851, 
-        "database": "[monit_prod_crab_logs_crabtaskworker-]YYYY-MM-DD"
-    }, 
-    "monit_idb_collectd_uptime": {
-        "type": "influxdb", 
-        "id": 9100, 
-        "database": "monit_production_collectd"
-    }, 
-    "cmweb Loki": {
-        "type": "loki", 
-        "id": 9925, 
-        "database": ""
-    }, 
-    "monit_es_sitemon_metric": {
-        "type": "elasticsearch", 
-        "id": 9840, 
-        "database": "[monit_prod_sitemon_agg_metric-*]"
-    }, 
-    "monit_idb_collectd_users": {
-        "type": "influxdb", 
-        "id": 9103, 
-        "database": "monit_production_collectd"
-    }, 
-    "monit_eoscmsquotas": {
-        "type": "elasticsearch", 
-        "id": 9003, 
-        "database": "[monit_prod_eoscmsquotas*]"
-    }, 
+    },
     "Ceph ES Access": {
-        "type": "elasticsearch", 
-        "id": 9953, 
+        "id": 9953,
+        "type": "elasticsearch",
         "database": "[ceph_s3_access-]YYYY.MM.DD"
-    }, 
+    },
+    "cms-monitoring-agg ": {
+        "id": 9950,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cms-monitoring-agg-1h": {
+        "id": 9951,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring": {
+        "id": 9867,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-prometheus": {
+        "id": 9454,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-prometheus-ha2": {
+        "id": 9961,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-promxy": {
+        "id": 9850,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-victoriametrics": {
+        "id": 9455,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmssdt-apache-cmssdt": {
+        "id": 9283,
+        "type": "elasticsearch",
+        "database": "cmssdt-apache-cmssdt-*"
+    },
+    "cmssdt-generic": {
+        "id": 9282,
+        "type": "elasticsearch",
+        "database": "cmssdt-*"
+    },
+    "cmssdt-ib-dataset": {
+        "id": 9284,
+        "type": "elasticsearch",
+        "database": "cmssdt-ib-dataset*"
+    },
+    "cmssdt-ib-matrix": {
+        "id": 9285,
+        "type": "elasticsearch",
+        "database": "cmssdt-ib-matrix*"
+    },
+    "cmssdt-ibs": {
+        "id": 9286,
+        "type": "elasticsearch",
+        "database": "cmssdt-ibs*"
+    },
+    "cmssdt-jenkins": {
+        "id": 9287,
+        "type": "elasticsearch",
+        "database": "cmssdt-jenkins-jobs-*"
+    },
+    "cmssdt-jenkins-ibs": {
+        "id": 9301,
+        "type": "elasticsearch",
+        "database": "cmssdt-jenkins-ibs-*"
+    },
+    "cmssdt-scram": {
+        "id": 9288,
+        "type": "elasticsearch",
+        "database": "cmssdt-scram-access*"
+    },
+    "cmstest-victoriametrics": {
+        "id": 9472,
+        "type": "prometheus",
+        "database": ""
+    },
+    "CMSWEB": {
+        "id": 8973,
+        "type": "graphite",
+        "database": ""
+    },
+    "cmsweb LokiMetrics": {
+        "id": 9924,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s": {
+        "id": 8488,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-prod": {
+        "id": 9857,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-prod-services": {
+        "id": 9871,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-prodsrv-nodexpo": {
+        "id": 10126,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-test6-frontend": {
+        "id": 9481,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-k8s-test6-services": {
+        "id": 9482,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-nodexpo": {
+        "id": 10123,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-prod": {
+        "id": 9858,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-prod-nodexpo": {
+        "id": 10124,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-prometheus": {
+        "id": 9041,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-prometheus-vm": {
+        "id": 9463,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test1-nodexpo": {
+        "id": 10129,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test10-nodexpo": {
+        "id": 10176,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test11-nodexpo": {
+        "id": 10177,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test2-nodexpo": {
+        "id": 10130,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test3-nodexpo": {
+        "id": 10131,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test4-nodexpo": {
+        "id": 10132,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test5-nodexpo": {
+        "id": 10133,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test6-nodexpo": {
+        "id": 10134,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test7-nodexpo": {
+        "id": 10135,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test8-nodexpo": {
+        "id": 10174,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-test9-nodexpo": {
+        "id": 10175,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-testbed": {
+        "id": 9484,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-testbed Loki": {
+        "id": 9918,
+        "type": "loki",
+        "database": ""
+    },
+    "cmsweb-testbed LokiMetrics": {
+        "id": 9923,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-testbed-nodexpo": {
+        "id": 10127,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsweb-testbednew-nodexpo": {
+        "id": 10128,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmswg-test": {
+        "id": 9956,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-training*]"
+    },
+    "cmweb Loki": {
+        "id": 9925,
+        "type": "loki",
+        "database": ""
+    },
+    "dbs-prod-nodexpo": {
+        "id": 10125,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Elasticsearch": {
+        "id": 9679,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "Elasticsearch-1": {
+        "id": 9702,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "Elasticsearch-2": {
+        "id": 9703,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "Elasticsearch-3": {
+        "id": 10138,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "Elasticsearch-4": {
+        "id": 10140,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "es-cms": {
+        "id": 8983,
+        "type": "elasticsearch",
+        "database": "[cms-20*]"
+    },
+    "es-cms-cmssdt-relvals": {
+        "id": 9015,
+        "type": "elasticsearch",
+        "database": "cmssdt-relvals_stats_summary-*"
+    },
+    "es-cms-logmon": {
+        "id": 9999,
+        "type": "elasticsearch",
+        "database": "cms-logmon-*"
+    },
+    "es-cms-test": {
+        "id": 9919,
+        "type": "elasticsearch",
+        "database": "[cms-test-k8s-20*]"
+    },
+    "ES_cms_rucio_enr": {
+        "id": 9732,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_rucio_enr_events-]YYYY-MM-DD"
+    },
+    "ES_cms_rucio_raw_events": {
+        "id": 9269,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_rucio_raw_events*]"
+    },
+    "InfluxDB": {
+        "id": 9827,
+        "type": "influxdb",
+        "database": ""
+    },
+    "monit-central-prometheus": {
+        "id": 9540,
+        "type": "prometheus",
+        "database": ""
+    },
+    "monit-timber-cms-apache": {
+        "id": 9229,
+        "type": "elasticsearch",
+        "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
+    },
+    "monit-timber-cms-apache-2": {
+        "id": 9704,
+        "type": "elasticsearch",
+        "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
+    },
+    "monit-timber-cms-auth": {
+        "id": 9741,
+        "type": "elasticsearch",
+        "database": "[monit_private_cmsweb_logs_auth-]YYYY-MM-DD"
+    },
+    "monit-timber-cms-crab-httpcall": {
+        "id": 10185,
+        "type": "elasticsearch",
+        "database": "[monit_private_crab_logs_crabhttpcall-]*"
+    },
+    "monit-timber-cms-crab-publisher": {
+        "id": 9830,
+        "type": "elasticsearch",
+        "database": "[monit_private_crab_logs_crabpublisher-]*"
+    },
+    "monit-timber-cms-crab-rest": {
+        "id": 10246,
+        "type": "elasticsearch",
+        "database": "[monit_private_crab_logs_crabrest-]*"
+    },
+    "monit-timber-cms-crab-taskworker": {
+        "id": 9795,
+        "type": "elasticsearch",
+        "database": "[monit_private_crab_logs_crabtaskworker-]*"
+    },
+    "monit-timber-cms-crab-taskworker_kafka_ts": {
+        "id": 9851,
+        "type": "elasticsearch",
+        "database": "[monit_private_crab_logs_crabtaskworker-]*"
+    },
+    "monit-timber-cms-k8s-auth-new": {
+        "id": 10075,
+        "type": "elasticsearch",
+        "database": "[monit_private_cmsweb-auth_logs_cmsweb-auth-]YYYY-MM-DD"
+    },
+    "monit-timber-cmswebk8s-apache": {
+        "id": 9660,
+        "type": "elasticsearch",
+        "database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD"
+    },
+    "monit-timber-cmswebk8s-apache-2": {
+        "id": 9706,
+        "type": "elasticsearch",
+        "database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD"
+    },
+    "monit-timber-cmswebk8s-crabserver": {
+        "id": 10145,
+        "type": "elasticsearch",
+        "database": "[monit_private_cmswebk8s_logs_crabserver-]YYYY-MM-DD"
+    },
+    "monit-timber-si-factory": {
+        "id": 9908,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-si-factory_logs_*-]YYYY-MM-DD"
+    },
+    "monit_aaa_subscription": {
+        "id": 9466,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_aaa_subscription_raw_metric*]"
+    },
+    "monit_cmpwg": {
+        "id": 9960,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-cmpwg_raw_profiling_document-*]"
+    },
+    "monit_cms_es_xrootd_agg": {
+        "id": 9957,
+        "type": "elasticsearch",
+        "database": "[monit_prod_xrootd_agg_transfer-*]"
+    },
+    "monit_condor": {
+        "id": 7668,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor*]"
+    },
+    "monit_crab": {
+        "id": 8978,
+        "type": "elasticsearch",
+        "database": "[monit_prod_crab_*]"
+    },
+    "monit_eoscmsquotas": {
+        "id": 9003,
+        "type": "elasticsearch",
+        "database": "[monit_prod_eoscmsquotas*]"
+    },
+    "monit_es_cms_rucio_daily_dataset_stats": {
+        "id": 10151,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_rucio_raw_daily_stats-]YYYY-MM-DD"
+    },
+    "monit_es_cmsjm_agg": {
+        "id": 9582,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor_agg_metric-*]"
+    },
+    "monit_es_cmsjm_hist": {
+        "id": 9683,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor-hist_agg_metric*]"
+    },
+    "monit_es_cmssst": {
+        "id": 9475,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmssst*]"
+    },
+    "monit_es_cmssst_test": {
+        "id": 9980,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmssst*]"
+    },
+    "monit_es_cmssw_pop": {
+        "id": 9751,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmssw_pop_raw_metric-]YYYY-MM-DD"
+    },
+    "monit_es_cmssw_pop_kafka_ts": {
+        "id": 9845,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmssw_pop_raw_metric-]YYYY-MM-DD"
+    },
+    "monit_es_condor": {
+        "id": 8787,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor_raw_metric-*]YYYY-MM-DD"
+    },
+    "monit_es_condor-test": {
+        "id": 9307,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor-test_raw_metric*]"
+    },
+    "monit_es_condor_2": {
+        "id": 9847,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor_raw_metric-*]YYYY-MM-DD"
+    },
+    "monit_es_condor_overview": {
+        "id": 9236,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor_raw_overview*]"
+    },
+    "monit_es_condor_tasks": {
+        "id": 9039,
+        "type": "elasticsearch",
+        "database": "[monit_prod_condor_raw_task-*]"
+    },
+    "monit_es_factory_pilot_data": {
+        "id": 9509,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_raw_factory_*_data*]"
+    },
+    "monit_es_fts_agg": {
+        "id": 9733,
+        "type": "elasticsearch",
+        "database": "[monit_prod_fts_agg*]"
+    },
+    "monit_es_ftsloganalysis": {
+        "id": 9558,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-fts-logsanalysis_raw_metric*]"
+    },
+    "monit_es_sam3-qa_enr": {
+        "id": 10152,
+        "type": "elasticsearch",
+        "database": "monit_prod_sam3-qa_enr_metric-*"
+    },
+    "monit_es_sam3_enr": {
+        "id": 9677,
+        "type": "elasticsearch",
+        "database": "monit_prod_sam3_enr_*"
+    },
+    "monit_es_sitemon_agg": {
+        "id": 9673,
+        "type": "elasticsearch",
+        "database": "monit_prod_sitemon_agg_*"
+    },
+    "monit_es_sitemon_endpoint": {
+        "id": 9839,
+        "type": "elasticsearch",
+        "database": "[monit_prod_sitemon_agg_endpoint-*]"
+    },
+    "monit_es_sitemon_latest": {
+        "id": 10007,
+        "type": "elasticsearch",
+        "database": "monit_prod_sitemon_enr_latest*"
+    },
+    "monit_es_sitemon_metric": {
+        "id": 9840,
+        "type": "elasticsearch",
+        "database": "[monit_prod_sitemon_agg_metric-*]"
+    },
+    "monit_es_sitemon_site": {
+        "id": 9841,
+        "type": "elasticsearch",
+        "database": "[monit_prod_sitemon_agg_site-*]"
+    },
+    "monit_es_sitemon_site-stats": {
+        "id": 9842,
+        "type": "elasticsearch",
+        "database": "[monit_prod_sitemon_agg_site-stats*]"
+    },
+    "monit_es_toolsandint": {
+        "id": 9040,
+        "type": "elasticsearch",
+        "database": "[monit_prod_toolsandint*]"
+    },
+    "monit_es_transfers": {
+        "id": 9756,
+        "type": "elasticsearch",
+        "database": "[monit_prod_transfers]"
+    },
+    "monit_es_xcache_classads": {
+        "id": 9331,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmsxcache_raw_classads_v001-*]"
+    },
+    "monit_es_xcache_xrootd": {
+        "id": 9332,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmsxcache_raw_xrootd_v001-*]"
+    },
+    "monit_grafana_config": {
+        "id": 9589,
+        "type": "mysql",
+        "database": "grafana_config"
+    },
+    "monit_idb_alarms": {
+        "id": 8528,
+        "type": "influxdb",
+        "database": "monit_production_alarm"
+    },
+    "monit_idb_availability": {
+        "id": 9107,
+        "type": "influxdb",
+        "database": "monit_production_service_availability"
+    },
+    "monit_idb_cmsaaa": {
+        "id": 9788,
+        "type": "influxdb",
+        "database": "monit_production_cmsaaa"
+    },
+    "monit_idb_cmst0": {
+        "id": 9698,
+        "type": "influxdb",
+        "database": "monit_production_cmst0"
+    },
+    "monit_idb_cmsunified": {
+        "id": 9822,
+        "type": "influxdb",
+        "database": "monit_production_cmsunified"
+    },
+    "monit_idb_collectd_cpu": {
+        "id": 9088,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_df": {
+        "id": 9089,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_heartbeat": {
+        "id": 9086,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_interface": {
+        "id": 9090,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_load": {
+        "id": 9091,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_memory": {
+        "id": 9092,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_mig": {
+        "id": 9534,
+        "type": "influxdb",
+        "database": "monit_production_mig"
+    },
+    "monit_idb_collectd_monit": {
+        "id": 9731,
+        "type": "influxdb",
+        "database": "monit_production_collectd_service"
+    },
+    "monit_idb_collectd_processes": {
+        "id": 9093,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_protocol": {
+        "id": 9094,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_swap": {
+        "id": 9096,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_tcpconnections": {
+        "id": 9098,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_uptime": {
+        "id": 9100,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_users": {
+        "id": 9103,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_collectd_vmem": {
+        "id": 9105,
+        "type": "influxdb",
+        "database": "monit_production_collectd"
+    },
+    "monit_idb_cric": {
+        "id": 9577,
+        "type": "influxdb",
+        "database": "monit_production_cric"
+    },
+    "monit_idb_databases": {
+        "id": 8530,
+        "type": "influxdb",
+        "database": "monit_production_databases"
+    },
+    "monit_idb_elastic_service": {
+        "id": 9656,
+        "type": "influxdb",
+        "database": "monit_production_elasticsearch"
+    },
+    "monit_idb_eos": {
+        "id": 8531,
+        "type": "influxdb",
+        "database": "monit_production_eos"
+    },
+    "monit_idb_kpis": {
+        "id": 8532,
+        "type": "influxdb",
+        "database": "monit_production_kpi"
+    },
+    "monit_idb_monitoring": {
+        "id": 9109,
+        "type": "influxdb",
+        "database": "monit_production_monitoring"
+    },
+    "monit_idb_rebus": {
+        "id": 9115,
+        "type": "influxdb",
+        "database": "monit_production_rebus"
+    },
+    "monit_idb_sam": {
+        "id": 9364,
+        "type": "influxdb",
+        "database": "monit_production_availability"
+    },
+    "monit_idb_ssb_outages": {
+        "id": 9474,
+        "type": "influxdb",
+        "database": "monit_production_ssb_otgs"
+    },
+    "monit_idb_transfers": {
+        "id": 8035,
+        "type": "influxdb",
+        "database": "monit_production_transfer"
+    },
+    "monit_idb_xsls": {
+        "id": 8036,
+        "type": "influxdb",
+        "database": "monit_production_xsls"
+    },
+    "monit_kpi": {
+        "id": 8533,
+        "type": "elasticsearch",
+        "database": "[monit_prod_kpi*]"
+    },
+    "monit_prod_cms-es-size_raw_elasticsearch": {
+        "id": 9573,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-es-size_raw_elasticsearch*]"
+    },
+    "monit_prod_cms-es-size_raw_hdfs": {
+        "id": 9574,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-es-size_raw_hdfs*]"
+    },
+    "monit_prod_cms-training": {
+        "id": 9411,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-training*]"
+    },
+    "monit_prod_cms_aaa-ng": {
+        "id": 9231,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_raw_aaa-ng*]"
+    },
+    "monit_prod_fts": {
+        "id": 9233,
+        "type": "elasticsearch",
+        "database": "[monit_prod_fts_*]"
+    },
+    "monit_prod_phedex_dbs": {
+        "id": 7571,
+        "type": "elasticsearch",
+        "database": "[monit_prod_phedex_dbs_*]"
+    },
+    "monit_prod_tier0wmagent": {
+        "id": 9113,
+        "type": "elasticsearch",
+        "database": "[monit_prod_tier0wmagent_raw_metric-]YYYY-MM-DD"
+    },
+    "monit_prod_wmagent": {
+        "id": 7617,
+        "type": "elasticsearch",
+        "database": "[monit_prod_wmagent_*]"
+    },
+    "monit_prod_wmagentqa": {
+        "id": 8429,
+        "type": "elasticsearch",
+        "database": "[monit_prod_wmagentqa_*]"
+    },
+    "monit_timberprivate_crab": {
+        "id": 10183,
+        "type": "elasticsearch",
+        "database": "[monit_private_crab*]"
+    },
+    "monit_timberprivate_crabpublisher": {
+        "id": 10184,
+        "type": "elasticsearch",
+        "database": "[monit_private_crab_logs_crabpublisher-]*"
+    },
+    "MySQL": {
+        "id": 9485,
+        "type": "mysql",
+        "database": ""
+    },
+    "Prometheus": {
+        "id": 9528,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-1": {
+        "id": 9537,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-2": {
+        "id": 9869,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-3": {
+        "id": 9870,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-4": {
+        "id": 9872,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-5": {
+        "id": 10011,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-6": {
+        "id": 10114,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-7": {
+        "id": 10115,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-8": {
+        "id": 10173,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Prometheus-FL": {
+        "id": 10012,
+        "type": "prometheus",
+        "database": ""
+    },
+    "Rucio-graphite-dev": {
+        "id": 9259,
+        "type": "graphite",
+        "database": ""
+    },
+    "SCHEDD": {
+        "id": 8980,
+        "type": "elasticsearch",
+        "database": "[monit_prod_crab_raw_schedd-*]"
+    },
+    "SI-codor-test": {
+        "id": 9480,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-test_raw_si_condor*]"
+    },
+    "SI-condor": {
+        "id": 8993,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_raw_si_condor*]"
+    },
+    "SI-frontend": {
+        "id": 9710,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_raw_si_frontend*]"
+    },
+    "Stackdriver": {
+        "id": 9527,
+        "type": "stackdriver",
+        "database": ""
+    },
+    "TASKWORKER": {
+        "id": 8981,
+        "type": "elasticsearch",
+        "database": "[monit_prod_crab_raw_taskworker-*]"
+    },
+    "test-vm-agg": {
+        "id": 9970,
+        "type": "prometheus",
+        "database": ""
+    },
     "WMArchive": {
-        "type": "elasticsearch", 
-        "id": 7572, 
+        "id": 7572,
+        "type": "elasticsearch",
+        "database": "[monit_prod_wmarchive_*]"
+    },
+    "WMArchive_kafka_ts": {
+        "id": 9846,
+        "type": "elasticsearch",
+        "database": "[monit_prod_wmarchive_*]"
+    },
+    "WMArchive_record_time": {
+        "id": 9952,
+        "type": "elasticsearch",
         "database": "[monit_prod_wmarchive_*]"
     }
 }
