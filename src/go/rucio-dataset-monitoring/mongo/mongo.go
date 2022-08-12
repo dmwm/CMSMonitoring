@@ -17,7 +17,7 @@ import (
 // MaxPageDocumentsLimit max number of records that will be returned as a result of find query
 const MaxPageDocumentsLimit = int64(10000)
 
-// Timeout mongo connection timeour
+// Timeout mongo connection timeout
 var Timeout time.Duration
 
 var mongoDatabase *mongo.Database
@@ -118,7 +118,7 @@ func InitializeMongo(envFile string, mongoConnTimeout int) {
 	// Mongo logs
 	utils.InfoLogV1("MONGO_URI: %s", mongoUri)
 	utils.InfoLogV1("MONGO_DATABASE: %s", mongoDbName)
-	utils.InfoLogV1("MONGO CONNECTION TIMEOUT: %#v", mongoConnTimeout)
+	utils.InfoLogV1("MONGO CONNECTION TIMEOUT: %d", mongoConnTimeout)
 
 	initializeMongoDatabase(mongoUri, mongoDbName, mongoConnTimeout)
 }

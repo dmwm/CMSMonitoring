@@ -24,9 +24,9 @@ func GetIndexPage(collectionName string) gin.HandlerFunc {
 			http.StatusOK,
 			"datasets.tmpl",
 			gin.H{
-				"title":          "Home Page",
-				"is_short_url":   "false", // Should be set as string since it will be required by JS in datasets.tmpl
-				"data_timestamp": dataTimestamp.CreatedAt,
+				"title":         "Home Page",
+				"isShortUrl":    "false", // Should be set as string since it will be required by JS in datasets.tmpl
+				"dataTimestamp": dataTimestamp.CreatedAt,
 			},
 		)
 		VerboseControllerOutLog(start, "GetIndexPage", nil, dataTimestamp)
@@ -57,7 +57,7 @@ func GetIndexPageFromShortUrlId(shortUrlCollectionName string, datasourceTimesta
 		defer cancel()
 
 		hashId := c.Param("id")
-		utils.InfoLogV1("[INFO] Hash Id: %s", hashId)
+		utils.InfoLogV1("hash Id: %s", hashId)
 		shortUrlObj := GetRequestFromShortUrl(ctx, c, shortUrlCollectionName, hashId)
 
 		dataTimestamp := GetDataSourceTimestamp(ctx, c, datasourceTimestampCollectionName)
@@ -65,11 +65,11 @@ func GetIndexPageFromShortUrlId(shortUrlCollectionName string, datasourceTimesta
 			http.StatusOK,
 			"datasets.tmpl",
 			gin.H{
-				"title":                "Home Page",
-				"is_short_url":         "true",
-				"dt_request_short_url": shortUrlObj.Request,
-				"dt_saved_state":       shortUrlObj.SavedState,
-				"data_timestamp":       dataTimestamp.CreatedAt,
+				"title":             "Home Page",
+				"isShortUrl":        "true",
+				"dtRequestShortUrl": shortUrlObj.Request,
+				"dtSavedState":      shortUrlObj.SavedState,
+				"dataTimestamp":     dataTimestamp.CreatedAt,
 			},
 		)
 		VerboseControllerOutLog(start, "GetIndexPageFromShortUrlId", shortUrlObj, hashId)

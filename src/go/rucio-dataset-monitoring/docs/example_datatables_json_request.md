@@ -47,7 +47,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             }
         },
         {
-            "data": "LastAccessMs",
+            "data": "Max",
             "name": "",
             "searchable": true,
             "orderable": true,
@@ -57,7 +57,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             }
         },
         {
-            "data": "MaxDatasetSizeInRsesGB",
+            "data": "Min",
             "name": "",
             "searchable": true,
             "orderable": true,
@@ -67,7 +67,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             }
         },
         {
-            "data": "MinDatasetSizeInRsesGB",
+            "data": "Sum",
             "name": "",
             "searchable": true,
             "orderable": true,
@@ -77,7 +77,17 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             }
         },
         {
-            "data": "SumDatasetSizeInRsesGB",
+            "data": "RealSize",
+            "name": "",
+            "searchable": true,
+            "orderable": true,
+            "search": {
+                "value": "",
+                "regex": false
+            }
+        },
+        {
+            "data": "TotalFileCnt",
             "name": "",
             "searchable": true,
             "orderable": true,
@@ -125,15 +135,13 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
 
 ```json
 {
-    "criteria":
-    [
+    "criteria": [
         {
             "condition": "contains",
             "data": "Rse Type",
             "origData": "RseType",
             "type": "string",
-            "value":
-            [
+            "value": [
                 "asdasdas"
             ]
         },
@@ -142,8 +150,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "data": "Dataset",
             "origData": "Dataset",
             "type": "string",
-            "value":
-            [
+            "value": [
                 "asdasd"
             ]
         },
@@ -152,8 +159,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "data": "Last Access",
             "origData": "LastAccess",
             "type": "date",
-            "value":
-            [
+            "value": [
                 "2022-07-05"
             ]
         },
@@ -162,8 +168,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "data": "Last Access",
             "origData": "LastAccess",
             "type": "date",
-            "value":
-            [
+            "value": [
                 "2022-07-20"
             ]
         },
@@ -172,8 +177,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "data": "Last Access",
             "origData": "LastAccess",
             "type": "date",
-            "value":
-            [
+            "value": [
                 "2022-07-05",
                 "2022-07-21"
             ]
@@ -183,24 +187,21 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "data": "Last Access",
             "origData": "LastAccess",
             "type": "date",
-            "value":
-            []
+            "value": []
         },
         {
             "condition": "!null",
             "data": "Last Access",
             "origData": "LastAccess",
             "type": "date",
-            "value":
-            []
+            "value": []
         },
         {
             "condition": "<",
             "data": "Max",
             "origData": "Max",
             "type": "num",
-            "value":
-            [
+            "value": [
                 "11111"
             ]
         },
@@ -209,8 +210,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "data": "Max",
             "origData": "Max",
             "type": "num",
-            "value":
-            [
+            "value": [
                 "2222222"
             ]
         },
@@ -219,8 +219,7 @@ Reference: [datatables.net/manual/server-side](https://datatables.net/manual/ser
             "data": "RSEs",
             "origData": "RSEs",
             "type": "string",
-            "value":
-            [
+            "value": [
                 "sdassasada"
             ]
         }

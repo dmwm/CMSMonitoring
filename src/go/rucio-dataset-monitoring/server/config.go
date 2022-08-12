@@ -37,7 +37,7 @@ type MongoCollectionNames struct {
 func (c *Configuration) String() string {
 	data, err := json.Marshal(c)
 	if err != nil {
-		log.Println("ERROR: fail to marshal configuration", err)
+		log.Println("[ERROR] fail to marshal configuration", err)
 		return ""
 	}
 	return string(data)

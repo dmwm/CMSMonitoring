@@ -9,6 +9,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // KB to EB bytes definition, uses x1024, not x1000
@@ -30,10 +31,10 @@ func strToInt(str string) int {
 	}
 	i, err := strconv.Atoi(str)
 	if err != nil {
-		ErrorLog("Cannot parse string to int: %s", str)
+		ErrorLog("cannot parse string to int: %s", str)
 		return 0
 	}
-	InfoLogV1("strToInt %f", i)
+	InfoLogV1("strToInt %d", i)
 	return i
 }
 
@@ -46,11 +47,22 @@ func strToFloat(str string, typeAbbreviation string) float64 {
 	str = strings.ReplaceAll(str, typeAbbreviation, "")
 	f, err := strconv.ParseFloat(str, 10)
 	if err != nil {
-		ErrorLog("Cannot parse string to float: %s", str)
+		ErrorLog("cannot parse string to float: %s", str)
 		return 0
 	}
 	InfoLogV1("strToFloat %f", f)
 	return f
+}
+
+// stringToUnixTime converts string date SB query value to millisecond format which is source data format in MongoDB
+func stringToUnixTime(s string) int64 {
+	// Parse YYYY-MM-DD
+	timeT, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		ErrorLog("cannot convert string: "+s+"to millisecond: %s", err.Error())
+		return 0
+	}
+	return timeT.Unix()
 }
 
 // humanSizeToBytes converts user defined size string to bytes
@@ -75,7 +87,7 @@ func humanSizeToBytes(input string) int64 {
 	}
 }
 
-// searchBsonSelections creates bson.M using SearchBuilder request
+// searchBsonSelections creates bson.M using SearchBuilderRequest request
 //   In main DataTables, there are 3 types in our data: string,html,date,num
 //   IN SHORT (DataTables type vs Actual column type):
 //     - string: string type columns
@@ -94,8 +106,6 @@ func humanSizeToBytes(input string) int64 {
 //   - date:
 //       It has only "<", ">", "between", "null", "!null" conditions.
 //       In other words: before, after, between, empty, not empty
-//       TODO Currently it operates on string level, using LastAccessMs column(integer unix timestamp)
-//           we can convert user date string to unix ts and use it in MongoDb query on LastAccessMs column
 //   - num:
 //       It has only "<", ">", "between", "null", "!null" conditions. Used for integer columns like `TotalFileCnt`
 func searchBsonSelections(criterion models.SingleCriteria) bson.M {
@@ -126,17 +136,17 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	case "date":
-		// TODO change the logic to use LastAccessMs
+		// For LastAccess column in millisecond format
 		switch criterion.Condition {
 		case "<":
-			return bson.M{criterion.OrigData: bson.M{"$lte": criterion.Value[0]}}
+			return bson.M{criterion.OrigData: bson.M{"$lte": stringToUnixTime(criterion.Value[0])}}
 		case ">":
-			return bson.M{criterion.OrigData: bson.M{"$gte": criterion.Value[0]}}
+			return bson.M{criterion.OrigData: bson.M{"$gte": stringToUnixTime(criterion.Value[0])}}
 		case "between":
 			return bson.M{
 				"$and": []bson.M{
-					{criterion.OrigData: bson.M{"$gte": criterion.Value[0]}},
-					{criterion.OrigData: bson.M{"$lte": criterion.Value[1]}},
+					{criterion.OrigData: bson.M{"$gte": stringToUnixTime(criterion.Value[0])}},
+					{criterion.OrigData: bson.M{"$lte": stringToUnixTime(criterion.Value[1])}},
 				}}
 		case "null":
 			return bson.M{criterion.OrigData: bson.M{"$exists": false}}

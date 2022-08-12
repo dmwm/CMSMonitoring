@@ -36,15 +36,15 @@ func getDetailedDsResults(ctx context.Context, c *gin.Context, collectionName st
 	collection := mymongo.GetCollection(collectionName)
 	var detailedDatasets []models.DetailedDataset
 
-	// Should use Custom Request for search query
-	searchQuery := mymongo.SearchQueryBuilderForCustomRequest(&req.Custom, prodLockAccounts)
+	// Should use CustomRequest Request for search query
+	searchQuery := mymongo.SearchQueryBuilderForCustomRequest(&req.CustomRequest, prodLockAccounts)
 	sortQuery := mymongo.SortQueryBuilder(&req, detailedDsUniqueSortColumn)
 	length := req.Length
 	skip := req.Start
 
 	cursor, err := mymongo.GetFindQueryResults(ctx, collection, searchQuery, sortQuery, skip, length)
 	if err != nil {
-		utils.ErrorResponse(c, "Find query failed", err, "")
+		utils.ErrorResponse(c, "Find query failed: %s", err, "")
 	}
 	if err = cursor.All(ctx, &detailedDatasets); err != nil {
 		utils.ErrorResponse(c, "detailed datasets cursor failed", err, "")

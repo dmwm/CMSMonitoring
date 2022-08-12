@@ -11,21 +11,21 @@ import (
 // SearchQueryForSearchBuilderRequest creates search query for datasets
 func SearchQueryForSearchBuilderRequest(req *models.SearchBuilderRequest) bson.M {
 	findQuery := bson.M{}
-	utils.InfoLogV2("SearchBuilder: %#v", req)
+	utils.InfoLogV2("SearchBuilderRequest: %#v", req.String())
 
-	// Check if SearchBuilder object in the incoming request is empty
+	// Check if SearchBuilderRequest object in the incoming request is empty
 	if !reflect.DeepEqual(req, models.SearchBuilderRequest{}) {
-		utils.InfoLogV2("searchBuilder is not null")
+		utils.InfoLogV2("SearchBuilder is not null")
 		findQuery = utils.GetSearchBuilderBson(req)
 	}
-	utils.InfoLogV1("Find Query is : %#v", findQuery)
+	utils.InfoLogV1("find query is : %#v", findQuery)
 	return findQuery
 }
 
-// SearchQueryBuilderForCustomRequest creates search query for Custom request
+// SearchQueryBuilderForCustomRequest creates search query for CustomRequest request
 func SearchQueryBuilderForCustomRequest(customR *models.CustomRequest, prodAccounts *[]string) bson.M {
 	findQuery := bson.M{}
-	utils.InfoLogV2("CustomRequest query is : %#v", customR)
+	utils.InfoLogV2("CustomRequest query is : %#v", customR.String())
 	if customR.Dataset != "" {
 		findQuery["Dataset"] = primitive.Regex{Pattern: customR.Dataset, Options: "im"}
 	}
@@ -53,7 +53,7 @@ func SearchQueryBuilderForCustomRequest(customR *models.CustomRequest, prodAccou
 		}
 		findQuery["$or"] = accountsBson
 	}
-	utils.InfoLogV1("Find Query is : %#v", findQuery)
+	utils.InfoLogV1("find query is : %#v", findQuery)
 
 	return findQuery
 }

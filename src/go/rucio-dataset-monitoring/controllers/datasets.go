@@ -46,8 +46,8 @@ func getDatasetResults(ctx context.Context, c *gin.Context, datasetsCollectionNa
 	collection := mymongo.GetCollection(datasetsCollectionName)
 	var datasets []models.Dataset
 
-	// Should use SearchBuilder query
-	searchQuery := mymongo.SearchQueryForSearchBuilderRequest(&req.SearchBuilder)
+	// Should use SearchBuilderRequest query
+	searchQuery := mymongo.SearchQueryForSearchBuilderRequest(&req.SearchBuilderRequest)
 	sortQuery := mymongo.SortQueryBuilder(&req, datasetsUniqueSortColumn)
 	length := req.Length
 	skip := req.Start
@@ -73,7 +73,7 @@ func getDatasetResults(ctx context.Context, c *gin.Context, datasetsCollectionNa
 // getFilteredCount total document count in the datasetsDb
 func getFilteredCount(ctx context.Context, c *gin.Context, collection *mongo.Collection, query bson.M, draw int) int64 {
 	if draw < 1 {
-		log.Fatalf("Datatables draw value cannot be less than 1, it is: %d", draw)
+		log.Fatalf("datatables draw value cannot be less than 1, it is: %d", draw)
 	} else if (draw == 1) || (!reflect.DeepEqual(datasetsQueryHolder, query)) {
 		// First opening of the page or search query is different from the previous one
 		cnt, err := mymongo.GetCount(ctx, collection, query)
@@ -82,10 +82,10 @@ func getFilteredCount(ctx context.Context, c *gin.Context, collection *mongo.Col
 		}
 		datasetsFilteredCountHolder = cnt
 		datasetsQueryHolder = query
-		utils.InfoLogV1("Filter query comparison: MIS-MATCH", nil)
+		utils.InfoLogV1("filter query comparison: MIS-MATCH %s", nil)
 	} else {
 		// If search query is still same, count should be same, so return GFilteredCount
-		utils.InfoLogV1("Filter query comparison: MATCH", nil)
+		utils.InfoLogV1("filter query comparison: MATCH %s", nil)
 	}
 	return datasetsFilteredCountHolder
 }

@@ -41,11 +41,13 @@ func Serve(configFile string) {
 		WriteTimeout: time.Duration(Config.WriteTimeout) * time.Second,
 	}
 
+	utils.InfoLogV0("rucio dataset monitoring service is starting %s", nil)
+	utils.InfoLogV0("rucio dataset monitoring service is starting with config: %s", Config.String())
 	g.Go(func() error {
 		return mainServer.ListenAndServe()
 	})
 
 	if err := g.Wait(); err != nil {
-		log.Printf("[ERROR] SERVER FAILED %s", err)
+		log.Printf("[ERROR] server failed %s", err)
 	}
 }

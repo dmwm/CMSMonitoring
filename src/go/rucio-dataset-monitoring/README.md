@@ -23,7 +23,7 @@ Main aim of the project is to show all Rucio dataset information in a web page w
   performance of it.
     * aggregated Rucio datasets results,
     * detailed dataset results,
-    * short url `hash_id:request` binding
+    * short url `hashId:request` binding
     * data source timestamp
 * JQuery/JS: to manipulate and customize DataTables, JQuery and JS used
 * Go [gin-gonic](https://github.com/gin-gonic) web framework is used to serve web pages and MongoDB query API calls

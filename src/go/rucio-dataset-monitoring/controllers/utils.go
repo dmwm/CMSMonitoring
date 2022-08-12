@@ -26,9 +26,9 @@ func InitializeController(c *gin.Context, req interface{}) (context.Context, con
 	if err != nil {
 		tempReqBody, exists := c.Get(gin.BodyBytesKey)
 		if !exists {
-			utils.ErrorResponse(c, "Bad request", err, "Request body does not exist in Gin context")
+			utils.ErrorResponse(c, "bad request", err, "Request body does not exist in Gin context")
 		} else {
-			utils.ErrorResponse(c, "Bad request", err, string(tempReqBody.([]byte)))
+			utils.ErrorResponse(c, "bad request", err, string(tempReqBody.([]byte)))
 		}
 	}
 	return ctx, cancel, start, req
@@ -40,18 +40,18 @@ func bindRequest(c *gin.Context, req interface{}) (any, error) {
 	switch r := req.(type) {
 	case models.DataTableRequest:
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
-		utils.InfoLogV2("Incoming request body bind to: %s", "DataTableSearchBuilderRequest")
+		utils.InfoLogV2("incoming request body bind to: %s", "DataTableSearchBuilderRequest")
 		return r, err
 	case models.ShortUrlRequest:
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
-		utils.InfoLogV2("Incoming request body bind to: %s", "ShortUrlRequest")
+		utils.InfoLogV2("incoming request body bind to: %s", "ShortUrlRequest")
 		return r, err
 	case models.SingleDetailedDatasetsRequest:
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
-		utils.InfoLogV2("Incoming request body bind to: %s", "SingleDetailedDatasetsRequest")
+		utils.InfoLogV2("incoming request body bind to: %s", "SingleDetailedDatasetsRequest")
 		return r, err
 	default:
-		utils.ErrorLog("Unknown request struct, it did not match. Req: %#v", req)
+		utils.ErrorLog("unknown request struct, it did not match: %#v", req)
 		return nil, errors.New("unknown request struct, no match in switch case")
 	}
 }
@@ -68,20 +68,20 @@ func VerboseControllerOutLog(start time.Time, name string, req any, data any) {
 		elapsed := time.Since(start)
 		req, err := json.Marshal(req)
 		if err != nil {
-			log.Printf("[ERROR] ------ Cannot marshall request, err:%s", err)
+			log.Printf("[ERROR] ------ cannot marshall request, err:%s", err)
 		} else {
 			r := string(req)
 			if utils.Verbose >= 2 {
 				// Response returns all query results, its verbosity should be at least 2
 				data, err1 := json.Marshal(data)
 				if err1 != nil {
-					log.Printf("[ERROR] ------ Cannot marshall additional verbose log data, err:%s", err1)
+					log.Printf("[ERROR] ------ cannot marshall additional verbose log data, err:%s", err1)
 				} else {
 					d := string(data)
-					log.Printf("[DEBUG] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %s\n\n", name, elapsed, r, d)
+					log.Printf("[DEBUG] ------\n -query time [%s] : %s\n\n -request body: %s\n\n -response: %s\n\n", name, elapsed, r, d)
 				}
 			} else {
-				log.Printf("[INFO] ------\n -Query time [%s] : %s\n\n -Request body: %s\n\n -Response: %#v\n\n", name, elapsed, req, nil)
+				log.Printf("[INFO] ------\n -query time [%s] : %s\n\n -request body: %s\n\n -response: %#v\n\n", name, elapsed, req, nil)
 			}
 		}
 	}

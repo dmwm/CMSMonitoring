@@ -50,7 +50,7 @@ func GetShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName str
 func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName string, hashId string) models.ShortUrl {
 	var shortUrlList []models.ShortUrl
 	collection := mymongo.GetCollection(shortUrlCollectionName)
-	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"hash_id": hashId})
+	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"hashId": hashId})
 	if err != nil {
 		utils.ErrorResponse(c, "getRequestFromShortUrl find query failed", err, "")
 	}
@@ -73,7 +73,7 @@ func getRequestHash(c *gin.Context, req models.ShortUrlRequest) string {
 
 // checkIdHashExists check if request hash is exists in the MongoDB collection
 func checkIdHashExists(ctx context.Context, c *gin.Context, collection *mongo.Collection, hashId string) int64 {
-	count, err := mymongo.GetCount(ctx, collection, bson.M{"hash_id": hashId})
+	count, err := mymongo.GetCount(ctx, collection, bson.M{"hashId": hashId})
 	if err != nil {
 		utils.ErrorResponse(c, "ShortUrl checkIdHashExists failed", err, "")
 		return 0
