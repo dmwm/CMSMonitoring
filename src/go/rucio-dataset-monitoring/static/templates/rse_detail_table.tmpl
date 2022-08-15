@@ -12,7 +12,6 @@
             <th scope="col">Size</th>
             <th scope="col">Last Access</th>
             <th scope="col">#Files in RSE</th>
-            <th scope="col">#Files Total of Dataset</th>
             <th scope="col">%Files in RSE</th>
             <th scope="col">#Accessed Files</th>
             <th scope="col">#Locked Files by Prod Accnt</th>
@@ -32,7 +31,6 @@
             <td>{{.SizeBytes}}</td>
             <td>{{.LastAcc}}</td>
             <td>{{.Fcnt}}</td>
-            <td>{{.TotFcnt}}</td>
             <td>{{.Fpct}}</td>
             <td>{{.AccFcnt}}</td>
             <td>{{.ProdLckCnt}}</td>
@@ -71,14 +69,6 @@
                     orderData: 5,
                     render: function (data, type, row, meta) {
                         return bytesToHumanelyDetailDt(data);
-                    },
-                    orderSequence: ["desc", "asc"],
-                },
-                {
-                    // Fpct(%Files in RSE)
-                    target: 10,
-                    render: function (data, type, row, meta) {
-                        return data + '%';
                     },
                     orderSequence: ["desc", "asc"],
                 },

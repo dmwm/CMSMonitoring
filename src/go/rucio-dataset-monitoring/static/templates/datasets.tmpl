@@ -40,20 +40,22 @@
 
         /*  RSEs special color*/
         .table > tbody > tr > td.rses-style {
-            color: #DC3220;
-        !important;
+            color: #DC3220;!important;
+            white-space: break-spaces;
         }
 
         /*SearchBuilder title*/
         .dtsb-titleRow {
-            background-color: #F2D7D9;
+            background-color: #FFF3E6;
         !important;
         }
 
         /*SearchBuilder group*/
         .dtsb-searchBuilder {
-            border-color: #F2D7D9;
-            border-bottom-width: 3px;
+            border:1px solid #FFF3E6;
+            background-color: #ECF2F9;
+            /*border-color: #F2D7D9;*/
+            border-bottom-width: 30px;
         }
 
         /*Data timestamp button style*/
@@ -112,7 +114,7 @@
             <th>Avg</th>
             <th>Sum</th>
             <th>RealSize</th>
-            <th>TotalFileCnt</th>
+            <th>FileCnt</th>
             <th>RSEs</th>
         </tr>
         </thead>
@@ -127,7 +129,7 @@
             <th>Avg</th>
             <th>Sum</th>
             <th>RealSize</th>
-            <th>TotalFileCnt</th>
+            <th>FileCnt</th>
             <th>RSEs</th>
         </tr>
         </tfoot>
@@ -159,9 +161,7 @@
     var global_dt_request_holder = null;
 
     // Define short url will be used or not
-    var isShortUrl = ({{.isShortUrl}} === "true"
-    )
-    ;
+    var isShortUrl = ({{.isShortUrl}} === "true");
 
     // hHlds saved state json string
     var global_saved_state_setter = null;
@@ -323,7 +323,9 @@
             dom: "iBQplrt", // no main search ("f"), just individual column search
             language: {
                 searchBuilder: {
-                    title: 'Search Builder | <span style="font-size: 10px">please hit enter after all conditions</span'
+                    title: 'Search Builder | <span style="font-size: 12px">please hit enter after all conditions</span>',
+                    clearAll: 'Reset',
+                    delete: 'Delete',
                 },
             },
             stateSaveCallback: function (settings, data) {
@@ -395,9 +397,44 @@
                 return: true
             },
             searchBuilder: {
+                depthLimit: 1,
                 // SearchBuilder customizations to limit conditions
                 columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-                greyscale: true,
+                //greyscale: true,
+                // preDefined: {
+                //     criteria: [
+                //         {
+                //             data: 'Rse Type',
+                //             origData: 'RseType',
+                //             condition: 'contains',
+                //             value: ["DISK"]
+                //         },
+                //         {
+                //             data: 'Dataset',
+                //             origData: 'Dataset',
+                //             condition: 'contains',
+                //             value: ['nanoaod']
+                //         },
+                //         {
+                //             data: 'RSEs',
+                //             origData: 'RSEs',
+                //             condition: 'contains',
+                //             value: ['T2_CH_CERN.*T2_US_MIT']
+                //         },
+                //         {
+                //             data: 'RealSize',
+                //             origData: 'RealSize',
+                //             condition: 'starts',
+                //             value: ['1TB']
+                //         },
+                //         {
+                //             data: 'Last Access',
+                //             origData: 'LastAccess',
+                //             condition: 'between',
+                //             value: ["2022-04-01","2040-08-15"]
+                //         },
+                //     ]
+                // },
                 conditions: {
                     // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                     // that's why we use "html" type, but it will be used in numeric columns
@@ -439,6 +476,8 @@
                     },
                     date: {
                         // "date" type will have only ">", "<", "between", "null" and "!null" conditions
+                        '>': null,
+                        '<': null,
                         '=': null,
                         '!=': null,
                         '!between': null,
@@ -457,6 +496,7 @@
                 {
                     // Details green/red "+"/"-" button
                     data: null, className: 'dt-control', orderable: false, defaultContent: '',
+                    width: "2%"
                 },
                 {
                     data: "RseType",
@@ -465,6 +505,7 @@
                     searchBuilder: {
                         defaultCondition: "contains"
                     },
+                    width: "3%"
                 },
                 {
                     data: "Dataset",
@@ -472,13 +513,15 @@
                     searchBuilder: {
                         defaultCondition: "contains"
                     },
+                    //width: "20%"
                 },
                 {
                     data: "LastAccess",
                     searchBuilderType: 'date',
                     searchBuilder: {
-                        defaultCondition: ">"
+                        defaultCondition: "between"
                     },
+                    width: "10%"
                 },
                 {
                     data: "Max",
@@ -489,6 +532,7 @@
                     // orderSequence defines first option when clicked to Columns sort button. We set first as "desc", default was "asc".
                     orderSequence: ["desc", "asc"],
                     searchBuilderType: 'html',
+                    width: "7%"
                 },
                 {
                     data: "Min",
@@ -498,6 +542,7 @@
                     },
                     orderSequence: ["desc", "asc"],
                     searchBuilderType: 'html',
+                    width: "7%"
                 },
                 {
                     data: "Avg",
@@ -507,6 +552,7 @@
                     },
                     orderSequence: ["desc", "asc"],
                     searchBuilderType: 'html',
+                    width: "7%"
                 },
                 {
                     data: "Sum",
@@ -516,6 +562,7 @@
                     },
                     orderSequence: ["desc", "asc"],
                     searchBuilderType: 'html',
+                    width: "7%"
                 },
                 {
                     data: "RealSize",
@@ -525,10 +572,13 @@
                     },
                     orderSequence: ["desc", "asc"],
                     searchBuilderType: 'html',
+                    width: "5%"
                 },
                 {
                     data: "TotalFileCnt",
+                    name: 'FileCnt',
                     searchBuilderType: 'num',
+                    width: "3%"
                 },
                 {
                     data: "RSEs",
@@ -536,6 +586,7 @@
                     searchBuilder: {
                         defaultCondition: "contains"
                     },
+                    width: "20%"
                 }
             ],
             buttons: [
@@ -584,6 +635,14 @@
                     action: function (e, dt, node, config) {
                         //This will send the page to the location specified
                         window.open("https://github.com/dmwm/CMSMonitoring/tree/master/src/go/rucio-dataset-monitoring", "_blank");
+                    }
+                },
+                {
+                    className: 'btn btn-light',
+                    text: '<a href="">Examples</a>',
+                    action: function (e, dt, node, config) {
+                        //This will send the page to the location specified
+                        window.open("https://github.com/dmwm/CMSMonitoring/blob/master/src/go/rucio-dataset-monitoring/docs/example_query.md", "_blank");
                     }
                 }
             ]
