@@ -69,8 +69,11 @@ class StompyListener(object):
     connection.
     """
     def __init__(self, logger=None):
-        logging.basicConfig(level=logging.debug)
-        self.logger = logger if logger else logging.getLogger('StompyListener')
+        if logger:
+            self.logger = logger
+        else:
+            logging.basicConfig(level=logging.debug)
+            self.logger = logging.getLogger('StompyListener')
 
     def safe_headers(self, headers):
         "Return stripped headers"
@@ -168,8 +171,11 @@ class StompAMQ(object):
         self._password = password
         self._producer = producer
         self._topic = topic
-        logging.basicConfig(level=validation_loglevel)
-        self.logger = logger if logger else logging.getLogger('StompAMQ')
+        if logger:
+            self.logger = logger
+        else:
+            logging.basicConfig(level=validation_loglevel)
+            self.logger = logging.getLogger('StompAMQ')
         self._host_and_ports = host_and_ports or [('cms-test-mb.cern.ch', 61313)]
         self.ip_and_ports = []
         try:
