@@ -74,9 +74,12 @@ class StompyListener(stomp.ConnectionListener):
     """Auxiliary listener class to fetch all possible states in the Stomp connection."""
 
     def __init__(self, logger=None):
-        logging.basicConfig(format='%(asctime)s- StompAMQ:%(levelname)s-%(message)s', datefmt='%Y-%m-%dT%H:%M:%S.%f%z',
-                            level=logging.WARNING)
-        self.logger = logger if logger else logging.getLogger('StompyListener')
+        if logger:
+            self.logger = logger
+        else:
+            logging.basicConfig(format='%(asctime)s- StompAMQ:%(levelname)s-%(message)s', datefmt='%Y-%m-%dT%H:%M:%S.%f%z',
+                                level=logging.WARNING)
+            self.logger = logging.getLogger('StompyListener')
 
     @staticmethod
     def safe_headers(headers):
@@ -182,12 +185,15 @@ class StompAMQ7(object):
                  ipv4_only=True,
                  send_timeout=4000,
                  recv_timeout=4000):
-        # Set logger
-        logging.basicConfig(format="%(asctime)s.%(msecs)03dZ [%(levelname)s] %(filename)s:%(lineno)d %(message)s ",
-                            datefmt="%Y-%m-%dT%H:%M:%S",
-                            level=loglevel)
-        logging.Formatter.converter = gmtime
-        self.logger = logger if logger else logging.getLogger('StompAMQ')
+        if logger:
+            self.logger = logger
+        else:
+            # Set logger
+            logging.basicConfig(format="%(asctime)s.%(msecs)03dZ [%(levelname)s] %(filename)s:%(lineno)d %(message)s ",
+                                datefmt="%Y-%m-%dT%H:%M:%S",
+                                level=loglevel)
+            logging.Formatter.converter = gmtime
+            self.logger = logging.getLogger('StompAMQ')
 
         self._username, self._password, self._producer, self._topic = username, password, producer, topic
         self._host_and_ports = host_and_ports or [('cms-test-mb.cern.ch', 61323)]
