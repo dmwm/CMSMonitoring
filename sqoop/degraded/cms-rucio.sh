@@ -3,9 +3,9 @@
 setJava
 
 BASE_PATH=${BASE_PATH:-/project/awg/cms/rucio}
-JDBC_URL=$(sed '1q;d' cmsr_cstring)
-USERNAME=$(sed '2q;d' cmsr_cstring)
-PASSWORD=$(sed '3q;d' cmsr_cstring)
+JDBC_URL=$(sed '1q;d' /etc/secrets/cmsr_cstring)
+USERNAME=$(sed '2q;d' /etc/secrets/cmsr_cstring)
+PASSWORD=$(sed '3q;d' /etc/secrets/cmsr_cstring)
 
 me=`basename $0`_$$
 
@@ -24,7 +24,7 @@ END_DATE=`date +'%F' -d "$START_DATE + 1 day"`
 START_DATE_S=`date +'%s' -d "$START_DATE"`
 END_DATE_S=`date +'%s' -d "$END_DATE"`
 
-LOG_FILE=log/`date +'%F_%H%m%S'`_`basename $0`
+LOG_FILE=log/`date +'%F_%H%M%S'`_`basename $0`
 
 
 OUTPUT_FOLDER=$BASE_PATH/diff/date=$START_DATE
