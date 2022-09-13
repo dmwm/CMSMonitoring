@@ -76,6 +76,11 @@ class StompyListener(stomp.ConnectionListener):
     def __init__(self, logger=None):
         if logger:
             self.logger = logger
+            # INFO level is very verbose, see: https://github.com/jasonrbriggs/stomp.py/issues/400
+            # bump the log level to the next level to reduce verbosity. FIXME: eventually remove it!
+            thisLogLevel = logging.getLogger("stomp.py").getEffectiveLevel()
+            thisLogLevel = thisLogLevel if thisLogLevel == 50 else thisLogLevel + 10
+            logging.getLogger("stomp.py").setLevel(thisLogLevel)
         else:
             logging.basicConfig(format='%(asctime)s- StompAMQ:%(levelname)s-%(message)s', datefmt='%Y-%m-%dT%H:%M:%S.%f%z',
                                 level=logging.WARNING)
@@ -187,6 +192,11 @@ class StompAMQ7(object):
                  recv_timeout=4000):
         if logger:
             self.logger = logger
+            # INFO level is very verbose, see: https://github.com/jasonrbriggs/stomp.py/issues/400
+            # bump the log level to the next level to reduce verbosity. FIXME: eventually remove it!
+            thisLogLevel = logging.getLogger("stomp.py").getEffectiveLevel()
+            thisLogLevel = thisLogLevel if thisLogLevel == 50 else thisLogLevel + 10
+            logging.getLogger("stomp.py").setLevel(thisLogLevel)
         else:
             # Set logger
             logging.basicConfig(format="%(asctime)s.%(msecs)03dZ [%(levelname)s] %(filename)s:%(lineno)d %(message)s ",
@@ -327,7 +337,7 @@ class StompAMQ7(object):
                     if result:
                         failed_notifications.append(result)
         except Exception as e:
-            logging.warning("Send failed with exception:", str(e))
+            logging.warning("Send failed with exception: %s", str(e))
         # Do not use conn.disconnect() in version 6.1.1<=, <=7.0.0. It produces unnecessary socket warning
 
         if failed_notifications:
@@ -431,7 +441,7 @@ class StompAMQ7(object):
                         body = notif.pop('body')
                         body = json.dumps(body)
                     except TypeError:
-                        self.logger.error("Unable to serialize the object:", body)
+                        self.logger.error("Unable to serialize the object: %s", body)
 
                     # Stomp conn.send, not self.send
                     conn.send(destination=self._topic,
