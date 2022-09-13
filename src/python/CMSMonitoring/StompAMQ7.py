@@ -337,7 +337,7 @@ class StompAMQ7(object):
                     if result:
                         failed_notifications.append(result)
         except Exception as e:
-            logging.warning("Send failed with exception:", str(e))
+            logging.warning("Send failed with exception: %s", str(e))
         # Do not use conn.disconnect() in version 6.1.1<=, <=7.0.0. It produces unnecessary socket warning
 
         if failed_notifications:
@@ -441,7 +441,7 @@ class StompAMQ7(object):
                         body = notif.pop('body')
                         body = json.dumps(body)
                     except TypeError:
-                        self.logger.error("Unable to serialize the object:", body)
+                        self.logger.error("Unable to serialize the object: %s", body)
 
                     # Stomp conn.send, not self.send
                     conn.send(destination=self._topic,
