@@ -76,6 +76,11 @@ class StompyListener(stomp.ConnectionListener):
     def __init__(self, logger=None):
         if logger:
             self.logger = logger
+            # INFO level is very verbose, see: https://github.com/jasonrbriggs/stomp.py/issues/400
+            # bump the log level to the next level to reduce verbosity. FIXME: eventually remove it!
+            thisLogLevel = logging.getLogger("stomp.py").getEffectiveLevel()
+            thisLogLevel = thisLogLevel if thisLogLevel == 50 else thisLogLevel + 10
+            logging.getLogger("stomp.py").setLevel(thisLogLevel)
         else:
             logging.basicConfig(format='%(asctime)s- StompAMQ:%(levelname)s-%(message)s', datefmt='%Y-%m-%dT%H:%M:%S.%f%z',
                                 level=logging.WARNING)
@@ -187,6 +192,11 @@ class StompAMQ7(object):
                  recv_timeout=4000):
         if logger:
             self.logger = logger
+            # INFO level is very verbose, see: https://github.com/jasonrbriggs/stomp.py/issues/400
+            # bump the log level to the next level to reduce verbosity. FIXME: eventually remove it!
+            thisLogLevel = logging.getLogger("stomp.py").getEffectiveLevel()
+            thisLogLevel = thisLogLevel if thisLogLevel == 50 else thisLogLevel + 10
+            logging.getLogger("stomp.py").setLevel(thisLogLevel)
         else:
             # Set logger
             logging.basicConfig(format="%(asctime)s.%(msecs)03dZ [%(levelname)s] %(filename)s:%(lineno)d %(message)s ",
