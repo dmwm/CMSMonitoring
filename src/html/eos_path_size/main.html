@@ -2,10 +2,16 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <!-- prepared using https://datatables.net/download/ -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jq-3.6.0/jszip-2.5.0/dt-1.12.1/b-2.2.3/b-colvis-2.2.3/b-html5-2.2.3/b-print-2.2.3/cr-1.5.6/date-1.1.2/kt-2.7.0/rr-1.2.8/sc-2.0.6/sb-1.3.3/sp-2.0.1/sl-1.4.0/sr-1.1.1/datatables.min.css"/>
+
+    <!--  Please do not delete below CSSes, important for pretty view -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.12.1/datatables.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/dataTables.bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap.min.css">
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
 	        font-family: 'Trebuchet MS', sans-serif;
@@ -14,7 +20,7 @@
         .dataTables_filter input {
           border: 7px solid Tomato;
           width: 400px;
-          font-size: 16px;
+          font-size: 14px;
           font-weight: bold;
         }
         table td {
@@ -28,16 +34,21 @@
         table td:nth-child(1) {
             font-weight: bold;
         }
+        /* Path title */
+        table th:nth-child(1) {
+            color: #990000;
+        }
         /* Header rows, total and titles, align right */
         table th:nth-child(n+2) {
-            text-align: right;
+            text-align: right !important;
+            color:  #990000 !important;
         }
         /* Different background color for even and odd columns  */
-        #dataframe tr:nth-child(even) {
+        .table.display tr:nth-child(even) {
           /* background-color: #dddfff; */
         }
         /* No carriage return for values, no break lines */
-        #dataframe tr td {
+        table tr td {
           width: 1%;
           white-space: nowrap;
         }
@@ -45,49 +56,102 @@
         div.dt-buttons {
           float: right;
         }
+        .dt-button.buttons-columnVisibility.active {
+              background: #FF0000 !important;
+              color: white !important;
+              opacity: 0.5;
+           }
+        .dt-button.buttons-columnVisibility {
+              background: black !important;
+              color: white !important;
+              opacity: 1;
+           }
+
+        div.dataTables_wrapper {
+          margin-bottom: 3em;
+        }
+
+        <!--         Divider   -->
+        .divider {
+<!--            width:500px;-->
+            text-align:center;
+        }
+        .divider hr {
+            margin-left:auto;
+            margin-right:auto;
+            width:100%;
+        }
     </style>
 </head>
 <body>
-  <div class="container" style="display:block; width:70%">
-    <div class="cms">
-        <img src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg"
-            alt="CMS" style="width: 5%; float:left">
-        <h3 style="width: 100%;">
-            EOSCMS quotas and usage monitoring
-        </h3>
-        <small>Last Update: __UPDATE_TIME__ UTC</small>
-    </div>
-    <div class="w3-container" style="margin-left: 3%;">
-      <button style="font-size: 18px; background-color: white; color: black; border: 5px solid #f9ccac;" onclick="explainFunction()">
-        &darr; How to interpret this table &darr;
-      </button>
+    <div class="container-fluid no-padding" style="width: 100%">
+        <div class="row" style="background-color: #ECF2F9">
+            <div class="col-xs-6 col-sm-4">
+                <footer>
+                    <img alt="CERN CMS" src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg"
+                         width="60" height="60">
+                </footer>
+            </div>
+            <div class="col-xs-6 col-sm-4 align-self-center">
+                <h3> EOSCMS Quotas And Usage Monitoring </h3>
+            </div>
+            <div class="col-xs-6 col-sm-4 text-right ">
+                <footer>
+                    <img alt="CERN CMS O&C" src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg" style="text-align: right;"
+                         width="60" height="60">
+                </footer>
+            </div>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><div><a href="#" onclick="explainFunction()">&darr; How to interpret this table &darr;</a></div></li>
+            <li style="height: 100%;"> &nbsp; &#9551; &nbsp; </li>
+            <li><div> <small style="text-align: right;">Last Update UTC: __UPDATE_TIME__ </small> </div></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+        <div class="row" style="background-color: #ECF2F9">
+          </div>
     </div>
     <div id="explanations" style="display: none; margin-top: 2%;">
         <pre>
-    Source code: <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">CMSMonitoring/eos_path_size.py</a>
-    This page shows the size of CMS EOS paths in TB. Bytes to TB denominator is 10^12.
-    All values come from: eos -r 103074 1399 quota ls -m and paths come from: xrdcp -s root://eoscms.cern.ch//eos/cms/proc/accounting -
-    [NOTE-1]:__EXCLUDED_PATHS__ paths are filtered out and not used in calculations.
-    [NOTE-2]: The sizes of "/eos/cms/proc/recycle/" are divided by 2 for obvious reasons.
-    Script source code: eos_path_size.py
-	    </pre>
+  Source code: <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/eos_path_size.py">CMSMonitoring/eos_path_size.py</a>
+  Output is stored in root://eoscms//eos/cms/store/accounting/ once per day
+    - quota_node is a directory with a quota assigned
+    -  max_logical_quota is the total logical quota set
+    -  total_used_logical_bytes is the total of bytes used from the logical quota (logical_rep_bytes+logical_ec_bytes)
+    -  logical_rep_bytes is the logical bytes used with two replica layout
+    -  logical_ec_bytes is the logical bytes used with the erasure coging layout (10+2)
+    -  total_used_physical_bytes is the total physical bytes (raw data) used, therefore the sum of the files with the two replica layout and the files with the erasure coding layout (logical_rep_bytes*2 +logical_ec_bytes*1.2) (layout for EC 10+2)
+    -  physical_rep_bytes is the total of raw data used with the two replica layout (logical_rep_bytes*2)
+    -  physical_ec_bytes is the total of raw data used with EC layout (logical_ec_bytes*1.2)
+    -  free_physical is the free raw data (max_logical_quota*2)- total_used_physical_bytes
+    -  free_physical_for_ec is the free raw data in case all the new files will be in EC layout (free_physical/1.2)
+    -  free_physical_for_rep is the free raw data in case all the new files will be in two replica layout (free_physical/2)
+    -  free_logical is the free logical bytes ( max_logical_quota-total_used_logical_bytes)
+        </pre>
 	</div>
 
-    ____MAIN_BLOCK____
+  <div class="container" style="display:block; width:100%">
+
+    <div class="divider" style="text-align:center; font-size: 20px; font-weight: bold;">
+      EOS EC <hr />
+    </div>
+
+  ____EC_BLOCK____
+
+    <div class="divider" style="text-align:center; font-size: 20px; font-weight: bold;">
+      NON EOS EC <hr />
+    </div>
+
+  ____NON_EC_BLOCK____
 
   </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.colVis.min.js"></script>
+    <!-- prepared using https://datatables.net/download/ -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jqc-1.12.4/jszip-2.5.0/dt-1.12.1/af-2.4.0/b-2.2.3/b-colvis-2.2.3/b-html5-2.2.3/b-print-2.2.3/cr-1.5.6/date-1.1.2/fc-4.1.0/fh-3.2.3/r-2.3.0/sb-1.3.3/sp-2.0.1/sl-1.4.0/sr-1.1.1/datatables.min.js"></script>
+    <!-- Please do not delete below JS which is required for footerCallback-->
+    <script type="text/javascript" src="https://cdn.datatables.net/fixedheader/3.2.3/js/dataTables.fixedHeader.min.js"></script>
     <script>
         function explainFunction() {
           var x = document.getElementById("explanations");
@@ -104,12 +168,13 @@
         if (searchString == null){
           searchString = ''
         }
+        //
         $(document).ready(function () {
-            var dt = $('#dataframe').DataTable( {
+            var dt = $('table.display').DataTable( {
                 "orderCellsTop": true,
                 "dom": "fBrtpli",
-                "order": [[ 1, "desc" ]],
-                "pageLength" : 300,
+                "order": [[ 0, "asc" ]],
+                "pageLength" : 3000,
                 "scrollX": false,
                 "oSearch": { "sSearch": searchString },
                 language: {
@@ -117,21 +182,50 @@
                     searchPlaceholder: "--- Search EOS Path ---",
                 },
                 lengthChange: false,
-                  buttons: [
-                  'copy',
-                  'excel',
-                  'pdf',
+                "footerCallback": function ( row, data, start, end, display ) {
+                    // Footer callback is used for calculating Totals
+                    var api = this.api(), data;
+                    api.columns('.sum', { page: 'current'}).every( function () {
+                      var sum = this
+                        .data()
+                        .reduce( function (a, b) {
+                            return parseInt(a) + parseInt(b);
+                        }, 0 );
+                        console.log(sum)
+                      this.footer().innerHTML = sum;
+                    } );
+                },
+                buttons: [
+                  {
+                    extend: 'copyHtml5',
+                    exportOptions: {
+                      columns: ':visible'
+                    }
+                  },
+                  {
+                    extend: 'excelHtml5',
+                    exportOptions: {
+                      columns: ':visible'
+                    }
+                  },
+                  {
+                    extend: 'pdfHtml5',
+                    exportOptions: {
+                      columns: ':visible'
+                    }
+                  },
                   'colvis',
                   {
-                        text: 'Copy search link to clipboard',
-                        action: function ( e, dt, node, config ) {
-                          url.searchParams.set('search', dt.search());
-                          //window.location.replace(url.href);
-                          navigator.clipboard.writeText(url.href);
-                        }
+                    text: 'Copy search link to clipboard',
+                    action: function ( e, dt, node, config ) {
+                      url.searchParams.set('search', dt.search());
+                      //window.location.replace(url.href);
+                      navigator.clipboard.writeText(url.href);
                     }
+                  },
                 ]
             });
+            //
             dt.buttons().container().appendTo( '#example_wrapper .col-sm-4:eq(0)' );
         });
     </script>
