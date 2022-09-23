@@ -82,7 +82,8 @@ class StompyListener(stomp.ConnectionListener):
             thisLogLevel = thisLogLevel if thisLogLevel == 50 else thisLogLevel + 10
             logging.getLogger("stomp.py").setLevel(thisLogLevel)
         else:
-            logging.basicConfig(format='%(asctime)s- StompAMQ:%(levelname)s-%(message)s', datefmt='%Y-%m-%dT%H:%M:%S.%f%z',
+            logging.basicConfig(format='%(asctime)s- StompAMQ:%(levelname)s-%(message)s',
+                                datefmt='%Y-%m-%dT%H:%M:%S.%f%z',
                                 level=logging.WARNING)
             self.logger = logging.getLogger('StompyListener')
 
@@ -338,7 +339,9 @@ class StompAMQ7(object):
                         failed_notifications.append(result)
         except Exception as e:
             logging.warning("Send failed with exception: %s", str(e))
-        # Do not use conn.disconnect() in version 6.1.1<=, <=7.0.0. It produces unnecessary socket warning
+        finally:
+            self.disconnect()  # disconnect all available connections to brokers
+        # While using ssl connection with certificates, socket closing will produce ssl EOF warning. No solution yet!
 
         if failed_notifications:
             self.logger.warning(f"Failed to send to {repr(self._host_and_ports)} {len(failed_notifications)} docs "
