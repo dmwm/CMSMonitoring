@@ -1,20 +1,10 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
-# Create html table for EOS paths' size as a result of xrdcp command
+# Create html table for EOS paths' size
 #
-# acronjob:
-#       - $HOME/CMSMonitoring/scripts/eos_path_size.sh
-# How it works:
-#       - Gets only paths from XRDCP command
-#       - All used values are results of EOS command
-#       - This script can use direct results of `eos` command or a file that includes the result of `eos` command
-# Parameters:
-#       - --output_file: Sets the output html
-#       - --input_eos_file: If provided, the file that contains EOS command results will be used.
-#                         This file is updated every 10 minutes by VOCMS team and they are managing the cron job
-#                         If not provided, make sure that you are a quota admin to run `eos` command
-
+# acronjob: $HOME/CMSMonitoring/scripts/eos_path_size.sh
+#
 
 import json
 import os
@@ -22,110 +12,103 @@ import sys
 from datetime import datetime
 
 import click
-import numpy as np
 import pandas as pd
-from schema import Schema, Use, SchemaError
+from schema import Schema, Use, SchemaError, Or
 
 pd.options.display.float_format = "{:,.2f}".format
-pd.set_option("display.max_colwidth", -1)
+pd.set_option("display.max_colwidth", None)
 
-EXCLUDED_PATHS = ["/eos/cms/store/cmst3", "/eos/recovered", "/eos/totem"]
-RECYCLE = "/eos/cms/proc/recycle/"
-TB_DENOMINATOR = 10 ** 12
+NON_EC_SCHEMA = Schema([{'path': str,
+                         'usedfiles': Use(int),
+                         'usedterabytes': Use(float),
+                         'usedlogicalterabytes': Use(float),
+                         'maxterabytes': Use(float),
+                         'maxlogicalterabytes': Use(float),
+                         'percentageusedterabytes': Use(float),
+                         'used_logical_over_used_raw_percentage': Or(float, int, None),
+                         'quota': str,
+                         'gid': Use(str),
+                         'maxfiles': Use(int),
+                         'statusbytes': str,
+                         'statusfiles': str, }])
 
+NON_EC_COL_ORDER = {'path': 'Path',
+                    'usedfiles': 'Used Files',
+                    'usedterabytes': 'Used TB',
+                    'usedlogicalterabytes': 'Used Logical TB',
+                    'maxterabytes': 'Max TB',
+                    'maxlogicalterabytes': 'Max Logical TB',
+                    'percentageusedterabytes': 'Percentage Used %',
+                    'used_logical_over_used_raw_percentage': 'Used Logical / Used Raw %',
+                    'quota': 'Quota',
+                    'gid': 'GID',
+                    'maxfiles': 'Max Files',
+                    'statusbytes': 'Status Bytes',
+                    'statusfiles': 'Status Files'}
 
-def get_paths_from_xrdcp(json_data):
-    """Get paths from XRDCP command and filter our cmst3 paths """
-    data = json.load(json_data)
-    paths = [elem["path"][0] for elem in data['storageservice']['storageshares']]
-    # Filter out cmst3/*
-    paths = [path for path in paths if all((exc not in path) for exc in EXCLUDED_PATHS)]
-    return paths
+EC_SCHEMA = Schema([{'quota_node': str,
+                     'max_logical_quota': Use(float),
+                     'free_physical': Use(float),
+                     'free_physical_for_ec': Use(float),
+                     'free_physical_for_rep': Use(float),
+                     'free_logical': Use(float),
+                     'total_used_logical_terabytes': Use(float),
+                     'used_logical_over_used_raw_percentage': Or(float, int, None),
+                     'logical_rep_terabytes': Use(float),
+                     'logical_ec_terabytes': Use(float),
+                     'total_used_physical_terabytes': Use(float),
+                     'physical_rep_terabytes': Use(float),
+                     'physical_ec_terabytes': Use(float), }])
 
-
-# EOS operation
-def get_validated_eos_results(eos_lines_list):
-    """Validate, convert types and filter
-
-    Example line: "quota=node uid=akhukhun space=/eos/cms/store/ usedbytes=0 ..."
-    Filter: "gid=ALL" or "gid=project" filter is applied
-    """
-    schema = Schema(
-        [
-            {
-                'quota': str,
-                'gid': Use(str),
-                'space': Use(str),
-                'usedbytes': Use(float),
-                'usedlogicalbytes': Use(float),
-                'usedfiles': Use(float),
-                'maxbytes': Use(float),
-                'maxlogicalbytes': Use(float),
-                'maxfiles': Use(float),
-                'percentageusedbytes': Use(float),
-                'statusbytes': str,
-                'statusfiles': str,
-                # No 'uid'
-            }
-        ]
-    )
-    # Get only rows that contain "gid" and it's value should be "ALL" or "project"
-    dict_array = list(
-        map(
-            lambda line: dict(tuple(s.split("=")) for s in line.strip().split(' ')),
-            [row for row in eos_lines_list if (("gid=ALL" in row) or ("gid=project" in row))]
-        )
-    )
-    try:
-        # Validate and convert types
-        return schema.validate(dict_array)
-    except SchemaError as e:
-        print(tstamp(), "Data is not valid:", str(e))
-        sys.exit(1)
-
-
-def get_eos(file_path=None):
-    """Get EOS output raw results from either eos command or from a file that contain those results"""
-    if file_path:
-        print(tstamp(), "EOS file path is provided, reading from file")
-        # Read eos result from file
-        with open(file_path) as file:
-            return get_validated_eos_results(file.readlines())
-    else:
-        print(tstamp(), "EOS file path is NOT provided")
-        print(tstamp(), "Running eos quota ls command")
-        # For VOC team: run eos command and get output
-        try:
-            # export EOSHOME="" is needed to avoid warning messages
-            return get_validated_eos_results(
-                str(os.system('export EOSHOME="" && eos -r 103074 1399 quota ls -m')).split("\n"))
-        except OSError as e:
-            print(tstamp(), 'ERROR: Cannot get the eos quota ls output from EOS:', str(e))
-            sys.exit(1)
-
-
-def create_eos_df(file_path):
-    """Create dataframe from EOS output lines"""
-    df = pd.DataFrame(get_eos(file_path)).rename(columns={'space': 'path'})
-    # Re-order and drop unwanted columns: 'usedfiles', 'statusbytes', 'statusfiles', 'quota', 'gid'
-    return df[['path', 'usedlogicalbytes', 'maxlogicalbytes', 'usedbytes', 'maxbytes', 'percentageusedbytes']]
+EC_COL_ORDER = {'quota_node': 'Path',
+                'free_logical': 'Free Logical',
+                'total_used_logical_terabytes': 'Total Used Logical TB',
+                'max_logical_quota': 'Max Logical Quota',
+                'free_physical': 'Free Physical',
+                'total_used_physical_terabytes': 'Total Used Physical TB',
+                'used_logical_over_used_raw_percentage': 'Used Logical / Used Raw %',
+                'free_physical_for_ec': 'Free Physical EC',
+                'free_physical_for_rep': 'Free Physical Rep',
+                'logical_rep_terabytes': 'Logical Rep TB',
+                'logical_ec_terabytes': 'Logical EC TB',
+                'physical_rep_terabytes': 'Physical Rep TB',
+                'physical_ec_terabytes': 'Physical EC TB', }
 
 
 def tstamp():
     """Return timestamp for logging"""
-    return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+    return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
 
-def get_update_time(input_eos_file):
+def get_update_time_of_file(ec_file, non_ec_file):
     """Create update time depending on reading EOS results from file or directly from command"""
-    if input_eos_file:
-        # Set update time to eos file modification time if file input used
+    if ec_file and non_ec_file:
+        # Set update time to eos file modification time, minimum of 2
+        ec_ts = os.path.getmtime(ec_file)
+        non_ec_ts = os.path.getmtime(non_ec_file)
         try:
-            return datetime.utcfromtimestamp(os.path.getmtime(input_eos_file)).strftime('%Y-%m-%dT%H:%M:%SZ')
+            return datetime.utcfromtimestamp(min(ec_ts, non_ec_ts)).strftime('%Y-%m-%d %H:%M:%S')
         except OSError as e:
-            print(tstamp(), "ERROR: coul not get last modification time of file:", str(e))
+            print(tstamp(), "ERROR: could not get last modification time of file:", str(e))
     else:
-        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        # !! means time did not come from file but cron job time
+        return "!!" + datetime.utcnow().strftime("%Y-%m-%d H:%M:%S")
+
+
+def get_df_with_validation(json_file, schema, column_order):
+    """Read json file, validate, cast types and convert to pandas dataframe
+    """
+    try:
+        with open(json_file) as f:
+            json_arr = json.load(f)
+
+        json_arr = schema.validate(json_arr)
+
+        # orient values reads json array
+        return pd.DataFrame(json_arr, columns=column_order.keys()).rename(columns=column_order)
+    except SchemaError as e:
+        print(tstamp(), "Data not exist or not valid:", str(e))
+        sys.exit(1)
 
 
 def get_html_template(base_html_directory=None):
@@ -138,121 +121,50 @@ def get_html_template(base_html_directory=None):
     return main_html
 
 
-def create_html(df, update_time, total_row, base_html_directory):
-    """Create html page with given dataframe
-    """
-    # Get main html
-    main_html = get_html_template(base_html_directory=base_html_directory)
-    main_html = main_html.replace("__UPDATE_TIME__", update_time)
-    main_html = main_html.replace("__EXCLUDED_PATHS__", "*,".join(EXCLUDED_PATHS) + "*")
-    # Total row placeholder
-    total_on_header = """
-                <tr >
-                    <th>{Path}</th>
-                    <th>{logical used(TB)}</th>
-                    <th>{logical quota(TB)}</th>
-                    <th>{raw used(TB)}</th>
-                    <th>{raw quota(TB)}</th>
-                    <th>{used/quota}</th>
-                    <th>{logical/raw (quotas)}</th>
-                </tr>
-            </thead>
-    """.format(**total_row)
-    main_column = df["Path"].copy()
-    df["Path"] = (
-        '<a class="Path">'
-        + main_column
-        + '</a><br>'
-    )
-    # Pandas df to html
+def prepare_html(df):
     html = df.to_html(escape=False, index=False)
-    # Add total ro to header. Be careful there should be only one  <thead>...</thead>!
-    html = html.replace(" </thead>", total_on_header)
     # cleanup of the default dump
     html = html.replace(
         'table border="1" class="dataframe"',
-        'table id="dataframe" class="display compact" style="width:100%;"',
+        'table id="" class="display compact" style="width:90%;"',
     )
     html = html.replace('style="text-align: right;"', "")
+    return html
+
+
+def create_main_html(df_non_ec, df_ec, update_time, base_html_directory):
+    """Create html page with given dataframe
+    """
+    df_non_ec_html = prepare_html(df_non_ec)
+    df_ec_html = prepare_html(df_ec)
+
+    # Get main html
+    main_html = get_html_template(base_html_directory=base_html_directory)
+    main_html = main_html.replace("__UPDATE_TIME__", update_time)
 
     # Add pandas dataframe html to main body
-    main_html = main_html.replace("____MAIN_BLOCK____", html)
+    main_html = main_html.replace('____NON_EC_BLOCK____', df_non_ec_html)
+    main_html = main_html.replace('____EC_BLOCK____', df_ec_html)
     return main_html
 
 
 @click.command()
 @click.option("--output_file", default=None, required=True, help="For example: /eos/.../www/test/test.html")
-@click.option("--input_eos_file", default=None, required=False,
-              help="Result of 'eos -r 103074 1399 quota ls -m', i.e.: /eos/cms/store/accounting/eos_quota_ls.txt")
+@click.option("--non_ec_json", required=True, help="/eos/cms/store/accounting/eos_non_ec_accounting.json")
+@click.option("--ec_json", required=True, help="/eos/cms/store/accounting/eos_ec_accounting.json")
 @click.option("--static_html_dir", default=None, required=True,
               help="Html directory for main html template. For example: ~/CMSMonitoring/src/html/eos_path_size")
-def main(output_file=None, input_eos_file=None, static_html_dir=None):
+def main(output_file=None, non_ec_json=None, ec_json=None, static_html_dir=None):
+    """Main function combines xrdcp and EOS results then creates HTML page
     """
-        Main function combines xrdcp and EOS results then creates HTML page
-    """
-    # Get xrdcp command output as input to python script.
-    xrdcp_paths = get_paths_from_xrdcp(sys.stdin)
+    joint_update_time = get_update_time_of_file(non_ec_json, ec_json)
+    print("[INFO] Update time of input files:", joint_update_time)
 
-    # Get EOS values as pandas dataframe either from file or directly from EOS command
-    df = create_eos_df(input_eos_file)
-
-    # Filter dataframe to only include paths from xrdcp
-    df = df[df['path'].isin(xrdcp_paths)]
-
-    #  RECYCLE: divide these columns to 2
-    cols_to_divide = ["usedlogicalbytes", "maxlogicalbytes", "usedbytes", "maxbytes"]
-
-    # Resetting index sets index number to 0, so get nested value and divide to 2
-    recycle_dict = {k: v[0] / 2 for k, v in
-                    df.loc[df['path'] == RECYCLE, cols_to_divide].reset_index(drop=True).to_dict().items()}
-    df.loc[df['path'] == RECYCLE, cols_to_divide] = [recycle_dict[x] for x in cols_to_divide]  # Guarantees the order
-
-    # Calculate totals, after exclusions!
-    total = df[["usedlogicalbytes", "maxlogicalbytes", "usedbytes", "maxbytes"]].sum()
-    total_row = {
-        'Path': 'total',
-        'logical used(TB)': "{:,.2f}".format(total["usedlogicalbytes"] / TB_DENOMINATOR),
-        'logical quota(TB)': "{:,.2f}".format(total["maxlogicalbytes"] / TB_DENOMINATOR),
-        'raw used(TB)': "{:,.2f}".format(total["usedbytes"] / TB_DENOMINATOR),
-        'raw quota(TB)': "{:,.2f}".format(total["maxbytes"] / TB_DENOMINATOR),
-        'used/quota': "{:,.2f}%".format((total["usedlogicalbytes"] / total["maxlogicalbytes"]) * 100),
-        'logical/raw (quotas)': "{:,.1f}%".format((total["maxlogicalbytes"] / total["maxbytes"]) * 100),
-    }
-
-    # Clear inf and nan, also arrange percentage
-    df["logical/raw quotas"] = (df["maxlogicalbytes"] / df["maxbytes"]) * 100
-    df["logical/raw quotas"] = df["logical/raw quotas"].apply(
-        lambda x: "-" if np.isnan(x) or np.isinf(x) else "{:,.1f}%".format(x))
-    # Arrange percentage of used/quota
-    df["percentageusedbytes"] = df["percentageusedbytes"].apply(lambda x: "{:,.2f}%".format(x))
-
-    # Convert to TB
-    df["usedlogicalbytes"] = df["usedlogicalbytes"] / TB_DENOMINATOR
-    df["maxlogicalbytes"] = df["maxlogicalbytes"] / TB_DENOMINATOR
-    df["usedbytes"] = df["usedbytes"] / TB_DENOMINATOR
-    df["maxbytes"] = df["maxbytes"] / TB_DENOMINATOR
-
-    # Rename columns
-    df = df.rename(columns={
-        "path": "Path",
-        "usedlogicalbytes": "logical used(TB)",
-        "maxlogicalbytes": "logical quota(TB)",
-        "usedbytes": "raw used(TB)",
-        "maxbytes": "raw quota(TB)",
-        "percentageusedbytes": "used/quota",
-        "logical/raw quotas": "logical/raw (quotas)",
-    })
-    # Reorder
-    df = df[["Path", "logical used(TB)", "logical quota(TB)", "raw used(TB)", "raw quota(TB)", "used/quota",
-             "logical/raw (quotas)"]]
-    update_time = get_update_time(input_eos_file)
-    html = create_html(df=df,
-                       update_time=update_time,
-                       total_row=total_row,
-                       base_html_directory=static_html_dir)
-
+    df_non_ec = get_df_with_validation(non_ec_json, NON_EC_SCHEMA, NON_EC_COL_ORDER)
+    df_ec = get_df_with_validation(ec_json, EC_SCHEMA, EC_COL_ORDER)
+    main_html = create_main_html(df_non_ec, df_ec, joint_update_time, static_html_dir)
     with open(output_file, "w") as f:
-        f.write(html)
+        f.write(main_html)
 
 
 if __name__ == "__main__":
