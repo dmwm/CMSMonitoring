@@ -5,9 +5,11 @@
 . /cvmfs/sft.cern.ch/lcg/views/LCG_101/x86_64-centos7-gcc8-opt/setup.sh
 
 # Catch output to not print successful jobs stdout to email, print when failed
-if ! output=$(pip install --user schema 2>&1); then
-    echo "$output"
-    exit $?
+output=$(pip install --user schema 2>&1)
+ec=$?
+if [ $ec -ne 0 ]; then
+    echo "$output" - exit code: $ec
+    exit $ec
 fi
 
 if ! [ "$(python -c 'import sys; print(sys.version_info.major)')" = 3 ]; then
@@ -28,9 +30,10 @@ py_input_args=(
 )
 
 # Catch	output to not print successful jobs stdout to email, print when failed
-if ! output=$(
-    python "$HOME"/CMSMonitoring/src/python/CMSMonitoring/eos_path_size.py "${py_input_args[@]}" 2>&1
-); then
-    echo "$output"
-    exit $?
+output=$(python "$HOME"/CMSMonitoring/src/python/CMSMonitoring/eos_path_size.py "${py_input_args[@]}" 2>&1)
+ec=$?
+if [ $ec -ne 0 ]; then
+    echo "$output" - exit code: $ec
+    exit $ec
 fi
+
