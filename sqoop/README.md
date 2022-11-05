@@ -7,20 +7,26 @@ Main repository for sqoop dumps
 #### Environment variables
 
 - `WDIR`: working directory. `sqoop` base directory should be `$WDIR/sqoop`.
-- `CMSSQOOP_CONFIGS`: full path of configs.json file which contains configurable variables for sqoop dumps. It can
-  be `$WDIR/sqoop/configs.json`, but we **should not** define it as default
-  like `${CMSSQOOP_CONFIGS:-$WDIR/sqoop/configs.json}` which can be misused while testing and may mess up production
-  output directories. For tests, please give test file path; such as it can be provided via a K8s ConfigMap.
-- `CMSSQOOP_ENV`: for production, it should be `prod`. For test, it should be `test`. It will be used in PushGateway "
-  $env" tag.
+- `CMSSQOOP_CONFIGS`: full path of **configs.json** file which contains **HDFS paths** for each script. It can
+  be `$WDIR/sqoop/configs.json`, `$WDIR/sqoop/configs-test.json` or any other json(via ConfgiMap may be). If it is not provided, it will be set according to `CMSSQOOP_ENV` value.
+- `CMSSQOOP_ENV`: for production, it should be `prod`. For tests, it should be `test` or should not be set because it will be set as **test**.
+  - It will be used in PushGateway "$env" tag.
+
+
+> **How HDFS output paths of scripts are defined. Check run.sh for the logic.**
+>
+> - If `$CMSSQOOP_CONFIGS` is provided, in any case, HDFS output paths will be read from that JSON file.
+> - If `$CMSSQOOP_CONFIGS` is NOT provided:
+>     - If `$CMSSQOOP_ENV` is provided as `prod`, `$CMSSQOOP_CONFIGS` will look to `~/sqoop/configs.json`.
+>     - If `$CMSSQOOP_ENV` is NOT provided OR NOT `prod`, `$CMSSQOOP_CONFIGS` will look to `~/sqoop/configs-test.json`.
+> Why this logic: It should be both parametrized and secure.
+
 
 #### Other requirements
 
-- `configs.json` should be provided via `$CMSSQOOP_CONFIGS` env var, see `util_get_config_val` function
+- `configs.json`(HDFS output paths and PG url) can be provided via `$CMSSQOOP_CONFIGS` env var, see `util_get_config_val` function
   in `scripts/utils.sh`.
-- Please provide all secrets in `/etc/secrets/` directory (**[TODO]** this will be made configurable after new full dbs
-  dump
-  deployments)
+- Please provide all secrets in `/etc/secrets/` directory (**[TODO]** this will be made configurable after new full dbs dump deployments)
 - Required secrets (`$secrets` refers to cmsmonitoring/secrets, `$cmsmon-configs` refers to
   cmsmonitoring/cmsmon-configs repositories in gitlab):
     - rucio : $secrets/rucio/rucio
@@ -45,15 +51,13 @@ Main repository for sqoop dumps
 
 Everything should be testable.
 
-- [TODO make this configurable] Do not run `cronjobs.txt` directly. Remove HDFS size exporter part which sends HDFS sizes to ES using `monit` cli.
-  Suggestively use
-- Set `CMSSQOOP_ENV` as `test` or any other value than `prod`.
-- Provide test directories for sqoop dumps using `$CMSSQOOP_CONFIGS` which provides the JSON conf file location. See sqoop/configs.json for production values.
+- Set `CMSSQOOP_ENV` as `test` or any other value than `prod`. Then HDFS output paths will be defined by `sqoop/configs-test.json`.
+- OR, provide test directories for sqoop dumps via `$CMSSQOOP_CONFIGS`. See `sqoop/configs-test.json` for dev-test values.
+- Do not set `CMSSQOOP_ENV` as `prod` and do not set `$CMSSQOOP_CONFIGS` as `sqoop/configs.json` which is production configurations.
 
 ## Special dump implementation for full DBS dumps
 
-For `CMS_DBS3_PROD_*` schemas tables dumps takes so long time in normal ways. For that reason, their dumps are
-specialized as:
+For `CMS_DBS3_PROD_*` schemas tables dumps takes so long time in normal ways. For that reason, their dumps are specialized as:
 
 - Import kind is full table dump with direct connection.
 - Dump all tables to HDFS in compressed(-z) CSV format which is compatible with

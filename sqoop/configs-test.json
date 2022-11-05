@@ -1,0 +1,18 @@
+{
+  "PUSHGATEWAY_URL": "http://cms-monitoring.cern.ch:30091",
+  "dbs3_full_global.sh": "/tmp/cmssqoop/dev-test/dbs/PROD_GLOBAL",
+  "dbs3_full_phys01.sh": "/tmp/cmssqoop/dev-test/dbs/PROD_PHYS01",
+  "dbs3_full_phys02.sh": "/tmp/cmssqoop/dev-test/dbs/PROD_PHYS02",
+  "dbs3_full_phys03.sh": "/tmp/cmssqoop/dev-test/dbs/PROD_PHYS03",
+  "cms-aso.sh": "/tmp/cmssqoop/dev-test/CMS_ASO/filetransfersdb",
+  "cms-dbs3-blocks.sh": "/tmp/cmssqoop/dev-test/dbs3verify/CMS_DBS3_PROD_GLOBAL/blocks",
+  "cms-dbs3-datasets.sh": "/tmp/cmssqoop/dev-test/dbs3verify/CMS_DBS3_PROD_GLOBAL/datasets",
+  "cms-dbs3-files.sh": "/tmp/cmssqoop/dev-test/dbs3verify/CMS_DBS3_PROD_GLOBAL/files",
+  "cms-dbs3-full-copy.sh": "/tmp/cmssqoop/dev-test/CMS_DBS3_PROD_GLOBAL",
+  "cms-dbs3-full-copy-PHYS01.sh": "/tmp/cmssqoop/dev-test/CMS_DBS3_PROD_PHYS01",
+  "cms-dbs3-full-copy-PHYS02.sh": "/tmp/cmssqoop/dev-test/CMS_DBS3_PROD_PHYS02",
+  "cms-dbs3-full-copy-PHYS03.sh": "/tmp/cmssqoop/dev-test/CMS_DBS3_PROD_PHYS03",
+  "phedex-blk-replicas-snapshot.sh": "/tmp/cmssqoop/dev-test/phedex/block-replicas-snapshots/csv",
+  "phedex-file-catalog.sh": "/tmp/cmssqoop/dev-test/phedex/catalog/csv",
+  "rucio_table_dumps.sh": "/tmp/cmssqoop/dev-test/rucio"
+}
