@@ -29,8 +29,9 @@ function util4loge() {
 #######################################
 function util_get_config_val() {
     local key
+    key=$1
     # Get configs.json from environment variable
-    # Safe for keys which include dot inside or any other reserved keywords
+    # Safe for keys which include dot or any other reserved keywords
     value=$(jq --exit-status -r --arg k "$key" '.[$k]' <"$CMSSQOOP_CONFIGS")
     ec=$?
     if [ "$ec" -eq 0 ]; then
@@ -221,7 +222,7 @@ check_table_exist() {
     table=$1
     jdbc_url=$2
     username=$3
-    password=$3
+    password=$4
     # Redirect error logs to /dev/null. If count query returns 1, it means there is data, else no data or error.
     result=$(/usr/hdp/sqoop/bin/sqoop eval --connect "$jdbc_url" --username "$username" --password "$password" --query "select count(*) from ${table} where rownum<=1" 2>/dev/null)
     if echo "$result" | grep -q "1"; then
