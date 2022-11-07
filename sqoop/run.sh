@@ -1,17 +1,18 @@
 #!/bin/bash
 
+unset crondpid
+crondpid=$(cat /var/run/crond.pid)
+
 # Kerberos
 keytab=/etc/secrets/keytab
 principal=$(klist -k "$keytab" | tail -1 | awk '{print $2}')
-echo "principal=$principal"
 kinit "$principal" -k -t "$keytab"
 if [ $? == 1 ]; then
-    echo "Unable to perform kinit"
+    echo "$(date --rfc-3339=seconds) [ERROR] <$*> Unable to perform kinit, exiting" >/proc/$crondpid/fd/1 2>&1
     exit 1
 fi
-klist -k "$keytab"
 
-# get script dir to use for hardcoded pat configs json
+# get script dir
 script_dir="$(
     cd -- "$(dirname "$0")" >/dev/null 2>&1
     pwd -P
@@ -19,24 +20,24 @@ script_dir="$(
 
 # ------------------------------------------------------------------------------------------------- Check $CMSSQOOP_ENV
 if [[ -z $CMSSQOOP_ENV ]]; then
-    echo "[INFO] CMSSQOOP_ENV variable is NOT defined, setting it as 'test'."
+    # CMSSQOOP_ENV variable is NOT defined, setting it as 'test'
     export CMSSQOOP_ENV=test
 fi
 
 # --------------------------------------------------------------------------------------------- Check $CMSSQOOP_CONFIGS
 # Check configs.json is provided via env variable
 if [ ! -e "${CMSSQOOP_CONFIGS}" ]; then
-    echo "[INFO] CMSSQOOP_CONFIGS variable is not defined or not a file, will check CMSSQOOP_ENV variable to set."
+    echo "$(date --rfc-3339=seconds) [INFO] CMSSQOOP_CONFIGS variable is not defined or not a file, will check CMSSQOOP_ENV variable to set."
     if [ $CMSSQOOP_ENV = "prod" ]; then
-        # If no CMSSQOOP_CONFIGS provided and CMSSQOOP_ENV is provided as prod, set production paths as configs.json
+        # If no CMSSQOOP_CONFIGS provided and CMSSQOOP_ENV is provided as prod, set HDFS output paths via configs.json
         export CMSSQOOP_CONFIGS=$script_dir/configs.json
     else
+        # If no CMSSQOOP_CONFIGS and CMSSQOOP_ENV is provided, set dev HDFS output paths via configs-dev.json
         export CMSSQOOP_CONFIGS=$script_dir/configs-dev.json
     fi
 fi
 
-echo "[INFO] CMSSQOOP_ENV is ${CMSSQOOP_ENV}."
-echo "[INFO] CMSSQOOP_CONFIGS is ${CMSSQOOP_CONFIGS}."
+echo "$(date --rfc-3339=seconds) [INFO] CMSSQOOP_ENV=${CMSSQOOP_ENV}, CMSSQOOP_CONFIGS=${CMSSQOOP_CONFIGS}." >/proc/$crondpid/fd/1 2>&1
 # ---------------------------------------------------------------------------------------------------------------------
 
 # execute given script
@@ -45,6 +46,9 @@ ALERT_MANAGER_HOSTS="http://cms-monitoring.cern.ch:30093 http://cms-monitoring-h
 
 # Run all given inputs. To run them correctly, use $@; to get given input as string, use $*.
 if "$@"; then
+     echo "$(date --rfc-3339=seconds) [INFO]" "<$*> successfully finished" >/proc/$crondpid/fd/1 2>&1
+else
+    echo "$(date --rfc-3339=seconds) [ERROR]" "<$*> failed" >/proc/$crondpid/fd/1 2>&1
     expire=$(date -d '+2 hour' --rfc-3339=ns | tr ' ' 'T')
     for amhost in $ALERT_MANAGER_HOSTS; do
         amtool alert add sqoop_failure alertname='sqoop job failure' \

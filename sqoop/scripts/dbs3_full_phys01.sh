@@ -22,7 +22,7 @@ BASE_PATH=$(util_get_config_val "$myname")
 DAILY_BASE_PATH="${BASE_PATH}/$(date +%Y-%m-%d)"
 LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
 START_TIME=$(date +%s)
-pushg_dump_start_time "$myname" "DBS" "$SCHEMA"
+
 # -------------------------------------------------------------------------------- CHECKS
 if [ -f /etc/secrets/cmsr_cstring ]; then
     jdbc_url=$(sed '1q;d' /etc/secrets/cmsr_cstring)
@@ -44,6 +44,8 @@ sqoop_dump_dbs_cmd() {
         num_mappers=1
     fi
     util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $num_mappers .."
+    pushg_dump_start_time "$myname" "DBS" "$SCHEMA" "$TABLE"
+    #
     /usr/hdp/sqoop/bin/sqoop import -Dmapreduce.job.user.classpath.first=true -Doraoop.timestamp.string=false \
         -Dmapred.child.java.opts="-Djava.security.egd=file:/dev/../dev/urandom" -Ddfs.client.socket-timeout=120000 \
         --fetch-size 10000 --fields-terminated-by , --escaped-by \\ --optionally-enclosed-by '\"' \
@@ -51,7 +53,9 @@ sqoop_dump_dbs_cmd() {
         --connect "$jdbc_url" --username "$username" --password "$password" \
         --target-dir "$DAILY_BASE_PATH"/"$TABLE" --table "$SCHEMA"."$TABLE" \
         1>>"$LOG_FILE".stdout 2>>"$LOG_FILE".stderr
+    #
     util4logi "${SCHEMA}.${TABLE} : import finished successfully in $(util_secs_to_human "$(($(date +%s) - local_start_time))")"
+    pushg_dump_end_time "$myname" "DBS" "$SCHEMA" "$TABLE"
 }
 # ----------------------------------------------------------------------------------- RUN
 # successful table dump counter
@@ -87,6 +91,5 @@ dump_size=$(util_hdfs_size "$DAILY_BASE_PATH")
 pushg_dump_duration "$myname" "DBS" "$SCHEMA" $duration
 pushg_dump_size "$myname" "DBS" "$SCHEMA" "$dump_size"
 pushg_dump_table_count "$myname" "DBS" "$SCHEMA" $tables_success_counter
-pushg_dump_end_time "$myname" "DBS" "$SCHEMA"
 
 util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

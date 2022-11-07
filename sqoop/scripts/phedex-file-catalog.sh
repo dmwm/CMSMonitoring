@@ -9,7 +9,7 @@ BASE_PATH=$(util_get_config_val "$myname")
 START_TIME=$(date +%s)
 SCHEMA="CMS_TRANSFERMGMT"
 LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
-pushg_dump_start_time "$myname" "PHEDEX" "$SCHEMA"
+pushg_dump_start_time "$myname" "PHEDEX" "$SCHEMA" "CMS_TRANSFERMGMT_file_catalog"
 
 # --------------------------------------------------------------------------------- START
 JDBC_URL=$(sed '1q;d' /etc/secrets/cmsr_cstring)
@@ -54,6 +54,6 @@ fi
 
 # ---------------------------------------------------------------------------- STATISTICS
 duration=$(($(date +%s) - START_TIME))
-pushg_dump_end_time "$myname" "PHEDEX" "$SCHEMA"
 pushg_dump_duration "$myname" "PHEDEX" "$SCHEMA" $duration
-util4logi "all finished, time spent: $(util_secs_to_human $duration)"
+pushg_dump_end_time "$myname" "PHEDEX" "$SCHEMA" "CMS_TRANSFERMGMT_file_catalog"
+util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

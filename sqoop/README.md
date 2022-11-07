@@ -71,6 +71,28 @@ For `CMS_DBS3_PROD_*` schemas tables dumps takes so long time in normal ways. Fo
   in the table.
 - Table data checks run sequentially using simple SQL query
 
+## MONITORING
+
+Each sqoop import job for each TABLE sends start and end metrics to PushGateway. 
+
+Metrics schema is `cms_sqoop_dump_(start|end)_${db}_${table}`. I.e.: `cms_sqoop_dump_start_DBS_FILES`, `cms_sqoop_dump_start_RUCIO_rses`.
+
+Other metrics for the cron scripts. Depending on the script, whether importing 1 table or multiple tables, they include one or more below metrics:
+- `cms_sqoop_dump_duration`
+- `cms_sqoop_dump_size`
+- `cms_sqoop_dump_table_count`
+
+PushGateway metrics can be dangerous to use with same metric name but using more tags because of Prometheus scrape interval. Example problematic scenario:
+```text
+Let's assume Prometheus instance scrape PG jobs in each 15seconds. And let's assume we have a metric with "cms_sqoop_dump_start{}" with only one tag: "table"
+Within 15 seconds, let's assume you send below 3 metrics in the exaxct same order:
+cms_sqoop_dump_start{table=x} 1
+cms_sqoop_dump_start{table=y} 2
+cms_sqoop_dump_start{table=z} 3
+```
+A while later, when you check your prometheus, you'll see only 1 metric `cms_sqoop_dump_start{table=z} 3` which is normal and expected result. Instead we put table and DB names to metric names to not face with these kind of problems. You can use `__name__` metric in your PromQL queries, i.e. `{__name__=~"cms_sqoop_dump_start_.*"}` .
+
+
 ## TODO: Discuss degrading CMS_DBS3_PROD_PHYS* table dumps
 
 - It was suggested in October 2022 O&C week.

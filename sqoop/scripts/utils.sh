@@ -50,19 +50,22 @@ function util_get_config_val() {
 #   arg1: cron job script name ($0)
 #   arg2: database that dumped (Rucio/DBS)
 #   arg3: schema of the tables that are dumped
+#   arg4: table that is dumped
+# Metric name schema: cms_sqoop_dump_start_${db}_${table}
 #######################################
 function pushg_dump_start_time() {
-    local pushgateway_url env script db schema value
+    local pushgateway_url env script db schema table value
     pushgateway_url=$(util_get_config_val PUSHGATEWAY_URL)
     env=${CMSSQOOP_ENV:test}
     script=$1
     db=$2
     schema=$3
+    table=$4
     value=$(date +'%s')
-    cat <<EOF | curl --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
-# TYPE cms_sqoop_dump_start gauge
-# HELP cms_sqoop_dump_start Dump start time in UTC seconds.
-cms_sqoop_dump_start{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
+    cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
+# TYPE cms_sqoop_dump_start_${db}_${table} gauge
+# HELP cms_sqoop_dump_start_${db}_${table} Dump start time in UTC seconds.
+cms_sqoop_dump_start_${db}_${table}{env="${env}", script="${script}", db="${db}", schema="${schema}", table="${table}"} $value
 EOF
 }
 
@@ -72,19 +75,22 @@ EOF
 #   arg1: cron job script name ($0)
 #   arg2: database that dumped (Rucio/DBS)
 #   arg3: schema of the tables that are dumped
+#   arg4: table that is dumped
+# Metric name schema: cms_sqoop_dump_end_${db}_${table}
 #######################################
 function pushg_dump_end_time() {
-    local pushgateway_url env script db schema value
+    local pushgateway_url env script db schema table value
     pushgateway_url=$(util_get_config_val PUSHGATEWAY_URL)
     env=${CMSSQOOP_ENV:test}
     script=$1
     db=$2
     schema=$3
+    table=$4
     value=$(date +'%s')
-    cat <<EOF | curl --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
-# TYPE cms_sqoop_dump_end gauge
-# HELP cms_sqoop_dump_end Dump end time in UTC seconds.
-cms_sqoop_dump_end{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
+    cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
+# TYPE cms_sqoop_dump_end_${db}_${table} gauge
+# HELP cms_sqoop_dump_end_${db}_${table} Dump end time in UTC seconds.
+cms_sqoop_dump_end_${db}_${table}{env="${env}", script="${script}", db="${db}", schema="${schema}", table="${table}"} $value
 EOF
 }
 
@@ -104,7 +110,7 @@ function pushg_dump_duration() {
     db=$2
     schema=$3
     value=$4
-    cat <<EOF | curl --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
+    cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
 # TYPE cms_sqoop_dump_duration gauge
 # HELP cms_sqoop_dump_duration Total duration of sqoop dump in seconds.
 cms_sqoop_dump_duration{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
@@ -127,7 +133,7 @@ function pushg_dump_size() {
     db=$2
     schema=$3
     value=$4
-    cat <<EOF | curl --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
+    cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
 # TYPE cms_sqoop_dump_size gauge
 # HELP cms_sqoop_dump_size Total HDFS size of sqoop dumps in bytes.
 cms_sqoop_dump_size{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
@@ -150,7 +156,7 @@ function pushg_dump_table_count() {
     db=$2
     schema=$3
     value=$4
-    cat <<EOF | curl --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
+    cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
 # TYPE cms_sqoop_dump_table_count gauge
 # HELP cms_sqoop_dump_table_count Total number of tables are dumped.
 cms_sqoop_dump_table_count{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
