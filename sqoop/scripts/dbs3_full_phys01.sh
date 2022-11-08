@@ -16,12 +16,14 @@ DBS_TABLES="DBS_VERSIONS ASSOCIATED_FILES BRANCH_HASHES DATASET_RUNS MIGRATION_B
 # index-organized tables are not suitable for 40 mappers. In order to iterate table, sqoop run query in each iteration to find max/min unique if
 # that's why we'll set --num-mappers(-m) as 1 in these tables.
 NUM_MAPPER_1_TABLES="FILE_PARENTS"
+
 # ------------------------------------------------------------------------------- GLOBALS
 myname=$(basename "$0")
 BASE_PATH=$(util_get_config_val "$myname")
 DAILY_BASE_PATH="${BASE_PATH}/$(date +%Y-%m-%d)"
 LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
 START_TIME=$(date +%s)
+pg_metric_db="DBS_PHYS01"
 
 # -------------------------------------------------------------------------------- CHECKS
 if [ -f /etc/secrets/cmsr_cstring ]; then
@@ -32,6 +34,7 @@ else
     util4loge "Unable to read DBS credentials" >>"$LOG_FILE".stdout
     exit 1
 fi
+
 # ------------------------------------------------------------------------- DUMP FUNCTION
 # Dumps full dbs table in compressed CSV format
 sqoop_dump_dbs_cmd() {
@@ -44,7 +47,7 @@ sqoop_dump_dbs_cmd() {
         num_mappers=1
     fi
     util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $num_mappers .."
-    pushg_dump_start_time "$myname" "DBS" "$SCHEMA" "$TABLE"
+    pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
     #
     /usr/hdp/sqoop/bin/sqoop import -Dmapreduce.job.user.classpath.first=true -Doraoop.timestamp.string=false \
         -Dmapred.child.java.opts="-Djava.security.egd=file:/dev/../dev/urandom" -Ddfs.client.socket-timeout=120000 \
@@ -55,8 +58,9 @@ sqoop_dump_dbs_cmd() {
         1>>"$LOG_FILE".stdout 2>>"$LOG_FILE".stderr
     #
     util4logi "${SCHEMA}.${TABLE} : import finished successfully in $(util_secs_to_human "$(($(date +%s) - local_start_time))")"
-    pushg_dump_end_time "$myname" "DBS" "$SCHEMA" "$TABLE"
+    pushg_dump_end_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
 }
+
 # ----------------------------------------------------------------------------------- RUN
 # successful table dump counter
 tables_success_counter=0
@@ -81,6 +85,7 @@ wait
 
 # Give read permission to the new folder and sub folders after all dumps finished
 hadoop fs -chmod -R o+rx "$DAILY_BASE_PATH"
+
 # ---------------------------------------------------------------------------- STATISTICS
 # total duration
 duration=$(($(date +%s) - START_TIME))
@@ -88,8 +93,8 @@ duration=$(($(date +%s) - START_TIME))
 dump_size=$(util_hdfs_size "$DAILY_BASE_PATH")
 
 # Pushgateway
-pushg_dump_duration "$myname" "DBS" "$SCHEMA" $duration
-pushg_dump_size "$myname" "DBS" "$SCHEMA" "$dump_size"
-pushg_dump_table_count "$myname" "DBS" "$SCHEMA" $tables_success_counter
+pushg_dump_duration "$myname" "$pg_metric_db" "$SCHEMA" $duration
+pushg_dump_size "$myname" "$pg_metric_db" "$SCHEMA" "$dump_size"
+pushg_dump_table_count "$myname" "$pg_metric_db" "$SCHEMA" $tables_success_counter
 
 util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

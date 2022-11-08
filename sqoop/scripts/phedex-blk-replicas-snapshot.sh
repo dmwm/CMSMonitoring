@@ -9,8 +9,9 @@ BASE_PATH=$(util_get_config_val "$myname")
 START_TIME=$(date +%s)
 SCHEMA="CMS_TRANSFERMGMT"
 LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
-# PG will keep table name as script name since this is a custom import
-pushg_dump_start_time "$myname" "PHEDEX" "$SCHEMA" "CMS_TRANSFERMGMT_replicas"
+pg_metric_db="PHEDEX"
+pg_metric_table="CMS_TRANSFERMGMT_replicas"
+pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
 
 # --------------------------------------------------------------------------------- START
 #BASE_PATH="transfermgmt"
@@ -44,6 +45,6 @@ fi
 
 # ---------------------------------------------------------------------------- STATISTICS
 duration=$(($(date +%s) - START_TIME))
-pushg_dump_duration "$myname" "PHEDEX" "$SCHEMA" $duration
-pushg_dump_end_time "$myname" "PHEDEX" "$SCHEMA" "CMS_TRANSFERMGMT_replicas"
+pushg_dump_duration "$myname" "$pg_metric_db" "$SCHEMA" $duration
+pushg_dump_end_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
 util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

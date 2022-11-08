@@ -9,7 +9,9 @@ BASE_PATH=$(util_get_config_val "$myname")
 START_TIME=$(date +%s)
 SCHEMA="CMS_DBS3_PROD_GLOBAL_OWNER"
 LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
-pushg_dump_start_time "$myname" "DBS" "$SCHEMA" "BLOCKS_custom"
+pg_metric_db="DBS_CUSTOM"
+pg_metric_table="BLOCKS"
+pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
 
 # --------------------------------------------------------------------------------- START
 JDBC_URL=$(sed '1q;d' /etc/secrets/cmsr_cstring)
@@ -54,6 +56,6 @@ fi
 
 # ---------------------------------------------------------------------------- STATISTICS
 duration=$(($(date +%s) - START_TIME))
-pushg_dump_duration "$myname" "DBS" "$SCHEMA" $duration
-pushg_dump_end_time "$myname" "DBS" "$SCHEMA" "BLOCKS"
+pushg_dump_duration "$myname" "$pg_metric_db" "$SCHEMA" $duration
+pushg_dump_end_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
 util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

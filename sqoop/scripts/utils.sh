@@ -44,6 +44,16 @@ function util_get_config_val() {
 # -------------------------------------------------------------------------------------------------
 
 # ----------------------------------- PUSHGATEWAY UTILS --------------------------------------------
+
+#######################################
+# Returns left part of the dot containing string
+# Arguments:
+#   arg1: string
+#######################################
+function util_dotless_name() {
+    echo "$1" | cut -f1 -d"."
+}
+
 #######################################
 # Send sqoop start time metric to pg
 # Arguments:
@@ -103,17 +113,18 @@ EOF
 #   arg4: value duration in seconds
 #######################################
 function pushg_dump_duration() {
-    local pushgateway_url env script db schema value
+    local pushgateway_url env script db schema value dotless_script_name
     pushgateway_url=$(util_get_config_val PUSHGATEWAY_URL)
     env=${CMSSQOOP_ENV:test}
     script=$1
     db=$2
     schema=$3
     value=$4
+    dotless_script_name=$(util_dotless_name "$script")
     cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
-# TYPE cms_sqoop_dump_duration gauge
-# HELP cms_sqoop_dump_duration Total duration of sqoop dump in seconds.
-cms_sqoop_dump_duration{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
+# TYPE cms_sqoop_dump_duration_${dotless_script_name} gauge
+# HELP cms_sqoop_dump_duration_${dotless_script_name} Total duration of sqoop dump in seconds.
+cms_sqoop_dump_duration_${dotless_script_name}{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
 EOF
 }
 
@@ -126,17 +137,18 @@ EOF
 #   arg4: value size in bytes
 #######################################
 function pushg_dump_size() {
-    local pushgateway_url env script db schema value
+    local pushgateway_url env script db schema value dotless_script_name
     pushgateway_url=$(util_get_config_val PUSHGATEWAY_URL)
     env=${CMSSQOOP_ENV:test}
     script=$1
     db=$2
     schema=$3
     value=$4
+    dotless_script_name=$(util_dotless_name "$script")
     cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
-# TYPE cms_sqoop_dump_size gauge
-# HELP cms_sqoop_dump_size Total HDFS size of sqoop dumps in bytes.
-cms_sqoop_dump_size{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
+# TYPE cms_sqoop_dump_size_${dotless_script_name} gauge
+# HELP cms_sqoop_dump_size_${dotless_script_name} Total HDFS size of sqoop dumps in bytes.
+cms_sqoop_dump_size_${dotless_script_name}{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
 EOF
 }
 
@@ -149,34 +161,20 @@ EOF
 #   arg4: value number of tables dumped
 #######################################
 function pushg_dump_table_count() {
-    local pushgateway_url env script db schema value
+    local pushgateway_url env script db schema value dotless_script_name
     pushgateway_url=$(util_get_config_val PUSHGATEWAY_URL)
     env=${CMSSQOOP_ENV:test}
     script=$1
     db=$2
     schema=$3
     value=$4
+    dotless_script_name=$(util_dotless_name "$script")
     cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
-# TYPE cms_sqoop_dump_table_count gauge
-# HELP cms_sqoop_dump_table_count Total number of tables are dumped.
-cms_sqoop_dump_table_count{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
+# TYPE cms_sqoop_dump_table_count_${dotless_script_name} gauge
+# HELP cms_sqoop_dump_table_count_${dotless_script_name} Total number of tables are dumped.
+cms_sqoop_dump_table_count_${dotless_script_name}{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
 EOF
 }
-
-#######################################
-# Test function to test metrics
-#######################################
-function test_send_metrics_to_pg() {
-    # dump duration is 10 minutes
-    pushg_dump_duration "test.sh" "TESTDB" "TEST_SCHEMA" 600
-
-    # dumped file size in HDFS : hadoop fs -du -s /FOO | awk -F' ' '{print $1}'
-    pushg_dump_size "test.sh" "TESTDB" "TEST_SCHEMA" 1000000
-
-    # number of tables are dumped in this script is 11
-    pushg_dump_table_count "test.sh" "TESTDB" "TEST_SCHEMA" 11
-}
-# -------------------------------------------------------------------------------------------------
 
 # ----------------------------------------- OTHER UTILS -------------------------------------------
 #######################################
