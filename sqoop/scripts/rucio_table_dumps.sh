@@ -14,6 +14,9 @@ BASE_PATH=$(util_get_config_val "$myname")
 DAILY_BASE_PATH=${BASE_PATH}/$(date +%Y-%m-%d)
 START_TIME=$(date +%s)
 LOG_FILE=log/$(date +'%F_%H%M%S')_$(basename "$0")
+pg_metric_db="RUCIO_PROD"
+util4logi "CMSSQOOP_ENV=${CMSSQOOP_ENV}, CMSSQOOP_CONFIGS=${CMSSQOOP_CONFIGS}." >>"$LOG_FILE".stdout
+
 # --------------------------------------------------------------------------------- UTILS
 trap 'onFailExit' ERR
 onFailExit() {
@@ -21,6 +24,7 @@ onFailExit() {
     util4loge "FAILED" >>"$LOG_FILE".stdout
     exit 1
 }
+
 # ------------------------------------------------------------------------- DUMP FUNCTION
 # Full dump rucio table in avro format
 sqoop_full_dump_rucio_cmd() {
@@ -30,7 +34,7 @@ sqoop_full_dump_rucio_cmd() {
     kinit -R
     TABLE=$1
     util4logi "${SCHEMA}.${TABLE} : import starting.. "
-    pushg_dump_start_time "$myname" "RUCIO" "$SCHEMA" "$TABLE"
+    pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
     #
     /usr/hdp/sqoop/bin/sqoop import \
         -Dmapreduce.job.user.classpath.first=true \
@@ -49,7 +53,7 @@ sqoop_full_dump_rucio_cmd() {
         1>>"$LOG_FILE".stdout 2>>"$LOG_FILE".stderr
     #
     util4logi "${SCHEMA}.${TABLE} : import finished successfully in $(util_secs_to_human "$(($(date +%s) - local_start_time))") "
-    pushg_dump_end_time "$myname" "RUCIO" "$SCHEMA" "$TABLE"
+    pushg_dump_end_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
 }
 # ---------------------------------------------------------------------------------------
 if [ -f /etc/secrets/rucio ]; then
@@ -80,6 +84,6 @@ dump_size=$(util_hdfs_size "$DAILY_BASE_PATH")
 
 # ---------------------------------------------------------------------------- STATISTICS
 duration=$(($(date +%s) - START_TIME))
-pushg_dump_duration "$myname" "RUCIO" "$SCHEMA" $duration
-pushg_dump_size "$myname" "DBS" "$SCHEMA" "$dump_size"
+pushg_dump_duration "$myname" "$pg_metric_db" "$SCHEMA" $duration
+pushg_dump_size "$myname" "$pg_metric_db" "$SCHEMA" "$dump_size"
 util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

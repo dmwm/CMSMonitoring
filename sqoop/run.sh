@@ -27,7 +27,7 @@ fi
 # --------------------------------------------------------------------------------------------- Check $CMSSQOOP_CONFIGS
 # Check configs.json is provided via env variable
 if [ ! -e "${CMSSQOOP_CONFIGS}" ]; then
-    echo "$(date --rfc-3339=seconds) [INFO] CMSSQOOP_CONFIGS variable is not defined or not a file, will check CMSSQOOP_ENV variable to set."
+    # CMSSQOOP_CONFIGS variable is not defined or not a file, will check CMSSQOOP_ENV variable to set
     if [ $CMSSQOOP_ENV = "prod" ]; then
         # If no CMSSQOOP_CONFIGS provided and CMSSQOOP_ENV is provided as prod, set HDFS output paths via configs.json
         export CMSSQOOP_CONFIGS=$script_dir/configs.json
@@ -37,7 +37,6 @@ if [ ! -e "${CMSSQOOP_CONFIGS}" ]; then
     fi
 fi
 
-echo "$(date --rfc-3339=seconds) [INFO] CMSSQOOP_ENV=${CMSSQOOP_ENV}, CMSSQOOP_CONFIGS=${CMSSQOOP_CONFIGS}." >/proc/$crondpid/fd/1 2>&1
 # ---------------------------------------------------------------------------------------------------------------------
 
 # execute given script
@@ -46,7 +45,7 @@ ALERT_MANAGER_HOSTS="http://cms-monitoring.cern.ch:30093 http://cms-monitoring-h
 
 # Run all given inputs. To run them correctly, use $@; to get given input as string, use $*.
 if "$@"; then
-     echo "$(date --rfc-3339=seconds) [INFO]" "<$*> successfully finished" >/proc/$crondpid/fd/1 2>&1
+    echo "$(date --rfc-3339=seconds) [INFO]" "<$*> successfully finished" >/proc/$crondpid/fd/1 2>&1
 else
     echo "$(date --rfc-3339=seconds) [ERROR]" "<$*> failed" >/proc/$crondpid/fd/1 2>&1
     expire=$(date -d '+2 hour' --rfc-3339=ns | tr ' ' 'T')

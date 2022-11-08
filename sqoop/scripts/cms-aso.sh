@@ -9,7 +9,11 @@ BASE_PATH=$(util_get_config_val "$myname")
 START_TIME=$(date +%s)
 SCHEMA="CMS_ANALYSIS_REQMGR"
 LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
-pushg_dump_start_time "$myname" "ASO" "$SCHEMA" "ASO_custom"
+pg_metric_db="ASO"
+pg_metric_table="ASO_custom"
+pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
+
+util4logi "CMSSQOOP_ENV=${CMSSQOOP_ENV}, CMSSQOOP_CONFIGS=${CMSSQOOP_CONFIGS}." >>"$LOG_FILE".stdout
 
 # --------------------------------------------------------------------------------- START
 JDBC_URL=$(sed '1q;d' /etc/secrets/cmsr_cstring)
@@ -25,7 +29,6 @@ END_DATE=$(date +'%F' -d "$START_DATE + 1 day")
 
 START_DATE_S=$(date +'%s' -d "$START_DATE")
 END_DATE_S=$(date +'%s' -d "$END_DATE")
-
 
 OUTPUT_FOLDER=$BASE_PATH/diff/date=$START_DATE
 MERGED_FOLDER=$BASE_PATH/merged
@@ -55,6 +58,6 @@ fi
 
 # ---------------------------------------------------------------------------- STATISTICS
 duration=$(($(date +%s) - START_TIME))
-pushg_dump_duration "$myname" "RUCIO" "$SCHEMA" $duration
-pushg_dump_end_time "$myname" "RUCIO" "$SCHEMA" "ASO"
+pushg_dump_duration "$myname" "$pg_metric_db" "$SCHEMA" $duration
+pushg_dump_end_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
 util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

@@ -1,3 +1,5 @@
+# Disable sendmail
+MAILTO=""
 #
 # Sqoop jobs taken from AWG and CERN DB IT group to dump CMS databases
 #
