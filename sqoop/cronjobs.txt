@@ -26,14 +26,14 @@ MAILTO=""
 32 03 * * *   cd /data/sqoop; ./run.sh ./scripts/cms-dbs3-blocks.sh
 37 03 * * *   cd /data/sqoop; ./run.sh ./scripts/cms-dbs3-files.sh
 
-# DBS full dumps
-00 04 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_phys01.sh
-00 05 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_phys02.sh
-00 06 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_phys03.sh
-30 07 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_global.sh
-
 # RUCIO dumps
-30 06 * * * cd /data/sqoop; ./run.sh ./scripts/rucio_table_dumps.sh
+00 04 * * * cd /data/sqoop; ./run.sh ./scripts/rucio_table_dumps.sh
+
+# DBS full dumps
+00 05 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_global.sh
+00 06 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_phys01.sh
+00 07 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_phys02.sh
+00 08 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_phys03.sh
 
 # Run only in production, paranthesis are important
 00 14 * * * [[ $CMSSQOOP_ENV == "prod" ]] && ( cd /data; /data/sqoop/run.sh /data/monit -query="stats" -token /etc/secrets/token -hdfs=/etc/secrets/hdfs.json -creds=/etc/secrets/cms-es-size.json -verbose 1 -inject 2>&1 1>& monit.log )

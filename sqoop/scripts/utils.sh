@@ -175,6 +175,49 @@ function pushg_dump_table_count() {
 cms_sqoop_dump_table_count_${dotless_script_name}{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
 EOF
 }
+# -------------------------------------------------------------------------------------------------
+
+# ------------------------------- LEGACY REQUIRED UTILS -------------------------------------------
+#######################################
+# Copies daily folder to "new" and move it to "current" folder
+#   - Why: because copy operation expensive and takes time, but "mv" is fast.
+#   - "current" and "old" folder will be production folder and other folders will be just temporaries.
+#   - "old" folder will be less than 2 days old instead of ~2 weeks old.
+#   - In time, we will force our users to use daily folders instead of these. Then we can remove this procedure.
+# Arguments:
+#   arg1: daily base directory
+#   arg2: target base directory without "current" or "new" sub folders.
+#   arg3: base log files prefix (the part before stderr or stdout)
+#######################################
+# shellcheck disable=SC2004
+function copy_to_legacy_folders() {
+    local DAILY_BASE_DIR TARGET_BASE_DIR LOG_FILE
+    DAILY_BASE_DIR=$1
+    TARGET_BASE_DIR=$2
+    LOG_FILE=$3
+    kinit -R
+    error=0
+    if hdfs dfs -test -e "${TARGET_BASE_DIR}/new"; then
+        echo "${TARGET_BASE_DIR}/new exists, cleaning..." >>"$LOG_FILE".stdout 2>&1
+        hdfs dfs -rm -r -skipTrash "${TARGET_BASE_DIR}/new" >>"$LOG_FILE".stdout 2>&1
+        error=$(($error + $?))
+    fi
+
+    # Copy daily directory results to target new directory
+    hdfs dfs -cp "${DAILY_BASE_DIR}" "${TARGET_BASE_DIR}/new" >>"$LOG_FILE".stdout 2>&1
+    error=$(($error + $?))
+
+    # Move current to new and move new to current [Fastest way, since mv is faster]
+    hdfs dfs -mv "${TARGET_BASE_DIR}/current" "${TARGET_BASE_DIR}/old" &&
+        hdfs dfs -mv "${TARGET_BASE_DIR}/new" "${TARGET_BASE_DIR}/current" >>"$LOG_FILE".stdout 2>&1
+    error=$(($error + $?))
+
+    if [ $error -ne 0 ]; then
+        util4loge "Daily to current folder copying is failed" >>"$LOG_FILE".stdout 2>&1
+        exit 1
+    fi
+}
+# -------------------------------------------------------------------------------------------------
 
 # ----------------------------------------- OTHER UTILS -------------------------------------------
 #######################################

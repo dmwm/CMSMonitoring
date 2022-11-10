@@ -22,6 +22,9 @@ myname=$(basename "$0")
 BASE_PATH=$(util_get_config_val "$myname")
 DAILY_BASE_PATH="${BASE_PATH}/$(date +%Y-%m-%d)"
 LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
+
+# Daily data will be copied to this folder until all our users switch to daily folders usage.
+LEGACY_PROD_PATH="/project/awg/cms/CMS_DBS3_PROD_PHYS01"
 START_TIME=$(date +%s)
 pg_metric_db="DBS_PHYS01"
 util4logi "CMSSQOOP_ENV=${CMSSQOOP_ENV}, CMSSQOOP_CONFIGS=${CMSSQOOP_CONFIGS}." >>"$LOG_FILE".stdout
@@ -87,6 +90,10 @@ wait
 # Give read permission to the new folder and sub folders after all dumps finished
 hadoop fs -chmod -R o+rx "$DAILY_BASE_PATH"
 
+# Copy daily results to legacy production folder
+if [ "$CMSSQOOP_ENV" = "prod" ]; then
+    copy_to_legacy_folders "$DAILY_BASE_PATH" "$LEGACY_PROD_PATH" "$LOG_FILE"
+fi
 # ---------------------------------------------------------------------------- STATISTICS
 # total duration
 duration=$(($(date +%s) - START_TIME))
