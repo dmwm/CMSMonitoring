@@ -46,8 +46,8 @@
         if (input_bytes === 0) {
             return "0.00 B";
         }
-        var e = Math.floor(Math.log(input_bytes) / Math.log(1024));
-        return (input_bytes / Math.pow(1024, e)).toFixed(2) + ' ' + ' KMGTPEZY'.charAt(e) + 'B';
+        var e = Math.floor(Math.log(input_bytes) / Math.log(1000));
+        return (input_bytes / Math.pow(1000, e)).toFixed(2) + ' ' + ' KMGTPEZY'.charAt(e) + 'B';
     }
     $(document).ready(function () {
         // To be able to expand/collapse multiple rows, each datatable ID should be different
