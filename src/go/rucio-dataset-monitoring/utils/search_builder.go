@@ -12,15 +12,14 @@ import (
 	"time"
 )
 
-// KB to EB bytes definition, uses x1024, not x1000
+// KB to EB bytes definition, uses x1000
 const (
-	_          = iota // ignore first value by assigning to blank identifier
-	KB float64 = 1 << (10 * iota)
-	MB
-	GB
-	TB
-	PB
-	EB
+	KB float64 = 1e3
+	MB float64 = 1e6
+	GB float64 = 1e9
+	TB float64 = 1e12
+	PB float64 = 1e15
+	EB float64 = 1e18
 )
 
 // strToInt converts user string to int
