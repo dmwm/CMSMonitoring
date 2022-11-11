@@ -1,51 +1,63 @@
 #!/bin/bash
-. $(dirname $0)/sqoop_utils.sh
+. "${WDIR}/sqoop/scripts/sqoop_utils.sh"
+. "${WDIR}/sqoop/scripts/utils.sh"
 setJava
 
-BASE_PATH=${BASE_PATH:-/project/awg/cms/dbs3verify/CMS_DBS3_PROD_GLOBAL/blocks}
-JDBC_URL=$(sed '1q;d' cmsr_cstring)
-USERNAME=$(sed '2q;d' cmsr_cstring)
-PASSWORD=$(sed '3q;d' cmsr_cstring)
+TZ=UTC
+myname=$(basename "$0")
+BASE_PATH=$(util_get_config_val "$myname")
+START_TIME=$(date +%s)
+SCHEMA="CMS_DBS3_PROD_GLOBAL_OWNER"
+LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
+pg_metric_db="DBS_CUSTOM"
+pg_metric_table="BLOCKS"
+pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
 
-me=`basename $0`_$$
+util4logi "CMSSQOOP_ENV=${CMSSQOOP_ENV}, CMSSQOOP_CONFIGS=${CMSSQOOP_CONFIGS}." >>"$LOG_FILE".stdout
 
-if [ -n "$1" ]
-then
-	START_DATE=$1
+# --------------------------------------------------------------------------------- START
+JDBC_URL=$(sed '1q;d' /etc/secrets/cmsr_cstring)
+USERNAME=$(sed '2q;d' /etc/secrets/cmsr_cstring)
+PASSWORD=$(sed '3q;d' /etc/secrets/cmsr_cstring)
+
+if [ -n "$1" ]; then
+    START_DATE=$1
 else
-	START_DATE=`date +'%F' -d "1 day ago"`
+    START_DATE=$(date +'%F' -d "1 day ago")
 fi
+END_DATE=$(date +'%F' -d "$START_DATE + 1 day")
 
-year=`date +'%Y' -d "$START_DATE"`
-month=`date +'%-m' -d "$START_DATE"`
-day=`date +'%-d' -d "$START_DATE"`
-END_DATE=`date +'%F' -d "$START_DATE + 1 day"`
-
-START_DATE_S=`date +'%s' -d "$START_DATE"`
-END_DATE_S=`date +'%s' -d "$END_DATE"`
-
-LOG_FILE=log/`date +'%F_%H%m%S'`_`basename $0`
+START_DATE_S=$(date +'%s' -d "$START_DATE")
+END_DATE_S=$(date +'%s' -d "$END_DATE")
 
 OUTPUT_FOLDER=$BASE_PATH/diff/date=$START_DATE
 MERGED_FOLDER=$BASE_PATH/merged
-echo "Timerange: $START_DATE to $END_DATE" >> $LOG_FILE.cron
-echo "Folder: $OUTPUT_FOLDER" >> $LOG_FILE.cron
-echo "quering..." >> $LOG_FILE.cron
-#exit;
+{
+    echo "Timerange: $START_DATE to $END_DATE"
+    echo "Folder: $OUTPUT_FOLDER"
+    echo "querying..."
+} >>"$LOG_FILE".cron
 
-sqoop import -Dmapreduce.job.user.classpath.first=true -Ddfs.client.socket-timeout=120000 --direct --connect $JDBC_URL --fetch-size 10000 --username $USERNAME --password $PASSWORD --target-dir $OUTPUT_FOLDER -m 1 --query \
-"SELECT D.DATASET_ID, B.BLOCK_NAME, B.OPEN_FOR_WRITING, B.BLOCK_SIZE, B.FILE_COUNT FROM CMS_DBS3_PROD_GLOBAL_OWNER.BLOCKS B JOIN CMS_DBS3_PROD_GLOBAL_OWNER.DATASETS D ON D.DATASET_ID = B.DATASET_ID  where ( B.creation_date >= ${START_DATE_S} or B.LAST_MODIFICATION_DATE >= ${START_DATE_S} ) and ( B.creation_date < ${END_DATE_S} and B.LAST_MODIFICATION_DATE < ${END_DATE_S} ) AND \$CONDITIONS" \
---fields-terminated-by , --escaped-by \\ --optionally-enclosed-by '\"' \
-1>$LOG_FILE.stdout 2>$LOG_FILE.stderr
+sqoop import \
+    -Dmapreduce.job.user.classpath.first=true -Ddfs.client.socket-timeout=120000 \
+    --direct --connect "$JDBC_URL" --fetch-size 10000 --username "$USERNAME" --password "$PASSWORD" --target-dir "$OUTPUT_FOLDER" \
+    -m 1 --query \
+    "SELECT D.DATASET_ID, B.BLOCK_NAME, B.OPEN_FOR_WRITING, B.BLOCK_SIZE, B.FILE_COUNT FROM CMS_DBS3_PROD_GLOBAL_OWNER.BLOCKS B JOIN CMS_DBS3_PROD_GLOBAL_OWNER.DATASETS D ON D.DATASET_ID = B.DATASET_ID  where ( B.creation_date >= ${START_DATE_S} or B.LAST_MODIFICATION_DATE >= ${START_DATE_S} ) and ( B.creation_date < ${END_DATE_S} and B.LAST_MODIFICATION_DATE < ${END_DATE_S} ) AND \$CONDITIONS" \
+    --fields-terminated-by , --escaped-by \\ --optionally-enclosed-by '\"' \
+    1>"$LOG_FILE".stdout 2>"$LOG_FILE".stderr
 
-OUTPUT_ERROR=`cat $LOG_FILE.stderr | egrep "ERROR tool.ImportTool: Error during import: Import job failed!"`
-TRANSF_INFO=`cat $LOG_FILE.stderr | egrep "INFO mapreduce.ImportJobBase: Transferred"`
+OUTPUT_ERROR=$(grep -E "ERROR tool.ImportTool: Error during import: Import job failed!" <"$LOG_FILE".stderr)
+TRANSF_INFO=$(grep -E "INFO mapreduce.ImportJobBase: Transferred" <"$LOG_FILE".stderr)
 
-if [[ $OUTPUT_ERROR == *"ERROR"* || ! $TRANSF_INFO == *"INFO"* ]]
-then
-	echo "Error occured, check $LOG_FILE"
-	sendMail $LOG_FILE.stdout cms-dbs3-blocks $START_DATE
-	sendMail $LOG_FILE.stderr cms-dbs3-blocks $START_DATE
+if [[ $OUTPUT_ERROR == *"ERROR"* || ! $TRANSF_INFO == *"INFO"* ]]; then
+    util4loge "Error occurred, check $LOG_FILE"
+    exit 1
 else
-	hdfs dfs -cat $OUTPUT_FOLDER/part-m-00000 | hdfs dfs -appendToFile - $MERGED_FOLDER/part-m-00000
+    hdfs dfs -cat "$OUTPUT_FOLDER"/part-m-00000 | hdfs dfs -appendToFile - "$MERGED_FOLDER"/part-m-00000
 fi
+
+# ---------------------------------------------------------------------------- STATISTICS
+duration=$(($(date +%s) - START_TIME))
+pushg_dump_duration "$myname" "$pg_metric_db" "$SCHEMA" $duration
+pushg_dump_end_time "$myname" "$pg_metric_db" "$SCHEMA" "$pg_metric_table"
+util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

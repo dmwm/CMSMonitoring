@@ -3,9 +3,9 @@
 setJava
 
 BASE_PATH="/project/awg/cms/jm-data-popularity/avro-snappy"
-JDBC_URL=$(sed '1q;d' lcgr_cstring)
-USERNAME=$(sed '2q;d' lcgr_cstring)
-PASSWORD=$(sed '3q;d' lcgr_cstring)
+JDBC_URL=$(sed '1q;d' /etc/secrets/lcgr_cstring)
+USERNAME=$(sed '2q;d' /etc/secrets/lcgr_cstring)
+PASSWORD=$(sed '3q;d' /etc/secrets/lcgr_cstring)
 
 me=`basename $0`_$$
 
@@ -21,7 +21,7 @@ month=`date +'%-m' -d "$START_DATE"`
 day=`date +'%-d' -d "$START_DATE"`
 END_DATE=`date +'%Y-%m-%d' -d "$START_DATE + 1 day"`
 
-LOG_FILE=log/`date +'%F_%H%m%S'`_`basename $0`
+LOG_FILE=log/`date +'%F_%H%M%S'`_`basename $0`
 
 OUTPUT_FOLDER=$BASE_PATH/year=$year/month=$month/day=$day
 hdfs dfs -rm -r -f $OUTPUT_FOLDER

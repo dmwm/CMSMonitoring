@@ -5,9 +5,9 @@ setJava
 ##$CONFIG###
 
 
-export JDBC_URL=$(sed '1q;d' cmsr_cstring)
-export USERNAME=$(sed '2q;d' cmsr_cstring)
-export PASSWORD=$(sed '3q;d' cmsr_cstring)
+export JDBC_URL=$(sed '1q;d' /etc/secrets/cmsr_cstring)
+export USERNAME=$(sed '2q;d' /etc/secrets/cmsr_cstring)
+export PASSWORD=$(sed '3q;d' /etc/secrets/cmsr_cstring)
 
 export BASE_PATH=${BASE_PATH:-/project/awg/cms/CMS_DBS3_PROD_PHYS01}
 export SCHEMA="CMS_DBS3_PROD_PHYS01_OWNER"
@@ -34,7 +34,7 @@ day=`date +'%-d' -d "$START_DATE"`
 
 export START_DATE_S=`date +'%s' -d "$START_DATE"`
 
-export LOG_FILE=log/`date +'%F_%H%m%S'`_`basename $0`
+export LOG_FILE=log/`date +'%F_%H%M%S'`_`basename $0`
 
 clean
 
