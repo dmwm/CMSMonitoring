@@ -207,7 +207,13 @@ function copy_to_legacy_folders() {
     hdfs dfs -cp "${DAILY_BASE_DIR}" "${TARGET_BASE_DIR}/new" >>"$LOG_FILE".stdout 2>&1
     error=$(($error + $?))
 
-    # Move current to new and move new to current [Fastest way, since mv is faster]
+    if hdfs dfs -test -e "${TARGET_BASE_DIR}/old"; then
+        echo "${TARGET_BASE_DIR}/old exists, cleaning..." >>"$LOG_FILE".stdout 2>&1
+        hdfs dfs -rm -r -skipTrash "${TARGET_BASE_DIR}/old" >>"$LOG_FILE".stdout 2>&1
+        error=$(($error + $?))
+    fi
+
+    # Move current to old and move new to current [Fastest way, since mv is faster]
     hdfs dfs -mv "${TARGET_BASE_DIR}/current" "${TARGET_BASE_DIR}/old" &&
         hdfs dfs -mv "${TARGET_BASE_DIR}/new" "${TARGET_BASE_DIR}/current" >>"$LOG_FILE".stdout 2>&1
     error=$(($error + $?))
