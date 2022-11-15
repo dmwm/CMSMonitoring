@@ -13,15 +13,14 @@ TZ=UTC
 # --------------------------------------------------------------------------------- PREPS
 SCHEMA="CMS_DBS3_PROD_GLOBAL_OWNER"
 # Sorted in ascending size order which is the suggested order to decrease run time
-DBS_TABLES="DATASET_ACCESS_TYPES FILE_DATA_TYPES \
+DBS_TABLES_SMALL="DATASET_ACCESS_TYPES FILE_DATA_TYPES \
  PRIMARY_DS_TYPES APPLICATION_EXECUTABLES PHYSICS_GROUPS DATA_TIERS PROCESSING_ERAS RELEASE_VERSIONS ACQUISITION_ERAS \
  PARAMETER_SET_HASHES PRIMARY_DATASETS PROCESSED_DATASETS OUTPUT_MODULE_CONFIGS DATASET_PARENTS DATASET_OUTPUT_MOD_CONFIGS \
- DATASETS BLOCK_PARENTS BLOCKS FILE_OUTPUT_MOD_CONFIGS FILE_PARENTS FILES FILE_LUMIS "
-
-# For small tables we don't need to set mapper count more than 1.
-# index-organized tables are not suitable for 40 mappers. In order to iterate table, sqoop run query in each iteration to find max/min unique if
-# that's why we'll set --num-mappers(-m) as 1 in these tables. That's why "FILE_PARENTS" is not in below list.
-NUM_MAPPER_40_TABLES="BLOCKS FILE_OUTPUT_MOD_CONFIGS FILES FILE_LUMIS"
+ DATASETS BLOCK_PARENTS "
+DBS_TABLES_BIG="BLOCKS FILE_OUTPUT_MOD_CONFIGS FILES FILE_LUMIS "
+# Index-organized tables are not suitable for more than 1 mapper even their size is big.
+# In order to iterate table, sqoop run query in each iteration to find max/min unique which takes so much time. That's why we'll set --num-mappers(-m) as 1 in these tables.
+DBS_TABLES_BIG_NUM_MAPPERS_1="FILE_PARENTS"
 
 # ------------------------------------------------------------------------------- GLOBALS
 myname=$(basename "$0")
@@ -50,22 +49,23 @@ error_count=0
 
 # ------------------------------------------------------------------------- DUMP FUNCTION
 # Dumps full dbs table in compressed CSV format
+# arg1: TABLE
+# arg2: NUM_MAPPERS
+# shellcheck disable=SC2086
 sqoop_dump_dbs_cmd() {
-    local local_start_time TABLE num_mappers
+    local local_start_time TABLE NUM_MAPPERS
     kinit -R
     local_start_time=$(date +%s)
     TABLE=$1
-    num_mappers=1
-    if [[ $TABLE == *"$NUM_MAPPER_40_TABLES"* ]]; then
-        num_mappers=40
-    fi
-    util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $num_mappers .."
+    NUM_MAPPERS=$2
+
+    util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $NUM_MAPPERS .."
     pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
     #
     /usr/hdp/sqoop/bin/sqoop import -Dmapreduce.job.user.classpath.first=true -Doraoop.timestamp.string=false \
         -Dmapred.child.java.opts="-Djava.security.egd=file:/dev/../dev/urandom" -Ddfs.client.socket-timeout=120000 \
         --fetch-size 10000 --fields-terminated-by , --escaped-by \\ --optionally-enclosed-by '\"' \
-        -z --direct --throw-on-error --num-mappers $num_mappers \
+        -z --direct --throw-on-error --num-mappers $NUM_MAPPERS \
         --connect "$jdbc_url" --username "$username" --password "$password" \
         --target-dir "$DAILY_BASE_PATH"/"$TABLE" --table "$SCHEMA"."$TABLE" \
         1>>"$LOG_FILE".stdout 2>>"$LOG_FILE".stderr
@@ -77,19 +77,34 @@ sqoop_dump_dbs_cmd() {
 
 # ----------------------------------------------------------------------------------- RUN
 
-# Run imports sequentially
-for TABLE_NAME in $DBS_TABLES; do
-    sqoop_dump_dbs_cmd "$TABLE_NAME" >>"$LOG_FILE".stdout 2>&1
+# Run imports parallel for small tables with num_mappers=1
+for TABLE_NAME in $DBS_TABLES_SMALL; do
+    sqoop_dump_dbs_cmd "$TABLE_NAME" 1 >>"$LOG_FILE".stdout 2>&1 &
+    sleep 5
+done
+
+# wait to finish parallel jobs
+wait
+
+# Run imports sequentially for big tables with num_mappers=50
+for TABLE_NAME in $DBS_TABLES_BIG; do
+    sqoop_dump_dbs_cmd "$TABLE_NAME" 50 >>"$LOG_FILE".stdout 2>&1
+    sleep 5
+done
+
+# Run imports sequentially for big tables bu mappers should be 1
+for TABLE_NAME in $DBS_TABLES_BIG_NUM_MAPPERS_1; do
+    sqoop_dump_dbs_cmd "$TABLE_NAME" 1 >>"$LOG_FILE".stdout 2>&1
 done
 
 # Give read permission to the new folder and sub folders after all dumps finished
 hadoop fs -chmod -R o+rx "$DAILY_BASE_PATH"
-error=$(($error + $?))
+error_count=$(($error_count + $?))
 
 # Copy daily results to legacy production folder
 if [ "$CMSSQOOP_ENV" = "prod" ]; then
     copy_to_legacy_folders "$DAILY_BASE_PATH" "$LEGACY_PROD_PATH" "$LOG_FILE"
-    error=$(($error + $?))
+    error_count=$(($error_count + $?))
 fi
 # ---------------------------------------------------------------------------- STATISTICS
 # total duration
