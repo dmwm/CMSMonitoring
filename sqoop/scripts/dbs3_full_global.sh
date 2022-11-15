@@ -1,27 +1,27 @@
 #!/bin/bash
-set -e
+# shellcheck disable=SC2004
 # Import Oracle CMS_DBS3_PROD_GLOBAL_OWNER tables using Apache Sqoop tool.
 #   - Import kind is full table dump with direct connection
 #   - Dumped to HDFS in compressed(-z) CSV format which is compatible with dmwm/CMSSpark/src/python/CMSSpark/schemas.py
 #     - schemas.py is compatible with both compressed and raw CSV
-#   - Table dump processes run in parallel which means total process time is equal to the max table dump time, so as to 'FILE_LUMIS'
-#   - Before dumping table, each table is checked of having data or not, because full/direct dump fails if there is no data in the table
-#   - Table data checks run sequentially using simple SQL query
+#
 
+set -e
 . "${WDIR}/sqoop/scripts/utils.sh"
 TZ=UTC
 
 # --------------------------------------------------------------------------------- PREPS
 SCHEMA="CMS_DBS3_PROD_GLOBAL_OWNER"
 # Sorted in ascending size order which is the suggested order to decrease run time
-DBS_TABLES="ASSOCIATED_FILES BRANCH_HASHES DATASET_RUNS MIGRATION_BLOCKS MIGRATION_REQUESTS DATASET_ACCESS_TYPES FILE_DATA_TYPES \
+DBS_TABLES="DATASET_ACCESS_TYPES FILE_DATA_TYPES \
  PRIMARY_DS_TYPES APPLICATION_EXECUTABLES PHYSICS_GROUPS DATA_TIERS PROCESSING_ERAS RELEASE_VERSIONS ACQUISITION_ERAS \
  PARAMETER_SET_HASHES PRIMARY_DATASETS PROCESSED_DATASETS OUTPUT_MODULE_CONFIGS DATASET_PARENTS DATASET_OUTPUT_MOD_CONFIGS \
  DATASETS BLOCK_PARENTS BLOCKS FILE_OUTPUT_MOD_CONFIGS FILE_PARENTS FILES FILE_LUMIS "
 
+# For small tables we don't need to set mapper count more than 1.
 # index-organized tables are not suitable for 40 mappers. In order to iterate table, sqoop run query in each iteration to find max/min unique if
-# that's why we'll set --num-mappers(-m) as 1 in these tables.
-NUM_MAPPER_1_TABLES="FILE_PARENTS"
+# that's why we'll set --num-mappers(-m) as 1 in these tables. That's why "FILE_PARENTS" is not in below list.
+NUM_MAPPER_40_TABLES="BLOCKS FILE_OUTPUT_MOD_CONFIGS FILES FILE_LUMIS"
 
 # ------------------------------------------------------------------------------- GLOBALS
 myname=$(basename "$0")
@@ -45,6 +45,9 @@ else
     exit 1
 fi
 
+# Keep error count
+error_count=0
+
 # ------------------------------------------------------------------------- DUMP FUNCTION
 # Dumps full dbs table in compressed CSV format
 sqoop_dump_dbs_cmd() {
@@ -52,9 +55,9 @@ sqoop_dump_dbs_cmd() {
     kinit -R
     local_start_time=$(date +%s)
     TABLE=$1
-    num_mappers=40
-    if [[ $TABLE == *"$NUM_MAPPER_1_TABLES"* ]]; then
-        num_mappers=1
+    num_mappers=1
+    if [[ $TABLE == *"$NUM_MAPPER_40_TABLES"* ]]; then
+        num_mappers=40
     fi
     util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $num_mappers .."
     pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
@@ -66,39 +69,27 @@ sqoop_dump_dbs_cmd() {
         --connect "$jdbc_url" --username "$username" --password "$password" \
         --target-dir "$DAILY_BASE_PATH"/"$TABLE" --table "$SCHEMA"."$TABLE" \
         1>>"$LOG_FILE".stdout 2>>"$LOG_FILE".stderr
+    error_count=$(($error_count + $?))
     #
     util4logi "${SCHEMA}.${TABLE} : import finished successfully in $(util_secs_to_human "$(($(date +%s) - local_start_time))")"
     pushg_dump_end_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
 }
 
 # ----------------------------------------------------------------------------------- RUN
-# successful table dump counter
-tables_success_counter=0
 
-# Import all tables in parallel after table data check
+# Run imports sequentially
 for TABLE_NAME in $DBS_TABLES; do
-    ec=$(check_table_exist "${SCHEMA}.${TABLE_NAME}" "$jdbc_url" "$username" "$password")
-    case "$ec" in
-    0)
-        util4logi "${SCHEMA}.${TABLE_NAME} : table check OKAY" >>"$LOG_FILE".stdout
-        # Run in background
-        sqoop_dump_dbs_cmd "$TABLE_NAME" >>"$LOG_FILE".stdout 2>&1 &
-        # Increment table count
-        tables_success_counter=$((tables_success_counter + 1))
-        ;;
-    1) util4logw "${SCHEMA}.${TABLE_NAME} : table check NO DATA, skipping" >>"$LOG_FILE".stdout ;;
-    esac
+    sqoop_dump_dbs_cmd "$TABLE_NAME" >>"$LOG_FILE".stdout 2>&1
 done
-
-# Wait to finish all background jobs
-wait
 
 # Give read permission to the new folder and sub folders after all dumps finished
 hadoop fs -chmod -R o+rx "$DAILY_BASE_PATH"
+error=$(($error + $?))
 
 # Copy daily results to legacy production folder
 if [ "$CMSSQOOP_ENV" = "prod" ]; then
     copy_to_legacy_folders "$DAILY_BASE_PATH" "$LEGACY_PROD_PATH" "$LOG_FILE"
+    error=$(($error + $?))
 fi
 # ---------------------------------------------------------------------------- STATISTICS
 # total duration
@@ -109,6 +100,6 @@ dump_size=$(util_hdfs_size "$DAILY_BASE_PATH")
 # Pushgateway
 pushg_dump_duration "$myname" "$pg_metric_db" "$SCHEMA" $duration
 pushg_dump_size "$myname" "$pg_metric_db" "$SCHEMA" "$dump_size"
-pushg_dump_table_count "$myname" "$pg_metric_db" "$SCHEMA" $tables_success_counter
 
+util4logi "error cont: ${error_count}" >>"$LOG_FILE".stdout
 util4logi "all finished, time spent: $(util_secs_to_human $duration)" >>"$LOG_FILE".stdout

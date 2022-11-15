@@ -151,30 +151,6 @@ function pushg_dump_size() {
 cms_sqoop_dump_size_${dotless_script_name}{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
 EOF
 }
-
-#######################################
-# Send number of dumped tables metric to pg
-# Arguments:
-#   arg1: cron job script name ($0)
-#   arg2: database that dumped (Rucio/DBS)
-#   arg3: schema of the tables that are dumped
-#   arg4: value number of tables dumped
-#######################################
-function pushg_dump_table_count() {
-    local pushgateway_url env script db schema value dotless_script_name
-    pushgateway_url=$(util_get_config_val PUSHGATEWAY_URL)
-    env=${CMSSQOOP_ENV:test}
-    script=$1
-    db=$2
-    schema=$3
-    value=$4
-    dotless_script_name=$(util_dotless_name "$script")
-    cat <<EOF | curl -s --data-binary @- "${pushgateway_url}/metrics/job/cms-sqoop/instance/$(hostname)"
-# TYPE cms_sqoop_dump_table_count_${dotless_script_name} gauge
-# HELP cms_sqoop_dump_table_count_${dotless_script_name} Total number of tables are dumped.
-cms_sqoop_dump_table_count_${dotless_script_name}{env="${env}", script="${script}", db="${db}", schema="${schema}"} $value
-EOF
-}
 # -------------------------------------------------------------------------------------------------
 
 # ------------------------------- LEGACY REQUIRED UTILS -------------------------------------------
@@ -257,31 +233,3 @@ function util_hdfs_size() {
         echo 0
     fi
 }
-
-#######################################
-# util to check if table exists and contains data using special select count query
-#  Arguments:
-#    $1: SCHEMA.TABLE
-#    $2: jdbc_url
-#    $3: username
-#    $4: password
-#  Usage:
-#    check_table_exist SCHEMA.TABLE JDBC_URL USERNAME PASSWORD
-#  Returns:
-#    0: OKAY, 1: NO DATA IN TABLE or ERROR
-#######################################
-check_table_exist() {
-    local table jdbc_url username password result
-    table=$1
-    jdbc_url=$2
-    username=$3
-    password=$4
-    # Redirect error logs to /dev/null. If count query returns 1, it means there is data, else no data or error.
-    result=$(/usr/hdp/sqoop/bin/sqoop eval --connect "$jdbc_url" --username "$username" --password "$password" --query "select count(*) from ${table} where rownum<=1" 2>/dev/null)
-    if echo "$result" | grep -q "1"; then
-        echo 0
-    else
-        echo 1
-    fi
-}
-# -------------------------------------------------------------------------------------------------
