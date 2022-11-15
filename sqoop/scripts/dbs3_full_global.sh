@@ -21,7 +21,7 @@ DBS_TABLES="DATASET_ACCESS_TYPES FILE_DATA_TYPES \
 # For small tables we don't need to set mapper count more than 1.
 # index-organized tables are not suitable for 40 mappers. In order to iterate table, sqoop run query in each iteration to find max/min unique if
 # that's why we'll set --num-mappers(-m) as 1 in these tables. That's why "FILE_PARENTS" is not in below list.
-NUM_MAPPER_40_TABLES="BLOCKS FILE_OUTPUT_MOD_CONFIGS FILES FILE_LUMIS"
+NUM_MAPPER_50_TABLES="BLOCKS FILE_OUTPUT_MOD_CONFIGS FILES FILE_LUMIS"
 
 # ------------------------------------------------------------------------------- GLOBALS
 myname=$(basename "$0")
@@ -56,8 +56,8 @@ sqoop_dump_dbs_cmd() {
     local_start_time=$(date +%s)
     TABLE=$1
     num_mappers=1
-    if [[ $TABLE == *"$NUM_MAPPER_40_TABLES"* ]]; then
-        num_mappers=40
+    if [[ $NUM_MAPPER_50_TABLES == *"$TABLE"* ]]; then
+        num_mappers=50
     fi
     util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $num_mappers .."
     pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
