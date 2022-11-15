@@ -18,6 +18,20 @@ from schema import Schema, Use, SchemaError, Or
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
 
+SUMMARY_SCHEMA = Schema([{'path': str,
+                         'usedterabytes': Use(float),
+                         'usedlogicalterabytes': Use(float),
+                         'maxphysicalterabytes': Use(float),
+                         'maxlogicalterabytes': Use(float),
+                         'used_logical_over_used_raw_percentage': Or(float, int, None), }])
+
+SUMMARY_COL_ORDER = {'path': 'Path',
+                    'usedterabytes': 'Used TB',
+                    'usedlogicalterabytes': 'Used Logical TB',
+                    'maxphysicalterabytes': 'Max TB',
+                    'maxlogicalterabytes': 'Max Logical TB',
+                    'used_logical_over_used_raw_percentage': 'Used Logical / Used Raw %'}
+
 NON_EC_SCHEMA = Schema([{'path': str,
                          'usedfiles': Use(int),
                          'usedterabytes': Use(float),
@@ -52,7 +66,6 @@ EC_SCHEMA = Schema([{'quota_node': str,
                      'free_physical_for_ec': Use(float),
                      'free_physical_for_rep': Use(float),
                      'free_logical': Use(float),
-                     'max_physical_quota': Use(float),
                      'total_used_logical_terabytes': Use(float),
                      'used_logical_over_used_raw_percentage': Or(float, int, None),
                      'logical_rep_terabytes': Use(float),
@@ -65,7 +78,6 @@ EC_COL_ORDER = {'quota_node': 'Path',
                 'free_logical': 'Free Logical',
                 'total_used_logical_terabytes': 'Total Used Logical TB',
                 'max_logical_quota': 'Max Logical Quota',
-                'max_physical_quota': 'Max Physical Quota',
                 'free_physical': 'Free Physical',
                 'total_used_physical_terabytes': 'Total Used Physical TB',
                 'used_logical_over_used_raw_percentage': 'Used Logical / Used Raw %',
@@ -82,14 +94,15 @@ def tstamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
 
-def get_update_time_of_file(ec_file, non_ec_file):
+def get_update_time_of_file(ec_file, non_ec_file, summary_file):
     """Create update time depending on reading EOS results from file or directly from command"""
-    if ec_file and non_ec_file:
+    if ec_file and non_ec_file and summary_file:
         # Set update time to eos file modification time, minimum of 2
         ec_ts = os.path.getmtime(ec_file)
         non_ec_ts = os.path.getmtime(non_ec_file)
+        summary_ts = os.path.getmtime(summary_file)
         try:
-            return datetime.utcfromtimestamp(min(ec_ts, non_ec_ts)).strftime('%Y-%m-%d %H:%M:%S')
+            return datetime.utcfromtimestamp(min(ec_ts, non_ec_ts, summary_ts)).strftime('%Y-%m-%d %H:%M:%S')
         except OSError as e:
             print(tstamp(), "ERROR: could not get last modification time of file:", str(e))
     else:
@@ -134,11 +147,12 @@ def prepare_html(df):
     return html
 
 
-def create_main_html(df_non_ec, df_ec, update_time, base_html_directory):
+def create_main_html(df_non_ec, df_ec, df_summary, update_time, base_html_directory):
     """Create html page with given dataframe
     """
     df_non_ec_html = prepare_html(df_non_ec)
     df_ec_html = prepare_html(df_ec)
+    df_summary_html = prepare_html(df_summary)
 
     # Get main html
     main_html = get_html_template(base_html_directory=base_html_directory)
@@ -147,6 +161,7 @@ def create_main_html(df_non_ec, df_ec, update_time, base_html_directory):
     # Add pandas dataframe html to main body
     main_html = main_html.replace('____NON_EC_BLOCK____', df_non_ec_html)
     main_html = main_html.replace('____EC_BLOCK____', df_ec_html)
+    main_html = main_html.replace('____SUMMARY_BLOCK____', df_summary_html)
     return main_html
 
 
@@ -154,17 +169,19 @@ def create_main_html(df_non_ec, df_ec, update_time, base_html_directory):
 @click.option("--output_file", default=None, required=True, help="For example: /eos/.../www/test/test.html")
 @click.option("--non_ec_json", required=True, help="/eos/cms/store/accounting/eos_non_ec_accounting.json")
 @click.option("--ec_json", required=True, help="/eos/cms/store/accounting/eos_ec_accounting.json")
+@click.option("--summary_json", required=True, help="/eos/cms/store/eos_accounting_summary.json")
 @click.option("--static_html_dir", default=None, required=True,
               help="Html directory for main html template. For example: ~/CMSMonitoring/src/html/eos_path_size")
-def main(output_file=None, non_ec_json=None, ec_json=None, static_html_dir=None):
+def main(output_file=None, non_ec_json=None, ec_json=None, summary_json=None, static_html_dir=None):
     """Main function combines xrdcp and EOS results then creates HTML page
     """
-    joint_update_time = get_update_time_of_file(non_ec_json, ec_json)
+    joint_update_time = get_update_time_of_file(non_ec_json, ec_json, summary_json)
     print("[INFO] Update time of input files:", joint_update_time)
 
     df_non_ec = get_df_with_validation(non_ec_json, NON_EC_SCHEMA, NON_EC_COL_ORDER)
     df_ec = get_df_with_validation(ec_json, EC_SCHEMA, EC_COL_ORDER)
-    main_html = create_main_html(df_non_ec, df_ec, joint_update_time, static_html_dir)
+    df_summary = get_df_with_validation(summary_json, SUMMARY_SCHEMA, SUMMARY_COL_ORDER)
+    main_html = create_main_html(df_non_ec, df_ec, df_summary, joint_update_time, static_html_dir)
     with open(output_file, "w") as f:
         f.write(main_html)
 

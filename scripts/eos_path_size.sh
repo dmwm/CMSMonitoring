@@ -26,6 +26,7 @@ py_input_args=(
     --output_file "/eos/user/c/cmsmonit/www/eos-path-size/size.html"
     --non_ec_json "/eos/cms/store/accounting/eos_non_ec_accounting.json"
     --ec_json "/eos/cms/store/accounting/eos_ec_accounting.json"
+    --summary_json "/eos/cms/store/accounting/eos_accounting_summary.json"
     --static_html_dir "${script_dir}/../src/html/eos_path_size"
 )
 
