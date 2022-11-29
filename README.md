@@ -20,6 +20,8 @@ infrastructure.
 - On tag :whale: `sqoop-*.*.*` :rocket: 
     - Builds `cmsmonitoring/sqoop` docker image and push to registry.cern.ch
 - On tag `py-*.*.*`  
-    - New release of CMSMonitoring PyPi module https://pypi.org/project/CMSMonitoring/ 
+    - New release of CMSMonitoring PyPi module https://pypi.org/project/CMSMonitoring/
+- On tag `drpy-*.*.*`
+    - Builds `cmsmonitoring/cmsmon-py` docker image and push to registry.cern.ch
 - Syntax check on special conditions
     - Check validations of json and yaml files only that kind of files are changed
