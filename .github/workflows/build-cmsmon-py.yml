@@ -33,6 +33,6 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            PY_VERSION="3.9.12"
+            PY_VERSION=3.9.12
             CMSMONITORING_TAG=${{ steps.get_tag.outputs.tag }}
           tags: registry.cern.ch/cmsmonitoring/cmsmon-py:${{ steps.get_tag.outputs.tag }}
