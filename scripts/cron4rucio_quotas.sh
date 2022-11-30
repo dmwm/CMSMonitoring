@@ -1,5 +1,34 @@
 #!/bin/bash
 set -e
+TZ=UTC
+myname=$(basename "$0")
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+
+# ---------------------------------------------------------------------------------------------------------- Run in K8S
+if [ -n "$K8S_ENV" ]; then
+    # $1: output, shift is mandatory because rucio/setup-py3.sh also waits for $1
+    output_=$1; shift
+
+    # Get nice utils from CMSSpark
+    curl -ksLO https://raw.githubusercontent.com/dmwm/CMSSpark/master/bin/utils/common_utils.sh
+    . common_utils.sh
+    util4logi "${myname} is starting.."
+    util_cron_send_start "$myname" "1h"
+
+    # Rucio API setup
+    export X509_USER_PROXY=/etc/proxy/proxy
+    source /cvmfs/cms.cern.ch/rucio/setup-py3.sh
+    util_kerberos_auth_with_keytab /etc/secrets/keytab
+    python3 "${script_dir}"/../src/python/CMSMonitoring/rucio_quotas.py \
+        --output "$output_" \
+        --template_dir "${script_dir}/../src/html/rucio_quotas" 2>&1
+
+    util_cron_send_end "$myname" "1h" "$?"
+    util4logi "${myname} successfully finished."
+    exit 0
+    # break
+fi
+# ---------------------------------------------------------------------------------------------------------------------
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh >/dev/null
 source /cvmfs/cms.cern.ch/rucio/setup-py3.sh >/dev/null
@@ -9,11 +38,6 @@ if [ $ec -ne 0 ]; then
     echo "$output" - exit code: $ec
     exit $ec
 fi
-
-script_dir="$(
-    cd -- "$(dirname "$0")" >/dev/null 2>&1 || exit
-    pwd -P
-)"
 
 py_input_args=(
     --output "/eos/user/c/cmsmonit/www/rucio/quotas.html"

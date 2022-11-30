@@ -19,20 +19,20 @@ pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
 
 SUMMARY_SCHEMA = Schema([{'path': str,
-                         'usedterabytes': Use(float),
-                         'usedlogicalterabytes': Use(float),
-                         'maxphysicalterabytes': Use(float),
-                         'maxlogicalterabytes': Use(float),
-                         'used_logical_space_percentage': Or(float, int, None),
-                         'used_logical_over_used_raw_percentage': Or(float, int, None), }])
+                          'usedterabytes': Use(float),
+                          'usedlogicalterabytes': Use(float),
+                          'maxphysicalterabytes': Use(float),
+                          'maxlogicalterabytes': Use(float),
+                          'used_logical_space_percentage': Or(float, int, None),
+                          'used_logical_over_used_raw_percentage': Or(float, int, None), }])
 
 SUMMARY_COL_ORDER = {'path': 'Path',
-                    'usedlogicalterabytes': 'Used [TB] logical ',
-		    'usedterabytes': 'Used [TB] physical',
-		    'maxlogicalterabytes': 'Logical quota [TB] ',
-                    'maxphysicalterabytes': 'Physical quota [TB]',
-                    'used_logical_space_percentage': '% Logical used',
-                    'used_logical_over_used_raw_percentage': '% Used logical / Used physical'}
+                     'usedlogicalterabytes': 'Used [TB] logical ',
+                     'usedterabytes': 'Used [TB] physical',
+                     'maxlogicalterabytes': 'Logical quota [TB] ',
+                     'maxphysicalterabytes': 'Physical quota [TB]',
+                     'used_logical_space_percentage': '% Logical used',
+                     'used_logical_over_used_raw_percentage': '% Used logical / Used physical'}
 
 NON_EC_SCHEMA = Schema([{'path': str,
                          'usedfiles': Use(int),
