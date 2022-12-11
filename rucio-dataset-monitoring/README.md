@@ -1,7 +1,7 @@
 ## rucio-dataset-monitoring package
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring)](https://goreportcard.com/report/github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring)
-[![GoDoc](https://godoc.org/github.com/dmwm/CMSMonitoring/tree/master/src/go/rucio-dataset-monitoring?status.svg)](https://godoc.org/github.com/dmwm/CMSMonitoring/tree/master/src/go/rucio-dataset-monitoring)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring)](https://goreportcard.com/report/github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring)
+[![GoDoc](https://godoc.org/github.com/dmwm/CMSMonitoring/tree/master/rucio-dataset-monitoring?status.svg)](https://godoc.org/github.com/dmwm/CMSMonitoring/tree/master/rucio-dataset-monitoring)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 The `rucio-dataset-monitoring` package serves [Rucio](https://rucio.readthedocs.io/) aggregated data, which is stored in MongoDB,

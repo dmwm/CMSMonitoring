@@ -3,7 +3,7 @@ package utils
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/models"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
@@ -87,26 +87,27 @@ func humanSizeToBytes(input string) int64 {
 }
 
 // searchBsonSelections creates bson.M using SearchBuilderRequest request
-//   In main DataTables, there are 3 types in our data: string,html,date,num
-//   IN SHORT (DataTables type vs Actual column type):
-//     - string: string type columns
-//     - html  : float type columns
-//     - date  : date type columns
-//     - num   : integer type columns
-//   Details:
-//   - string:
-//       It only has "contains" condition which is behaved as ReGex.
-//       Since regex is powerful, we don't need starts with, ends with etc. conditions
-//   - html:
-//       [IMPORTANT] we use this type for numeric types columns. Because "num" type do not provide whole string like "10TB", only "10"
-//       It has only "starts:Greater Than" and "ends:Less Than", in other words greater than and less than conditions.
-//       They behaved as $lte and $gte
-//       User may provide humanized size definition like "10 TB", it is converted to bytes to use in MongoDB queries
-//   - date:
-//       It has only "<", ">", "between", "null", "!null" conditions.
-//       In other words: before, after, between, empty, not empty
-//   - num:
-//       It has only "<", ">", "between", "null", "!null" conditions. Used for integer columns like `TotalFileCnt`
+//
+//	In main DataTables, there are 3 types in our data: string,html,date,num
+//	IN SHORT (DataTables type vs Actual column type):
+//	  - string: string type columns
+//	  - html  : float type columns
+//	  - date  : date type columns
+//	  - num   : integer type columns
+//	Details:
+//	- string:
+//	    It only has "contains" condition which is behaved as ReGex.
+//	    Since regex is powerful, we don't need starts with, ends with etc. conditions
+//	- html:
+//	    [IMPORTANT] we use this type for numeric types columns. Because "num" type do not provide whole string like "10TB", only "10"
+//	    It has only "starts:Greater Than" and "ends:Less Than", in other words greater than and less than conditions.
+//	    They behaved as $lte and $gte
+//	    User may provide humanized size definition like "10 TB", it is converted to bytes to use in MongoDB queries
+//	- date:
+//	    It has only "<", ">", "between", "null", "!null" conditions.
+//	    In other words: before, after, between, empty, not empty
+//	- num:
+//	    It has only "<", ">", "between", "null", "!null" conditions. Used for integer columns like `TotalFileCnt`
 func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 	switch criterion.Type {
 	case "string":

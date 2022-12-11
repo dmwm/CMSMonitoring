@@ -490,7 +490,7 @@ $(document).ready(function () {
                 titleAttr: "If you see any bug, please open issue!",
                 action: function (e, dt, node, config) {
                     //This will send the page to the location specified
-                    window.open("https://github.com/dmwm/CMSMonitoring/tree/master/src/go/rucio-dataset-monitoring", "_blank");
+                    window.open("https://github.com/dmwm/CMSMonitoring/tree/master/g", "_blank");
                 }
             },
             {
@@ -498,7 +498,7 @@ $(document).ready(function () {
                 text: '<a href="">Examples</a>',
                 action: function (e, dt, node, config) {
                     //This will send the page to the location specified
-                    window.open("https://github.com/dmwm/CMSMonitoring/blob/master/src/go/rucio-dataset-monitoring/docs/example_query.md", "_blank");
+                    window.open("https://github.com/dmwm/CMSMonitoring/blob/master/rucio-dataset-monitoring/docs/example_query.md", "_blank");
                 }
             }
         ]

@@ -6,9 +6,9 @@ package server
 
 import (
 	"fmt"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/controllers"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/mongo"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/controllers"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/mongo"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	timeout "github.com/s-wijaya/gin-timeout"
 	"golang.org/x/sync/errgroup"

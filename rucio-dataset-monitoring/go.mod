@@ -1,13 +1,13 @@
-module github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring
+module github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring
 
-go 1.18
+go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/joho/godotenv v1.4.0
 	github.com/s-wijaya/gin-timeout v0.1.1
-	go.mongodb.org/mongo-driver v1.10.1
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	go.mongodb.org/mongo-driver v1.11.1
+	golang.org/x/sync v0.1.0
 )
 
 require (

@@ -3,9 +3,9 @@ package controllers
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 import (
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/models"
-	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/mongo"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/models"
+	mymongo "github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/mongo"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/http"

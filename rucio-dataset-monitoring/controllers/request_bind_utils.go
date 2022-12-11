@@ -5,9 +5,9 @@ package controllers
 import (
 	"context"
 	"errors"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/models"
-	mymongo "github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/mongo"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/models"
+	mymongo "github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/mongo"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )

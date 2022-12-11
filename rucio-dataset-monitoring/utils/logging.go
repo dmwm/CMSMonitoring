@@ -32,5 +32,6 @@ func InfoLogV2(format string, v ...interface{}) {
 
 // ErrorLog prints error logs, but not exit the process like log.Fatal
 func ErrorLog(format string, v ...interface{}) {
+	log.SetFlags(log.Lmsgprefix | log.LstdFlags)
 	log.Printf("[ERROR]  "+format, v...)
 }

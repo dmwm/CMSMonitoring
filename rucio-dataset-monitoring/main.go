@@ -5,7 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/server"
+	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/server"
 	"os"
 	"runtime"
 	"time"
