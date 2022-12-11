@@ -1,5 +1,10 @@
 package models
 
+import (
+	"encoding/json"
+	"log"
+)
+
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 // Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
@@ -45,4 +50,14 @@ type DTReqColumn struct {
 type DTReqOrder struct {
 	Column int    `json:"column"`                       // Column index number in the columns list (order not changes)
 	Dir    string `json:"dir" binding:"oneof=asc desc"` // asc or desc
+}
+
+// String returns string representation of DataTableRequest
+func (r *DataTableRequest) String() string {
+	data, err := json.Marshal(r)
+	if err != nil {
+		log.Println("[ERROR] fail to marshal DataTableRequest", err)
+		return ""
+	}
+	return string(data)
 }

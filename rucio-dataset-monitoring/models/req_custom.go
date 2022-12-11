@@ -19,8 +19,8 @@ type CustomRequest struct {
 }
 
 // String returns string representation of dbs SearchBuilderRequest
-func (c *CustomRequest) String() string {
-	data, err := json.Marshal(c)
+func (r *CustomRequest) String() string {
+	data, err := json.Marshal(r)
 	if err != nil {
 		log.Println("[ERROR] fail to marshal CustomRequest", err)
 		return ""

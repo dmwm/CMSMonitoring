@@ -61,13 +61,17 @@ func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, shortUrlCollect
 
 // getRequestHash returns MD5 hash of datatable request
 func getRequestHash(c *gin.Context, req models.ShortUrlRequest) string {
+	// MD5 Hash
 	out, err := json.Marshal(req)
 	if err != nil {
-		utils.ErrorResponse(c, "Json marshall error", err, "")
+		utils.ErrorResponse(c, "Json marshall error", err, req.String())
 	}
 	md5Instance := md5.New()
 	md5Instance.Write(out)
-	return hex.EncodeToString(md5Instance.Sum(nil))
+	md5Hash := hex.EncodeToString(md5Instance.Sum(nil))[0:8]
+
+	// Short URL structure: "md5 8 character" "+" SearchBuilder request as query params
+	return md5Hash + "+" + req.Request.SearchBuilderRequest.GetPrettyURL()
 }
 
 // checkIdHashExists check if request hash is exists in the MongoDB collection
