@@ -17,22 +17,6 @@ type ErrorResponseStruct struct {
 	Request any               `json:"request"`
 }
 
-// MiddlewareReqHandler handles CORS and HTTP request settings for the context router
-func MiddlewareReqHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		//c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	}
-}
-
 // ErrorResponse returns error response with given msg and error
 func ErrorResponse(c *gin.Context, msg string, err error, req string) {
 	log.Printf("[ERROR] %s %s %#v", msg, err, req)

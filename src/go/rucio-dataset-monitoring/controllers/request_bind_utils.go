@@ -15,10 +15,10 @@ import (
 	"time"
 )
 
-// InitializeController initialize controller requirements
-//   initialize context, bind request json for the controller, prints initial logs, gets start time etc.
-func InitializeController(c *gin.Context, req interface{}) (context.Context, context.CancelFunc, time.Time, interface{}) {
-	VerboseControllerInitLog(c)
+// InitializeCtxAndBindRequestBody initialize controller requirements
+//
+//	initialize context, bind request json for the controller, prints initial logs, gets start time etc.
+func InitializeCtxAndBindRequestBody(c *gin.Context, req interface{}) (context.Context, context.CancelFunc, time.Time, interface{}) {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 
@@ -54,11 +54,6 @@ func bindRequest(c *gin.Context, req interface{}) (any, error) {
 		utils.ErrorLog("unknown request struct, it did not match: %#v", req)
 		return nil, errors.New("unknown request struct, no match in switch case")
 	}
-}
-
-// VerboseControllerInitLog prints logs of incoming request's url path
-func VerboseControllerInitLog(c *gin.Context) {
-	utils.InfoLogV0("Incoming request to: %s", c.FullPath())
 }
 
 // VerboseControllerOutLog prints debug logs after controller processed the api call

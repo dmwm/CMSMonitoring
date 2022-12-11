@@ -170,9 +170,11 @@
     if (isShortUrl === true) {
         global_saved_state_setter = {{.dtSavedState}};
         global_saved_state_setter = JSON.stringify(global_saved_state_setter);
+        console.log("----------isShortUrl: global_saved_state_setter ------------ ")
+        console.log(global_saved_state_setter)
     }
 
-    console.log("Is short url: " + isShortUrl);
+    console.log("[Is short url]: " + isShortUrl);
 
     // ---------~~~~~~~~~  FUNCTIONS AND MAIN DEFINITIONS ~~~~~~~~~---------
     // Required to show text on hover, used for data timestamp hover setting
@@ -316,6 +318,7 @@
             serverSide: true,
             processing: true,
             stateSave: true,
+            stateDuration: 0,
             select: false,
             scrollX: false,
             pageLength: 10,
@@ -331,10 +334,12 @@
             stateSaveCallback: function (settings, data) {
                 // Save the last state to "global_saved_state_holder" variable to use in the short url call
                 global_saved_state_holder = JSON.stringify(data)
+                console.log("----- global_saved_state_holder --------");
                 console.log(global_saved_state_holder);
             },
             stateLoadCallback: function (settings) {
                 // "global_saved_state_setter" given by Go Template, so it restore same state for the shared users.
+                console.log("----- global_saved_state_setter --------");
                 console.log(global_saved_state_setter)
                 return JSON.parse(global_saved_state_setter);
             },
@@ -362,6 +367,7 @@
                     // Check if user created a search builder query using SB Conditions
                     try {
                         sbRequest = table.searchBuilder.getDetails(true);
+                        console.log("[----- sbRequest ------]")
                         console.log(JSON.stringify(sbRequest));
                     } catch (error) {
                         // User did not create SearchBuilder query, so set the request holder variable as null
@@ -387,6 +393,7 @@
                     } else {
                         global_dt_request_holder = JSON.stringify(d);
                     }
+                    console.log("--- MAIN ajax global_dt_request_holder ----");
                     console.log(global_dt_request_holder);
                     return global_dt_request_holder;
                 },

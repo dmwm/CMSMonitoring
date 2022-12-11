@@ -15,7 +15,6 @@ import (
 func GetIndexPage(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		VerboseControllerInitLog(c)
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
 		// get source data creation time
@@ -25,7 +24,8 @@ func GetIndexPage(collectionName string) gin.HandlerFunc {
 			"datasets.tmpl",
 			gin.H{
 				"title":         "Home Page",
-				"isShortUrl":    "false", // Should be set as string since it will be required by JS in datasets.tmpl
+				"isShortUrl":    false,
+				"verbose":       utils.Verbose,
 				"dataTimestamp": dataTimestamp.CreatedAt,
 			},
 		)
@@ -36,7 +36,6 @@ func GetIndexPage(collectionName string) gin.HandlerFunc {
 
 // GetDetailsPage serves detailed_datasets.tmpl page
 func GetDetailsPage(c *gin.Context) {
-	VerboseControllerInitLog(c)
 	start := time.Now()
 	c.HTML(
 		http.StatusOK,
@@ -51,7 +50,6 @@ func GetDetailsPage(c *gin.Context) {
 // GetIndexPageFromShortUrlId controller that returns page from short url hash id
 func GetIndexPageFromShortUrlId(shortUrlCollectionName string, datasourceTimestampCollectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		VerboseControllerInitLog(c)
 		start := time.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()

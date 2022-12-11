@@ -11,7 +11,6 @@ import (
 // GetServiceInfo provides basic functionality of status response
 func GetServiceInfo(gitVersion string, serviceInfo string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		VerboseControllerInitLog(c)
 		c.JSON(http.StatusOK,
 			models.ServerInfoResp{
 				ServiceVersion: gitVersion,

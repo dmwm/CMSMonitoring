@@ -14,8 +14,7 @@ import (
 // GetSingleDetailedDs controller that returns detailed dataset in TAPE or DISK
 func GetSingleDetailedDs(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		VerboseControllerInitLog(c)
-		ctx, cancel, start, req := InitializeController(c, models.SingleDetailedDatasetsRequest{})
+		ctx, cancel, start, req := InitializeCtxAndBindRequestBody(c, models.SingleDetailedDatasetsRequest{})
 		defer cancel()
 
 		// Cast interface to request

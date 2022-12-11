@@ -30,7 +30,7 @@ var (
 func GetDatasets(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// We need to provide models.DataTableSearchBuilderRequest to the controller initializer and use same type in casting
-		ctx, cancel, start, req := InitializeController(c, models.DataTableRequest{})
+		ctx, cancel, start, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
 		defer cancel()
 		detailedDatasetsResp := getDatasetResults(ctx, c, collectionName, req.(models.DataTableRequest))
 		c.JSON(http.StatusOK,
