@@ -20,13 +20,12 @@ import (
 func GetShortUrlParam(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// We need to provide models.ShortUrlRequest to the controller initializer and use same type in casting
-		ctx, cancel, start, req := InitializeCtxAndBindRequestBody(c, models.ShortUrlRequest{})
+		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.ShortUrlRequest{})
 		defer cancel()
 		requestHash := GetShortUrl(ctx, c, collectionName, req.(models.ShortUrlRequest))
 		c.JSON(http.StatusOK,
 			requestHash,
 		)
-		VerboseControllerOutLog(start, "GetShortUrlParam", req, requestHash)
 		return
 	}
 }

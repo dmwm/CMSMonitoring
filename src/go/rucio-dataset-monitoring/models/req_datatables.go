@@ -10,7 +10,8 @@ package models
 //    - See example request in `rucio-dataset-monitoring/README.md`
 
 // DataTableRequest main ajax request that come from DataTable, which includes user inputs
-//     For full field descriptions, please see https://datatables.net/manual/server-side#Sent-parameters
+//
+//	For full field descriptions, please see https://datatables.net/manual/server-side#Sent-parameters
 type DataTableRequest struct {
 	Draw                 int                  `json:"draw" validate:"required" binding:"required"`    // Just a counter that should be return exactly in the response
 	Columns              []DTReqColumn        `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
@@ -23,8 +24,9 @@ type DataTableRequest struct {
 }
 
 // DTReqSearch represents main search text which client entered and can be regex or not.
-//     In default in this service, all search text will be behaved as "REGEX" instead of fuzzy search.
-//     TODO separate regex and fuzzy search by providing option in the frontend
+//
+//	In default in this service, all search text will be behaved as "REGEX" instead of fuzzy search.
+//	TODO separate regex and fuzzy search by providing option in the frontend
 type DTReqSearch struct {
 	Regex bool   `json:"regex"`
 	Value string `json:"value"`

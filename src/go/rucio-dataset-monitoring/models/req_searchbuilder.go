@@ -15,9 +15,10 @@ type SearchBuilderRequest struct {
 }
 
 // SingleCriteria condition object of SearchBuilderRequest
-//     Ref: https://datatables.net/extensions/searchbuilder/examples/
-//     Datatables search builder does not support GoLang backend, but here we're :)
-//     We're catching the JSON of SB from .getDetails() function and use it for our needs.
+//
+//	Ref: https://datatables.net/extensions/searchbuilder/examples/
+//	Datatables search builder does not support GoLang backend, but here we're :)
+//	We're catching the JSON of SB from .getDetails() function and use it for our needs.
 type SingleCriteria struct {
 	// "contains" renamed as "regex" in the page and regex search will be applied
 	Condition string `json:"condition"`

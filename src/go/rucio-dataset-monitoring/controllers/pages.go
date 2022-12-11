@@ -8,13 +8,11 @@ import (
 	"github.com/dmwm/CMSMonitoring/src/go/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"time"
 )
 
 // GetIndexPage serves datasets.tmpl page
 func GetIndexPage(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		start := time.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
 		// get source data creation time
@@ -23,20 +21,18 @@ func GetIndexPage(collectionName string) gin.HandlerFunc {
 			http.StatusOK,
 			"datasets.tmpl",
 			gin.H{
-				"title":         "Home Page",
-				"isShortUrl":    false,
-				"verbose":       utils.Verbose,
-				"dataTimestamp": dataTimestamp.CreatedAt,
+				"title":        "Home Page",
+				"VERBOSITY":    utils.Verbose,
+				"IS_SHORT_URL": false,
+				"SOURCE_DATE":  dataTimestamp.CreatedAt,
 			},
 		)
-		VerboseControllerOutLog(start, "GetIndexPage", nil, dataTimestamp)
 		return
 	}
 }
 
 // GetDetailsPage serves detailed_datasets.tmpl page
 func GetDetailsPage(c *gin.Context) {
-	start := time.Now()
 	c.HTML(
 		http.StatusOK,
 		"detailed_datasets.tmpl",
@@ -44,13 +40,11 @@ func GetDetailsPage(c *gin.Context) {
 			"title": "Detailed Datasets Page",
 		},
 	)
-	VerboseControllerOutLog(start, "GetDetailsPage", nil, nil)
 }
 
 // GetIndexPageFromShortUrlId controller that returns page from short url hash id
 func GetIndexPageFromShortUrlId(shortUrlCollectionName string, datasourceTimestampCollectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		start := time.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
 
@@ -64,13 +58,13 @@ func GetIndexPageFromShortUrlId(shortUrlCollectionName string, datasourceTimesta
 			"datasets.tmpl",
 			gin.H{
 				"title":             "Home Page",
-				"isShortUrl":        "true",
-				"dtRequestShortUrl": shortUrlObj.Request,
-				"dtSavedState":      shortUrlObj.SavedState,
-				"dataTimestamp":     dataTimestamp.CreatedAt,
+				"VERBOSITY":         utils.Verbose,
+				"IS_SHORT_URL":      true,
+				"SHORT_URL_REQUEST": shortUrlObj.Request,
+				"DT_SAVED_STATE":    shortUrlObj.SavedState,
+				"SOURCE_DATE":       dataTimestamp.CreatedAt,
 			},
 		)
-		VerboseControllerOutLog(start, "GetIndexPageFromShortUrlId", shortUrlObj, hashId)
 		return
 	}
 }

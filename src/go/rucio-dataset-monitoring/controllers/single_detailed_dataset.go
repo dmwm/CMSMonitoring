@@ -14,7 +14,7 @@ import (
 // GetSingleDetailedDs controller that returns detailed dataset in TAPE or DISK
 func GetSingleDetailedDs(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel, start, req := InitializeCtxAndBindRequestBody(c, models.SingleDetailedDatasetsRequest{})
+		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.SingleDetailedDatasetsRequest{})
 		defer cancel()
 
 		// Cast interface to request
@@ -35,7 +35,6 @@ func GetSingleDetailedDs(collectionName string) gin.HandlerFunc {
 			"rse_detail_table.tmpl",
 			gin.H{"data": detailedRows},
 		)
-		VerboseControllerOutLog(start, "GetSingleDetailedDs", req, detailedRows)
 		return
 	}
 }

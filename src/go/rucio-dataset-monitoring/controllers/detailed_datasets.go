@@ -20,13 +20,12 @@ var (
 func GetDetailedDs(collectionName string, prodLockAccounts *[]string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// We need to provide models.DataTableCustomRequest to the controller initializer and use same type in casting
-		ctx, cancel, start, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
+		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
 		defer cancel()
 		detailedDatasetsResp := getDetailedDsResults(ctx, c, collectionName, prodLockAccounts, req.(models.DataTableRequest))
 		c.JSON(http.StatusOK,
 			detailedDatasetsResp,
 		)
-		VerboseControllerOutLog(start, "GetDetailedDs", req, detailedDatasetsResp)
 		return
 	}
 }
