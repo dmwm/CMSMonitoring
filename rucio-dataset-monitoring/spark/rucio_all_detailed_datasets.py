@@ -73,13 +73,14 @@ def get_df_replicas(spark):
     """Create rucio Replicas table dataframe
     """
     return spark.read.format('avro').load(HDFS_RUCIO_REPLICAS) \
+        .filter(col('SCOPE') == 'cms') \
+        .filter(col('STATE') == 'A') \
         .withColumn('rse_id', lower(_hex(col('RSE_ID')))) \
         .withColumn('f_size_replicas', col('BYTES').cast(LongType())) \
         .withColumn('rep_lock_cnt', col('LOCK_CNT').cast(LongType())) \
         .withColumnRenamed('NAME', 'f_name') \
         .withColumnRenamed('ACCESSED_AT', 'rep_accessed_at') \
         .withColumnRenamed('CREATED_AT', 'rep_created_at') \
-        .filter(col('SCOPE') == 'cms') \
         .select(['f_name', 'rse_id', 'f_size_replicas', 'rep_accessed_at', 'rep_created_at', 'rep_lock_cnt'])
 
 
