@@ -74,16 +74,24 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 	e.Static("/static/js", "./static/js")
 
 	// REST
-	e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
-	e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
-	e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
-	e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
-	e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp))
-	e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
+	baseEndpoint := "/" + Config.BaseEndpoint
+	e.POST(baseEndpoint+"/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
+	e.POST(baseEndpoint+"/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
+	e.POST(baseEndpoint+"/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
+	e.POST(baseEndpoint+"/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+	e.GET(baseEndpoint+"/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp))
+	e.GET(baseEndpoint+"/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
 
 	// Pages
-	e.GET("/", controllers.GetIndexPage(mongoColNames.DatasourceTimestamp))
-	e.GET("/rse-details", controllers.GetDetailsPage)
+	// "../" uses base url in JS ajax calls
+	jsBaseEndpoint := ".."
+	e.GET(baseEndpoint+"/main", controllers.GetIndexPage(
+		mongoColNames.DatasourceTimestamp,
+		jsBaseEndpoint+"/api/datasets",
+		jsBaseEndpoint+"/api/short-url",
+		jsBaseEndpoint+"/api/rse-details",
+	))
+	e.GET(baseEndpoint+"/rse-details", controllers.GetDetailsPage)
 
 	//
 	return e

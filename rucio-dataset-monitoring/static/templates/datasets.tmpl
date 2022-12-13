@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!---------------------------------------------------------------------------------->
+    <!--Global Variables From Go Controller-->
+    <script>
+        // Define short url will be used or not
+        var var_IS_SHORT_URL = {{.IS_SHORT_URL}};
+        var var_DT_SAVED_STATE = {{.DT_SAVED_STATE}};
+        var var_SHORT_URL_REQUEST = {{.SHORT_URL_REQUEST}};
+        var var_SOURCE_DATE = {{.SOURCE_DATE}};
+        var var_VERBOSITY = {{.VERBOSITY}};
+        var var_DATASETS_API_ENDPOINT = {{.DATASETS_API_ENDPOINT}};
+        var var_SHORT_URL_API_ENDPOINT = {{.SHORT_URL_API_ENDPOINT}};
+        var var_RSE_DETAILS_API_ENDPOINT = {{.RSE_DETAILS_API_ENDPOINT}};
+    </script>
+    <!---------------------------------------------------------------------------------->
+
     <title> Go Datatable (Serverside) </title>
     <link rel="icon" type="image/x-icon" href="/static/img/donkey.svg">
     <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -68,18 +83,6 @@
             font-size: small;
         }
     </style>
-
-    <!---------------------------------------------------------------------------------->
-    <!--Global Variables From Cntroller-->
-    <script>
-        // Define short url will be used or not
-        var var_IS_SHORT_URL = {{.IS_SHORT_URL}};
-        var var_DT_SAVED_STATE = {{.DT_SAVED_STATE}};
-        var var_SHORT_URL_REQUEST = {{.SHORT_URL_REQUEST}};
-        var var_SOURCE_DATE = {{.SOURCE_DATE}};
-        var var_VERBOSITY = {{.VERBOSITY}};
-    </script>
-    <!---------------------------------------------------------------------------------->
 </head>
 <body>
 

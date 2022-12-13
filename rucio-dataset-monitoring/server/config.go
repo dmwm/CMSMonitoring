@@ -23,6 +23,7 @@ type Configuration struct {
 	MongoConnectionTimeout int                  `json:"mongo_connection_timeout"` // mongo connection timeout in sec
 	ProdLockAccounts       []string             `json:"prod_lock_accounts"`       // rucio production accounts that lock files
 	CollectionNames        MongoCollectionNames `json:"collection_names"`         // mongodb collection names
+	BaseEndpoint           string               `json:"base_endpoint"`            // base_endpoint of web service
 }
 
 // MongoCollectionNames mongo collection names struct
