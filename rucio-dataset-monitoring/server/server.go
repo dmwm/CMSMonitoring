@@ -57,36 +57,47 @@ var middlewareLogFormatter = func(param gin.LogFormatterParams) string {
 
 // MainRouter main request router
 func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
-	responseBodyTimeout := gin.H{
-		"code":    http.StatusRequestTimeout,
-		"message": "request timeout, response is sent from middleware"}
+	responseBodyTimeout := gin.H{"code": http.StatusRequestTimeout, "message": "request timeout, response is sent from middleware"}
 
 	gin.DisableConsoleColor()
-	e := gin.New()
-	e.Use(gin.Recovery())
-	e.Use(timeout.TimeoutHandler(300*time.Second, http.StatusRequestTimeout, responseBodyTimeout))
-	e.Use(middlewareReqHandler())
-	e.Use(gin.LoggerWithFormatter(middlewareLogFormatter))
+	engine := gin.New()
 
-	// Static
-	e.LoadHTMLGlob("static/templates/*.tmpl")
-	e.Static("/static/img", "./static/img")
-	e.Static("/static/js", "./static/js")
+	engine.LoadHTMLGlob("static/templates/*.tmpl")
 
-	// REST
-	e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
-	e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
-	e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
-	e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
-	e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp))
-	e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
+	// ------------------------------- Config.BaseEndpoint group------------------------------------
+	e := engine.Group("/" + Config.BaseEndpoint)
+	{
+		e.Use(gin.Recovery())
+		e.Use(timeout.TimeoutHandler(300*time.Second, http.StatusRequestTimeout, responseBodyTimeout))
+		e.Use(middlewareReqHandler())
+		e.Use(gin.LoggerWithFormatter(middlewareLogFormatter))
+		// Static
+		e.StaticFS("/static", http.Dir("./static"))
+		// REST
+		e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
+		e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
+		e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
+		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/datasets",
+			"../"+Config.BaseEndpoint+"/api/short-url",
+			"../"+Config.BaseEndpoint+"/api/rse-details",
+			"/"+Config.BaseEndpoint+"/static"))
+		e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
 
-	// Pages
-	e.GET("/", controllers.GetIndexPage(mongoColNames.DatasourceTimestamp))
-	e.GET("/rse-details", controllers.GetDetailsPage)
+		// "../" uses base url in JS ajax calls. base endpoint directly goes to index page (main datasets page)
+		e.GET("/", controllers.GetIndexPage(mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/datasets",
+			"../"+Config.BaseEndpoint+"/api/short-url",
+			"../"+Config.BaseEndpoint+"/api/rse-detail",
+			"/"+Config.BaseEndpoint+"/static",
+		))
+		e.GET("/rse-details", controllers.GetDetailsPage)
+	}
+	// --------------------------------------------------------------------------------------------
 
 	//
-	return e
+	return engine
 }
 
 // Serve run service
@@ -110,7 +121,7 @@ func Serve(configFile string) {
 		WriteTimeout: time.Duration(Config.WriteTimeout) * time.Second,
 	}
 
-	utils.InfoLogV0("rucio dataset monitoring service is starting %s", nil)
+	utils.InfoLogV0("rucio dataset monitoring service is starting with base endpoint: %s", "/"+Config.BaseEndpoint)
 	utils.InfoLogV0("rucio dataset monitoring service is starting with config: %s", Config.String())
 	g.Go(func() error {
 		return mainServer.ListenAndServe()

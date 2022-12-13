@@ -71,7 +71,7 @@ function helperCopyToClipboard(message) {
  */
 function getShortUrl() {
     $.ajax({
-        url: '../api/short-url',
+        url: var_SHORT_URL_API_ENDPOINT,
         type: 'post',
         contentType: 'application/json',
         data: JSON.stringify({
@@ -80,8 +80,7 @@ function getShortUrl() {
         }),
         success: function (data) {
             // Call copy clipboard here
-            origin = window.location.origin
-            helperCopyToClipboard(origin + '/short-url/' + data);
+            helperCopyToClipboard(window.location.href + '/short-url/' + data);
         },
         error: function () {
             alert('Copy failed');
@@ -131,7 +130,7 @@ $(document).ready(function () {
             }
             //console.log(JSON.stringify(single_dataset_request))
             $.ajax({
-                url: '../api/rse-detail',
+                url: var_RSE_DETAILS_API_ENDPOINT,
                 type: 'post',
                 dataType: 'html',
                 contentType: 'application/json',
@@ -197,7 +196,7 @@ $(document).ready(function () {
             [5, 10, 25, 50, 100, 500, 1000, 10000]
         ],
         ajax: {
-            url: "../api/datasets",
+            url: var_DATASETS_API_ENDPOINT,
             method: "POST",
             contentType: 'application/json',
             data: function (d) {
