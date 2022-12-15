@@ -61,42 +61,49 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 
 	gin.DisableConsoleColor()
 	engine := gin.New()
-
+	engine.Use(gin.Recovery())
+	engine.Use(timeout.TimeoutHandler(300*time.Second, http.StatusRequestTimeout, responseBodyTimeout))
+	engine.Use(middlewareReqHandler())
+	engine.Use(gin.LoggerWithFormatter(middlewareLogFormatter))
 	engine.LoadHTMLGlob("static/templates/*.tmpl")
 
-	// ------------------------------- Config.BaseEndpoint group------------------------------------
+	// Index page
+	engine.StaticFS("/static", http.Dir("./static"))
+
+	// -------------------------------- Root ------------------------------------------------------
+	engine.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title": "Main website",
+		})
+	})
+
+	// ------------------------------- Config.BaseEndpoint group-----------------------------------
 	e := engine.Group("/" + Config.BaseEndpoint)
 	{
-		e.Use(gin.Recovery())
-		e.Use(timeout.TimeoutHandler(300*time.Second, http.StatusRequestTimeout, responseBodyTimeout))
-		e.Use(middlewareReqHandler())
-		e.Use(gin.LoggerWithFormatter(middlewareLogFormatter))
 		// Static
-		e.StaticFS("/static", http.Dir("./static"))
 		// REST
 		e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
 		e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
 		e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
 		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+		e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
+
+		// Pages
 		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
 			"../"+Config.BaseEndpoint+"/api/rse-details",
-			"/"+Config.BaseEndpoint+"/static"))
-		e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
+		))
 
 		// "../" uses base url in JS ajax calls. base endpoint directly goes to index page (main datasets page)
 		e.GET("/", controllers.GetIndexPage(mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
 			"../"+Config.BaseEndpoint+"/api/rse-detail",
-			"/"+Config.BaseEndpoint+"/static",
 		))
 		e.GET("/rse-details", controllers.GetDetailsPage)
 	}
-	// --------------------------------------------------------------------------------------------
 
-	//
 	return engine
 }
 

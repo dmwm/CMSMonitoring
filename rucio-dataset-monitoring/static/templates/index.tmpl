@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title> Datasets Monitoring </title>
+</head>
+<style>
+    .hover-class::before {
+        transform: scaleX(0);
+        transform-origin: bottom right;
+    }
+
+    .hover-class:hover::before {
+        transform: scaleX(1);
+        transform-origin: bottom left;
+    }
+
+    .hover-class::before {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        inset: 0 0 0 0;
+        background: hsl(200 100% 90%);
+        z-index: -1;
+        transition: transform .3s ease;
+    }
+
+    .hover-class {
+        position: relative;
+        font-size: 2rem;
+    }
+
+    html {
+        block-size: 100%;
+        inline-size: 100%;
+    }
+
+    ul {
+        min-block-size: 100%;
+        min-inline-size: 100%;
+        margin-top: 1em;
+        box-sizing: border-box;
+        display: grid;
+        place-content: center;
+        font-family: system-ui, sans-serif;
+    }
+
+    h1 {
+        min-block-size: 100%;
+        min-inline-size: 100%;
+        margin-top: 3em;
+        box-sizing: border-box;
+        display: grid;
+        place-content: center;
+        color: cornflowerblue;
+        font-family: system-ui, sans-serif;
+    }
+
+    @media (orientation: landscape) {
+        body {
+            grid-auto-flow: column;
+        }
+    }
+
+    ul.no-bullets {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+<body>
+<h1>Data Management Monitoring</h1>
+
+<p style="text-align: center;font-family: system-ui, sans-serif; color: cadetblue">This index page is created temporarily. Please use below directories to go Production pages.</p>
+
+<ul class="no-bullets" style="margin-top: 10em">
+    <li><a class="hover-class" href="./main">Main Datasets Table</a></li>
+    <li><a class="hover-class"
+           href="https://monit-grafana.cern.ch/d/000000530/cms-monitoring-project?orgId=11">Grafana</a></li>
+    <li><a class="hover-class" href="https://cms-monitoring.cern.ch/">CMS Monitoring</a></li>
+</ul>
+
+</body>
+</html>
