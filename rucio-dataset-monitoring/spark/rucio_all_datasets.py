@@ -27,16 +27,18 @@ from pyspark.sql.types import LongType
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 
+# Local
+import dbs_schemas
+
 # global variables
 TODAY = datetime.today().strftime('%Y-%m-%d')
 # Rucio
-HDFS_RUCIO_RSES = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/RSES/part*.avro'
-HDFS_RUCIO_REPLICAS = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/REPLICAS/part*.avro'
+HDFS_RUCIO_RSES = f'/project/awg/cms/rucio/{TODAY}/rses/part*.avro'
+HDFS_RUCIO_REPLICAS = f'/project/awg/cms/rucio/{TODAY}/replicas/part*.avro'
 HDFS_RUCIO_DIDS = f'/project/awg/cms/rucio/{TODAY}/dids/part*.avro'
 # DBS
-HDFS_DBS_DATASETS = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/DATASETS/part*.avro'
-HDFS_DBS_BLOCKS = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/BLOCKS/part*.avro'
-HDFS_DBS_FILES = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/FILES/part*.avro'
+HDFS_DBS_DATASETS = f'/project/awg/cms/dbs/PROD_GLOBAL/{TODAY}/DATASETS/*.gz'
+HDFS_DBS_FILES = f'/project/awg/cms/dbs/PROD_GLOBAL/{TODAY}/FILES/*.gz'
 
 pd.options.display.float_format = '{:,.2f}'.format
 pd.set_option('display.max_colwidth', None)
@@ -117,11 +119,12 @@ def get_df_dbs_f_d(spark):
 
     Columns selected: f_name, dataset
     """
-    dbs_files = spark.read.format('avro').load(HDFS_DBS_FILES) \
+    dbs_files = csvreader.schema(dbs_schemas.schema_files()).load(HDFS_DBS_FILES) \
         .withColumnRenamed('LOGICAL_FILE_NAME', 'f_name') \
         .withColumnRenamed('DATASET_ID', 'f_dataset_id') \
         .select(['f_name', 'f_dataset_id'])
-    dbs_datasets = spark.read.format('avro').load(HDFS_DBS_DATASETS) \
+    dbs_datasets = csvreader.schema(dbs_schemas.schema_datasets()).load(HDFS_DBS_DATASETS) \
+        .filter(col('IS_DATASET_VALID') == '1') \
         .withColumnRenamed('DATASET_ID', 'd_dataset_id') \
         .withColumnRenamed('DATASET', 'd_dataset') \
         .select(['d_dataset_id', 'd_dataset'])
@@ -135,8 +138,10 @@ def get_df_dbs_f_d(spark):
 def get_df_ds_general_info(spark):
     """Calculate real size and total file counts of dataset: RealSize, TotalFileCnt
     """
-    dbs_files = spark.read.format('avro').load(HDFS_DBS_FILES).select(['DATASET_ID', 'FILE_SIZE', 'LOGICAL_FILE_NAME'])
-    dbs_datasets = spark.read.format('avro').load(HDFS_DBS_DATASETS).select(['DATASET_ID'])
+    dbs_files = csvreader.schema(dbs_schemas.schema_files()).load(HDFS_DBS_FILES) \
+        .select(['DATASET_ID', 'FILE_SIZE', 'LOGICAL_FILE_NAME'])
+    dbs_datasets = csvreader.schema(dbs_schemas.schema_datasets()).load(HDFS_DBS_DATASETS) \
+        .select(['DATASET_ID'])
     return dbs_datasets.join(dbs_files, ['DATASET_ID'], how='left') \
         .groupby('DATASET_ID') \
         .agg(_sum('FILE_SIZE').alias('RealSize'),
@@ -302,7 +307,7 @@ def get_df_main_datasets(df_sub_rse_details, df_ds_general_info):
 def main(hdfs_out_dir):
     """Main function that run Spark dataframe creations and save results to HDFS directory as JSON lines
     """
-
+    global csvreader
     # HDFS output file format. If you change, please modify bin/cron4rucio_ds_mongo.sh accordingly.
     write_format = 'json'
     write_mode = 'overwrite'
@@ -310,6 +315,10 @@ def main(hdfs_out_dir):
     spark = get_spark_session(app_name='cms-monitoring-rucio-datasets-for-mongo')
     # Set TZ as UTC. Also set in the spark-submit confs.
     spark.conf.set("spark.sql.session.timeZone", "UTC")
+    # csvreader
+    csvreader = spark.read.format("csv") \
+        .option("nullValue", "null") \
+        .option("mode", "FAILFAST")
 
     # The reason that we have lots of functions that returns PySpark dataframes is mainly for code readability.
     df_rses = get_df_rses(spark)

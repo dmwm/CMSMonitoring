@@ -11,7 +11,7 @@ import (
 )
 
 // GetIndexPage serves datasets.tmpl page
-func GetIndexPage(collectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP, staticEP string) gin.HandlerFunc {
+func GetIndexPage(collectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
@@ -28,7 +28,6 @@ func GetIndexPage(collectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP,
 				"DATASETS_API_ENDPOINT":    datasetsApiEP,
 				"SHORT_URL_API_ENDPOINT":   shortUrlApiEP,
 				"RSE_DETAILS_API_ENDPOINT": rseDetailsApiEP,
-				"STATIC_ENDPOINT":          staticEP,
 			},
 		)
 		return
@@ -47,7 +46,7 @@ func GetDetailsPage(c *gin.Context) {
 }
 
 // GetIndexPageFromShortUrlId controller that returns page from short url hash id
-func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampCollectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP, staticEP string) gin.HandlerFunc {
+func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampCollectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
@@ -70,7 +69,6 @@ func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampColle
 				"DATASETS_API_ENDPOINT":    datasetsApiEP,
 				"SHORT_URL_API_ENDPOINT":   shortUrlApiEP,
 				"RSE_DETAILS_API_ENDPOINT": rseDetailsApiEP,
-				"STATIC_ENDPOINT":          staticEP,
 			},
 		)
 		return

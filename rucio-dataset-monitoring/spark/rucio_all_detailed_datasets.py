@@ -26,20 +26,23 @@ from pyspark.sql.types import LongType, DecimalType
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 
+# Local
+import dbs_schemas
+
 pd.options.display.float_format = '{:,.2f}'.format
 pd.set_option('display.max_colwidth', None)
 
 # global variables
 TODAY = datetime.today().strftime('%Y-%m-%d')
 # Rucio
-HDFS_RUCIO_RSES = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/RSES/part*.avro'
-HDFS_RUCIO_REPLICAS = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/REPLICAS/part*.avro'
+HDFS_RUCIO_RSES = f'/project/awg/cms/rucio/{TODAY}/rses/part*.avro'
+HDFS_RUCIO_REPLICAS = f'/project/awg/cms/rucio/{TODAY}/replicas/part*.avro'
 HDFS_RUCIO_DIDS = f'/project/awg/cms/rucio/{TODAY}/dids/part*.avro'
 HDFS_RUCIO_LOCKS = f'/project/awg/cms/rucio/{TODAY}/locks/part*.avro'
 # DBS
-HDFS_DBS_DATASETS = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/DATASETS/part*.avro'
-HDFS_DBS_BLOCKS = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/BLOCKS/part*.avro'
-HDFS_DBS_FILES = f'/tmp/cmsmonit/rucio_daily_stats-{TODAY}/FILES/part*.avro'
+HDFS_DBS_DATASETS = f'/project/awg/cms/dbs/PROD_GLOBAL/{TODAY}/DATASETS/*.gz'
+HDFS_DBS_BLOCKS = f'/project/awg/cms/dbs/PROD_GLOBAL/{TODAY}/BLOCKS/*.gz'
+HDFS_DBS_FILES = f'/project/awg/cms/dbs/PROD_GLOBAL/{TODAY}/FILES/*.gz'
 PROD_ACCOUNTS = ['transfer_ops', 'wma_prod', 'wmcore_output', 'wmcore_transferor', 'crab_tape_recall', 'sync']
 SYNC_PREFIX = 'sync'
 
@@ -136,7 +139,7 @@ def get_df_locks(spark):
 def get_df_dbs_files(spark):
     """Create DBS Files table dataframe
     """
-    return spark.read.format('avro').load(HDFS_DBS_FILES) \
+    return csvreader.schema(dbs_schemas.schema_files()).load(HDFS_DBS_FILES) \
         .filter(col('IS_FILE_VALID') == '1') \
         .withColumnRenamed('LOGICAL_FILE_NAME', 'FILE_NAME') \
         .select(['FILE_NAME', 'DATASET_ID', 'BLOCK_ID', 'FILE_SIZE'])
@@ -145,14 +148,14 @@ def get_df_dbs_files(spark):
 def get_df_dbs_blocks(spark):
     """Create DBS Blocks table dataframe
     """
-    return spark.read.format('avro').load(HDFS_DBS_BLOCKS) \
+    return csvreader.schema(dbs_schemas.schema_blocks()).load(HDFS_DBS_BLOCKS) \
         .select(['BLOCK_NAME', 'BLOCK_ID', 'DATASET_ID', 'FILE_COUNT'])
 
 
 def get_df_dbs_datasets(spark):
     """Create DBS Datasets table dataframe
     """
-    return spark.read.format('avro').load(HDFS_DBS_DATASETS) \
+    return csvreader.schema(dbs_schemas.schema_datasets()).load(HDFS_DBS_DATASETS) \
         .filter(col('IS_DATASET_VALID') == '1') \
         .select(['DATASET_ID', 'DATASET'])
 
@@ -252,7 +255,7 @@ def get_ds_in_rses(spark):
 def main(hdfs_out_dir):
     """Main function that run Spark dataframe creations and save results to HDFS directory as JSON lines
     """
-
+    global csvreader
     # HDFS output file format. If you change, please modify bin/cron4rucio_ds_mongo.sh accordingly.
     write_format = 'json'
     write_mode = 'overwrite'
@@ -260,6 +263,10 @@ def main(hdfs_out_dir):
     spark = get_spark_session(app_name='cms-monitoring-rucio-detailed-datasets-for-mongo')
     # Set TZ as UTC. Also set in the spark-submit confs.
     spark.conf.set("spark.sql.session.timeZone", "UTC")
+    # csvreader
+    csvreader = spark.read.format("csv") \
+        .option("nullValue", "null") \
+        .option("mode", "FAILFAST")
 
     df_ds_in_rses = get_ds_in_rses(spark)
     df_ds_in_rses.write.save(path=hdfs_out_dir, format=write_format, mode=write_mode)
