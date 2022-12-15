@@ -489,7 +489,7 @@ $(document).ready(function () {
                 titleAttr: "If you see any bug, please open issue!",
                 action: function (e, dt, node, config) {
                     //This will send the page to the location specified
-                    window.open("https://github.com/dmwm/CMSMonitoring/tree/master/g", "_blank");
+                    window.open("https://github.com/dmwm/CMSMonitoring/tree/master/rucio-dataset-monitoring", "_blank");
                 }
             },
             {
