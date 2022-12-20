@@ -181,6 +181,12 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 // GetSearchBuilderBson iterates over all criteria(s) and creates "AND"/"OR" bson.M query
 func GetSearchBuilderBson(sb *models.SearchBuilderRequest) bson.M {
 	var andQuery []bson.M
+
+	// If there is an entry for main Dataset search bar
+	if sb.InputDataset != "" {
+		andQuery = append(andQuery, bson.M{"Dataset": primitive.Regex{Pattern: sb.InputDataset, Options: "im"}})
+	}
+	// Rest of search builder
 	for _, condition := range sb.Criteria {
 		andQuery = append(andQuery, searchBsonSelections(condition))
 	}
@@ -190,6 +196,10 @@ func GetSearchBuilderBson(sb *models.SearchBuilderRequest) bson.M {
 	case "OR":
 		return bson.M{"$or": andQuery}
 	default:
+		// InputDataset query is not null
+		if andQuery != nil {
+			return bson.M{"$and": andQuery}
+		}
 		return bson.M{}
 	}
 }
