@@ -41,18 +41,15 @@
             color: #DC3220;!important;
             white-space: break-spaces;
         }
-        /*SearchBuilder title*/
-        .dtsb-titleRow {
-            background-color: #FFF3E6;
-        !important;
-        }
-        /*SearchBuilder group*/
-        .dtsb-searchBuilder {
-            border:1px solid #FFF3E6;
-            background-color: #ECF2F9;
-            /*border-color: #F2D7D9;*/
-            border-bottom-width: 30px;
-        }
+        /*!*SearchBuilder group*!*/
+        /*.dtsb-searchBuilder {*/
+        /*    border:4px solid #302E4B70;*/
+        /*    background-color: #E6ECFFF7;*/
+        /*    !*border-color: #F2D7D9;*!*/
+        /*}*/
+        /*.dtsb-searchBuilder > .dtsb-group > .dtsb-criteria {*/
+        /*    background-color: #FFB7001D !important*/
+        /*}*/
         /*Data timestamp button style*/
         /*#timestamp-hover-button:hover {*/
         /*    border-color: #005AB5;*/
@@ -66,6 +63,10 @@
             color: black;
             font-family: 'Trebuchet MS', sans-serif;
             font-size: small;
+        }
+        /*Importent to show processing pop-up at the top*/
+        div.dataTables_wrapper div.dataTables_processing {
+            top: 5%;
         }
     </style>
 
@@ -91,26 +92,38 @@
         <div class="col-xs-6 col-sm-4">
             <footer>
                 <img alt="CERN CMS O&C" src="/static/img/oc_icon.png"
-                     width="60" height="40">
+                     width="30" height="30">
             </footer>
         </div>
         <div class="col-xs-6 col-sm-4 align-self-center">
-            <h3> RUCIO DATASETS MONITORING </h3>
+            <h4> RUCIO DATASETS MONITORING </h4>
         </div>
         <div class="col-xs-6 col-sm-4 text-right">
             <footer>
                 <img alt="CERN CMS O&C" src="/static/img/oc_icon.png" style="text-align: right;"
-                     width="60" height="40">
+                     width="30" height="30">
             </footer>
         </div>
     </div>
 </div>
 
-<div class="container-fluid no-padding" style="width: 96%; background-color: #F9F9F9">
+<div class="container-fluid no-padding" style="width: 96%;">
     <div class="row">
         <hr class="rounded">
     </div>
-
+    <div class="row custom-filters">
+        <div class="row">
+            <div class="col">
+                <input class="form-control" id="input-dataset" type="search"
+                       placeholder="&#128269; Search Dataset <regex or fuzzy> <detailed queries:- add condition> <hit enter to search> "
+                       style="border-width: 3px; background-color: #FFB7001D; font-weight: bold;"
+                />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <hr class="rounded">
+    </div>
     <table class="go-datatable table table-sm table-bordered table-hover " style="border:3px solid #F0D9DA;">
         <!-- table table-sm-->
         <thead style="background-color: #C8D9EB; color: black; font-size: medium">

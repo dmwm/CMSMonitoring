@@ -22,10 +22,8 @@ type DataTableRequest struct {
 	Columns              []DTReqColumn        `json:"columns" validate:"required" binding:"required"` // Includes user input for columns (like search text for the column)
 	Length               int64                `json:"length"`                                         // Number of records that the table can display in the current draw.
 	Orders               []DTReqOrder         `json:"order"`                                          //
-	Search               DTReqSearch          `json:"search"`                                         //
 	Start                int64                `json:"start"`                                          //
 	SearchBuilderRequest SearchBuilderRequest `json:"searchBuilderRequest"`                           // SearchBuilderRequest (custom addition to DataTables request object)
-	CustomRequest        CustomRequest        `json:"customRequest"`                                  // CustomRequest (custom addition to DataTables request object)
 }
 
 // DTReqSearch represents main search text which client entered and can be regex or not.

@@ -15,7 +15,7 @@ func SearchQueryForSearchBuilderRequest(req *models.SearchBuilderRequest) bson.M
 
 	// Check if SearchBuilderRequest object in the incoming request is empty
 	if !reflect.DeepEqual(req, models.SearchBuilderRequest{}) {
-		utils.InfoLogV2("SearchBuilder is not null")
+		utils.InfoLogV2("SearchBuilder is not null: %#v", req)
 		findQuery = utils.GetSearchBuilderBson(req)
 	}
 	utils.InfoLogV1("find query is : %#v", findQuery)
