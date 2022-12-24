@@ -59,8 +59,8 @@ func getDatasetResults(ctx context.Context, c *gin.Context, datasetsCollectionNa
 		utils.ErrorResponse(c, "datasets cursor failed", err, "")
 	}
 
-	filteredRecCount := length + skip + 1
 	totalRecCount := getFilteredCount(ctx, c, collection, searchQuery, req.Draw)
+	filteredRecCount := totalRecCount
 	return models.DatatableBaseResponse{
 		Draw:            req.Draw,
 		RecordsTotal:    totalRecCount,

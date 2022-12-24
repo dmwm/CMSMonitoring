@@ -10,9 +10,9 @@ import (
 
 // SearchBuilderRequest datatables search builder request format
 type SearchBuilderRequest struct {
-	Criteria []SingleCriteria `json:"criteria,omitempty"`
-	// There are  "OR" and "AND" options.
-	Logic string `json:"logic,omitempty"`
+	Criteria     []SingleCriteria `json:"criteria,omitempty"`
+	Logic        string           `json:"logic,omitempty"`        // There are  "OR" and "AND" options.
+	InputDataset string           `json:"inputDataset,omitempty"` // Main search bar entry for dataset
 }
 
 // SingleCriteria condition object of SearchBuilderRequest
@@ -36,14 +36,19 @@ type SingleCriteria struct {
 func (r *SearchBuilderRequest) GetPrettyURL() string {
 	var prettyUrl string
 	prettyUrl += strings.ToLower(r.Logic) + "+"
+	// If dataset search bar is filled
+	if r.InputDataset != "" {
+		prettyUrl += "dataset:" + r.InputDataset + "+"
+	}
 	for _, c := range r.Criteria {
 		prettyUrl = prettyUrl +
-			c.Data + "." +
+			c.OrigData + "." +
 			strings.ToLower(c.Condition) + ":" +
 			strings.Join(c.Value[:], ",") +
 			"++"
 	}
 	prettyUrl = strings.Replace(prettyUrl, "/", "_", -1)
+	prettyUrl = strings.Replace(prettyUrl, " ", "", -1)
 	return prettyUrl
 }
 

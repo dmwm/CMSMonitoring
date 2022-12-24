@@ -5,7 +5,7 @@ var GLOBAL_INITIALIZATION_COUNTER = 0
 // Global variable to catch latest datatables request and set if provided in short url
 var GLOBAL_DT_REQUEST_HOLDER = null;
 
-// Global variable to catch latest DT dom state as json(i.e.: SearchBuilder view) and set if provided in short url
+// Global variable to catch the latest DT dom state as json(i.e.: SearchBuilder view) and set if provided in short url
 var GLOBAL_SAVED_STATE_HOLDER = null;
 
 // If short url, get saved state from the GoLang controller Template
@@ -15,6 +15,8 @@ if (var_IS_SHORT_URL === true) {
         console.log("[var_IS_SHORT_URL true]")
         console.log(GLOBAL_SAVED_STATE_HOLDER)
     }
+    // Set Main dataset search input bar from short url request
+    $('#input-dataset').val(var_SHORT_URL_REQUEST.searchBuilderRequest.inputDataset);
 }
 
 // ---------~~~~~~~~~  FUNCTIONS AND MAIN DEFINITIONS ~~~~~~~~~---------
@@ -80,7 +82,7 @@ function getShortUrl() {
         }),
         success: function (data) {
             // Call copy clipboard here
-            helperCopyToClipboard(window.location.href + '/short-url/' + data);
+            helperCopyToClipboard(window.location.href + 'short-url/' + data);
         },
         error: function () {
             alert('Copy failed');
@@ -122,7 +124,7 @@ $(document).ready(function () {
         if (!row.child.isShown()) {
             default_bg_color = $(tr).css("background-color");
             $(tr).addClass(d_class)
-            $(tr).css("background-color", "#F9ECEC")
+            // $(tr).css("background-color", "#CECBCEFF")
             row.child("<div id='" + type_name + random_str + "'>loading</div>").show()
             var single_dataset_request = {
                 "dataset": dataset_name,
@@ -166,10 +168,10 @@ $(document).ready(function () {
         dom: "iBQplrt", // no main search ("f"), just individual column search
         language: {
             searchBuilder: {
-                title: 'Search Builder | <span style="font-size: 12px">please hit enter after all conditions</span>',
                 clearAll: 'Reset',
                 delete: 'Delete',
             },
+            processing: "<span class='fa-stack fa-lg'><i class='fa fa-spinner fa-spin fa-stack-2x fa-fw'></i></span>&emsp;Processing ...",
         },
         stateSaveCallback: function (settings, data) {
             // Save the last state to "global_saved_state_holder" variable to use in the short url call
@@ -206,7 +208,7 @@ $(document).ready(function () {
                 GLOBAL_INITIALIZATION_COUNTER++;
 
                 // SearchBuilder request holder variable
-                var sbRequest = null;
+                var sbRequest = {};
 
                 // Check if user created a search builder query using SB Conditions
                 try {
@@ -217,8 +219,9 @@ $(document).ready(function () {
                     }
                 } catch (error) {
                     // User did not create SearchBuilder query, so set the request holder variable as null
-                    sbRequest = null;
+                    sbRequest = {};
                 }
+                sbRequest.inputDataset = $("#input-dataset").val();
                 // Add SearchBuilder JSON object to DataTable main request
                 d.searchBuilderRequest = sbRequest;
 
@@ -253,9 +256,10 @@ $(document).ready(function () {
         },
         searchBuilder: {
             depthLimit: 1,
-            // SearchBuilder customizations to limit conditions
-            columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            //greyscale: true,
+            // SearchBuilder customizations to limit conditions: "datasets" column not included because it is searched via "input-dataset"
+            columns: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            // greyscale: true,
+            // Sends additional query, that's why disabled.
             // preDefined: {
             //     criteria: [
             //         {
@@ -263,30 +267,6 @@ $(document).ready(function () {
             //             origData: 'RseType',
             //             condition: 'contains',
             //             value: ["DISK"]
-            //         },
-            //         {
-            //             data: 'Dataset',
-            //             origData: 'Dataset',
-            //             condition: 'contains',
-            //             value: ['nanoaod']
-            //         },
-            //         {
-            //             data: 'RSEs',
-            //             origData: 'RSEs',
-            //             condition: 'contains',
-            //             value: ['T2_CH_CERN.*T2_US_MIT']
-            //         },
-            //         {
-            //             data: 'RealSize',
-            //             origData: 'RealSize',
-            //             condition: 'starts',
-            //             value: ['1TB']
-            //         },
-            //         {
-            //             data: 'Last Access',
-            //             origData: 'LastAccess',
-            //             condition: 'between',
-            //             value: ["2022-04-01","2040-08-15"]
             //         },
             //     ]
             // },
@@ -365,9 +345,6 @@ $(document).ready(function () {
             {
                 data: "Dataset",
                 className: "details-value-dataset",
-                searchBuilder: {
-                    defaultCondition: "contains"
-                },
                 //width: "20%"
             },
             {
@@ -501,6 +478,14 @@ $(document).ready(function () {
                 }
             }
         ]
+    });
+    $('#input-dataset').on('enterKey', function () {
+        table.draw();
+    });
+    $('#input-dataset').keyup(function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            $(this).trigger("enterKey");
+        }
     });
     // Add event listener for opening and closing details
     table.on('click', 'td.dt-control', showRseDetails);
