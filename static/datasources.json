@@ -4,11 +4,6 @@
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_metric*]"
     },
-    "__test_timber_cms_apache": {
-        "id": 9707,
-        "type": "elasticsearch",
-        "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
-    },
     "Ceph ES Access": {
         "id": 9953,
         "type": "elasticsearch",
@@ -46,6 +41,31 @@
     },
     "cmsmonitoring-victoriametrics": {
         "id": 9455,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-victoriametrics-agg-1h": {
+        "id": 10278,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-victoriametrics-agg-long": {
+        "id": 10280,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-victoriametrics-ha1": {
+        "id": 10276,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-victoriametrics-ha2": {
+        "id": 10277,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cmsmonitoring-victoriametrics-mon": {
+        "id": 10279,
         "type": "prometheus",
         "database": ""
     },
@@ -88,6 +108,11 @@
         "id": 9288,
         "type": "elasticsearch",
         "database": "cmssdt-scram-access*"
+    },
+    "cmst0_agg": {
+        "id": 10325,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmst0_agg-*]"
     },
     "cmstest-victoriametrics": {
         "id": 9472,
@@ -279,6 +304,26 @@
         "type": "elasticsearch",
         "database": ""
     },
+    "Elasticsearch-5": {
+        "id": 10281,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "Elasticsearch-6": {
+        "id": 10358,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "Elasticsearch-7": {
+        "id": 10359,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "Elasticsearch-8": {
+        "id": 10360,
+        "type": "elasticsearch",
+        "database": ""
+    },
     "es-cms": {
         "id": 8983,
         "type": "elasticsearch",
@@ -309,6 +354,11 @@
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_raw_events*]"
     },
+    "Graphite": {
+        "id": 10305,
+        "type": "graphite",
+        "database": ""
+    },
     "InfluxDB": {
         "id": 9827,
         "type": "influxdb",
@@ -319,25 +369,10 @@
         "type": "prometheus",
         "database": ""
     },
-    "monit-timber-cms-apache": {
-        "id": 9229,
-        "type": "elasticsearch",
-        "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
-    },
-    "monit-timber-cms-apache-2": {
-        "id": 9704,
-        "type": "elasticsearch",
-        "database": "[monit_private_cmsweb_logs_apache-]YYYY-MM-DD"
-    },
-    "monit-timber-cms-auth": {
-        "id": 9741,
-        "type": "elasticsearch",
-        "database": "[monit_private_cmsweb_logs_auth-]YYYY-MM-DD"
-    },
     "monit-timber-cms-crab-httpcall": {
         "id": 10185,
         "type": "elasticsearch",
-        "database": "[monit_private_crab_logs_crabhttpcall-]*"
+        "database": "[monit_private_crab_logs_crabhttpcall-]YYYY-MM-DD"
     },
     "monit-timber-cms-crab-publisher": {
         "id": 9830,
@@ -352,7 +387,7 @@
     "monit-timber-cms-crab-taskworker": {
         "id": 9795,
         "type": "elasticsearch",
-        "database": "[monit_private_crab_logs_crabtaskworker-]*"
+        "database": "[monit_private_crab_logs_crabtaskworker-]YYYY-MM-DD"
     },
     "monit-timber-cms-crab-taskworker_kafka_ts": {
         "id": 9851,
@@ -374,10 +409,10 @@
         "type": "elasticsearch",
         "database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD"
     },
-    "monit-timber-cmswebk8s-crabserver": {
-        "id": 10145,
+    "monit-timber-cmswebk8s-generic": {
+        "id": 10315,
         "type": "elasticsearch",
-        "database": "[monit_private_cmswebk8s_logs_crabserver-]YYYY-MM-DD"
+        "database": "[monit_private_cmswebk8s_logs_generic-]YYYY-MM-DD"
     },
     "monit-timber-si-factory": {
         "id": 9908,
@@ -409,15 +444,35 @@
         "type": "elasticsearch",
         "database": "[monit_prod_crab_*]"
     },
+    "monit_eos_ioapp": {
+        "id": 10338,
+        "type": "influxdb",
+        "database": "monit_production_eos_users"
+    },
     "monit_eoscmsquotas": {
         "id": 9003,
         "type": "elasticsearch",
         "database": "[monit_prod_eoscmsquotas*]"
     },
+    "monit_es_cms_eos_mon": {
+        "id": 10363,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_eos_mon_raw_metric-*]"
+    },
     "monit_es_cms_rucio_daily_dataset_stats": {
         "id": 10151,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_raw_daily_stats-]YYYY-MM-DD"
+    },
+    "monit_es_cms_rucio_monthly_stats": {
+        "id": 10362,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_rucio_raw_monthly_stats-*]"
+    },
+    "monit_es_cms_rucio_weekly_stats": {
+        "id": 10361,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_rucio_raw_weekly_stats-*]"
     },
     "monit_es_cmsjm_agg": {
         "id": 9582,
@@ -448,6 +503,11 @@
         "id": 9845,
         "type": "elasticsearch",
         "database": "[monit_prod_cmssw_pop_raw_metric-]YYYY-MM-DD"
+    },
+    "monit_es_cmst0_agg": {
+        "id": 10326,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmst0_agg*]"
     },
     "monit_es_condor": {
         "id": 8787,
