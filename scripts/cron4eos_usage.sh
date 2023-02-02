@@ -1,11 +1,12 @@
 #!/bin/bash
 ##H Script to create CMS Eos path sizes with conditions
 ##H CMSVOC and CMSMONITORING groups are responsible for this script.
-
 set -e
 TZ=UTC
 myname=$(basename "$0")
 script_dir="$(cd "$(dirname "$0")" && pwd)"
+# Get nice util functions
+. "${script_dir}"/utils.sh
 
 # Do not change the order of "--output_file"([0],[1]) which is replaced in K8s run
 py_input_args=(
@@ -22,10 +23,6 @@ if [ -n "$K8S_ENV" ]; then
     # Replace static output file with user arg for testability.
     py_input_args[1]=$1
 
-    # Get nice utils from CMSSpark
-    curl -ksLO https://raw.githubusercontent.com/dmwm/CMSSpark/master/bin/utils/common_utils.sh
-    . common_utils.sh
-
     util4logi "${myname} is starting.."
     util_cron_send_start "$myname" "1h"
 
@@ -37,7 +34,7 @@ if [ -n "$K8S_ENV" ]; then
     exit 0
     # break
 fi
-# ---------------------------------------------------------------------------------------------------------------------
+# Run in LxPlus for test ----------------------------------------------------------------------------------------------
 
 . /cvmfs/sft.cern.ch/lcg/views/LCG_101/x86_64-centos7-gcc8-opt/setup.sh
 
