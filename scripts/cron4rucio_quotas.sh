@@ -3,15 +3,14 @@ set -e
 TZ=UTC
 myname=$(basename "$0")
 script_dir="$(cd "$(dirname "$0")" && pwd)"
+# Get nice util functions
+. "${script_dir}"/utils.sh
 
 # ---------------------------------------------------------------------------------------------------------- Run in K8S
 if [ -n "$K8S_ENV" ]; then
     # $1: output, shift is mandatory because rucio/setup-py3.sh also waits for $1
     output_=$1; shift
 
-    # Get nice utils from CMSSpark
-    curl -ksLO https://raw.githubusercontent.com/dmwm/CMSSpark/master/bin/utils/common_utils.sh
-    . common_utils.sh
     util4logi "${myname} is starting.."
     util_cron_send_start "$myname" "1h"
 
@@ -28,7 +27,7 @@ if [ -n "$K8S_ENV" ]; then
     exit 0
     # break
 fi
-# ---------------------------------------------------------------------------------------------------------------------
+# Run in LxPlus for test ----------------------------------------------------------------------------------------------
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh >/dev/null
 source /cvmfs/cms.cern.ch/rucio/setup-py3.sh >/dev/null
