@@ -83,6 +83,7 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 		// Static
 		// REST
 		e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
+		e.POST("/api/detailed-datasets", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
 		//e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
 		e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
 		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
@@ -101,7 +102,10 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 			"../"+Config.BaseEndpoint+"/api/short-url",
 			"../"+Config.BaseEndpoint+"/api/rse-detail",
 		))
-		e.GET("/rse-details", controllers.GetDetailsPage)
+		e.GET("/rse-details", controllers.GetDetailsPage(mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/detailed-datasets",
+			"../"+Config.BaseEndpoint+"/api/short-url",
+		))
 	}
 
 	return engine

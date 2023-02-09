@@ -1,10 +1,10 @@
 {
-    "port": 8080,
-    "verbose": 0,
+    "port": 8081,
+    "verbose": 1,
     "env_file": "/etc/secrets/client_env",
-    "read_timeout": 10,
-    "write_timeout": 10,
-    "mongo_connection_timeout": 100,
+    "read_timeout": 600,
+    "write_timeout": 600,
+    "mongo_connection_timeout": 600,
     "base_endpoint": "main",
     "prod_lock_accounts": [
         "transfer_ops",

@@ -46,7 +46,6 @@ function run_spark() {
     # Required for Spark job in K8s
     spark_py_file=$1
     hdfs_out_dir=$2
-    yesterday_hdfs_out_dir=$3
 
     util4logi "Spark Job for ${spark_py_file} starting..."
     export PYTHONPATH=$script_dir:$PYTHONPATH
@@ -65,8 +64,6 @@ function run_spark() {
     # ------------------------------------------------------------------------------------ POST OPS
     # Give read access to new dumps for all users
     hadoop fs -chmod -R o+rx "$hdfs_out_dir"/
-    # Delete yesterdays dumps
-    hadoop fs -rm -r -f -skipTrash "$yesterday_hdfs_out_dir"
 
     util4logi "Spark results are written to ${hdfs_out_dir}"
     util4logi "Spark Job for ${spark_py_file} finished."
@@ -75,18 +72,17 @@ function run_spark() {
 # Remove trailing slash if exists
 HDFS_PATH=${HDFS_PATH%/}
 
-###################### Run datasets
-# Arrange a temporary HDFS directory that current Kerberos user can use for datasets collection
-datasets_hdfs_out="${HDFS_PATH}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
-datasets_hdfs_out_yesterday="${HDFS_PATH}/rucio_ds_for_mongo/$(date -d "yesterday" '+%Y-%m-%d')"
-run_spark "rucio_all_datasets.py" "$datasets_hdfs_out" "$datasets_hdfs_out_yesterday" 2>&1
+########## Arrange a temporary HDFS directory that current Kerberos user can use for datasets collection
+hdfs_out="${HDFS_PATH}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
+hdfs_out_yesterday="${HDFS_PATH}/rucio_ds_for_mongo/$(date -d "yesterday" '+%Y-%m-%d')"
 
-###################### Run detailed datasets
-# Arrange a temporary HDFS directory that current Kerberos user can use for detailed_datasets collection
-detailed_datasets_hdfs_out="${HDFS_PATH}/rucio_detailed_ds_for_mongo/$(date +%Y-%m-%d)"
-detailed_datasets_hdfs_out_yesterday="${HDFS_PATH}/rucio_detailed_ds_for_mongo/$(date -d "yesterday" '+%Y-%m-%d')"
-run_spark "rucio_all_detailed_datasets.py" "$detailed_datasets_hdfs_out" "$detailed_datasets_hdfs_out_yesterday" 2>&1
+# Run main datasets: path suffix is "/main"
+run_spark "rucio_all_datasets.py" "$hdfs_out" 2>&1
+#Run detailed datasets: paths suffixes are "/detailed" and "/both"
+run_spark "rucio_all_detailed_datasets.py" "$hdfs_out" 2>&1
 
+# Delete yesterdays dumps
+hadoop fs -rm -r -f -skipTrash "$hdfs_out_yesterday"
 # -------------------------------------------------------------------------------------------------------------- FINISH
 # Print process wall clock time
 duration=$(($(date +%s) - START_TIME))

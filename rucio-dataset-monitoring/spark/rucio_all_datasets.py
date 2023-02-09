@@ -39,6 +39,7 @@ HDFS_RUCIO_DIDS = f'/project/awg/cms/rucio/{TODAY}/dids/part*.avro'
 # DBS
 HDFS_DBS_DATASETS = f'/project/awg/cms/dbs/PROD_GLOBAL/{TODAY}/DATASETS/*.gz'
 HDFS_DBS_FILES = f'/project/awg/cms/dbs/PROD_GLOBAL/{TODAY}/FILES/*.gz'
+HDFS_SUB_DIR = "main"
 
 pd.options.display.float_format = '{:,.2f}'.format
 pd.set_option('display.max_colwidth', None)
@@ -308,6 +309,8 @@ def main(hdfs_out_dir):
     """Main function that run Spark dataframe creations and save results to HDFS directory as JSON lines
     """
     global csvreader
+
+    hdfs_out_dir = hdfs_out_dir + "/" + HDFS_SUB_DIR
     # HDFS output file format. If you change, please modify bin/cron4rucio_ds_mongo.sh accordingly.
     write_format = 'json'
     write_mode = 'overwrite'

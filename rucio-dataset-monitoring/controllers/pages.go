@@ -35,14 +35,26 @@ func GetIndexPage(collectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP 
 }
 
 // GetDetailsPage serves detailed_datasets.tmpl page
-func GetDetailsPage(c *gin.Context) {
-	c.HTML(
-		http.StatusOK,
-		"detailed_datasets.tmpl",
-		gin.H{
-			"title": "Detailed Datasets Page",
-		},
-	)
+func GetDetailsPage(collectionName, detailedDatasetsApiEP, shortUrlApiEP string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
+		defer cancel()
+		// get source data creation time
+		dataTimestamp := GetDataSourceTimestamp(ctx, c, collectionName)
+		c.HTML(
+			http.StatusOK,
+			"detailed_datasets.tmpl",
+			gin.H{
+				"title":                          "Detailed Datasets Page",
+				"VERBOSITY":                      utils.Verbose,
+				"IS_SHORT_URL":                   false,
+				"SOURCE_DATE":                    dataTimestamp.CreatedAt,
+				"DETAILED_DATASETS_API_ENDPOINT": detailedDatasetsApiEP,
+				"SHORT_URL_API_ENDPOINT":         shortUrlApiEP,
+			},
+		)
+		return
+	}
 }
 
 // GetIndexPageFromShortUrlId controller that returns page from short url hash id

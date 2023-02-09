@@ -76,16 +76,20 @@ function run_mongo_import() {
     util4logi "Mongoimport finished. ${hdfs_out_dir} imported to collection: ${collection}"
 }
 # Remove trailing slash if exists
-HDFS_PATH=${HDFS_PATH%/}
+HDFS_PATH="${HDFS_PATH%/}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
 
-###################### Import datasets
+###################### Import main datasets
 # Arrange a temporary HDFS directory that current Kerberos user can use for datasets collection
-datasets_hdfs_path="${HDFS_PATH}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
-run_mongo_import "$datasets_hdfs_path" "datasets" 2>&1
+main_datasets_hdfs_path="${HDFS_PATH}/main"
+run_mongo_import "$main_datasets_hdfs_path" "datasets" 2>&1
 
 ###################### Import detailed datasets
-detailed_datasets_hdfs_path="${HDFS_PATH}/rucio_detailed_ds_for_mongo/$(date +%Y-%m-%d)"
+detailed_datasets_hdfs_path="${HDFS_PATH}/detailed"
 run_mongo_import "$detailed_datasets_hdfs_path" "detailed_datasets" 2>&1
+
+###################### Import datasets in both (Tape and Disk)
+datasets_both_hdfs_path="${HDFS_PATH}/both"
+run_mongo_import "$datasets_both_hdfs_path" "datasets_in_both" 2>&1
 
 # ---------------------------------------------------------------------------------------- SOURCE TIMESTAMP MONGOIMPORT
 # Write current date to json file and import it to MongoDB "source_timestamp" collection for Go Web Page.
