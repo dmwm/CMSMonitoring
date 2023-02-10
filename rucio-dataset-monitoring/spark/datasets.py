@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-File        : rucio_all_datasets.py
+File        : datasets.py
 Author      : Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
 Description : This Spark job creates datasets summary results by aggregating Rucio&DBS tables and
                 save result to HDFS directory as a source to MongoDB of go web service

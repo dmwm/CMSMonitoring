@@ -4,7 +4,7 @@ set -e
 ##H Can only run in K8s, you may modify to run in local by arranging env vars
 ##H
 ##H cron4rucio_spark2hdfs.sh
-##H    Cron job of rucio_all_datasets.py and rucio_all_detailed_datasets.py which runs Spark job to get Rucio datasets and writes to HDFS directory.
+##H    Cron job of datasets.py and detailed_datasets.py which runs Spark job to get Rucio datasets and writes to HDFS directory.
 ##H
 ##H Arguments:
 ##H   - keytab              : Kerberos auth file to connect Spark Analytix cluster (cmsmonit)
@@ -39,7 +39,7 @@ KERBEROS_USER=$(util_kerberos_auth_with_keytab "$KEYTAB_SECRET")
 util4logi "authenticated with Kerberos user: ${KERBEROS_USER}"
 
 # ------------------------------------------------------------------------------------------------------- RUN SPARK JOB
-# arg1: python file [rucio_all_datasets.py or rucio_all_detailed_datasets.py]
+# arg1: python file [datasets.py or detailed_datasets.py]
 # arg2: hdfs output directory
 # arg3: hdfs output directory of yesterday
 function run_spark() {
@@ -77,9 +77,9 @@ hdfs_out="${HDFS_PATH}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
 hdfs_out_yesterday="${HDFS_PATH}/rucio_ds_for_mongo/$(date -d "yesterday" '+%Y-%m-%d')"
 
 # Run main datasets: path suffix is "/main"
-run_spark "rucio_all_datasets.py" "$hdfs_out" 2>&1
+run_spark "datasets.py" "$hdfs_out" 2>&1
 #Run detailed datasets: paths suffixes are "/detailed" and "/both"
-run_spark "rucio_all_detailed_datasets.py" "$hdfs_out" 2>&1
+run_spark "detailed_datasets.py" "$hdfs_out" 2>&1
 
 # Delete yesterdays dumps
 hadoop fs -rm -r -f -skipTrash "$hdfs_out_yesterday"

@@ -6,8 +6,8 @@ package server
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
+	"os"
 )
 
 // Config represents global configuration object
@@ -28,10 +28,11 @@ type Configuration struct {
 
 // MongoCollectionNames mongo collection names struct
 type MongoCollectionNames struct {
-	Datasets            string `json:"datasets"`             // datasets collection name
-	DetailedDatasets    string `json:"detailed_datasets"`    // detailed datasets collection name
-	ShortUrl            string `json:"short_url"`            // short_url collection name
-	DatasourceTimestamp string `json:"datasource_timestamp"` // datasource_timestamp collection name
+	MainDatasets          string `json:"main_datasets"`             // main datasets collection name
+	DetailedDatasets      string `json:"detailed_datasets"`         // detailed datasets collection name
+	DatasetsInTapeAndDisk string `json:"datasets_in_tape_and_disk"` // datasets in both tape and disk collection name
+	ShortUrl              string `json:"short_url"`                 // short_url collection name
+	DatasourceTimestamp   string `json:"datasource_timestamp"`      // datasource_timestamp collection name
 }
 
 // String returns string representation of dbs Config
@@ -46,7 +47,7 @@ func (c *Configuration) String() string {
 
 // ParseConfig parses given configuration file and initialize Config object
 func ParseConfig(configFile string) error {
-	data, err := ioutil.ReadFile(configFile)
+	data, err := os.ReadFile(configFile)
 	if err != nil {
 		log.Println("unable to read config file", configFile, err)
 		return err

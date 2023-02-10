@@ -82,27 +82,27 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 	{
 		// Static
 		// REST
-		e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
-		e.POST("/api/detailed-datasets", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
-		//e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
-		e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
+		e.POST("/api/main-datasets", controllers.GetMainDatasets(mongoColNames.MainDatasets))
+		e.POST("/api/detailed-datasets", controllers.GetDetailedDatasets(mongoColNames.DetailedDatasets))
+		//e.POST("/api/rse-details", controllers.GetDetailedDatasets(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
+		e.POST("/api/main-dataset-details", controllers.GetMainDatasetDetails(mongoColNames.DetailedDatasets))
 		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
 		e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
 
 		// Pages
 		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/datasets",
+			"../"+Config.BaseEndpoint+"/api/main-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
-			"../"+Config.BaseEndpoint+"/api/rse-details",
+			"../"+Config.BaseEndpoint+"/api/main-dataset-details",
 		))
 
 		// "../" uses base url in JS ajax calls. base endpoint directly goes to index page (main datasets page)
-		e.GET("/", controllers.GetIndexPage(mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/datasets",
+		e.GET("/main-ds", controllers.GetMainDatasetsPage(mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/main-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
-			"../"+Config.BaseEndpoint+"/api/rse-detail",
+			"../"+Config.BaseEndpoint+"/api/main-dataset-details",
 		))
-		e.GET("/rse-details", controllers.GetDetailsPage(mongoColNames.DatasourceTimestamp,
+		e.GET("/detailed-ds", controllers.GetDetailedDatasetsPage(mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/detailed-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
 		))

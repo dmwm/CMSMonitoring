@@ -30,6 +30,17 @@ TZ=UTC
 START_TIME=$(date +%s)
 myname=$(basename "$0")
 script_dir="$(cd "$(dirname "$0")" && pwd)"
+
+# MongoDB collection names
+col_main_datasets="main_datasets"
+col_detailed_datasets="detailed_datasets"
+col_datasets_in_tape_and_disk="datasets_in_tape_and_disk"
+
+# Temporary HDFS result directory
+hdfs_main_datasets="main"
+hdfs_detailed_datasets="detailed"
+hdfs_datasets_in_tape_and_disk="in_tape_and_disk"
+
 # Source util functions
 . "$script_dir"/utils.sh
 
@@ -80,16 +91,13 @@ HDFS_PATH="${HDFS_PATH%/}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
 
 ###################### Import main datasets
 # Arrange a temporary HDFS directory that current Kerberos user can use for datasets collection
-main_datasets_hdfs_path="${HDFS_PATH}/main"
-run_mongo_import "$main_datasets_hdfs_path" "datasets" 2>&1
+run_mongo_import "${HDFS_PATH}/${hdfs_main_datasets}" "$col_main_datasets" 2>&1
 
 ###################### Import detailed datasets
-detailed_datasets_hdfs_path="${HDFS_PATH}/detailed"
-run_mongo_import "$detailed_datasets_hdfs_path" "detailed_datasets" 2>&1
+run_mongo_import "${HDFS_PATH}/${hdfs_detailed_datasets}" "$col_detailed_datasets" 2>&1
 
-###################### Import datasets in both (Tape and Disk)
-datasets_both_hdfs_path="${HDFS_PATH}/both"
-run_mongo_import "$datasets_both_hdfs_path" "datasets_in_both" 2>&1
+###################### Import datasets in both Tape and Disk
+run_mongo_import "${HDFS_PATH}/${hdfs_datasets_in_tape_and_disk}" "$col_datasets_in_tape_and_disk" 2>&1
 
 # ---------------------------------------------------------------------------------------- SOURCE TIMESTAMP MONGOIMPORT
 # Write current date to json file and import it to MongoDB "source_timestamp" collection for Go Web Page.

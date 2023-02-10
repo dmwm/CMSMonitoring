@@ -12,32 +12,30 @@ import (
 )
 
 var (
-	// detailedDsUniqueSortColumn required for pagination in order
-	detailedDsUniqueSortColumn = "_id"
+	// detailedDatasetsUniqueSortColumn required for pagination in order
+	detailedDatasetsUniqueSortColumn = "_id"
 )
 
-// GetDetailedDs controller that returns datasets according to DataTable request json
-func GetDetailedDs(collectionName string, prodLockAccounts *[]string) gin.HandlerFunc {
+// GetDetailedDatasets controller that returns datasets according to DataTable request json
+func GetDetailedDatasets(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// We need to provide models.DataTableCustomRequest to the controller initializer and use same type in casting
 		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
 		defer cancel()
-		detailedDatasetsResp := getDetailedDsResults(ctx, c, collectionName, prodLockAccounts, req.(models.DataTableRequest))
-		c.JSON(http.StatusOK,
-			detailedDatasetsResp,
-		)
+
+		c.JSON(http.StatusOK, getDetailedDatasetsResults(ctx, c, collectionName, req.(models.DataTableRequest)))
 		return
 	}
 }
 
-// getDetailedDsResults get query results efficiently
-func getDetailedDsResults(ctx context.Context, c *gin.Context, collectionName string, prodLockAccounts *[]string, req models.DataTableRequest) models.DatatableBaseResponse {
+// getDetailedDatasetsResults get query results efficiently
+func getDetailedDatasetsResults(ctx context.Context, c *gin.Context, collectionName string, req models.DataTableRequest) models.DatatableBaseResponse {
 	collection := mymongo.GetCollection(collectionName)
 	var detailedDatasets []models.DetailedDataset
 
 	// Should use SearchBuilderRequest query
 	searchQuery := mymongo.SearchQueryForSearchBuilderRequest(&req.SearchBuilderRequest)
-	sortQuery := mymongo.SortQueryBuilder(&req, detailedDsUniqueSortColumn)
+	sortQuery := mymongo.SortQueryBuilder(&req, detailedDatasetsUniqueSortColumn)
 	length := req.Length
 	skip := req.Start
 

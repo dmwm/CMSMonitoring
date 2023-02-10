@@ -27,7 +27,7 @@ func SearchQueryBuilderForCustomRequest(customR *models.CustomRequest, prodAccou
 	findQuery := bson.M{}
 	utils.InfoLogV2("CustomRequest query is : %#v", customR.String())
 	if customR.Dataset != "" {
-		findQuery["Dataset"] = primitive.Regex{Pattern: customR.Dataset, Options: "im"}
+		findQuery["MainDataset"] = primitive.Regex{Pattern: customR.Dataset, Options: "im"}
 	}
 	if customR.Rse != "" {
 		findQuery["RSE"] = primitive.Regex{Pattern: customR.Rse, Options: "im"}

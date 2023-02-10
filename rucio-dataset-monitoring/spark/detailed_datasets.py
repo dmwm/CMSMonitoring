@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-File        : rucio_all_detailed_datasets.py
+File        : detailed_datasets.py
 Author      : Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
 Description : This Spark job creates detailed datasets(in each RSEs) results by aggregating Rucio&DBS tables and
                 save result to HDFS directory as a source to MongoDB of go web service
@@ -46,7 +46,7 @@ PROD_ACCOUNTS = ['transfer_ops', 'wma_prod', 'wmcore_output', 'wmcore_transferor
 SYNC_PREFIX = 'sync'
 
 HDFS_SUB_DIR_DETAILED = "detailed"
-HDFS_SUB_DIR_BOTH = "both"
+HDFS_SUB_DIR_IN_BOTH = "in_tape_and_disk"
 
 
 def get_spark_session(app_name):
@@ -334,7 +334,7 @@ def get_df_main_datasets_in_each_rse(spark):
         .withColumnRenamed('rse_country', 'C') \
         .withColumnRenamed('rse_kind', 'RseKind') \
         .fillna(0, subset=['LastAccessMs']) \
-        .select(['Type', 'Dataset', 'RSE', 'Tier', 'C', 'RseKind', 'SizeBytes', 'LastAccess', 'LastAccessMs',
+        .select(['Type', 'Dataset', 'RSE', 'Tier', 'C', 'RseKind', 'SizeBytes', 'LastAccess',
                  'IsFullyReplicated', 'IsLocked', 'FilePercentage', 'FileCount', 'AccessedFileCount', 'BlockCount',
                  'ProdLockedBlockCount', 'ProdAccounts', 'BlockRuleIDs'])
 
@@ -389,7 +389,7 @@ def main(hdfs_out_dir):
     """Main function that run Spark dataframe creations and save results to HDFS directory as JSON lines
     """
     hdfs_out_dir_detailed = hdfs_out_dir + "/" + HDFS_SUB_DIR_DETAILED
-    hdfs_out_dir_in_both = hdfs_out_dir + "/" + HDFS_SUB_DIR_BOTH
+    hdfs_out_dir_in_both = hdfs_out_dir + "/" + HDFS_SUB_DIR_IN_BOTH
 
     # HDFS output file format. If you change, please modify bin/cron4rucio_ds_mongo.sh accordingly.
     write_format = 'json'

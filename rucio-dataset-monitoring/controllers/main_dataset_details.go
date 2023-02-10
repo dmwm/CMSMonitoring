@@ -11,19 +11,19 @@ import (
 	"net/http"
 )
 
-// GetSingleDetailedDs controller that returns detailed dataset in TAPE or DISK
-func GetSingleDetailedDs(collectionName string) gin.HandlerFunc {
+// GetMainDatasetDetails controller that returns detailed dataset in TAPE or DISK
+func GetMainDatasetDetails(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.SingleDetailedDatasetsRequest{})
+		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.MainDatasetDetailsRequest{})
 		defer cancel()
 
 		// Cast interface to request
-		r := req.(models.SingleDetailedDatasetsRequest)
+		r := req.(models.MainDatasetDetailsRequest)
 
 		collection := mymongo.GetCollection(collectionName)
 
 		var detailedRows []models.DetailedDataset
-		cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"Dataset": r.Dataset, "Type": r.Type})
+		cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"MainDataset": r.Dataset, "Type": r.Type})
 		if err != nil {
 			utils.ErrorResponse(c, "Find query failed", err, "")
 		}
@@ -32,7 +32,7 @@ func GetSingleDetailedDs(collectionName string) gin.HandlerFunc {
 		}
 
 		c.HTML(http.StatusOK,
-			"rse_detail_table.tmpl",
+			"main_dataset_details.tmpl",
 			gin.H{"data": detailedRows},
 		)
 		return

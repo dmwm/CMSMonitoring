@@ -18,17 +18,16 @@ type DetailedDataset struct {
 	C                    string      `bson:"C" validate:"required"` // Country
 	RseKind              string      `bson:"RseKind" validate:"required"`
 	SizeBytes            int64       `json:"SizeBytes"`
-	LastAccess           string      `bson:"LastAccess"`   // Last access to dataset in ISO8601 format
-	LastAccessMs         int64       `bson:"LastAccessMs"` // Last access to dataset in unix ts
-	IsFullyReplicated    int64       `bson:"IsFullyReplicated"`
+	LastAccess           Epoch       `bson:"LastAccess"` // Last access to dataset in ISO8601 format
+	IsFullyReplicated    bool        `bson:"IsFullyReplicated"`
+	IsLocked             string      `bson:"IsLocked"`
 	FilePercentage       float64     `bson:"FilePercentage"`
 	FileCount            int64       `bson:"FileCount"` // File count of the dataset in the RSE
 	AccessedFileCount    int64       `bson:"AccessedFileCount"`
 	BlockCount           int64       `bson:"BlockCount"`
+	ProdLockedBlockCount int64       `bson:"ProdLockedBlockCount"`
 	ProdAccounts         StringArray `bson:"ProdAccounts"` // Production accounts that locked the files
 	BlockRuleIDs         StringArray `bson:"BlockRuleIDs"`
-	ProdLockedBlockCount int64       `bson:"ProdLockedBlockCount"`
-	IsLocked             string      `bson:"IsLocked"`
 }
 
 // MarshalJSON marshal integer unix time to date string in YYYY-MM-DD format

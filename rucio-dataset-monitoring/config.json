@@ -1,11 +1,11 @@
 {
-    "port": 8081,
+    "port": 8080,
     "verbose": 1,
-    "env_file": "/etc/secrets/client_env",
+    "env_file": "/Users/ceyhunuzunoglu/projects/cms/secrets/client_env",
     "read_timeout": 600,
     "write_timeout": 600,
     "mongo_connection_timeout": 600,
-    "base_endpoint": "main",
+    "base_endpoint": "rucio-ds",
     "prod_lock_accounts": [
         "transfer_ops",
         "wma_prod",
@@ -15,8 +15,9 @@
         "sync"
     ],
     "collection_names": {
-        "datasets": "datasets",
+        "main_datasets": "main_datasets",
         "detailed_datasets": "detailed_datasets",
+        "datasets_in_tape_and_disk": "datasets_in_tape_and_disk",
         "short_url": "short_url",
         "datasource_timestamp": "source_timestamp"
     }

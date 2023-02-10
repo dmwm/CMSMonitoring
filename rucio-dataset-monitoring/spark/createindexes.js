@@ -4,21 +4,30 @@
 use _MONGOWRITEDB_;
 
 // datasets indexes
-db.datasets.createIndex( { "_id": 1, "Dataset": 1 } );
-db.datasets.createIndex( { "Dataset": 1 } );
-db.datasets.createIndex( { "LastAccessMs": 1 } );
-db.datasets.createIndex( { "Max": 1 } );
-db.datasets.createIndex( { "Min": 1 } );
-db.datasets.createIndex( { "Avg": 1 } );
-db.datasets.createIndex( { "Sum": 1 } );
-db.datasets.createIndex( { "RealSize": 1 } );
-db.datasets.createIndex( { "TotalFileCnt": 1 } );
-db.datasets.createIndex( { "RseType": "text", "Dataset": "text", "RSEs": "text"} );
+db.main_datasets.createIndex( { "_id": 1, "Dataset": 1 } );
+db.main_datasets.createIndex( { "Dataset": 1 } );
+db.main_datasets.createIndex( { "LastAccess": 1 } );
+db.main_datasets.createIndex( { "Max": 1 } );
+db.main_datasets.createIndex( { "Min": 1 } );
+db.main_datasets.createIndex( { "Avg": 1 } );
+db.main_datasets.createIndex( { "Sum": 1 } );
+db.main_datasets.createIndex( { "RealSize": 1 } );
+db.main_datasets.createIndex( { "TotalFileCnt": 1 } );
+db.main_datasets.createIndex( { "RseType": "text", "Dataset": "text", "RSEs": "text"} );
 
 // detailed_datasets indexes
 db.detailed_datasets.createIndex( { "_id": 1, "Type": 1 } );
 db.detailed_datasets.createIndex( { "_id": 1, "Dataset": 1 } );
 db.detailed_datasets.createIndex( { "_id": 1, "Dataset": 1, "RSE":1 } );
 db.detailed_datasets.createIndex( {"Dataset": 1} );
+db.detailed_datasets.createIndex( { "LastAccess": 1 } );
 db.detailed_datasets.createIndex( { "Dataset": 1, "RSE":1 } );
-db.detailed_datasets.createIndex( { "Type": "text", "Dataset": "text", "RSE": "text", "Tier": "text", "C": "text", "RseKind": "text","ProdAccts": "text"} );
+db.detailed_datasets.createIndex( { "ProdAccounts": 1 } );
+db.detailed_datasets.createIndex( { "Dataset": 1, "RSE":1, "ProdAccounts": 1 } );
+db.detailed_datasets.createIndex( { "BlockRuleIDs": 1 } );
+db.detailed_datasets.createIndex( { "Dataset": 1, "RSE":1, "BlockRuleIDs": 1 } );
+db.detailed_datasets.createIndex( { "Type": "text", "Dataset": "text", "RSE": "text", "Tier": "text", "C": "text", "RseKind": "text"} );
+
+
+// datasets_in_tape_and_disk indexes
+db.datasets_in_tape_and_disk.createIndex( { "_id": 1, "Dataset": 1 } );

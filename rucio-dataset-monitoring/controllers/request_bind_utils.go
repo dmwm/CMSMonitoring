@@ -42,9 +42,9 @@ func bindRequest(c *gin.Context, req interface{}) (any, error) {
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
 		utils.InfoLogV2("incoming request body bind to: %s", "ShortUrlRequest")
 		return r, err
-	case models.SingleDetailedDatasetsRequest:
+	case models.MainDatasetDetailsRequest:
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
-		utils.InfoLogV2("incoming request body bind to: %s", "SingleDetailedDatasetsRequest")
+		utils.InfoLogV2("incoming request body bind to: %s", "MainDatasetDetailsRequest")
 		return r, err
 	default:
 		utils.ErrorLog("unknown request struct, it did not match: %#v", req)

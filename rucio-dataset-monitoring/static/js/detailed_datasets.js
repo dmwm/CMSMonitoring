@@ -258,25 +258,12 @@ $(document).ready(function () {
             }
         },
         columns: [
-            {
-                data: "Type",
-                width: "3%"
-            },
-            {
-                data: "Dataset",
-            },
-            {
-                data: "RSE",
-            },
-            {
-                data: "Tier",
-            },
-            {
-                data: "C",
-            },
-            {
-                data: "RseKind",
-            },
+            {data: "Type", width: "3%"},
+            {data: "Dataset"},
+            {data: "RSE"},
+            {data: "Tier"},
+            {data: "C"},
+            {data: "RseKind"},
             {
                 data: "SizeBytes",
                 render: function (data, type, row, meta) {
@@ -296,33 +283,15 @@ $(document).ready(function () {
                 },
                 width: "10%"
             },
-            {
-                data: "IsFullyReplicated",
-            },
-            {
-                data: "FilePercentage",
-            },
-            {
-                data: "FileCount",
-            },
-            {
-                data: "AccessedFileCount",
-            },
-            {
-                data: "BlockCount",
-            },
-            {
-                data: "ProdAccounts",
-            },
-            {
-                data: "BlockRuleIDs",
-            },
-            {
-                data: "ProdLockedBlockCount",
-            },
-            {
-                data: "IsLocked",
-            },
+            {data: "IsFullyReplicated"},
+            {data: "IsLocked"},
+            {data: "FilePercentage"},
+            {data: "FileCount"},
+            {data: "AccessedFileCount"},
+            {data: "BlockCount"},
+            {data: "ProdLockedBlockCount"},
+            {data: "ProdAccounts"},
+            {data: "BlockRuleIDs"},
         ],
         buttons: [
             {

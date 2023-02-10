@@ -10,8 +10,8 @@ import (
 	"net/http"
 )
 
-// GetIndexPage serves datasets.tmpl page
-func GetIndexPage(collectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP string) gin.HandlerFunc {
+// GetMainDatasetsPage serves main_datasets.tmpl page
+func GetMainDatasetsPage(collectionName, mainDsApiEP, shortUrlApiEP, mainDsDetailsApiEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
@@ -19,23 +19,23 @@ func GetIndexPage(collectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP 
 		dataTimestamp := GetDataSourceTimestamp(ctx, c, collectionName)
 		c.HTML(
 			http.StatusOK,
-			"datasets.tmpl",
+			"main_datasets.tmpl",
 			gin.H{
-				"title":                    "Home Page",
-				"VERBOSITY":                utils.Verbose,
-				"IS_SHORT_URL":             false,
-				"SOURCE_DATE":              dataTimestamp.CreatedAt,
-				"DATASETS_API_ENDPOINT":    datasetsApiEP,
-				"SHORT_URL_API_ENDPOINT":   shortUrlApiEP,
-				"RSE_DETAILS_API_ENDPOINT": rseDetailsApiEP,
+				"title":                             "Main Datasets",
+				"VERBOSITY":                         utils.Verbose,
+				"IS_SHORT_URL":                      false,
+				"SOURCE_DATE":                       dataTimestamp.CreatedAt,
+				"MAIN_DATASETS_API_ENDPOINT":        mainDsApiEP,
+				"SHORT_URL_API_ENDPOINT":            shortUrlApiEP,
+				"MAIN_DATASET_DETAILS_API_ENDPOINT": mainDsDetailsApiEP,
 			},
 		)
 		return
 	}
 }
 
-// GetDetailsPage serves detailed_datasets.tmpl page
-func GetDetailsPage(collectionName, detailedDatasetsApiEP, shortUrlApiEP string) gin.HandlerFunc {
+// GetDetailedDatasetsPage serves detailed_datasets.tmpl page
+func GetDetailedDatasetsPage(collectionName, detailedDsApiEP, shortUrlApiEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
@@ -45,11 +45,11 @@ func GetDetailsPage(collectionName, detailedDatasetsApiEP, shortUrlApiEP string)
 			http.StatusOK,
 			"detailed_datasets.tmpl",
 			gin.H{
-				"title":                          "Detailed Datasets Page",
+				"title":                          "Detailed MainDatasets Page",
 				"VERBOSITY":                      utils.Verbose,
 				"IS_SHORT_URL":                   false,
 				"SOURCE_DATE":                    dataTimestamp.CreatedAt,
-				"DETAILED_DATASETS_API_ENDPOINT": detailedDatasetsApiEP,
+				"DETAILED_DATASETS_API_ENDPOINT": detailedDsApiEP,
 				"SHORT_URL_API_ENDPOINT":         shortUrlApiEP,
 			},
 		)
@@ -58,7 +58,7 @@ func GetDetailsPage(collectionName, detailedDatasetsApiEP, shortUrlApiEP string)
 }
 
 // GetIndexPageFromShortUrlId controller that returns page from short url hash id
-func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampCollectionName, datasetsApiEP, shortUrlApiEP, rseDetailsApiEP string) gin.HandlerFunc {
+func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampCollectionName, mainDsApiEP, shortUrlApiEP, mainDsDetailsApiEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
@@ -70,17 +70,17 @@ func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampColle
 		dataTimestamp := GetDataSourceTimestamp(ctx, c, datasourceTimestampCollectionName)
 		c.HTML(
 			http.StatusOK,
-			"datasets.tmpl",
+			"main_datasets.tmpl",
 			gin.H{
-				"title":                    "Home Page",
-				"VERBOSITY":                utils.Verbose,
-				"IS_SHORT_URL":             true,
-				"SHORT_URL_REQUEST":        shortUrlObj.Request,
-				"DT_SAVED_STATE":           shortUrlObj.SavedState,
-				"SOURCE_DATE":              dataTimestamp.CreatedAt,
-				"DATASETS_API_ENDPOINT":    datasetsApiEP,
-				"SHORT_URL_API_ENDPOINT":   shortUrlApiEP,
-				"RSE_DETAILS_API_ENDPOINT": rseDetailsApiEP,
+				"title":                             "Home Page",
+				"VERBOSITY":                         utils.Verbose,
+				"IS_SHORT_URL":                      true,
+				"SHORT_URL_REQUEST":                 shortUrlObj.Request,
+				"DT_SAVED_STATE":                    shortUrlObj.SavedState,
+				"SOURCE_DATE":                       dataTimestamp.CreatedAt,
+				"MAIN_DATASETS_API_ENDPOINT":        mainDsApiEP,
+				"SHORT_URL_API_ENDPOINT":            shortUrlApiEP,
+				"MAIN_DATASET_DETAILS_API_ENDPOINT": mainDsDetailsApiEP,
 			},
 		)
 		return

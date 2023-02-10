@@ -1,5 +1,5 @@
 // This counter will be used to get the first opening of the page.
-//     If short url is used, parent URL will be changed to main pages (../)
+// If short url is used, parent URL will be changed to main pages (../)
 var GLOBAL_INITIALIZATION_COUNTER = 0
 
 // Global variable to catch latest datatables request and set if provided in short url
@@ -96,7 +96,7 @@ function getShortUrl() {
 $(document).ready(function () {
 
     /*
-    * showRseDetails
+    * showMainDatasetDetails
     *   Shows detailed individual dataset information when green "+" button clicked
     *   It uses a Go controller which returns data from detailed_datasets collection
     *   How it works:
@@ -114,7 +114,7 @@ $(document).ready(function () {
     *     And with ".html" function call, response html element showed in the dom.
     *     Thanks to "dt-control", it allows to collapse and expand with green/red color changes.
     */
-    function showRseDetails() {
+    function showMainDatasetDetails() {
         var tr = $(this).closest("tr");
         dataset_name = $(tr).find("td.details-value-dataset").text()
         type_name = $(tr).find("td.details-value-rse-type").text()
@@ -132,7 +132,7 @@ $(document).ready(function () {
             }
             //console.log(JSON.stringify(single_dataset_request))
             $.ajax({
-                url: var_RSE_DETAILS_API_ENDPOINT,
+                url: var_MAIN_DATASET_DETAILS_API_ENDPOINT,
                 type: 'post',
                 dataType: 'html',
                 contentType: 'application/json',
@@ -198,7 +198,7 @@ $(document).ready(function () {
             [5, 10, 25, 50, 100, 500, 1000, 10000]
         ],
         ajax: {
-            url: var_DATASETS_API_ENDPOINT,
+            url: var_MAIN_DATASETS_API_ENDPOINT,
             method: "POST",
             contentType: 'application/json',
             data: function (d) {
@@ -488,5 +488,5 @@ $(document).ready(function () {
         }
     });
     // Add event listener for opening and closing details
-    table.on('click', 'td.dt-control', showRseDetails);
+    table.on('click', 'td.dt-control', showMainDatasetDetails);
 });
