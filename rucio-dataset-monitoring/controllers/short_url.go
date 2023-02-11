@@ -38,7 +38,11 @@ func GetShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName str
 		// Request exists
 		return requestHash
 	} else {
-		if err := mymongo.Insert(ctx, collection, models.ShortUrl{HashId: requestHash, Request: req.Request, SavedState: req.SavedState}); err != nil {
+		if err := mymongo.Insert(
+			ctx,
+			collection,
+			models.ShortUrl{HashId: requestHash, Page: req.Page, Request: req.Request, SavedState: req.SavedState},
+		); err != nil {
 			utils.ErrorResponse(c, "ShortUrl insert failed", err, "")
 		}
 		return requestHash
@@ -47,16 +51,12 @@ func GetShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName str
 
 // GetRequestFromShortUrl get query results efficiently
 func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName string, hashId string) models.ShortUrl {
-	var shortUrlList []models.ShortUrl
+	var shortUrlObj models.ShortUrl
 	collection := mymongo.GetCollection(shortUrlCollectionName)
-	cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"hashId": hashId})
-	if err != nil {
-		utils.ErrorResponse(c, "getRequestFromShortUrl find query failed", err, "")
+	if err := mymongo.GetFindOneResults(ctx, collection, bson.M{"hashId": hashId}).Decode(&shortUrlObj); err != nil {
+		utils.ErrorResponse(c, "ShortUrl result not found for hashId: "+hashId, err, "")
 	}
-	if err = cursor.All(ctx, &shortUrlList); err != nil {
-		utils.ErrorResponse(c, "ShortUrl cursor failed", err, "")
-	}
-	return shortUrlList[0] // return only one, should be only one
+	return shortUrlObj
 }
 
 // getRequestHash returns MD5 hash of datatable request
@@ -70,8 +70,8 @@ func getRequestHash(c *gin.Context, req models.ShortUrlRequest) string {
 	md5Instance.Write(out)
 	md5Hash := hex.EncodeToString(md5Instance.Sum(nil))[0:8]
 
-	// Short URL structure: "md5 8 character" "+" SearchBuilder request as query params
-	return md5Hash + "+" + req.Request.SearchBuilderRequest.GetPrettyURL()
+	// Short URL structure: "md5 8 character + Page(main/detailed/etc.) + SearchBuilder request as query params"
+	return md5Hash + "+" + req.Page + "+" + req.Request.SearchBuilderRequest.GetPrettyURL()
 }
 
 // checkIdHashExists check if request hash is exists in the MongoDB collection

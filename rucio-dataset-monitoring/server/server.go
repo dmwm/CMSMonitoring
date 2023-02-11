@@ -67,9 +67,6 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 	engine.Use(gin.LoggerWithFormatter(middlewareLogFormatter))
 	engine.LoadHTMLGlob("static/templates/*.tmpl")
 
-	// Index page
-	engine.StaticFS("/static", http.Dir("./static"))
-
 	// -------------------------------- Root ------------------------------------------------------
 	engine.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
@@ -80,31 +77,43 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 	// ------------------------------- Config.BaseEndpoint group-----------------------------------
 	e := engine.Group("/" + Config.BaseEndpoint)
 	{
-		// Static
-		// REST
-		e.POST("/api/main-datasets", controllers.GetMainDatasets(mongoColNames.MainDatasets))
-		e.POST("/api/detailed-datasets", controllers.GetDetailedDatasets(mongoColNames.DetailedDatasets))
-		//e.POST("/api/rse-details", controllers.GetDetailedDatasets(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
-		e.POST("/api/main-dataset-details", controllers.GetMainDatasetDetails(mongoColNames.DetailedDatasets))
-		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+		e.StaticFS("/static", http.Dir("./static"))
+
 		e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
 
-		// Pages
-		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp,
+		// Page APIs
+		e.POST("/api/main-datasets", controllers.GetMainDatasets(mongoColNames.MainDatasets))
+		e.POST("/api/detailed-datasets", controllers.GetDetailedDatasets(mongoColNames.DetailedDatasets))
+		e.POST("/api/main-dataset-details", controllers.GetMainDatasetDetails(mongoColNames.DetailedDatasets))
+
+		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+
+		// Main datasets page
+		e.GET("/main", controllers.GetMainDatasetsPage(
+			mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/main-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
 			"../"+Config.BaseEndpoint+"/api/main-dataset-details",
+			Config.BaseEndpoint,
 		))
 
-		// "../" uses base url in JS ajax calls. base endpoint directly goes to index page (main datasets page)
-		e.GET("/main-ds", controllers.GetMainDatasetsPage(mongoColNames.DatasourceTimestamp,
+		// Detailed datasets page
+		e.GET("/detailed", controllers.GetDetailedDatasetsPage(
+			mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/detailed-datasets",
+			"../"+Config.BaseEndpoint+"/api/short-url",
+			Config.BaseEndpoint,
+		))
+
+		// Short url result page
+		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(
+			mongoColNames.ShortUrl,
+			mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/main-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
 			"../"+Config.BaseEndpoint+"/api/main-dataset-details",
-		))
-		e.GET("/detailed-ds", controllers.GetDetailedDatasetsPage(mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/detailed-datasets",
-			"../"+Config.BaseEndpoint+"/api/short-url",
+			Config.BaseEndpoint,
 		))
 	}
 

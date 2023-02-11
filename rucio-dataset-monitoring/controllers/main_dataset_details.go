@@ -23,7 +23,7 @@ func GetMainDatasetDetails(collectionName string) gin.HandlerFunc {
 		collection := mymongo.GetCollection(collectionName)
 
 		var detailedRows []models.DetailedDataset
-		cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"MainDataset": r.Dataset, "Type": r.Type})
+		cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"Dataset": r.Dataset, "Type": r.Type})
 		if err != nil {
 			utils.ErrorResponse(c, "Find query failed", err, "")
 		}

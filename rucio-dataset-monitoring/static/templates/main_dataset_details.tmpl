@@ -1,41 +1,50 @@
 <div>
     <table class="details-table table table-condensed" id="detailed-datasets"
-           style="background-color: white; font-size: 12px; border:7px solid rgba(30,41,255,0.13);">
+           style="background-color: white; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;
+           border:4px solid black;">
         <thead>
         <tr>
             <th scope="col">Type</th>
             <th scope="col">Dataset</th>
             <th scope="col">RSE</th>
             <th scope="col">Tier</th>
-            <th scope="col">Rse Kind</th>
-            <th scope="col">SizeBytes</th>
+            <th scope="col">C</th>
+            <th scope="col">RseKind</th>
+            <th scope="col">Size</th>
             <th scope="col">Size</th>
             <th scope="col">Last Access</th>
+            <th scope="col">Is Fully Replicated</th>
+            <th scope="col">Is Locked</th>
+            <th scope="col">% File in RSE</th>
             <th scope="col">#Files in RSE</th>
-            <th scope="col">%Files in RSE</th>
             <th scope="col">#Accessed Files</th>
-            <th scope="col">#Locked Files by Prod Accnt</th>
-            <th scope="col">#Locked Files by Other Accnt</th>
-            <th scope="col">Prod Accounts</th>
+            <th scope="col">#Blocks in RSE</th>
+            <th scope="col">#Prod Locked Blocks in RSE</th>
+            <th scope="col">Prod Lock Accounts</th>
+            <th scope="col">Block Rules</th>
         </tr>
         </thead>
         <tbody>
         {{range .data}}
-        <tr>
-            <td class="nowrap">{{.Type}}</td>
-            <td>{{.Dataset}}</td>
-            <td>{{.RSE}}</td>
-            <td>{{.Tier}}</td>
-            <td>{{.RseKind}}</td>
-            <td>{{.SizeBytes}}</td>
-            <td>{{.SizeBytes}}</td>
-            <td>{{.LastAcc}}</td>
-            <td>{{.Fcnt}}</td>
-            <td>{{.Fpct}}</td>
-            <td>{{.AccFcnt}}</td>
-            <td>{{.ProdLckCnt}}</td>
-            <td>{{.OthLckCnt}}</td>
-            <td>{{.ProdAccts}}</td>
+        <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
+            <td class="nowrap" style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Type}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Dataset}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.RSE}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Tier}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.C}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.RseKind}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.SizeBytes}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.SizeBytes}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.LastAccess}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.IsFullyReplicated}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.IsLocked}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.FilePercentage}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.FileCount}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.AccessedFileCount}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.BlockCount}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.ProdLockedBlockCount}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.ProdAccounts}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.BlockRuleIDs}}</td>
         </tr>
         {{end}}
         </tbody>
@@ -56,17 +65,17 @@
         $('#' + random_detailed_id_str).DataTable({
             dom: "it",
             pageLength: 500,
-            order: [[5, 'desc']],
+            order: [[6, 'desc']],
             columnDefs: [
                 {
                     // SizeBytes will be hidden
-                    target: 5, visible: false, searchable: false
+                    target: 6, visible: false, searchable: false
                 },
                 {
                     // Size will use SizeBytes to correctly order
                     data: "Size",
-                    target: 6,
-                    orderData: 5,
+                    target: 7,
+                    orderData: 6,
                     render: function (data, type, row, meta) {
                         return bytesToHumanelyDetailDt(data);
                     },

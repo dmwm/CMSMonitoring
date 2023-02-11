@@ -1,6 +1,7 @@
 // This counter will be used to get the first opening of the page.
 // If short url is used, parent URL will be changed to main pages (../)
 var GLOBAL_INITIALIZATION_COUNTER = 0
+var PAGE_ENDPOINT = "main"
 
 // Global variable to catch latest datatables request and set if provided in short url
 var GLOBAL_DT_REQUEST_HOLDER = null;
@@ -9,14 +10,14 @@ var GLOBAL_DT_REQUEST_HOLDER = null;
 var GLOBAL_SAVED_STATE_HOLDER = null;
 
 // If short url, get saved state from the GoLang controller Template
-if (var_IS_SHORT_URL === true) {
-    GLOBAL_SAVED_STATE_HOLDER = JSON.stringify(var_DT_SAVED_STATE);
-    if (var_VERBOSITY > 0) {
-        console.log("[var_IS_SHORT_URL true]")
+if (govar_IS_SHORT_URL === true) {
+    GLOBAL_SAVED_STATE_HOLDER = JSON.stringify(govar_DT_SAVED_STATE);
+    if (govar_VERBOSITY > 0) {
+        console.log("[govar_IS_SHORT_URL true]")
         console.log(GLOBAL_SAVED_STATE_HOLDER)
     }
     // Set Main dataset search input bar from short url request
-    $('#input-dataset').val(var_SHORT_URL_REQUEST.searchBuilderRequest.inputDataset);
+    $('#input-dataset').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputDataset);
 }
 
 // ---------~~~~~~~~~  FUNCTIONS AND MAIN DEFINITIONS ~~~~~~~~~---------
@@ -73,16 +74,21 @@ function helperCopyToClipboard(message) {
  */
 function getShortUrl() {
     $.ajax({
-        url: var_SHORT_URL_API_ENDPOINT,
+        url: govar_SHORT_URL_API_ENDPOINT,
         type: 'post',
         contentType: 'application/json',
         data: JSON.stringify({
+            "page": PAGE_ENDPOINT,
             "dtRequest": JSON.parse(GLOBAL_DT_REQUEST_HOLDER),
-            "savedState": JSON.parse(global_saved_state_holder),
+            "savedState": JSON.parse(GLOBAL_SAVED_STATE_HOLDER),
         }),
         success: function (data) {
+            let _shorturl = window.location.origin + '/'+ govar_BASE_EP + '/short-url/' + data
+            if (govar_VERBOSITY > 0) {
+                console.log("Short URL: " + _shorturl)
+            }
             // Call copy clipboard here
-            helperCopyToClipboard(window.location.href + 'short-url/' + data);
+            helperCopyToClipboard(_shorturl);
         },
         error: function () {
             alert('Copy failed');
@@ -132,7 +138,7 @@ $(document).ready(function () {
             }
             //console.log(JSON.stringify(single_dataset_request))
             $.ajax({
-                url: var_MAIN_DATASET_DETAILS_API_ENDPOINT,
+                url: govar_MAIN_DATASET_DETAILS_API_ENDPOINT,
                 type: 'post',
                 dataType: 'html',
                 contentType: 'application/json',
@@ -174,16 +180,16 @@ $(document).ready(function () {
             processing: "<span class='fa-stack fa-lg'><i class='fa fa-spinner fa-spin fa-stack-2x fa-fw'></i></span>&emsp;Processing ...",
         },
         stateSaveCallback: function (settings, data) {
-            // Save the last state to "global_saved_state_holder" variable to use in the short url call
-            global_saved_state_holder = JSON.stringify(data)
-            if (var_VERBOSITY > 0) {
+            // Save the last state to "GLOBAL_SAVED_STATE_HOLDER" variable to use in the short url call
+            GLOBAL_SAVED_STATE_HOLDER = JSON.stringify(data)
+            if (govar_VERBOSITY > 0) {
                 console.log("[stateSaveCallback]");
-                console.log(global_saved_state_holder);
+                console.log(GLOBAL_SAVED_STATE_HOLDER);
             }
         },
         stateLoadCallback: function (settings) {
             // "global_saved_state_setter" given by Go Template, so it restore same state for the shared users.
-            if (var_VERBOSITY > 0) {
+            if (govar_VERBOSITY > 0) {
                 console.log("[stateLoadCallback]");
                 console.log(GLOBAL_SAVED_STATE_HOLDER)
             }
@@ -198,7 +204,7 @@ $(document).ready(function () {
             [5, 10, 25, 50, 100, 500, 1000, 10000]
         ],
         ajax: {
-            url: var_MAIN_DATASETS_API_ENDPOINT,
+            url: govar_MAIN_DATASETS_API_ENDPOINT,
             method: "POST",
             contentType: 'application/json',
             data: function (d) {
@@ -213,7 +219,7 @@ $(document).ready(function () {
                 // Check if user created a search builder query using SB Conditions
                 try {
                     sbRequest = table.searchBuilder.getDetails(true);
-                    if (var_VERBOSITY > 0) {
+                    if (govar_VERBOSITY > 0) {
                         console.log("[DT-ajax: sbRequest]")
                         console.log(JSON.stringify(sbRequest));
                     }
@@ -226,23 +232,23 @@ $(document).ready(function () {
                 d.searchBuilderRequest = sbRequest;
 
                 // Check if short url is used
-                if (var_IS_SHORT_URL === true) {
+                if (govar_IS_SHORT_URL === true) {
                     // Set datatable request from saved short-url request using go template
                     // So we modify the DataTable request with the shared url request stored and fetched from MongoDB
-                    d = var_SHORT_URL_REQUEST;
+                    d = govar_SHORT_URL_REQUEST;
                     GLOBAL_DT_REQUEST_HOLDER = JSON.stringify(d);
 
                     // Since all operations for short url is done, we need to set it to false
-                    var_IS_SHORT_URL = false;
+                    govar_IS_SHORT_URL = false;
 
                     // Change origin url to main page for further request of users who used short url
                     if (GLOBAL_INITIALIZATION_COUNTER === 1) {
-                        window.history.pushState('', 'Title', '../');
+                        window.history.pushState('', 'Title', '../' + PAGE_ENDPOINT);
                     }
                 } else {
                     GLOBAL_DT_REQUEST_HOLDER = JSON.stringify(d);
                 }
-                if (var_VERBOSITY > 0) {
+                if (govar_VERBOSITY > 0) {
                     console.log("--- MAIN ajax global_dt_request_holder ----");
                     console.log(GLOBAL_DT_REQUEST_HOLDER);
                 }
@@ -457,7 +463,7 @@ $(document).ready(function () {
             },
             {
                 className: 'btn btn-light glyphicon glyphicon-time',
-                text: 'DataTimestamp: ' + var_SOURCE_DATE,
+                text: 'DataTimestamp: ' + govar_SOURCE_DATE,
                 titleAttr: "This table is produced with the data of Rucio and DBS sqoop dumps runs in between 6:30AM-7:15AM CERN time",
             },
             {

@@ -15,7 +15,7 @@ const dateLayout = "2006-01-02"
 // MainDataset struct which includes Rucio and DBS calculated values
 type MainDataset struct {
 	RseType      string  `bson:"RseType,omitempty" validate:"required"`
-	Dataset      string  `bson:"MainDataset,omitempty" validate:"required"`
+	Dataset      string  `bson:"Dataset,omitempty" validate:"required"`
 	LastAccess   Epoch   `bson:"LastAccess"`
 	Max          float64 `bson:"Max"`
 	Min          float64 `bson:"Min"`

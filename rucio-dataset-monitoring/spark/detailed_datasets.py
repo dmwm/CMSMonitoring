@@ -15,7 +15,7 @@ import pandas as pd
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
-    coalesce, col, collect_set, countDistinct, first, from_unixtime, greatest, lit, lower,
+    coalesce, col, collect_set, countDistinct, first, greatest, lit, lower,
     when,
     hex as _hex,
     max as _max,
@@ -286,15 +286,16 @@ def get_df_main_datasets_in_each_rse(spark):
     """Main
     """
     # Add last access and size of dataset for each RSE
-    # ( Dataset, RSE ) + ( FileCount, AccessedFileCount, LastAccessMs, LastAccess, SizeBytes )
+    # ( Dataset, RSE ) + ( FileCount, AccessedFileCount, LastAccess, LastAccess, SizeBytes )
     df_datasets_files_phase1 = get_df_datasets_files_phase1(spark)
     df = df_datasets_files_phase1.groupby(['RSE', 'd_name']) \
         .agg(countDistinct(col('f_name')).alias('FileCount'),
              _max(col('accessed_at')).alias('LastAccessMs'),
              _sum(col('f_size')).alias('SizeBytes'),
              _sum(when(col('accessed_at').isNull(), 0).otherwise(1)).alias('AccessedFileCount'),
-             first(col('d_id')).alias('d_id')) \
-        .withColumn('LastAccess', from_unixtime(col("LastAccessMs") / 1000, "yyyy-MM-dd"))
+             first(col('d_id')).alias('d_id')
+             ) \
+        .withColumn('LastAccess', (col('LastAccessMs') / 1000).cast(LongType()))
 
     # Add file counts and block counts with additional tags like IsFullyReplicated, FilePercentage
     # + ( FilePercentage, IsFullyReplicated, TOT_BLOCK_CNT->BlockCount )
@@ -307,7 +308,7 @@ def get_df_main_datasets_in_each_rse(spark):
         .withColumn('Id', col('d_id').cast(LongType())) \
         .withColumnRenamed('d_name', 'Dataset') \
         .withColumnRenamed('TOT_BLOCK_CNT', 'BlockCount') \
-        .select(['RSE', 'Dataset', 'Id', 'SizeBytes', 'LastAccess', 'LastAccessMs', 'FileCount', 'AccessedFileCount',
+        .select(['RSE', 'Dataset', 'Id', 'SizeBytes', 'LastAccess', 'FileCount', 'AccessedFileCount',
                  'IsFullyReplicated', 'FilePercentage', 'BlockCount'])
 
     # Add Block level locks tags
@@ -322,7 +323,7 @@ def get_df_main_datasets_in_each_rse(spark):
                     .otherwise(lit('DYNAMIC'))
                     ) \
         .withColumn('ProdLockedBlockCount', coalesce(col('ProdLockedBlockCount'), lit(0)).cast(IntegerType())) \
-        .select(['RSE', 'Dataset', 'Id', 'SizeBytes', 'LastAccess', 'LastAccessMs', 'IsFullyReplicated', 'IsLocked',
+        .select(['RSE', 'Dataset', 'Id', 'SizeBytes', 'LastAccess', 'IsFullyReplicated', 'IsLocked',
                  'FilePercentage', 'FileCount', 'AccessedFileCount', 'BlockCount', 'ProdLockedBlockCount',
                  'ProdAccounts', 'BlockRuleIDs'])
 
@@ -333,7 +334,7 @@ def get_df_main_datasets_in_each_rse(spark):
         .withColumnRenamed('rse_tier', 'Tier') \
         .withColumnRenamed('rse_country', 'C') \
         .withColumnRenamed('rse_kind', 'RseKind') \
-        .fillna(0, subset=['LastAccessMs']) \
+        .fillna(0, subset=['LastAccess']) \
         .select(['Type', 'Dataset', 'RSE', 'Tier', 'C', 'RseKind', 'SizeBytes', 'LastAccess',
                  'IsFullyReplicated', 'IsLocked', 'FilePercentage', 'FileCount', 'AccessedFileCount', 'BlockCount',
                  'ProdLockedBlockCount', 'ProdAccounts', 'BlockRuleIDs'])

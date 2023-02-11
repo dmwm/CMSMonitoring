@@ -182,9 +182,9 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 func GetSearchBuilderBson(sb *models.SearchBuilderRequest) bson.M {
 	var andQuery []bson.M
 
-	// If there is an entry for main MainDataset search bar
+	// If there is an entry for main Dataset search bar
 	if sb.InputDataset != "" {
-		andQuery = append(andQuery, bson.M{"MainDataset": primitive.Regex{Pattern: sb.InputDataset, Options: "im"}})
+		andQuery = append(andQuery, bson.M{"Dataset": primitive.Regex{Pattern: sb.InputDataset, Options: "im"}})
 	}
 	// Rest of search builder
 	for _, condition := range sb.Criteria {

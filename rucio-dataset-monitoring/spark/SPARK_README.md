@@ -9,7 +9,7 @@
   "C": "US",
   "RseKind": "prod",
   "SizeBytes": 15013007503,
-  "LastAccessMs": 0,
+  "LastAccess": 0,
   "IsFullyReplicated": true,
   "IsLocked": "FULLY",
   "FilePercentage": 100.00,

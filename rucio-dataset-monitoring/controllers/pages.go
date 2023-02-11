@@ -11,7 +11,7 @@ import (
 )
 
 // GetMainDatasetsPage serves main_datasets.tmpl page
-func GetMainDatasetsPage(collectionName, mainDsApiEP, shortUrlApiEP, mainDsDetailsApiEP string) gin.HandlerFunc {
+func GetMainDatasetsPage(collectionName, mainDsApiEP, shortUrlApiEP, mainDsDetailsApiEP, baseEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
@@ -21,13 +21,14 @@ func GetMainDatasetsPage(collectionName, mainDsApiEP, shortUrlApiEP, mainDsDetai
 			http.StatusOK,
 			"main_datasets.tmpl",
 			gin.H{
-				"title":                             "Main Datasets",
-				"VERBOSITY":                         utils.Verbose,
-				"IS_SHORT_URL":                      false,
-				"SOURCE_DATE":                       dataTimestamp.CreatedAt,
-				"MAIN_DATASETS_API_ENDPOINT":        mainDsApiEP,
-				"SHORT_URL_API_ENDPOINT":            shortUrlApiEP,
-				"MAIN_DATASET_DETAILS_API_ENDPOINT": mainDsDetailsApiEP,
+				"title":                                   "Main Datasets",
+				"govar_VERBOSITY":                         utils.Verbose,
+				"govar_IS_SHORT_URL":                      false,
+				"govar_SOURCE_DATE":                       dataTimestamp.CreatedAt,
+				"govar_MAIN_DATASETS_API_ENDPOINT":        mainDsApiEP,
+				"govar_SHORT_URL_API_ENDPOINT":            shortUrlApiEP,
+				"govar_MAIN_DATASET_DETAILS_API_ENDPOINT": mainDsDetailsApiEP,
+				"govar_BASE_EP":                           baseEP,
 			},
 		)
 		return
@@ -35,7 +36,7 @@ func GetMainDatasetsPage(collectionName, mainDsApiEP, shortUrlApiEP, mainDsDetai
 }
 
 // GetDetailedDatasetsPage serves detailed_datasets.tmpl page
-func GetDetailedDatasetsPage(collectionName, detailedDsApiEP, shortUrlApiEP string) gin.HandlerFunc {
+func GetDetailedDatasetsPage(collectionName, detailedDsApiEP, shortUrlApiEP, baseEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
@@ -45,12 +46,13 @@ func GetDetailedDatasetsPage(collectionName, detailedDsApiEP, shortUrlApiEP stri
 			http.StatusOK,
 			"detailed_datasets.tmpl",
 			gin.H{
-				"title":                          "Detailed MainDatasets Page",
-				"VERBOSITY":                      utils.Verbose,
-				"IS_SHORT_URL":                   false,
-				"SOURCE_DATE":                    dataTimestamp.CreatedAt,
-				"DETAILED_DATASETS_API_ENDPOINT": detailedDsApiEP,
-				"SHORT_URL_API_ENDPOINT":         shortUrlApiEP,
+				"title":                                "Detailed MainDatasets Page",
+				"govar_VERBOSITY":                      utils.Verbose,
+				"govar_IS_SHORT_URL":                   false,
+				"govar_SOURCE_DATE":                    dataTimestamp.CreatedAt,
+				"govar_DETAILED_DATASETS_API_ENDPOINT": detailedDsApiEP,
+				"govar_SHORT_URL_API_ENDPOINT":         shortUrlApiEP,
+				"govar_BASE_EP":                        baseEP,
 			},
 		)
 		return
@@ -58,29 +60,42 @@ func GetDetailedDatasetsPage(collectionName, detailedDsApiEP, shortUrlApiEP stri
 }
 
 // GetIndexPageFromShortUrlId controller that returns page from short url hash id
-func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampCollectionName, mainDsApiEP, shortUrlApiEP, mainDsDetailsApiEP string) gin.HandlerFunc {
+func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampCollectionName,
+	mainDsApiEP, shortUrlApiEP, mainDsDetailsApiEP, detailedDsApiEP, baseEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var templateName string
 		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
 		defer cancel()
 
 		hashId := c.Param("id")
 		utils.InfoLogV1("hash Id: %s", hashId)
 		shortUrlObj := GetRequestFromShortUrl(ctx, c, shortUrlCollectionName, hashId)
-
 		dataTimestamp := GetDataSourceTimestamp(ctx, c, datasourceTimestampCollectionName)
+
+		if shortUrlObj.Page == "main" {
+			templateName = "main_datasets.tmpl"
+		} else if shortUrlObj.Page == "detailed" {
+			templateName = "detailed_datasets.tmpl"
+		} else {
+			utils.ErrorLog("No Page definition found in Short Url request: " + shortUrlObj.Page)
+			return
+		}
+
 		c.HTML(
 			http.StatusOK,
-			"main_datasets.tmpl",
+			templateName,
 			gin.H{
-				"title":                             "Home Page",
-				"VERBOSITY":                         utils.Verbose,
-				"IS_SHORT_URL":                      true,
-				"SHORT_URL_REQUEST":                 shortUrlObj.Request,
-				"DT_SAVED_STATE":                    shortUrlObj.SavedState,
-				"SOURCE_DATE":                       dataTimestamp.CreatedAt,
-				"MAIN_DATASETS_API_ENDPOINT":        mainDsApiEP,
-				"SHORT_URL_API_ENDPOINT":            shortUrlApiEP,
-				"MAIN_DATASET_DETAILS_API_ENDPOINT": mainDsDetailsApiEP,
+				"title":                                   "Home Page",
+				"govar_VERBOSITY":                         utils.Verbose,
+				"govar_IS_SHORT_URL":                      true,
+				"govar_SHORT_URL_REQUEST":                 shortUrlObj.Request,
+				"govar_DT_SAVED_STATE":                    shortUrlObj.SavedState,
+				"govar_SOURCE_DATE":                       dataTimestamp.CreatedAt,
+				"govar_MAIN_DATASETS_API_ENDPOINT":        mainDsApiEP,
+				"govar_SHORT_URL_API_ENDPOINT":            shortUrlApiEP,
+				"govar_MAIN_DATASET_DETAILS_API_ENDPOINT": mainDsDetailsApiEP,
+				"govar_DETAILED_DATASETS_API_ENDPOINT":    detailedDsApiEP,
+				"govar_BASE_EP":                           baseEP,
 			},
 		)
 		return
