@@ -100,7 +100,7 @@ func humanSizeToBytes(input string) int64 {
 //	    Since regex is powerful, we don't need starts with, ends with etc. conditions
 //	- html:
 //	    [IMPORTANT] we use this type for numeric types columns. Because "num" type do not provide whole string like "10TB", only "10"
-//	    It has only "starts:Greater Than" and "ends:Less Than", in other words greater than and less than conditions.
+//	    It has only "starts:GreaterThan" and "ends:LessThan", in other words GreaterThan and less than conditions.
 //	    They behaved as $lte and $gte
 //	    User may provide humanized size definition like "10 TB", it is converted to bytes to use in MongoDB queries
 //	- date:
@@ -108,6 +108,10 @@ func humanSizeToBytes(input string) int64 {
 //	    In other words: before, after, between, empty, not empty
 //	- num:
 //	    It has only "<", ">", "between", "null", "!null" conditions. Used for integer columns like `TotalFileCnt`
+//	- array:
+//	    It has only "=": has_array_element, "null", "!null"  conditions. Used for string array columns
+//	- prod_accounts:
+//	    It has transfer_ops, wma_prod, wmcore_output, wmcore_transferor, crab_tape_recall, sync conditions
 func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 	switch criterion.Type {
 	case "string":
@@ -174,6 +178,32 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 		default:
 			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
+	case "array":
+		switch criterion.Condition {
+		case "=":
+			return bson.M{criterion.OrigData: primitive.Regex{Pattern: criterion.Value[0], Options: "im"}}
+		case "!=":
+			return bson.M{criterion.OrigData: bson.M{"$not": primitive.Regex{Pattern: criterion.Value[0], Options: "im"}}}
+		case "null":
+			return bson.M{criterion.OrigData: bson.M{"$exists": false}}
+		case "!null":
+			return bson.M{criterion.OrigData: bson.M{"$exists": true}}
+		default:
+			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
+		}
+	case "boolean":
+		switch criterion.Condition {
+		case "true":
+			return bson.M{criterion.OrigData: bson.M{"$eq": true}}
+		case "false":
+			return bson.M{criterion.OrigData: bson.M{"$eq": false}}
+		default:
+			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
+		}
+	case "tape_disk":
+		return bson.M{criterion.OrigData: bson.M{"$eq": criterion.Condition}}
+	case "prod_accounts":
+		return bson.M{criterion.OrigData: bson.M{"$eq": criterion.Condition}}
 	}
 	return bson.M{}
 }

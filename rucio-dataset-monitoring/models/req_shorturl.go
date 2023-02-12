@@ -1,11 +1,11 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"encoding/json"
 	"log"
 )
-
-// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 // ShortUrlRequest represents short url incoming request that will be fired from client
 type ShortUrlRequest struct {

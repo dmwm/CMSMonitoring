@@ -1,3 +1,23 @@
+
+### Example main_datasets result in HDFS
+
+```json
+{
+  "Id": 14146298,
+  "RseType": "DISK",
+  "Dataset": "/Pseudoscalar_MonoV_...stic_v15-v2/MINIAODSIM",
+  "LastAccess": 2147483647,
+  "Max": "32980965507",
+  "Min": "32980965507",
+  "Avg": "32980965507",
+  "Sum": "32980965507",
+  "RealSize": 32980965507,
+  "TotalFileCnt": 21,
+  "RSEs": "T2_US_MIT"
+}
+```
+
+
 ### Example detailed_datasets (Datasets in each RSE) result JSON in HDFS
 
 ```json
@@ -22,4 +42,19 @@
 }
 ```
 
+### Example datasets_in_tape_disk result in HDFS
 
+```json
+{
+    "Dataset": "/ADDGravToGG_MS-4500_....X_mcRun2_asymptotic_v3-v2/NANOAODSIM",
+    "MaxSize": 157169408,
+    "TapeFullyReplicatedRseCount": 1,
+    "DiskFullyReplicatedRseCount": 2,
+    "TapeFullyLockedRseCount": 1,
+    "DiskFullyLockedRseCount": 2,
+    "TapeRseCount": 1,
+    "DiskRseCount": 2,
+    "TapeRseSet": ["T0_CH_CERN_Tape"],
+    "DiskRseSet": ["T2_FR_GRIF_IRFU", "T2_US_Nebraska"]
+}
+```

@@ -1,11 +1,11 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"encoding/json"
 	"log"
 )
-
-// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 // CustomRequest represents custom fields that added for details page
 type CustomRequest struct {

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+# 
 # shellcheck disable=SC2068
 set -e
 ##H Can only run in K8s, you may modify to run in local by arranging env vars

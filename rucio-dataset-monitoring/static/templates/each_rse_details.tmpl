@@ -1,3 +1,6 @@
+
+<!-- Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>* -->
+
 <div>
     <table class="details-table table table-condensed" id="detailed-datasets"
            style="background-color: white; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;
@@ -6,21 +9,21 @@
         <tr>
             <th scope="col">Type</th>
             <th scope="col">Dataset</th>
-            <th scope="col">RSE</th>
-            <th scope="col">Tier</th>
+            <th scope="col" style="text-align: left;">RSE</th>
+            <th scope="col">T</th>
             <th scope="col">C</th>
-            <th scope="col">RseKind</th>
+            <th scope="col">Rse Kind</th>
             <th scope="col">Size</th>
             <th scope="col">Size</th>
             <th scope="col">Last Access</th>
             <th scope="col">Is Fully Replicated</th>
             <th scope="col">Is Locked</th>
             <th scope="col">% File in RSE</th>
-            <th scope="col">#Files in RSE</th>
-            <th scope="col">#Accessed Files</th>
-            <th scope="col">#Blocks in RSE</th>
-            <th scope="col">#Prod Locked Blocks in RSE</th>
-            <th scope="col">Prod Lock Accounts</th>
+            <th scope="col"># Files in RSE</th>
+            <th scope="col"># Accessed Files</th>
+            <th scope="col"># Blocks in RSE</th>
+            <th scope="col"># Prod Locked Blocks in RSE</th>
+            <th scope="col">Prod Lock Accnts</th>
             <th scope="col">Block Rules</th>
         </tr>
         </thead>
@@ -29,7 +32,7 @@
         <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
             <td class="nowrap" style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Type}}</td>
             <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Dataset}}</td>
-            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.RSE}}</td>
+            <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif; text-align: left;" >{{.RSE}}</td>
             <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Tier}}</td>
             <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.C}}</td>
             <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.RseKind}}</td>

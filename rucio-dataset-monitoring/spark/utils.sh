@@ -1,6 +1,6 @@
 #!/bin/bash
 # Utils for datasetmon scripts
-# Author: Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
+# Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 function util4datasetmon_input_args_parser() {
     unset -v KEYTAB_SECRET HDFS_PATH ARG_MONGOHOST ARG_MONGOPORT ARG_MONGOUSER ARG_MONGOPASS ARG_MONGOWRITEDB ARG_MONGOAUTHDB PORT1 PORT2 K8SHOST WDIR help

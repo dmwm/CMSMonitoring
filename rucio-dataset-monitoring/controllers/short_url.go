@@ -53,7 +53,7 @@ func GetShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName str
 func GetRequestFromShortUrl(ctx context.Context, c *gin.Context, shortUrlCollectionName string, hashId string) models.ShortUrl {
 	var shortUrlObj models.ShortUrl
 	collection := mymongo.GetCollection(shortUrlCollectionName)
-	if err := mymongo.GetFindOneResults(ctx, collection, bson.M{"hashId": hashId}).Decode(&shortUrlObj); err != nil {
+	if err := mymongo.GetFindOneResult(ctx, collection, bson.M{"hashId": hashId}).Decode(&shortUrlObj); err != nil {
 		utils.ErrorResponse(c, "ShortUrl result not found for hashId: "+hashId, err, "")
 	}
 	return shortUrlObj

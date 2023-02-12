@@ -1,3 +1,6 @@
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+//
+
 // This counter will be used to get the first opening of the page.
 // If short url is used, parent URL will be changed to main pages (../)
 var GLOBAL_INITIALIZATION_COUNTER = 0
@@ -100,9 +103,27 @@ function getShortUrl() {
  * DataTables engine is starting to run ...
  */
 $(document).ready(function () {
+    // CUSTOM SEARCH-BUILDER TYPES
+    // tape_disk
+    $.fn.dataTable.ext.searchBuilder.conditions.tape_disk = {
+        'TAPE': {
+            conditionName: function (dt, i18n) { return 'TAPE'; },
+            isInputValid: function () { return true; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'TAPE'; },
+        },
+        'DISK': {
+            conditionName: function (dt, i18n) { return 'DISK'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'DISK'; },
+        },
+    }
 
     /*
-    * showMainDatasetDetails
+    * showDatasetDetails
     *   Shows detailed individual dataset information when green "+" button clicked
     *   It uses a Go controller which returns data from detailed_datasets collection
     *   How it works:
@@ -120,7 +141,7 @@ $(document).ready(function () {
     *     And with ".html" function call, response html element showed in the dom.
     *     Thanks to "dt-control", it allows to collapse and expand with green/red color changes.
     */
-    function showMainDatasetDetails() {
+    function showDatasetDetails() {
         var tr = $(this).closest("tr");
         dataset_name = $(tr).find("td.details-value-dataset").text()
         type_name = $(tr).find("td.details-value-rse-type").text()
@@ -138,7 +159,7 @@ $(document).ready(function () {
             }
             //console.log(JSON.stringify(single_dataset_request))
             $.ajax({
-                url: govar_MAIN_DATASET_DETAILS_API_ENDPOINT,
+                url: govar_EACH_RSE_DETAILS_API_ENDPOINT,
                 type: 'post',
                 dataType: 'html',
                 contentType: 'application/json',
@@ -177,7 +198,7 @@ $(document).ready(function () {
                 clearAll: 'Reset',
                 delete: 'Delete',
             },
-            processing: "<span class='fa-stack fa-lg'><i class='fa fa-spinner fa-spin fa-stack-2x fa-fw'></i></span>&emsp;Processing ...",
+            processing: "Processing ...",
         },
         stateSaveCallback: function (settings, data) {
             // Save the last state to "GLOBAL_SAVED_STATE_HOLDER" variable to use in the short url call
@@ -283,13 +304,15 @@ $(document).ready(function () {
                 //     - html: float type columns
                 //     - date: date type columns
                 //     - num:  integer type columns
+                //     - tape_disk: Rse Type column
+                tape_disk: {},
                 html: {
-                    // "num" type will have only "starts":Greater Than" and "ends":"Less Than" conditions
+                    // "num" type will have only "starts":GreaterThan" and "ends":"LessThan" conditions
                     'starts': {
-                        conditionName: 'Greater Than',
+                        conditionName: 'GreaterThan',
                     },
                     'ends': {
-                        conditionName: 'Less Than',
+                        conditionName: 'LessThan',
                     },
                     '=': null,
                     '!=': null,
@@ -343,9 +366,7 @@ $(document).ready(function () {
                 data: "RseType",
                 className: "details-value-rse-type",
                 name: 'Rse Type',
-                searchBuilder: {
-                    defaultCondition: "contains"
-                },
+                searchBuilderType: 'tape_disk',
                 width: "3%"
             },
             {
@@ -370,6 +391,7 @@ $(document).ready(function () {
                 // orderSequence defines first option when clicked to Columns sort button. We set first as "desc", default was "asc".
                 orderSequence: ["desc", "asc"],
                 searchBuilderType: 'html',
+                searchBuilder: {defaultCondition: "starts"},
                 width: "7%"
             },
             {
@@ -380,6 +402,7 @@ $(document).ready(function () {
                 },
                 orderSequence: ["desc", "asc"],
                 searchBuilderType: 'html',
+                searchBuilder: {defaultCondition: "starts"},
                 width: "7%"
             },
             {
@@ -390,6 +413,7 @@ $(document).ready(function () {
                 },
                 orderSequence: ["desc", "asc"],
                 searchBuilderType: 'html',
+                searchBuilder: {defaultCondition: "starts"},
                 width: "7%"
             },
             {
@@ -400,6 +424,7 @@ $(document).ready(function () {
                 },
                 orderSequence: ["desc", "asc"],
                 searchBuilderType: 'html',
+                searchBuilder: {defaultCondition: "starts"},
                 width: "7%"
             },
             {
@@ -410,12 +435,14 @@ $(document).ready(function () {
                 },
                 orderSequence: ["desc", "asc"],
                 searchBuilderType: 'html',
+                searchBuilder: {defaultCondition: "starts"},
                 width: "5%"
             },
             {
                 data: "TotalFileCnt",
                 name: 'FileCnt',
                 searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">"},
                 width: "3%"
             },
             {
@@ -494,5 +521,5 @@ $(document).ready(function () {
         }
     });
     // Add event listener for opening and closing details
-    table.on('click', 'td.dt-control', showMainDatasetDetails);
+    table.on('click', 'td.dt-control', showDatasetDetails);
 });
