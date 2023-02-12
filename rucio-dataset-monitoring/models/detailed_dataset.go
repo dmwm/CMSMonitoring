@@ -17,7 +17,7 @@ type DetailedDataset struct {
 	Tier                 string      `bson:"Tier" validate:"required"`
 	C                    string      `bson:"C" validate:"required"` // Country
 	RseKind              string      `bson:"RseKind" validate:"required"`
-	SizeBytes            int64       `json:"SizeBytes"`
+	SizeBytes            int64       `bson:"SizeBytes"`
 	LastAccess           Epoch       `bson:"LastAccess"` // Last access to dataset in ISO8601 format
 	IsFullyReplicated    bool        `bson:"IsFullyReplicated"`
 	IsLocked             string      `bson:"IsLocked"`

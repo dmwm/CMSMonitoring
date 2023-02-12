@@ -15,8 +15,7 @@ import pandas as pd
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
-    coalesce, col, collect_set, countDistinct, first, greatest, lit, lower,
-    when,
+    coalesce, col, collect_set, countDistinct, first, greatest, lit, lower, sort_array, when,
     hex as _hex,
     max as _max,
     size as _size,
@@ -228,7 +227,7 @@ def get_df_dlocks(spark):
 
     # Group by DATASET and RSE to gather dataset lock accounts and rule counts
     df_dlocks = df_dlocks.groupby(['rse_id', 'DATASET_ID']) \
-        .agg(collect_set('account').alias('ProdAccounts'),
+        .agg(sort_array(collect_set('account')).alias('ProdAccounts'),
              collect_set('rule_id').alias('BlockRuleIDs'),
              countDistinct(col('dlocks_block_name')).alias('ProdLockedBlockCount')
              ) \
@@ -361,14 +360,14 @@ def get_df_main_datasets_in_both_disk_and_tape(df_main_datasets_in_each_rse):
     df = df.groupby(['Dataset']) \
         .agg(_max(col('SizeBytes')).alias('MaxSize'),
              # Tape
-             collect_set(when(col('Type') == 'TAPE', col("RSE"))).alias("TapeRseSet"),
+             sort_array(collect_set(when(col('Type') == 'TAPE', col("RSE")))).alias("TapeRseSet"),
              countDistinct(when(col('Type') == 'TAPE', col("RSE"))).alias("TapeRseCount"),
              _sum(when(col('Type') == 'TAPE', col("IsFullyReplicated").cast("long"))
                   ).alias("TapeFullyReplicatedRseCount"),
              _sum(when(col('Type') == 'TAPE', col('IsLocked').eqNullSafe('FULLY').cast('long'))
                   ).alias('TapeFullyLockedRseCount'),
              # Disk
-             collect_set(when(col('Type') == 'DISK', col("RSE"))).alias("DiskRseSet"),
+             sort_array(collect_set(when(col('Type') == 'DISK', col("RSE")))).alias("DiskRseSet"),
              countDistinct(when(col('Type') == 'DISK', col("RSE"))).alias("DiskRseCount"),
              _sum(when(col('Type') == 'DISK', col("IsFullyReplicated").cast("long"))
                   ).alias("DiskFullyReplicatedRseCount"),

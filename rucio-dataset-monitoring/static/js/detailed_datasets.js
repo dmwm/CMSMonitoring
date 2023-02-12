@@ -16,7 +16,7 @@ if (govar_IS_SHORT_URL === true) {
         console.log("[govar_IS_SHORT_URL true]")
         console.log(GLOBAL_SAVED_STATE_HOLDER)
     }
-    // Set Main dataset search input bar from short url request
+    // Set dataset search input bar from short url request
     $('#input-dataset').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputDataset);
 }
 
@@ -101,6 +101,88 @@ function getShortUrl() {
  * DataTables engine is starting to run ...
  */
 $(document).ready(function () {
+    // CUSTOM SEARCH-BUILDER TYPES
+    // boolean
+    $.fn.dataTable.ext.searchBuilder.conditions.boolean = {
+        'true': {
+            conditionName: function (dt, i18n) { return 'true'; },
+            isInputValid: function () { return true; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'true'; },
+        },
+        'false': {
+            conditionName: function (dt, i18n) { return 'false'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'false'; },
+        },
+    }
+    // tape_disk
+    $.fn.dataTable.ext.searchBuilder.conditions.tape_disk = {
+        'TAPE': {
+            conditionName: function (dt, i18n) { return 'TAPE'; },
+            isInputValid: function () { return true; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'TAPE'; },
+        },
+        'DISK': {
+            conditionName: function (dt, i18n) { return 'DISK'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'DISK'; },
+        },
+    }
+
+    // prod_accounts
+    $.fn.dataTable.ext.searchBuilder.conditions.prod_accounts = {
+        'transfer_ops': {
+            conditionName: function (dt, i18n) { return 'transfer_ops'; },
+            isInputValid: function () { return true; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'transfer_ops'; },
+        },
+        'wma_prod': {
+            conditionName: function (dt, i18n) { return 'wma_prod'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'wma_prod'; },
+        },
+        'wmcore_output': {
+            conditionName: function (dt, i18n) { return 'wmcore_output'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'wmcore_output'; },
+        },
+        'wmcore_transferor': {
+            conditionName: function (dt, i18n) { return 'wmcore_transferor'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'wmcore_transferor'; },
+        },
+        'crab_tape_recall': {
+            conditionName: function (dt, i18n) { return 'crab_tape_recall'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'crab_tape_recall'; },
+        },
+        'sync': {
+            conditionName: function (dt, i18n) { return 'sync'; },
+            isInputValid: function () { return false; },
+            init: function () { return; },
+            inputValue: function () { return; },
+            search: function (value) { return value === 'sync'; },
+        },
+    }
+
     /*
      * DataTables engine is running at full speed ...
      *    All below settings are important, even a single character.
@@ -122,7 +204,7 @@ $(document).ready(function () {
                 clearAll: 'Reset',
                 delete: 'Delete',
             },
-            processing: "<span class='fa-stack fa-lg'><i class='fa fa-spinner fa-spin fa-stack-2x fa-fw'></i></span>&emsp;Processing ...",
+            processing: "Processing ...",
         },
         stateSaveCallback: function (settings, data) {
             // Save the last state to "global_saved_state_holder" variable to use in the short url call
@@ -206,7 +288,7 @@ $(document).ready(function () {
         searchBuilder: {
             depthLimit: 1,
             // SearchBuilder customizations to limit conditions: "datasets" column not included because it is searched via "input-dataset"
-            columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+            columns: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -214,13 +296,20 @@ $(document).ready(function () {
                 //     - html: float type columns
                 //     - date: date type columns
                 //     - num:  integer type columns
+                //     - boolean: true/false type columns
+                //     - tape_disk: TYPE column
+                //     - prod_accounts: prod accounts column
+                //     - array: array columns
+                boolean: {},
+                tape_disk: {},
+                prod_accounts: {},
                 html: {
                     // "num" type will have only "starts":Greater Than" and "ends":"Less Than" conditions
                     'starts': {
-                        conditionName: 'Greater Than',
+                        conditionName: 'GreaterThan',
                     },
                     'ends': {
-                        conditionName: 'Less Than',
+                        conditionName: 'LessThan',
                     },
                     '=': null,
                     '!=': null,
@@ -261,16 +350,25 @@ $(document).ready(function () {
                     '!between': null,
                     '<=': null,
                     '>=': null,
-                }
+                },
+                array: {
+                    // "array" type will have only "="(has_arr_element), "null", "!null" for STRING ARRAY columns
+                    '=': {
+                        conditionName: 'has_array_element',
+                    },
+                    '!=': null,
+                    'contains': null,
+                    'without': null,
+                },
             }
         },
         columns: [
-            {data: "Type", width: "3%"},
+            {data: "Type", width: "3%", searchBuilderType: 'tape_disk'},
             {data: "Dataset"},
-            {data: "RSE"},
-            {data: "Tier"},
-            {data: "C"},
-            {data: "RseKind"},
+            {data: "RSE", searchBuilder: {defaultCondition: "contains"}},
+            {data: "Tier", searchBuilder: {defaultCondition: "contains"}},
+            {data: "C", searchBuilder: {defaultCondition: "contains"}},
+            {data: "RseKind", searchBuilder: {defaultCondition: "contains"}},
             {
                 data: "SizeBytes",
                 render: function (data, type, row, meta) {
@@ -280,25 +378,24 @@ $(document).ready(function () {
                 // orderSequence defines first option when clicked to Columns sort button. We set first as "desc", default was "asc".
                 orderSequence: ["desc", "asc"],
                 searchBuilderType: 'html',
+                searchBuilder: {defaultCondition: "starts"},
                 width: "7%"
             },
             {
                 data: "LastAccess",
                 searchBuilderType: 'date',
-                searchBuilder: {
-                    defaultCondition: "between"
-                },
+                searchBuilder: {defaultCondition: "between"},
                 width: "10%"
             },
-            {data: "IsFullyReplicated"},
-            {data: "IsLocked"},
-            {data: "FilePercentage"},
-            {data: "FileCount"},
-            {data: "AccessedFileCount"},
-            {data: "BlockCount"},
-            {data: "ProdLockedBlockCount"},
-            {data: "ProdAccounts"},
-            {data: "BlockRuleIDs"},
+            {data: "IsFullyReplicated", searchBuilderType: 'boolean'},
+            {data: "IsLocked", searchBuilder: {defaultCondition: "contains"}},
+            {data: "FilePercentage", searchBuilder: {defaultCondition: ">"}},
+            {data: "FileCount", searchBuilder: {defaultCondition: ">"}},
+            {data: "AccessedFileCount", searchBuilder: {defaultCondition: ">"}},
+            {data: "BlockCount", searchBuilder: {defaultCondition: ">"}},
+            {data: "ProdLockedBlockCount", searchBuilder: {defaultCondition: ">"}},
+            {data: "ProdAccounts", searchBuilderType: 'prod_accounts'},
+            {data: "BlockRuleIDs", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="}},
         ],
         buttons: [
             {

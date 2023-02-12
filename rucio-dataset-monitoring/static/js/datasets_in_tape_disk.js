@@ -1,7 +1,7 @@
 // This counter will be used to get the first opening of the page.
 // If short url is used, parent URL will be changed to main pages (../)
 var GLOBAL_INITIALIZATION_COUNTER = 0
-var PAGE_ENDPOINT = "main"
+var PAGE_ENDPOINT = "in-tape-disk"
 
 // Global variable to catch latest datatables request and set if provided in short url
 var GLOBAL_DT_REQUEST_HOLDER = null;
@@ -9,14 +9,17 @@ var GLOBAL_DT_REQUEST_HOLDER = null;
 // Global variable to catch the latest DT dom state as json(i.e.: SearchBuilder view) and set if provided in short url
 var GLOBAL_SAVED_STATE_HOLDER = null;
 
+if (govar_VERBOSITY > 0) {
+    console.log("govar_IS_SHORT_URL: " + govar_IS_SHORT_URL)
+}
 // If short url, get saved state from the GoLang controller Template
 if (govar_IS_SHORT_URL === true) {
     GLOBAL_SAVED_STATE_HOLDER = JSON.stringify(govar_DT_SAVED_STATE);
     if (govar_VERBOSITY > 0) {
-        console.log("[govar_IS_SHORT_URL true]")
+        console.log("GLOBAL_SAVED_STATE_HOLDER:")
         console.log(GLOBAL_SAVED_STATE_HOLDER)
     }
-    // Set Main dataset search input bar from short url request
+    // Set dataset search input bar from short url request
     $('#input-dataset').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputDataset);
 }
 
@@ -83,7 +86,7 @@ function getShortUrl() {
             "savedState": JSON.parse(GLOBAL_SAVED_STATE_HOLDER),
         }),
         success: function (data) {
-            let _shorturl = window.location.origin + '/'+ govar_BASE_EP + '/short-url/' + data
+            let _shorturl = window.location.origin + '/' + govar_BASE_EP + '/short-url/' + data
             if (govar_VERBOSITY > 0) {
                 console.log("Short URL: " + _shorturl)
             }
@@ -100,25 +103,6 @@ function getShortUrl() {
  * DataTables engine is starting to run ...
  */
 $(document).ready(function () {
-    // CUSTOM SEARCH-BUILDER TYPES
-    // tape_disk
-    $.fn.dataTable.ext.searchBuilder.conditions.tape_disk = {
-        'TAPE': {
-            conditionName: function (dt, i18n) { return 'TAPE'; },
-            isInputValid: function () { return true; },
-            init: function () { return; },
-            inputValue: function () { return; },
-            search: function (value) { return value === 'TAPE'; },
-        },
-        'DISK': {
-            conditionName: function (dt, i18n) { return 'DISK'; },
-            isInputValid: function () { return false; },
-            init: function () { return; },
-            inputValue: function () { return; },
-            search: function (value) { return value === 'DISK'; },
-        },
-    }
-
     /*
     * showDatasetDetails
     *   Shows detailed individual dataset information when green "+" button clicked
@@ -222,7 +206,7 @@ $(document).ready(function () {
             [5, 10, 25, 50, 100, 500, 1000, 10000]
         ],
         ajax: {
-            url: govar_MAIN_DATASETS_API_ENDPOINT,
+            url: govar_DATASETS_IN_TAPE_DISK_API_ENDPOINT,
             method: "POST",
             contentType: 'application/json',
             data: function (d) {
@@ -281,19 +265,7 @@ $(document).ready(function () {
         searchBuilder: {
             depthLimit: 1,
             // SearchBuilder customizations to limit conditions: "datasets" column not included because it is searched via "input-dataset"
-            columns: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            // greyscale: true,
-            // Sends additional query, that's why disabled.
-            // preDefined: {
-            //     criteria: [
-            //         {
-            //             data: 'Rse Type',
-            //             origData: 'RseType',
-            //             condition: 'contains',
-            //             value: ["DISK"]
-            //         },
-            //     ]
-            // },
+            columns: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -301,8 +273,7 @@ $(document).ready(function () {
                 //     - html: float type columns
                 //     - date: date type columns
                 //     - num:  integer type columns
-                //     - tape_disk: Rse Type column
-                tape_disk: {},
+                //     - array: array columns
                 html: {
                     // "num" type will have only "starts":GreaterThan" and "ends":"LessThan" conditions
                     'starts': {
@@ -335,14 +306,6 @@ $(document).ready(function () {
                         conditionName: 'regex',
                     },
                 },
-                date: {
-                    // "date" type will have only ">", "<", "between", "null" and "!null" conditions
-                    '>': null,
-                    '<': null,
-                    '=': null,
-                    '!=': null,
-                    '!between': null,
-                },
                 num: {
                     // "int" type will have only ">", "<", "between", "null" and "!null" conditions
                     '=': null,
@@ -350,106 +313,44 @@ $(document).ready(function () {
                     '!between': null,
                     '<=': null,
                     '>=': null,
-                }
+                },
+                array: {
+                    // "array" type will have only "="(has_arr_element), "null", "!null" for STRING ARRAY columns
+                    '=': {
+                        conditionName: 'contains_regex',
+                    },
+                    '!=': {
+                        conditionName: 'not_contains_regex',
+                    },
+                    'contains': null,
+                    'without': null,
+                },
             }
         },
         columns: [
+            // Details green/red "+"/"-" button
+            {data: null, className: 'dt-control', orderable: false, defaultContent: '', width: "2%"},
+            {data: "Dataset", className: "details-value-dataset"},
             {
-                // Details green/red "+"/"-" button
-                data: null, className: 'dt-control', orderable: false, defaultContent: '',
-                width: "2%"
-            },
-            {
-                data: "RseType",
-                className: "details-value-rse-type",
-                name: 'Rse Type',
-                searchBuilderType: 'tape_disk',
-                width: "3%"
-            },
-            {
-                data: "Dataset",
-                className: "details-value-dataset",
-                //width: "20%"
-            },
-            {
-                data: "LastAccess",
-                searchBuilderType: 'date',
-                searchBuilder: {
-                    defaultCondition: "between"
-                },
-                width: "10%"
-            },
-            {
-                data: "Max",
+                data: "MaxSize",
                 render: function (data, type, row, meta) {
                     // SearchBuilder will use raw data as search values, but display will be human-readable size format.
                     return type === 'display' ? helperBytesToHumanely(data) : data;
                 },
                 // orderSequence defines first option when clicked to Columns sort button. We set first as "desc", default was "asc".
                 orderSequence: ["desc", "asc"],
-                searchBuilderType: 'html',
                 searchBuilder: {defaultCondition: "starts"},
+                searchBuilderType: 'html',
                 width: "7%"
             },
-            {
-                data: "Min",
-                render: function (data, type, row, meta) {
-                    // SearchBuilder will use raw data as search values, but display will be human-readable size format.
-                    return type === 'display' ? helperBytesToHumanely(data) : data;
-                },
-                orderSequence: ["desc", "asc"],
-                searchBuilderType: 'html',
-                searchBuilder: {defaultCondition: "starts"},
-                width: "7%"
-            },
-            {
-                data: "Avg",
-                render: function (data, type, row, meta) {
-                    // SearchBuilder will use raw data as search values, but display will be human-readable size format.
-                    return type === 'display' ? helperBytesToHumanely(data) : data;
-                },
-                orderSequence: ["desc", "asc"],
-                searchBuilderType: 'html',
-                searchBuilder: {defaultCondition: "starts"},
-                width: "7%"
-            },
-            {
-                data: "Sum",
-                render: function (data, type, row, meta) {
-                    // SearchBuilder will use raw data as search values, but display will be human-readable size format.
-                    return type === 'display' ? helperBytesToHumanely(data) : data;
-                },
-                orderSequence: ["desc", "asc"],
-                searchBuilderType: 'html',
-                searchBuilder: {defaultCondition: "starts"},
-                width: "7%"
-            },
-            {
-                data: "RealSize",
-                render: function (data, type, row, meta) {
-                    // SearchBuilder will use raw data as search values, but display will be human-readable size format.
-                    return type === 'display' ? helperBytesToHumanely(data) : data;
-                },
-                orderSequence: ["desc", "asc"],
-                searchBuilderType: 'html',
-                searchBuilder: {defaultCondition: "starts"},
-                width: "5%"
-            },
-            {
-                data: "TotalFileCnt",
-                name: 'FileCnt',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
-                width: "3%"
-            },
-            {
-                data: "RSEs",
-                className: "rses-style",
-                searchBuilder: {
-                    defaultCondition: "contains"
-                },
-                width: "20%"
-            }
+            {data: "TapeFullyReplicatedRseCount", searchBuilderType: 'num', searchBuilder: {defaultCondition: ">"}, width: "3%"},
+            {data: "DiskFullyReplicatedRseCount", searchBuilderType: 'num', searchBuilder: {defaultCondition: ">"}, width: "3%"},
+            {data: "TapeFullyLockedRseCount", searchBuilderType: 'num', searchBuilder: {defaultCondition: ">"}, width: "3%"},
+            {data: "DiskFullyLockedRseCount", searchBuilderType: 'num', searchBuilder: {defaultCondition: ">"}, width: "3%"},
+            {data: "TapeRseCount", searchBuilderType: 'num', searchBuilder: {defaultCondition: ">"}, width: "3%"},
+            {data: "DiskRseCount", searchBuilderType: 'num', searchBuilder: {defaultCondition: ">"}, width: "3%"},
+            {data: "TapeRseSet", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="}},
+            {data: "DiskRseSet", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="}},
         ],
         buttons: [
             {

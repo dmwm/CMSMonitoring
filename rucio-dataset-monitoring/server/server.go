@@ -41,7 +41,7 @@ func middlewareReqHandler() gin.HandlerFunc {
 
 // middlewareLogFormatter custom log formatter
 var middlewareLogFormatter = func(param gin.LogFormatterParams) string {
-	return fmt.Sprintf("[%s] - %s [%s %d %s %s %s %d] [%s] [%s]\n",
+	return fmt.Sprintf("[%s] [MLWR] - %s [%s %d %s %s %s %d] [%s] [%s]\n",
 		param.TimeStamp.Format(time.RFC3339),
 		param.ClientIP,
 		param.Method,
@@ -84,7 +84,8 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 		// Page APIs
 		e.POST("/api/main-datasets", controllers.GetMainDatasets(mongoColNames.MainDatasets))
 		e.POST("/api/detailed-datasets", controllers.GetDetailedDatasets(mongoColNames.DetailedDatasets))
-		e.POST("/api/main-dataset-details", controllers.GetMainDatasetDetails(mongoColNames.DetailedDatasets))
+		e.POST("/api/datasets-in-tape-disk", controllers.GetDatasetsInTapeDisk(mongoColNames.DatasetsInTapeAndDisk))
+		e.POST("/api/each-rse-details", controllers.GetEachRseDetails(mongoColNames.DetailedDatasets))
 
 		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
 
@@ -93,7 +94,7 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 			mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/main-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
-			"../"+Config.BaseEndpoint+"/api/main-dataset-details",
+			"../"+Config.BaseEndpoint+"/api/each-rse-details",
 			Config.BaseEndpoint,
 		))
 
@@ -105,14 +106,24 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 			Config.BaseEndpoint,
 		))
 
+		// Datasets in both tape and disk page
+		e.GET("/in-tape-disk", controllers.GetDatasetsInTapeDiskPage(
+			mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/datasets-in-tape-disk",
+			"../"+Config.BaseEndpoint+"/api/each-rse-details",
+			"../"+Config.BaseEndpoint+"/api/short-url",
+			Config.BaseEndpoint,
+		))
+
 		// Short url result page
 		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(
 			mongoColNames.ShortUrl,
 			mongoColNames.DatasourceTimestamp,
 			"../"+Config.BaseEndpoint+"/api/main-datasets",
-			"../"+Config.BaseEndpoint+"/api/short-url",
-			"../"+Config.BaseEndpoint+"/api/main-dataset-details",
 			"../"+Config.BaseEndpoint+"/api/detailed-datasets",
+			"../"+Config.BaseEndpoint+"/api/datasets-in-tape-disk",
+			"../"+Config.BaseEndpoint+"/api/each-rse-details",
+			"../"+Config.BaseEndpoint+"/api/short-url",
 			Config.BaseEndpoint,
 		))
 	}

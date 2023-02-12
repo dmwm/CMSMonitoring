@@ -1,7 +1,7 @@
 {
     "port": 8080,
-    "verbose": 2,
-    "env_file": "/Users/ceyhunuzunoglu/projects/cms/secrets/client_env",
+    "verbose": 0,
+    "env_file": "/etc/secrets/client_env",
     "read_timeout": 600,
     "write_timeout": 600,
     "mongo_connection_timeout": 600,

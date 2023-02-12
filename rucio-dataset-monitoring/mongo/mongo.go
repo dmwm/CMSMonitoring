@@ -57,8 +57,8 @@ func GetFindOnlyMatchResults(ctx context.Context, coll *mongo.Collection, match 
 	return cursor, err
 }
 
-// GetFindOneResults no sort, skip, limit, just match
-func GetFindOneResults(ctx context.Context, coll *mongo.Collection, match bson.M) *mongo.SingleResult {
+// GetFindOneResult no sort, skip, limit, just match
+func GetFindOneResult(ctx context.Context, coll *mongo.Collection, match bson.M) *mongo.SingleResult {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	opts := options.FindOneOptions{}
 	return coll.FindOne(ctx, match, &opts)

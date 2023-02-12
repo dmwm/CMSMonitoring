@@ -79,10 +79,10 @@ func getFilteredCount(ctx context.Context, c *gin.Context, collection *mongo.Col
 		}
 		mainDatasetsFilteredCountHolder = cnt
 		mainDatasetsQueryHolder = query
-		utils.InfoLogV1("filter query comparison: MIS-MATCH %s", nil)
+		utils.InfoLogV1("filter query comparison with previous query: MATCH")
 	} else {
 		// If search query is still same, count should be same, so return GFilteredCount
-		utils.InfoLogV1("filter query comparison: MATCH %s", nil)
+		utils.InfoLogV1("filter query comparison with previous query: MISMATCH")
 	}
 	return mainDatasetsFilteredCountHolder
 }
