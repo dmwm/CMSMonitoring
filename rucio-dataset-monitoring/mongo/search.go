@@ -1,5 +1,7 @@
 package mongo
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/models"
 	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/utils"
@@ -11,11 +13,11 @@ import (
 // SearchQueryForSearchBuilderRequest creates search query for datasets
 func SearchQueryForSearchBuilderRequest(req *models.SearchBuilderRequest) bson.M {
 	findQuery := bson.M{}
-	utils.InfoLogV2("SearchBuilderRequest: %#v", req.String())
+	utils.InfoLogV2("incoming SearchBuilderRequest: " + req.String())
 
 	// Check if SearchBuilderRequest object in the incoming request is empty
 	if !reflect.DeepEqual(req, models.SearchBuilderRequest{}) {
-		utils.InfoLogV2("SearchBuilder is not null: %#v", req)
+		utils.InfoLogV2("SearchBuilder is not null: " + req.String())
 		findQuery = utils.GetSearchBuilderBson(req)
 	}
 	utils.InfoLogV1("find query is : %#v", findQuery)
@@ -27,7 +29,7 @@ func SearchQueryBuilderForCustomRequest(customR *models.CustomRequest, prodAccou
 	findQuery := bson.M{}
 	utils.InfoLogV2("CustomRequest query is : %#v", customR.String())
 	if customR.Dataset != "" {
-		findQuery["Dataset"] = primitive.Regex{Pattern: customR.Dataset, Options: "im"}
+		findQuery["MainDataset"] = primitive.Regex{Pattern: customR.Dataset, Options: "im"}
 	}
 	if customR.Rse != "" {
 		findQuery["RSE"] = primitive.Regex{Pattern: customR.Rse, Options: "im"}

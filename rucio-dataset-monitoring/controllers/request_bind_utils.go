@@ -4,6 +4,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/models"
 	mymongo "github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/mongo"
@@ -27,6 +28,10 @@ func InitializeCtxAndBindRequestBody(c *gin.Context, req interface{}) (context.C
 			utils.ErrorResponse(c, "bad request", err, string(tempReqBody.([]byte)))
 		}
 	}
+	if utils.Verbose > 1 {
+		r, _ := json.Marshal(req)
+		utils.InfoLogV2("bind request: " + string(r))
+	}
 	return ctx, cancel, req
 }
 
@@ -42,9 +47,9 @@ func bindRequest(c *gin.Context, req interface{}) (any, error) {
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
 		utils.InfoLogV2("incoming request body bind to: %s", "ShortUrlRequest")
 		return r, err
-	case models.SingleDetailedDatasetsRequest:
+	case models.EachRseDetailsRequest:
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
-		utils.InfoLogV2("incoming request body bind to: %s", "SingleDetailedDatasetsRequest")
+		utils.InfoLogV2("incoming request body bind to: %s", "EachRseDetailsRequest")
 		return r, err
 	default:
 		utils.ErrorLog("unknown request struct, it did not match: %#v", req)

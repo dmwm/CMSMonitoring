@@ -1,14 +1,15 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"encoding/json"
 	"log"
 )
 
-// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
-
 // ShortUrlRequest represents short url incoming request that will be fired from client
 type ShortUrlRequest struct {
+	Page       string                 `json:"page"`
 	Request    DataTableRequest       `json:"dtRequest"`
 	SavedState map[string]interface{} `json:"savedState"`
 }
@@ -16,6 +17,7 @@ type ShortUrlRequest struct {
 // ShortUrl struct is used for key:value couples of unique id and datatables request
 type ShortUrl struct {
 	HashId     string                 `bson:"hashId,omitempty" validate:"required"`
+	Page       string                 `bson:"page" validate:"required"` // Page name: main, detailed, etc.
 	Request    DataTableRequest       `bson:"dtRequest,omitempty" validate:"required"`
 	SavedState map[string]interface{} `bson:"savedState"` // Saved state of datatables
 }

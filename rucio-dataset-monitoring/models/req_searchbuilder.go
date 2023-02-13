@@ -1,12 +1,12 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"encoding/json"
 	"log"
 	"strings"
 )
-
-// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 // SearchBuilderRequest datatables search builder request format
 type SearchBuilderRequest struct {

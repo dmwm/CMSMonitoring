@@ -41,7 +41,7 @@ func middlewareReqHandler() gin.HandlerFunc {
 
 // middlewareLogFormatter custom log formatter
 var middlewareLogFormatter = func(param gin.LogFormatterParams) string {
-	return fmt.Sprintf("[%s] - %s [%s %d %s %s %s %d] [%s] [%s]\n",
+	return fmt.Sprintf("[%s] [MLWR] - %s [%s %d %s %s %s %d] [%s] [%s]\n",
 		param.TimeStamp.Format(time.RFC3339),
 		param.ClientIP,
 		param.Method,
@@ -67,9 +67,6 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 	engine.Use(gin.LoggerWithFormatter(middlewareLogFormatter))
 	engine.LoadHTMLGlob("static/templates/*.tmpl")
 
-	// Index page
-	engine.StaticFS("/static", http.Dir("./static"))
-
 	// -------------------------------- Root ------------------------------------------------------
 	engine.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
@@ -80,28 +77,55 @@ func MainRouter(mongoColNames *MongoCollectionNames) http.Handler {
 	// ------------------------------- Config.BaseEndpoint group-----------------------------------
 	e := engine.Group("/" + Config.BaseEndpoint)
 	{
-		// Static
-		// REST
-		e.POST("/api/datasets", controllers.GetDatasets(mongoColNames.Datasets))
-		//e.POST("/api/rse-details", controllers.GetDetailedDs(mongoColNames.DetailedDatasets, &Config.ProdLockAccounts))
-		e.POST("/api/rse-detail", controllers.GetSingleDetailedDs(mongoColNames.DetailedDatasets))
-		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+		e.StaticFS("/static", http.Dir("./static"))
+
 		e.GET("/serverinfo", controllers.GetServiceInfo(GitVersion, ServiceInfo))
 
-		// Pages
-		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(mongoColNames.ShortUrl, mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/datasets",
+		// Page APIs
+		e.POST("/api/main-datasets", controllers.GetMainDatasets(mongoColNames.MainDatasets))
+		e.POST("/api/detailed-datasets", controllers.GetDetailedDatasets(mongoColNames.DetailedDatasets))
+		e.POST("/api/datasets-in-tape-disk", controllers.GetDatasetsInTapeDisk(mongoColNames.DatasetsInTapeAndDisk))
+		e.POST("/api/each-rse-details", controllers.GetEachRseDetails(mongoColNames.DetailedDatasets))
+
+		e.POST("/api/short-url", controllers.GetShortUrlParam(mongoColNames.ShortUrl))
+
+		// Main datasets page
+		e.GET("/main", controllers.GetMainDatasetsPage(
+			mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/main-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
-			"../"+Config.BaseEndpoint+"/api/rse-details",
+			"../"+Config.BaseEndpoint+"/api/each-rse-details",
+			Config.BaseEndpoint,
 		))
 
-		// "../" uses base url in JS ajax calls. base endpoint directly goes to index page (main datasets page)
-		e.GET("/", controllers.GetIndexPage(mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/datasets",
+		// Detailed datasets page
+		e.GET("/detailed", controllers.GetDetailedDatasetsPage(
+			mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/detailed-datasets",
 			"../"+Config.BaseEndpoint+"/api/short-url",
-			"../"+Config.BaseEndpoint+"/api/rse-detail",
+			Config.BaseEndpoint,
 		))
-		e.GET("/rse-details", controllers.GetDetailsPage)
+
+		// Datasets in both tape and disk page
+		e.GET("/in-tape-disk", controllers.GetDatasetsInTapeDiskPage(
+			mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/datasets-in-tape-disk",
+			"../"+Config.BaseEndpoint+"/api/each-rse-details",
+			"../"+Config.BaseEndpoint+"/api/short-url",
+			Config.BaseEndpoint,
+		))
+
+		// Short url result page
+		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(
+			mongoColNames.ShortUrl,
+			mongoColNames.DatasourceTimestamp,
+			"../"+Config.BaseEndpoint+"/api/main-datasets",
+			"../"+Config.BaseEndpoint+"/api/detailed-datasets",
+			"../"+Config.BaseEndpoint+"/api/datasets-in-tape-disk",
+			"../"+Config.BaseEndpoint+"/api/each-rse-details",
+			"../"+Config.BaseEndpoint+"/api/short-url",
+			Config.BaseEndpoint,
+		))
 	}
 
 	return engine

@@ -7,7 +7,7 @@ Description : Schema module for DBS/PhEDEx/AAA/EOS/CMSSW/JobMonitoring meta-data
 """
 
 # spark modules
-from pyspark.sql.types import DoubleType, IntegerType, StructType, StructField, StringType
+from pyspark.sql.types import DoubleType, IntegerType, LongType, StructType, StructField, StringType
 
 
 def schema_datasets():
@@ -33,11 +33,11 @@ def schema_datasets():
     :returns: StructType consisting StructField array
     """
     return StructType([
-        StructField("DATASET_ID", IntegerType(), True),
+        StructField("DATASET_ID", LongType(), True),
         StructField("DATASET", StringType(), True),
         StructField("IS_DATASET_VALID", IntegerType(), True),
-        StructField("PRIMARY_DS_ID", IntegerType(), True),
-        StructField("PROCESSED_DS_ID", IntegerType(), True),
+        StructField("PRIMARY_DS_ID", LongType(), True),
+        StructField("PROCESSED_DS_ID", LongType(), True),
         StructField("DATA_TIER_ID", IntegerType(), True),
         StructField("DATASET_ACCESS_TYPE_ID", IntegerType(), True),
         StructField("ACQUISITION_ERA_ID", IntegerType(), True),
@@ -70,13 +70,13 @@ def schema_blocks():
     :returns: StructType consisting StructField array
     """
     return StructType([
-        StructField("BLOCK_ID", IntegerType(), True),
+        StructField("BLOCK_ID", LongType(), True),
         StructField("BLOCK_NAME", StringType(), True),
-        StructField("DATASET_ID", IntegerType(), True),
+        StructField("DATASET_ID", LongType(), True),
         StructField("OPEN_FOR_WRITING", IntegerType(), True),
         StructField("ORIGIN_SITE_NAME", StringType(), True),
         StructField("BLOCK_SIZE", DoubleType(), True),
-        StructField("FILE_COUNT", IntegerType(), True),
+        StructField("FILE_COUNT", LongType(), True),
         StructField("CREATION_DATE", DoubleType(), True),
         StructField("CREATE_BY", StringType(), True),
         StructField("LAST_MODIFICATION_DATE", DoubleType(), True),
@@ -108,16 +108,16 @@ def schema_files():
     :returns: StructType consisting StructField array
     """
     return StructType([
-        StructField("FILE_ID", IntegerType(), True),
+        StructField("FILE_ID", LongType(), True),
         StructField("LOGICAL_FILE_NAME", StringType(), True),
         StructField("IS_FILE_VALID", IntegerType(), True),
-        StructField("DATASET_ID", IntegerType(), True),
-        StructField("BLOCK_ID", IntegerType(), True),
+        StructField("DATASET_ID", LongType(), True),
+        StructField("BLOCK_ID", LongType(), True),
         StructField("FILE_TYPE_ID", IntegerType(), True),
         StructField("CHECK_SUM", StringType(), True),
-        StructField("EVENT_COUNT", IntegerType(), True),
+        StructField("EVENT_COUNT", LongType(), True),
         StructField("FILE_SIZE", DoubleType(), True),
-        StructField("BRANCH_HASH_ID", IntegerType(), True),
+        StructField("BRANCH_HASH_ID", LongType(), True),
         StructField("ADLER32", StringType(), True),
         StructField("MD5", StringType(), True),
         StructField("AUTO_CROSS_SECTION", DoubleType(), True),

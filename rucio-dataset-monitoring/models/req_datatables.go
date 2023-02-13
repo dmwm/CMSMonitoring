@@ -1,13 +1,11 @@
 package models
 
+// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
+
 import (
 	"encoding/json"
 	"log"
 )
-
-// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
-
-// Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 // DataTable sends specific request json to ajax=>url endpoint.
 //    - It is basically a nested json and can be organised with below structs.

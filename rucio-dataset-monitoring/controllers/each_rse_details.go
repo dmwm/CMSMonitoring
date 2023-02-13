@@ -8,22 +8,33 @@ import (
 	"github.com/dmwm/CMSMonitoring/rucio-dataset-monitoring/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
-// GetSingleDetailedDs controller that returns detailed dataset in TAPE or DISK
-func GetSingleDetailedDs(collectionName string) gin.HandlerFunc {
+// GetEachRseDetails controller that returns detailed dataset in TAPE or DISK
+func GetEachRseDetails(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.SingleDetailedDatasetsRequest{})
+		var (
+			detailedRows []models.DetailedDataset
+			err          error
+			cursor       *mongo.Cursor
+			sortType     = bson.D{bson.E{Key: "Type", Value: -1}} // TAPE first
+		)
+		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.EachRseDetailsRequest{})
 		defer cancel()
 
 		// Cast interface to request
-		r := req.(models.SingleDetailedDatasetsRequest)
+		r := req.(models.EachRseDetailsRequest)
 
 		collection := mymongo.GetCollection(collectionName)
+		if r.Type != "" {
+			cursor, err = mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"Dataset": r.Dataset, "Type": r.Type})
+		} else {
+			// in tape and disk
+			cursor, err = mymongo.GetFindQueryResults(ctx, collection, bson.M{"Dataset": r.Dataset}, sortType, 0, 0)
+		}
 
-		var detailedRows []models.DetailedDataset
-		cursor, err := mymongo.GetFindOnlyMatchResults(ctx, collection, bson.M{"Dataset": r.Dataset, "Type": r.Type})
 		if err != nil {
 			utils.ErrorResponse(c, "Find query failed", err, "")
 		}
@@ -32,7 +43,7 @@ func GetSingleDetailedDs(collectionName string) gin.HandlerFunc {
 		}
 
 		c.HTML(http.StatusOK,
-			"rse_detail_table.tmpl",
+			"each_rse_details.tmpl",
 			gin.H{"data": detailedRows},
 		)
 		return

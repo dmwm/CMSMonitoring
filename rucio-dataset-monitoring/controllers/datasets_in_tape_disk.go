@@ -12,30 +12,30 @@ import (
 )
 
 var (
-	// detailedDatasetsUniqueSortColumn required for pagination in order
-	detailedDatasetsUniqueSortColumn = "_id"
+	// datasetsInTapeDiskUniqueSortColumn required for pagination in order
+	datasetsInTapeDiskUniqueSortColumn = "_id"
 )
 
-// GetDetailedDatasets controller that returns datasets according to DataTable request json
-func GetDetailedDatasets(collectionName string) gin.HandlerFunc {
+// GetDatasetsInTapeDisk controller that returns datasets according to DataTable request json
+func GetDatasetsInTapeDisk(collectionName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// We need to provide models.DataTableCustomRequest to the controller initializer and use same type in casting
 		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
 		defer cancel()
 
-		c.JSON(http.StatusOK, getDetailedDatasetsResults(ctx, c, collectionName, req.(models.DataTableRequest)))
+		c.JSON(http.StatusOK, getDatasetsInTapeDiskResults(ctx, c, collectionName, req.(models.DataTableRequest)))
 		return
 	}
 }
 
-// getDetailedDatasetsResults get query results efficiently
-func getDetailedDatasetsResults(ctx context.Context, c *gin.Context, collectionName string, req models.DataTableRequest) models.DatatableBaseResponse {
+// getDatasetsInTapeDiskResults get query results efficiently
+func getDatasetsInTapeDiskResults(ctx context.Context, c *gin.Context, collectionName string, req models.DataTableRequest) models.DatatableBaseResponse {
 	collection := mymongo.GetCollection(collectionName)
-	var detailedDatasets []models.DetailedDataset
+	var datasetInTapeDisk []models.DatasetInTapeDisk
 
 	// Should use SearchBuilderRequest query
 	searchQuery := mymongo.SearchQueryForSearchBuilderRequest(&req.SearchBuilderRequest)
-	sortQuery := mymongo.SortQueryBuilder(&req, detailedDatasetsUniqueSortColumn)
+	sortQuery := mymongo.SortQueryBuilder(&req, datasetsInTapeDiskUniqueSortColumn)
 	length := req.Length
 	skip := req.Start
 
@@ -43,8 +43,8 @@ func getDetailedDatasetsResults(ctx context.Context, c *gin.Context, collectionN
 	if err != nil {
 		utils.ErrorResponse(c, "Find query failed", err, "")
 	}
-	if err = cursor.All(ctx, &detailedDatasets); err != nil {
-		utils.ErrorResponse(c, "detailed datasets cursor failed", err, "")
+	if err = cursor.All(ctx, &datasetInTapeDisk); err != nil {
+		utils.ErrorResponse(c, "datasetInTapeDisk cursor failed", err, "")
 	}
 
 	totalRecCount := getFilteredCount(ctx, c, collection, searchQuery, req.Draw)
@@ -53,6 +53,6 @@ func getDetailedDatasetsResults(ctx context.Context, c *gin.Context, collectionN
 		Draw:            req.Draw,
 		RecordsTotal:    totalRecCount,
 		RecordsFiltered: filteredRecCount,
-		Data:            detailedDatasets,
+		Data:            datasetInTapeDisk,
 	}
 }

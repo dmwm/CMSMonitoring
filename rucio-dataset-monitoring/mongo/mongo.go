@@ -57,6 +57,13 @@ func GetFindOnlyMatchResults(ctx context.Context, coll *mongo.Collection, match 
 	return cursor, err
 }
 
+// GetFindOneResult no sort, skip, limit, just match
+func GetFindOneResult(ctx context.Context, coll *mongo.Collection, match bson.M) *mongo.SingleResult {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	opts := options.FindOneOptions{}
+	return coll.FindOne(ctx, match, &opts)
+}
+
 // GetCount returns count of query result
 func GetCount(ctx context.Context, collection *mongo.Collection, match bson.M) (int64, error) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
