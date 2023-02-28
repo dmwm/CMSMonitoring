@@ -21,3 +21,6 @@ MAILTO=""
 
 # Run only in production, paranthesis are important
 00 14 * * * [[ $CMSSQOOP_ENV == "prod" ]] && ( cd /data; /data/sqoop/run.sh /data/monit -query="stats" -token /etc/secrets/token -hdfs=/etc/secrets/hdfs.json -creds=/etc/secrets/cms-es-size.json -verbose 1 -inject 2>&1 1>& monit.log )
+
+# HDFS directories retention policy cleaner
+00 20 * * * /data/sqoop/curator/hdfs_cleaner.sh
