@@ -502,10 +502,12 @@ class StompAMQ7(object):
         :return: a single notifications with the proper headers and metadata and lists of
                offending and unknown keys
         """
+        my_metadata = {}
+        if metadata:
+            my_metadata.update(metadata)
+
         # Do not allow MONIT reserved keys in given metadata
-        if metadata is None:
-            metadata = {}
-        if isinstance(metadata, dict) and any(item in metadata for item in MONIT_RESERVED_KEYS):
+        if isinstance(my_metadata, dict) and any(item in my_metadata for item in MONIT_RESERVED_KEYS):
             logging.error(f"metadata includes one of MONIT reserved key: {MONIT_RESERVED_KEYS}. "
                           f"Please use method params for reserved keys: producer, doc_id, doc_type, ts")
             sys.exit(1)
@@ -515,11 +517,11 @@ class StompAMQ7(object):
         # Get producer from function itself or StompAMQ7 instance
         producer = producer or self._producer
         # Set producer and timestamp
-        metadata.update({'producer': producer, 'timestamp': ts})
+        my_metadata.update({'producer': producer, 'timestamp': ts})
 
-        # If value is None, key should not be exist in the dict
-        _ = doc_id and metadata.update({'_id': doc_id})
-        _ = doc_type and metadata.update({'type': doc_type})
+        # If value is None, key should not exist in the dict
+        _ = doc_id and my_metadata.update({'_id': doc_id})
+        _ = doc_type and my_metadata.update({'type': doc_type})
 
         # Validate the payload
         schema = schema or self.validation_schema
@@ -549,7 +551,7 @@ class StompAMQ7(object):
         notification = {}
         notification.update(headers)
         notification['body'] = body
-        if metadata:
-            notification['body']['metadata'] = metadata
+        if my_metadata:
+            notification['body']['metadata'] = my_metadata
 
         return notification, offending_keys, unknown_keys
