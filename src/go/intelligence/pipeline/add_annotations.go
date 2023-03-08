@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"go/intelligence/models"
-	"go/intelligence/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
 	"log"
 	"net/http"
 	"strings"
@@ -176,7 +176,7 @@ func AddAnnotation(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return dataAfterAnnotation
 }
 
-//makeHTMLhref for making url clickable it needs be tagged with html href attribute that's what this function does
+// makeHTMLhref for making url clickable it needs be tagged with html href attribute that's what this function does
 func makeHTMLhref(url string) string {
 	return "<a target=_blank href=" + url + ">URL</a>"
 }

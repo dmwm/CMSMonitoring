@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go/intelligence/models"
-	"go/intelligence/pipeline"
-	"go/intelligence/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/pipeline"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
 	"log"
 	"runtime"
 	"time"

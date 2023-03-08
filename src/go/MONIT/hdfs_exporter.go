@@ -140,10 +140,10 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) error {
 
 	for _, r := range records {
 		size := float64(r.Size)
-		timestamp := r.Timestamp
+		timestamp := float64(r.Timestamp)
 		labels := []string{r.Path}
-		ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, float64(size), labels...)
-		ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, float64(timestamp), labels...)
+		ch <- prometheus.MustNewConstMetric(e.size, prometheus.CounterValue, size, labels...)
+		ch <- prometheus.MustNewConstMetric(e.timestamp, prometheus.CounterValue, timestamp, labels...)
 	}
 	return nil
 }

@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -33,7 +32,7 @@ type DSRecord struct {
 // helper function to get token
 func getToken(r string) string {
 	if _, err := os.Stat(r); err == nil {
-		b, e := ioutil.ReadFile(r)
+		b, e := os.ReadFile(r)
 		if e != nil {
 			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
 		}

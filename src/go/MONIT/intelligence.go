@@ -6,7 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -21,14 +21,14 @@ import (
 // Created    : Thu, 18 June 2020 13:02:19 GMT
 // Description: CERN MONIT infrastructure Intelligence Module
 
-//--------MAPS----------
-//Map for storing alertData with instance as key.
+// --------MAPS----------
+// Map for storing alertData with instance as key.
 var silenceMap map[string][]amJSON
 
 //--------MAPS----------
 
-//-------STRUCTS---------
-//AlertManager API acceptable JSON Data for GGUS Data
+// -------STRUCTS---------
+// AlertManager API acceptable JSON Data for GGUS Data
 type amJSON struct {
 	Labels      map[string]interface{} `json:"labels"`
 	Annotations map[string]interface{} `json:"annotations"`
@@ -40,7 +40,7 @@ type amData struct {
 	Data []amJSON
 }
 
-//Alert CLI tool data struct (Tabular)
+// Alert CLI tool data struct (Tabular)
 type alertData struct {
 	Name     string
 	Service  string
@@ -50,7 +50,7 @@ type alertData struct {
 	EndsAt   time.Time
 }
 
-//Array of alerts for alert CLI Tool (Tabular)
+// Array of alerts for alert CLI Tool (Tabular)
 var allAlertData []alertData
 
 type matchers struct {
@@ -85,7 +85,7 @@ var configJSON config
 
 //-------STRUCTS---------
 
-//function for constructing and validating AM URL
+// function for constructing and validating AM URL
 func construct(baseURL, apiURL string) string {
 
 	cmpltURL := baseURL + apiURL
@@ -98,7 +98,7 @@ func construct(baseURL, apiURL string) string {
 	return u.String()
 }
 
-//function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
+// function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
 func get(data interface{}) error {
 
 	//GET API for fetching all AM alerts.
@@ -127,12 +127,12 @@ func get(data interface{}) error {
 	} else {
 		if resp.StatusCode != http.StatusOK {
 			log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
-			return errors.New("Http Response Code Error")
+			return errors.New("http Response Code Error")
 		}
 	}
 	defer resp.Body.Close()
 
-	byteValue, bvErr := ioutil.ReadAll(resp.Body)
+	byteValue, bvErr := io.ReadAll(resp.Body)
 
 	if bvErr != nil {
 		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", bvErr)
@@ -158,7 +158,7 @@ func get(data interface{}) error {
 	return nil
 }
 
-//Function for post request on /api/v1/silences alertmanager endpoint for creating silences.
+// Function for post request on /api/v1/silences alertmanager endpoint for creating silences.
 func silence(data amJSON, mData amJSON) error {
 	// POST API for creating silences.
 	apiurl := construct(configJSON.CMSMONURL, configJSON.PostSilenceAPI)
@@ -209,7 +209,7 @@ func silence(data amJSON, mData amJSON) error {
 	} else {
 		if resp.StatusCode != http.StatusOK {
 			log.Printf("Http Response Code Error, status code: %d", resp.StatusCode)
-			return errors.New("Http Response Code Error")
+			return errors.New("http Response Code Error")
 		}
 	}
 	defer resp.Body.Close()
@@ -228,7 +228,7 @@ func silence(data amJSON, mData amJSON) error {
 	return nil
 }
 
-//Function for silencing maintenance false alerts
+// Function for silencing maintenance false alerts
 func silenceMaintenance(filteredAlerts amData) {
 
 	if configJSON.Verbose > 1 {
@@ -278,7 +278,7 @@ func silenceMaintenance(filteredAlerts amData) {
 	}
 }
 
-//Function for filtering maintenance alerts
+// Function for filtering maintenance alerts
 func filterMaintenance(amdata amData) amData {
 	silenceMap = make(map[string][]amJSON)
 	var maintenanceData amData
@@ -299,7 +299,7 @@ func filterMaintenance(amdata amData) amData {
 	return maintenanceData
 }
 
-//Function running all logics
+// Function running all logics
 func run() {
 
 	var amdata amData
@@ -314,7 +314,7 @@ func run() {
 
 }
 
-//Function for parsing the config File
+// Function for parsing the config File
 func parseConfig(configFile string, verbose int) {
 
 	//Defaults in case no config file is provided
@@ -363,7 +363,7 @@ func parseConfig(configFile string, verbose int) {
 
 }
 
-//Function for running the logic on a time interval
+// Function for running the logic on a time interval
 func runInfinite() {
 	for true {
 		run()

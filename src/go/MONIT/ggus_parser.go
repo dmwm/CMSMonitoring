@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -36,7 +35,7 @@ var Timeout int
 // Verbose defines verbosity level
 var Verbose int
 
-//TicketsXML Data struct
+// TicketsXML Data struct
 type TicketsXML struct {
 	Ticket []struct {
 		TicketID        int    `xml:"Ticket-ID"`
@@ -60,7 +59,7 @@ type TicketComment struct {
 	Text string
 }
 
-//Ticket Data struct (CSV)
+// Ticket Data struct (CSV)
 type Ticket struct {
 	TicketID        int
 	Type            *string
@@ -74,7 +73,7 @@ type Ticket struct {
 	Scope           *string
 }
 
-//function for eliminating "none" or empty values in JSON
+// function for eliminating "none" or empty values in JSON
 func nullValueHelper(value **string, data string) {
 
 	if data == "none" || data == "" {
@@ -94,7 +93,7 @@ func convertTime(timestamp string) int64 {
 	return UnixTS.Unix()
 }
 
-//function for unpacking the CSV data into Ticket Data struct
+// function for unpacking the CSV data into Ticket Data struct
 func parseCSV(data io.ReadCloser) []Ticket {
 	var ticket Ticket
 	var tickets []Ticket
@@ -130,10 +129,10 @@ func parseCSV(data io.ReadCloser) []Ticket {
 	return tickets
 }
 
-//function for unpacking the XML data into TicketsXML Data struct
+// function for unpacking the XML data into TicketsXML Data struct
 func (tXml *TicketsXML) parseXML(data io.ReadCloser) {
 
-	byteValue, err := ioutil.ReadAll(data)
+	byteValue, err := io.ReadAll(data)
 	if err != nil {
 		log.Printf("Unable to read XML Data, error: %v\n", err)
 		return
@@ -154,7 +153,7 @@ func (tXml *TicketsXML) parseXML(data io.ReadCloser) {
 
 }
 
-//function for output the processed data into JSON format
+// function for output the processed data into JSON format
 func saveJSON(data interface{}, out string) error {
 
 	jsonData, err := json.Marshal(data)
@@ -356,7 +355,7 @@ func retrieveTicketDetails(ticketId int) (string, []TicketComment) {
 	return description, comments
 }
 
-//processResponse function for fetching data from GGUS endpoint and dumping it into JSON format
+// processResponse function for fetching data from GGUS endpoint and dumping it into JSON format
 func processResponse(url, format, accept, out string, detailed bool) {
 	resp := ggusRequest(url, accept)
 	defer resp.Body.Close()

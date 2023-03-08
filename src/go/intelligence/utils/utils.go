@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"go/intelligence/models"
-	"io/ioutil"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -187,7 +187,7 @@ func findDashboards(tag string) []models.AllDashboardsFetched {
 	// Deserialize the response into a map.
 	var data []models.AllDashboardsFetched
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		d, _ := ioutil.ReadAll(resp.Body)
+		d, _ := io.ReadAll(resp.Body)
 		log.Printf("Error parsing the response body: %s, %+v\n", err, string(d))
 	}
 	return data
@@ -204,7 +204,7 @@ func GetSilences() (models.AllSilences, error) {
 	resp := HttpCall("GET", apiURL, headers, nil)
 	defer resp.Body.Close()
 
-	byteValue, err := ioutil.ReadAll(resp.Body)
+	byteValue, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Unable to read JSON Data from AlertManager Silence GET API, error: %v\n", err)
 		return data, err
@@ -234,7 +234,7 @@ func GetAlerts(getAlertsAPI string, updateMapChoice bool) (models.AmData, error)
 	resp := HttpCall("GET", apiURL, headers, nil)
 	defer resp.Body.Close()
 
-	byteValue, err := ioutil.ReadAll(resp.Body)
+	byteValue, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", err)
 		return data, err
@@ -320,7 +320,7 @@ func Set(dict map[string]interface{}, key string, value string) {
 	dict[key] = value
 }
 
-// helper function to make http call
+// HttpCall helper function to make http call
 func HttpCall(method, apiURL string, headers [][]string, buf *bytes.Buffer) *http.Response {
 	var req *http.Request
 	var err error

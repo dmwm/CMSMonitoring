@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -26,50 +26,50 @@ import (
 
 //-------VARIABLES-------
 
-//MAX timeStamp //Saturday, May 24, 3000 3:43:26 PM
+// MAX timeStamp //Saturday, May 24, 3000 3:43:26 PM
 var maxtstmp int64 = 32516091806
 
-//alertname
+// alertname
 var name string
 
-//service name
+// service name
 var service string
 
-//tag name
+// tag name
 var tag string
 
-//token name
+// token name
 var token string
 
-//severity level
+// severity level
 var severity string
 
-//boolean for JSON output
+// boolean for JSON output
 var jsonOutput *bool
 
-//boolean for generating default config
+// boolean for generating default config
 var generateConfig *bool
 
-//Sort Label
+// Sort Label
 var sortLabel string
 
-//Config filepath
+// Config filepath
 var configFilePath string
 
 //-------VARIABLES-------
 
 //-------MAPS-------
 
-//Map for storing filtered alerts
+// Map for storing filtered alerts
 var filteredAlerts map[string]int
 
-//Map for storing Alert details against their name
+// Map for storing Alert details against their name
 var alertDetails map[string]amJSON
 
 //-------MAPS-------
 
-//-------STRUCTS---------
-//AlertManager API acceptable JSON Data for GGUS Data
+// -------STRUCTS---------
+// AlertManager API acceptable JSON Data for GGUS Data
 type amJSON struct {
 	Labels      map[string]interface{} `json:"labels"`
 	Annotations map[string]interface{} `json:"annotations"`
@@ -81,7 +81,7 @@ type amData struct {
 	Data []amJSON
 }
 
-//Alert CLI tool data struct (Tabular)
+// Alert CLI tool data struct (Tabular)
 type alertData struct {
 	Name     string
 	Service  string
@@ -91,10 +91,10 @@ type alertData struct {
 	EndsAt   time.Time
 }
 
-//Array of alerts for alert CLI Tool (Tabular)
+// Array of alerts for alert CLI Tool (Tabular)
 var allAlertData []alertData
 
-//Alert CLI tool data struct (JSON)
+// Alert CLI tool data struct (JSON)
 type alertDataJSON struct {
 	Name     string
 	Service  string
@@ -123,7 +123,7 @@ var configJSON config
 // helper function to either read file content or return given string
 func read(r string) string {
 	if _, err := os.Stat(r); err == nil {
-		b, e := ioutil.ReadFile(r)
+		b, e := os.ReadFile(r)
 		if e != nil {
 			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
 		}
@@ -132,7 +132,7 @@ func read(r string) string {
 	return r
 }
 
-//function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
+// function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
 func get(data interface{}) {
 
 	//GET API for fetching only GGUS alerts.
@@ -176,7 +176,7 @@ func get(data interface{}) {
 	}
 	defer resp.Body.Close()
 
-	byteValue, err := ioutil.ReadAll(resp.Body)
+	byteValue, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Printf("Unable to read %s JSON Data from AlertManager GET API, error: %v\n", service, err)
@@ -200,7 +200,7 @@ func get(data interface{}) {
 
 }
 
-//function for merging all alerts from various services at one place
+// function for merging all alerts from various services at one place
 func mergeData(amdata amData) {
 	alertDetails = make(map[string]amJSON)
 
@@ -230,7 +230,7 @@ func mergeData(amdata amData) {
 	}
 }
 
-//Helper function for converting time difference in a meaningful manner
+// Helper function for converting time difference in a meaningful manner
 func diff(a, b time.Time) (array []int) {
 	if a.Location() != b.Location() {
 		b = b.In(a.Location())
@@ -285,7 +285,7 @@ func diff(a, b time.Time) (array []int) {
 	return
 }
 
-//Helper function for time difference between two time.Time objects
+// Helper function for time difference between two time.Time objects
 func timeDiffHelper(timeList []int) (dif string) {
 	for ind := range timeList {
 		if timeList[ind] > 0 {
@@ -317,7 +317,7 @@ func timeDiffHelper(timeList []int) (dif string) {
 	return
 }
 
-//Function for time difference between two time.Time objects
+// Function for time difference between two time.Time objects
 func timeDiff(t1 time.Time, t2 time.Time, duration int) string {
 	if t1.After(t2) {
 		timeList := diff(t1, t2)
@@ -332,7 +332,7 @@ func timeDiff(t1 time.Time, t2 time.Time, duration int) string {
 
 }
 
-//Helper function for Filtering
+// Helper function for Filtering
 func filterHelper(each alertData) int {
 
 	if service == "" && severity == "" && tag == "" {
@@ -356,7 +356,7 @@ func filterHelper(each alertData) int {
 	}
 }
 
-//Function for Filtering
+// Function for Filtering
 func filter() {
 	filteredAlerts = make(map[string]int)
 	for _, each := range allAlertData {
@@ -367,7 +367,7 @@ func filter() {
 	}
 }
 
-//Sorting Logic
+// Sorting Logic
 type durationSorter []alertData
 
 func (d durationSorter) Len() int      { return len(d) }
@@ -400,7 +400,7 @@ func (e endsAtSorter) Less(i, j int) bool {
 	return e[j].EndsAt.After(e[i].EndsAt)
 }
 
-//Function for sorting alerts based on a passed label
+// Function for sorting alerts based on a passed label
 func sortAlert() {
 
 	switch strings.ToLower(sortLabel) {
@@ -417,7 +417,7 @@ func sortAlert() {
 	}
 }
 
-//Function for printing alerts in JSON format
+// Function for printing alerts in JSON format
 func jsonPrint() {
 
 	var filteredData []alertDataJSON
@@ -452,7 +452,7 @@ func jsonPrint() {
 	fmt.Println(string(b))
 }
 
-//Function for printing alerts in Plain text format
+// Function for printing alerts in Plain text format
 func tabulate() {
 
 	w := new(tabwriter.Writer)
@@ -486,7 +486,7 @@ func tabulate() {
 	}
 }
 
-//Function for printing alert's details in JSON format
+// Function for printing alert's details in JSON format
 func jsonPrintDetails() {
 
 	b, err := json.Marshal(alertDetails[name])
@@ -499,7 +499,7 @@ func jsonPrintDetails() {
 	fmt.Println(string(b))
 }
 
-//Function to get all keys of type map[string]interface{}
+// Function to get all keys of type map[string]interface{}
 func getkeys(m map[string]interface{}) []string {
 
 	keys := make([]string, 0, len(m))
@@ -509,7 +509,7 @@ func getkeys(m map[string]interface{}) []string {
 	return keys
 }
 
-//Helper function for detailPrint() - Finds if alert attribute is present in passed configJSON.Attributes
+// Helper function for detailPrint() - Finds if alert attribute is present in passed configJSON.Attributes
 func detailPrintHelper(v string, a []string) bool {
 	for _, i := range a {
 		if i == v {
@@ -519,7 +519,7 @@ func detailPrintHelper(v string, a []string) bool {
 	return false
 }
 
-//Function for printing alert's details in Plain text format
+// Function for printing alert's details in Plain text format
 func detailPrint() {
 
 	if alert, ok := alertDetails[name]; ok {
@@ -547,7 +547,7 @@ func detailPrint() {
 
 }
 
-//Function running all logics
+// Function running all logics
 func run() {
 
 	var amdata amData
@@ -642,7 +642,7 @@ func updateAlert(starts, ends string) {
 	}
 }
 
-//helper function for parsing Configs
+// helper function for parsing Configs
 func openConfigFile(configFilePath string) {
 	jsonFile, e := os.Open(configFilePath)
 	if e != nil {
@@ -664,7 +664,7 @@ func openConfigFile(configFilePath string) {
 	}
 }
 
-//function for parsing Configs
+// function for parsing Configs
 func parseConfig(verbose int) {
 
 	configFilePath = os.Getenv("ALERT_CONFIG_PATH") // ALERT_CONFIG_PATH Environment Variable storing config filepath.
@@ -695,7 +695,7 @@ func parseConfig(verbose int) {
 			filePath = flag.Args()[0]
 		}
 
-		err = ioutil.WriteFile(filePath, config, 0644)
+		err = os.WriteFile(filePath, config, 0644)
 		if err != nil {
 			log.Fatalf("Failed to generate Config File, error: %s", err)
 		}

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -19,13 +19,13 @@ import (
 // Created    : Thu, 16 May 2020 16:45:00 GMT
 // Description: SSB Alerting Module for CERN MONIT infrastructure
 
-//URLs for AlertManager Instances
+// URLs for AlertManager Instances
 var alertManagerURLs string
 
-//List of URLs for AlertManager Instances
+// List of URLs for AlertManager Instances
 var alertManagerURLList []string
 
-//severity of alerts
+// severity of alerts
 var severity string
 
 // tag name
@@ -34,16 +34,16 @@ var tag string
 // service name
 var service string
 
-//verbose defines verbosity level
+// verbose defines verbosity level
 var verbose int
 
 // (max) duration of alert timestamp in hours
 var duration int64 = 24
 
-//Map for storing Existing SSB Data
+// Map for storing Existing SSB Data
 var exstSSBData map[string]int
 
-//CERN SSB Data Struct
+// CERN SSB Data Struct
 type ssb struct {
 	Results []struct {
 		Series []struct {
@@ -55,7 +55,7 @@ type ssb struct {
 	} `json:"results"`
 }
 
-//AlertManager API acceptable JSON Data for CERN SSB Data
+// AlertManager API acceptable JSON Data for CERN SSB Data
 type amJSON struct {
 	Labels struct {
 		Alertname   string `json:"alertname"`
@@ -87,12 +87,12 @@ type amJSON struct {
 	EndsAt   time.Time `json:"endsAt"`
 }
 
-//AlertManager GET API acceptable JSON Data struct for SSB data
+// AlertManager GET API acceptable JSON Data struct for SSB data
 type ssbData struct {
 	Data []amJSON
 }
 
-//function for parsing JSON data from CERN SSB Data
+// function for parsing JSON data from CERN SSB Data
 func (data *ssb) parseJSON(jsondata []byte) {
 	err := json.Unmarshal(jsondata, &data)
 	if err != nil {
@@ -100,7 +100,7 @@ func (data *ssb) parseJSON(jsondata []byte) {
 	}
 }
 
-//function for fetching JSON data from CERN SSB Data
+// function for fetching JSON data from CERN SSB Data
 func fetchJSON(filename string) []byte {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -109,7 +109,7 @@ func fetchJSON(filename string) []byte {
 
 	defer file.Close()
 
-	jsonData, err := ioutil.ReadAll(file)
+	jsonData, err := io.ReadAll(file)
 	if err != nil {
 		log.Printf("Unable to read JSON file, error: %v\n", err)
 	}
@@ -122,7 +122,7 @@ func fetchJSON(filename string) []byte {
 
 }
 
-//function for eliminating "none" or empty values ("null") in JSON
+// function for eliminating "none" or empty values ("null") in JSON
 func nullValueChecker(target *string, data interface{}) {
 
 	if b, ok := data.(string); ok {
@@ -130,7 +130,7 @@ func nullValueChecker(target *string, data interface{}) {
 	}
 }
 
-//function for converting SSB JSON Data into JSON Data required by AlertManager APIs.
+// function for converting SSB JSON Data into JSON Data required by AlertManager APIs.
 func (data *ssb) convertData() []byte {
 
 	var finalData []amJSON
@@ -206,7 +206,7 @@ func (data *ssb) convertData() []byte {
 
 }
 
-//helper function for parsing list of alertmanager urls separated by comma
+// helper function for parsing list of alertmanager urls separated by comma
 func parseURLs(urls string) []string {
 	var urlList []string
 	for _, url := range strings.Split(urls, ",") {
@@ -215,7 +215,7 @@ func parseURLs(urls string) []string {
 	return urlList
 }
 
-//function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
+// function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
 func get(alertManagerURL string) *ssbData {
 
 	var data *ssbData
@@ -242,7 +242,7 @@ func get(alertManagerURL string) *ssbData {
 	}
 	defer resp.Body.Close()
 
-	byteValue, err := ioutil.ReadAll(resp.Body)
+	byteValue, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", err)
@@ -266,7 +266,7 @@ func get(alertManagerURL string) *ssbData {
 
 }
 
-//function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
+// function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
 func post(jsonStr []byte, alertManagerURL string) {
 	apiurl := alertManagerURL + "/api/v1/alerts"
 
@@ -296,7 +296,7 @@ func post(jsonStr []byte, alertManagerURL string) {
 	}
 }
 
-//Function to end alerts for SSB data which had no EndTime and now they are resolved.
+// Function to end alerts for SSB data which had no EndTime and now they are resolved.
 func deleteAlerts(alertManagerURL string) {
 	amData := get(alertManagerURL)
 	var finalData []amJSON
@@ -356,7 +356,7 @@ func deleteAlerts(alertManagerURL string) {
 	post(jsonStr, alertManagerURL)
 }
 
-//function containing all logics for alerting.
+// function containing all logics for alerting.
 func alert(inp string, dryRun bool) {
 
 	alertManagerURLList = parseURLs(alertManagerURLs)

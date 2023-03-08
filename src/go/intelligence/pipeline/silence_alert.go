@@ -3,8 +3,8 @@ package pipeline
 import (
 	"bytes"
 	"encoding/json"
-	"go/intelligence/models"
-	"go/intelligence/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
 	"log"
 	"time"
 )
