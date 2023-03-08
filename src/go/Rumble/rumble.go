@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -23,7 +22,7 @@ func read(r string) (string, bool) {
 	if strings.HasPrefix(r, "hdfs://") {
 		return r, true
 	} else if _, err := os.Stat(r); err == nil {
-		b, e := ioutil.ReadFile(r)
+		b, e := os.ReadFile(r)
 		if e != nil {
 			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
 		}
@@ -35,7 +34,7 @@ func read(r string) (string, bool) {
 func write(resp *http.Response, output string) {
 	// if output is not given, print response to stdout
 	if output == "" {
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatal(err)
 		}

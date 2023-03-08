@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -76,7 +76,7 @@ type DSRecord struct {
 // helper function to either read file content or return given string
 func read(r string) string {
 	if _, err := os.Stat(r); err == nil {
-		b, e := ioutil.ReadFile(r)
+		b, e := os.ReadFile(r)
 		if e != nil {
 			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
 		}
@@ -85,20 +85,15 @@ func read(r string) string {
 	return r
 }
 
-// help function to timeout on stale connection
-func dialTimeout(network, addr string) (net.Conn, error) {
-	var timeout = time.Duration(*connectionTimeout) * time.Second
-	conn, err := net.DialTimeout(network, addr, timeout)
-	return conn, err
-}
-
 // HttpClient provides HTTP client
 func HttpClient() *http.Client {
 	//     return &http.Client{}
 	tr := &http.Transport{
-		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
-		IdleConnTimeout:   time.Duration(1 * time.Second),
-		Dial:              dialTimeout,
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		IdleConnTimeout: time.Duration(1 * time.Second),
+		DialContext: (&net.Dialer{
+			Timeout: time.Duration(*connectionTimeout) * time.Second,
+		}).DialContext,
 		DisableKeepAlives: true,
 	}
 	timeout := time.Duration(*connectionTimeout) * time.Second
@@ -212,7 +207,7 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) error {
 		return nil
 	}
 	// {"took":2,"responses":[{"took":2,"timed_out":false,"_shards":{"total":33,"successful":33,"skipped":0,"failed":0},"hits":{"total":{"value":4362,"relation":"eq"},"max_score":null,"hits":[]},"status":200}]}
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

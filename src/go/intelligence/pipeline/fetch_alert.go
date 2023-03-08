@@ -1,8 +1,8 @@
 package pipeline
 
 import (
-	"go/intelligence/models"
-	"go/intelligence/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
 	"log"
 )
 
@@ -13,7 +13,7 @@ import (
 // Code is based on
 // https://towardsdatascience.com/concurrent-data-pipelines-in-golang-85b18c2eecc2
 
-//FetchAlert - function for fetching all active alerts from AlertManager
+// FetchAlert - function for fetching all active alerts from AlertManager
 func FetchAlert() <-chan models.AmJSON {
 	if utils.ConfigJSON.Server.Verbose > 0 {
 		log.Println("FetchAlert step")

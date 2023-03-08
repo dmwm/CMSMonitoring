@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"go/intelligence/models"
-	"go/intelligence/pipeline"
-	"go/intelligence/utils"
-	"io/ioutil"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/pipeline"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
+	"io"
 	"log"
 	"os"
 	"runtime"
@@ -51,7 +51,7 @@ func runPipeline() {
 func pushTestAlerts() {
 	log.Printf("Pushing Test alerts into AlertManager \n")
 
-	testAlertData := []models.AmJSON{}
+	var testAlertData []models.AmJSON
 
 	file, err := os.Open(utils.ConfigJSON.Server.Testing.TestFile)
 	if err != nil {
@@ -60,7 +60,7 @@ func pushTestAlerts() {
 
 	defer file.Close()
 
-	jsonData, err := ioutil.ReadAll(file)
+	jsonData, err := io.ReadAll(file)
 	if err != nil {
 		log.Fatalf("Unable to read JSON file. Testing failed! error: %v\n", err)
 	}

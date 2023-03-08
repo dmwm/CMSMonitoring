@@ -12,7 +12,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -63,7 +63,7 @@ func (c *StompConfig) String() string {
 // helper function to either read file content or return given string
 func read(r string) string {
 	if _, err := os.Stat(r); err == nil {
-		b, e := ioutil.ReadFile(r)
+		b, e := os.ReadFile(r)
 		if e != nil {
 			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
 		}
@@ -99,7 +99,7 @@ func datasources(rurl, t string, verbose int) ([]DSRecord, error) {
 			log.Println("[DEBUG] User is not ADMIN")
 		}
 		// User got permission denied http 403, so do not send data
-		return nil, errors.New("Not Admin")
+		return nil, errors.New("not admin")
 	}
 	if verbose > 1 {
 		log.Println("[DEBUG] User is ADMIN")
@@ -179,7 +179,7 @@ func writeDS(fname string) {
 	}
 	file, err := json.MarshalIndent(out, "", "\t")
 	if err == nil {
-		err = ioutil.WriteFile(fname, file, 0644)
+		err = os.WriteFile(fname, file, 0644)
 		if err != nil {
 			log.Fatalf("Error writing to file: %s error: %s", fname, err)
 		}
@@ -438,7 +438,7 @@ func run(rurl, token string, dbid int, dbname, query, esapi string, idx, limit, 
 // helper function to read single JSON or list of JSON records from
 // given file name
 func readRecords(fname string, verbose int) []Record {
-	data, err := ioutil.ReadFile(fname)
+	data, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
 	}
@@ -471,7 +471,7 @@ func readRecords(fname string, verbose int) []Record {
 
 // helper function to parse stomp credentials, return StompConfig structure
 func parseStompConfig(creds string) StompConfig {
-	raw, err := ioutil.ReadFile(creds)
+	raw, err := os.ReadFile(creds)
 	if err != nil {
 		log.Fatalf("Unable to read, file: %s, error: %v\n", creds, err)
 	}
@@ -535,10 +535,10 @@ func groupESIndex(name string) string {
 	return s
 }
 
-// helper funtion to parse stats meta-data
+// helper function to parse stats meta-data
 func parseStats(data map[string]interface{}, verbose int) []Record {
 	indices := data["indices"].(map[string]interface{})
-	cmsIndexes := []string{}
+	var cmsIndexes []string
 	for _, d := range DataSources {
 		db := d.Database
 		arr := strings.Split(db, "]")
@@ -579,7 +579,7 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 // helper function to read given file with hdfs paths and dump their sizes
 func hdfsDump(fname string, verbose int) []Record {
 	var out []Record
-	data, err := ioutil.ReadFile(fname)
+	data, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatalf("Unable to read, file: %s, error: %v\n", fname, err)
 	}
@@ -793,7 +793,7 @@ func addAnnotation(base, token string, data []byte, verbose int) {
 			log.Println("response:", string(dump))
 		}
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Unable to read JSON Data POST API, error: %v\n", err)
 	}
@@ -934,7 +934,7 @@ func main() {
 	if annotation != "" {
 		var data []byte
 		if _, err := os.Stat(annotation); err == nil {
-			data, err = ioutil.ReadFile(annotation)
+			data, err = os.ReadFile(annotation)
 			if err != nil {
 				log.Fatalf("Unable to read, file: %s, error: %v\n", annotation, err)
 			}

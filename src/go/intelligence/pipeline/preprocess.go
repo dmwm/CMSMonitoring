@@ -1,8 +1,8 @@
 package pipeline
 
 import (
-	"go/intelligence/models"
-	"go/intelligence/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
 	"log"
 )
 
@@ -11,7 +11,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//Preprocess - function make required changes to alerts and filter only SSB and GGUS alerts
+// Preprocess - function make required changes to alerts and filter only SSB and GGUS alerts
 func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 	if utils.ConfigJSON.Server.Verbose > 0 {
 		log.Println("Preprocess step")
@@ -58,7 +58,7 @@ func Preprocess(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return preprocessedData
 }
 
-//updateSilencedMap -function for updating the ifSilenced Map to help us not to push redundant silences
+// updateSilencedMap -function for updating the ifSilenced Map to help us not to push redundant silences
 func updateSilencedMap() error {
 
 	data, err := utils.GetSilences()

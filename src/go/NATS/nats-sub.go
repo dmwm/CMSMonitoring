@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -124,7 +124,7 @@ func sendToPushGateway(uri, job, inst string, statsDict map[string]int) {
 				if err != nil {
 					fmt.Println(url, msg, "response:", resp.Status)
 					fmt.Println("response Headers:", resp.Header)
-					body, _ := ioutil.ReadAll(resp.Body)
+					body, _ := io.ReadAll(resp.Body)
 					fmt.Println("response Body:", string(body))
 				}
 			}()
@@ -174,7 +174,7 @@ func sendToVictoriaMetrics(vmUri string, m *nats.Msg, topic, sep string) {
 			if err != nil {
 				fmt.Println(url, msg, "response:", resp.Status)
 				fmt.Println("response Headers:", resp.Header)
-				body, _ := ioutil.ReadAll(resp.Body)
+				body, _ := io.ReadAll(resp.Body)
 				fmt.Println("response Body:", string(body))
 			}
 		}()
@@ -246,7 +246,7 @@ func main() {
 			os.Exit(1)
 		}
 		defer file.Close()
-		bytesRead, err := ioutil.ReadAll(file)
+		bytesRead, err := io.ReadAll(file)
 		if err != nil {
 			fmt.Printf("Unable to read '%s' cms-auth file\n", fname)
 			os.Exit(1)

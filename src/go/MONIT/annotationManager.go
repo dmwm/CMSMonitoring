@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -161,7 +161,7 @@ func getAnnotations(data *[]annotationData, tags []string) {
 	}
 	defer resp.Body.Close()
 
-	byteValue, err := ioutil.ReadAll(resp.Body)
+	byteValue, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Fatalf("Unable to read JSON Data from Grafana Annotation GET API, error: %v\n", err)
@@ -284,7 +284,6 @@ func diff(a, b time.Time) (array []int) {
 	return
 }
 
-//
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/alert.go#L259
 // Helper function for time difference between two time.Time objects
@@ -319,7 +318,6 @@ func timeDiffHelper(timeList []int) (dif string) {
 	return
 }
 
-//
 // The following block of code was taken from
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/alert.go#L291
 // Function for time difference between two time.Time objects
@@ -337,7 +335,6 @@ func timeDiff(t1 time.Time, t2 time.Time, duration int) string {
 
 }
 
-//
 // The following block of code was taken from (with few changes done)
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/alert.go#L426
 // Function for printing annotations in Plain text format
@@ -492,7 +489,7 @@ func addAnnotation(data []byte) {
 		}
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Unable to read JSON Data from Grafana Annotation POST API, error: %v\n", err)
 	}
@@ -504,7 +501,6 @@ func addAnnotation(data []byte) {
 	}
 }
 
-//
 // The following block of code was taken from (with few changes done)
 // https://github.com/dmwm/CMSMonitoring/blob/master/src/go/MONIT/monit.go#L813
 func createAnnotation() {
@@ -595,7 +591,7 @@ func updateAnnotationHelper(annotationID int, data []byte) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Unable to read JSON Data from Grafana Annotation PUT API, error: %v\n", err)
 	}
@@ -739,7 +735,7 @@ func parseConfig(verbose int) {
 			filePath = flag.Args()[0]
 		}
 
-		err = ioutil.WriteFile(filePath, config, 0644)
+		err = os.WriteFile(filePath, config, 0644)
 		if err != nil {
 			log.Fatalf("Failed to generate Config File, error: %s", err)
 		}
@@ -769,7 +765,7 @@ func parseConfig(verbose int) {
 	if token != "" {
 
 		if _, err := os.Stat(token); err == nil {
-			tokenData, ioErr := ioutil.ReadFile(token)
+			tokenData, ioErr := os.ReadFile(token)
 			if ioErr != nil {
 				log.Fatalf("Unable to read token file: %s, error: %v\n", token, ioErr)
 			}

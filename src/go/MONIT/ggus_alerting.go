@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -20,34 +20,34 @@ import (
 // Created    : Thu, 21 May 2020 21:07:32 GMT
 // Description: GGUS Alerting Module for CERN MONIT infrastructure
 
-//URLs for AlertManager Instances
+// URLs for AlertManager Instances
 var alertManagerURLs string
 
-//List of URLs for AlertManager Instances
+// List of URLs for AlertManager Instances
 var alertManagerURLList []string
 
 // severity of alerts
 var severity string
 
-//tag name
+// tag name
 var tag string
 
-//service name
+// service name
 var service string
 
-//Required VO attribute
+// Required VO attribute
 var vo string
 
-//verbose defines verbosity level
+// verbose defines verbosity level
 var verbose int
 
 // (max) duration of alert timestamp in hours
 var duration int64 = 24
 
-//Map for storing Existing Tickets
+// Map for storing Existing Tickets
 var exstTkt map[string]int
 
-//GGUS Data Struct
+// GGUS Data Struct
 type ggus []struct {
 	TicketID        int    `json:"TicketID"`
 	Type            string `json:"Type"`
@@ -61,7 +61,7 @@ type ggus []struct {
 	Scope           string `json:"Scope"`
 }
 
-//AlertManager API acceptable JSON Data for GGUS Data
+// AlertManager API acceptable JSON Data for GGUS Data
 type amJSON struct {
 	Labels struct {
 		Alertname string `json:"alertname"`
@@ -90,12 +90,12 @@ type amJSON struct {
 	EndsAt   time.Time `json:"endsAt"`
 }
 
-//AlertManager GET API acceptable JSON Data struct for GGUS data
+// AlertManager GET API acceptable JSON Data struct for GGUS data
 type ggusData struct {
 	Data []amJSON
 }
 
-//function for parsing JSON data from GGUS Data
+// function for parsing JSON data from GGUS Data
 func (data *ggus) parseJSON(jsondata []byte) {
 	err := json.Unmarshal(jsondata, &data)
 	if err != nil {
@@ -103,7 +103,7 @@ func (data *ggus) parseJSON(jsondata []byte) {
 	}
 }
 
-//function for fetching JSON data from GGUS Data
+// function for fetching JSON data from GGUS Data
 func fetchJSON(filename string) []byte {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -112,7 +112,7 @@ func fetchJSON(filename string) []byte {
 
 	defer file.Close()
 
-	jsonData, err := ioutil.ReadAll(file)
+	jsonData, err := io.ReadAll(file)
 	if err != nil {
 		log.Printf("Unable to read JSON file, error: %v\n", err)
 	}
@@ -125,7 +125,7 @@ func fetchJSON(filename string) []byte {
 
 }
 
-//function for converting SSB JSON Data into JSON Data required by AlertManager APIs.
+// function for converting SSB JSON Data into JSON Data required by AlertManager APIs.
 func convertData(data ggus) []byte {
 
 	var temp amJSON
@@ -190,7 +190,7 @@ func convertData(data ggus) []byte {
 
 }
 
-//helper function for parsing list of alertmanager urls separated by comma
+// helper function for parsing list of alertmanager urls separated by comma
 func parseURLs(urls string) []string {
 	var urlList []string
 	for _, url := range strings.Split(urls, ",") {
@@ -199,7 +199,7 @@ func parseURLs(urls string) []string {
 	return urlList
 }
 
-//function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
+// function for get request on /api/v1/alerts alertmanager endpoint for fetching alerts.
 func get(alertManagerURL string) *ggusData {
 
 	var data *ggusData
@@ -226,7 +226,7 @@ func get(alertManagerURL string) *ggusData {
 	}
 	defer resp.Body.Close()
 
-	byteValue, err := ioutil.ReadAll(resp.Body)
+	byteValue, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Printf("Unable to read JSON Data from AlertManager GET API, error: %v\n", err)
@@ -250,7 +250,7 @@ func get(alertManagerURL string) *ggusData {
 
 }
 
-//function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
+// function for making post request on /api/v1/alerts alertmanager endpoint for creating alerts.
 func post(jsonStr []byte, alertManagerURL string) {
 	apiurl := alertManagerURL + "/api/v1/alerts"
 
@@ -280,7 +280,7 @@ func post(jsonStr []byte, alertManagerURL string) {
 	}
 }
 
-//Function to end alerts for tickets which are resolved
+// Function to end alerts for tickets which are resolved
 func deleteAlerts(alertManagerURL string) {
 	amData := get(alertManagerURL)
 	var temp amJSON
@@ -338,12 +338,12 @@ func deleteAlerts(alertManagerURL string) {
 	post(jsonStr, alertManagerURL)
 }
 
-//Machine Learning Logic for Categorizing GGUS Tickets
+// Machine Learning Logic for Categorizing GGUS Tickets
 func categorizeTicket() {
 	// To be Implemented
 }
 
-//function containing all logics for alerting.
+// function containing all logics for alerting.
 func alert(inp string, dryRun bool) {
 
 	alertManagerURLList = parseURLs(alertManagerURLs)

@@ -1,8 +1,8 @@
 package pipeline
 
 import (
-	"go/intelligence/models"
-	"go/intelligence/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
 	"log"
 	"strings"
 )
@@ -14,7 +14,7 @@ import (
 // Code is based on
 // https://towardsdatascience.com/concurrent-data-pipelines-in-golang-85b18c2eecc2
 
-//KeywordMatching - function finds defined keywords in the shortDescription of alerts and assign severity level accordingly
+// KeywordMatching - function finds defined keywords in the shortDescription of alerts and assign severity level accordingly
 func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 
 	if utils.ConfigJSON.Server.Verbose > 0 {
@@ -41,7 +41,7 @@ func KeywordMatching(data <-chan models.AmJSON) <-chan models.AmJSON {
 	return dataWithSeverity
 }
 
-//keywordMatchingHelper - helper function which matches keywords and assigns severity levels
+// keywordMatchingHelper - helper function which matches keywords and assigns severity levels
 func keywordMatchingHelper(data *models.AmJSON, srv models.Service) {
 	/*
 				Common Structure of an alert

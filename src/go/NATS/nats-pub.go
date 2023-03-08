@@ -16,7 +16,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -91,7 +91,7 @@ func main() {
 			os.Exit(1)
 		}
 		defer file.Close()
-		bytes, err := ioutil.ReadAll(file)
+		bytes, err := io.ReadAll(file)
 		if err != nil {
 			fmt.Printf("Unable to read '%s' cms-auth file\n", fname)
 			os.Exit(1)

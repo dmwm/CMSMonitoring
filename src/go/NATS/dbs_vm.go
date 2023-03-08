@@ -19,7 +19,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -91,7 +90,7 @@ func (r *Record) String() string {
 func parseQueryResults(r io.Reader) []Record {
 	var records []Record
 	var qResult QueryResult
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		log.Println(err)
 	}
@@ -130,7 +129,7 @@ func parseExportResults(r io.Reader) []Record {
 			rec := eRecord.Metric
 			var tstamps []int64
 			for _, t := range eRecord.TimeStamps {
-				tstamps = append(tstamps, int64(t/1000))
+				tstamps = append(tstamps, t/1000)
 			}
 			rec.TimeStamps = tstamps
 			records = append(records, rec)
@@ -153,7 +152,7 @@ func convert2Unix(tstamp int64) int64 {
 	if err != nil {
 		log.Println(err)
 	}
-	return int64(t.Unix())
+	return t.Unix()
 }
 
 // helper function to fetch data from VM

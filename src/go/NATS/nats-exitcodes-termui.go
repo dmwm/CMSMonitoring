@@ -16,7 +16,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -186,7 +186,7 @@ func (d *DataType) UpdateCodes(msg *nats.Msg, sep string, verbose int) {
 		d.Codes[key] = 1
 	}
 	// prepare codes rows
-	objects := []DataObject{}
+	var objects []DataObject
 	for k, v := range d.Codes {
 		var desc string
 		if exitCodes != nil {
@@ -198,7 +198,7 @@ func (d *DataType) UpdateCodes(msg *nats.Msg, sep string, verbose int) {
 		objects = append(objects, o)
 	}
 	sort.Sort(sort.Reverse(DataObjectList(objects)))
-	rows := []string{}
+	var rows []string
 	var row string
 	for _, o := range objects {
 		row = fmt.Sprintf("%4d %5s %s", o.Value, o.Key, o.Description)
@@ -221,13 +221,13 @@ func (d *DataType) UpdateSites(msg *nats.Msg, sep string, verbose int) {
 	}
 
 	// prepare sites rows
-	objects := []DataObject{}
+	var objects []DataObject
 	for k, v := range d.Sites {
 		o := DataObject{Key: k, Value: v}
 		objects = append(objects, o)
 	}
 	sort.Sort(sort.Reverse(DataObjectList(objects)))
-	rows := []string{}
+	var rows []string
 	var row string
 	for _, o := range objects {
 		row = fmt.Sprintf("%4d %s", o.Value, o.Key)
@@ -238,9 +238,9 @@ func (d *DataType) UpdateSites(msg *nats.Msg, sep string, verbose int) {
 
 // UpdateSiteCodes updates site-codes info
 func (d *DataType) UpdateSiteCodes(msg *nats.Msg, sep string, verbose int) {
-	rows := []string{}
+	var rows []string
 	for s, cmap := range d.SiteCodes {
-		objects := []DataObject{}
+		var objects []DataObject
 		for k, v := range cmap {
 			o := DataObject{Key: k, Value: v}
 			objects = append(objects, o)
@@ -461,7 +461,7 @@ func getExitCodes(url string) (map[string]interface{}, error) {
 		return codes, err
 	}
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	for _, line := range strings.Split(string(data), "\n") {
 		if strings.HasPrefix(line, "#") || line == "" {
 			continue
@@ -614,7 +614,7 @@ func main() {
 			os.Exit(1)
 		}
 		defer file.Close()
-		bytes, err := ioutil.ReadAll(file)
+		bytes, err := io.ReadAll(file)
 		if err != nil {
 			fmt.Printf("Unable to read '%s' cms-auth file\n", fname)
 			os.Exit(1)

@@ -1,3 +1,3 @@
-module go/intelligence
+module github.com/dmwm/CMSMonitoring/src/go/intelligence
 
-go 1.14
+go 1.20

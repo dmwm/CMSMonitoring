@@ -1,8 +1,8 @@
 package pipeline
 
 import (
-	"go/intelligence/models"
-	"go/intelligence/utils"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/models"
+	"github.com/dmwm/CMSMonitoring/src/go/intelligence/utils"
 	"log"
 )
 
@@ -11,7 +11,7 @@ import (
 // Created    : Wed, 1 July 2020 11:04:01 GMT
 // Description: CMS MONIT infrastructure Intelligence Module
 
-//PushAlert - function for pushing modified alerts back to AlertManager
+// PushAlert - function for pushing modified alerts back to AlertManager
 func PushAlert(data <-chan models.AmJSON) <-chan models.AmJSON {
 	if utils.ConfigJSON.Server.Verbose > 0 {
 		log.Println("PushAlert step")
