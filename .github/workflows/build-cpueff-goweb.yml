@@ -1,0 +1,119 @@
+# Builds and publish cmsmonitoring/cpueff-spark  and/or cmsmonitoring/cpueff-goweb docker images
+
+# Works only with git tag commit messages
+#   - "Build docker all": builds cpueff-goweb and cpueff-spark
+#   - "Build docker (goweb) foo bla": builds only cpueff-goweb
+#   - "Build docker (spark) foo bla": builds only cpueff-spark
+
+name: Build docker images
+on:
+  push:
+    tags:
+      - 'cpueff-*.*.*'
+
+jobs:
+  init-job:
+    runs-on: ubuntu-latest
+    outputs:
+      git_tag: ${{ steps.step1.outputs.git_tag }}
+      action: ${{ steps.step1.outputs.action }}
+      docker_individual_images: ${{ steps.step1.outputs.individual_images }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+      - id: step1
+        run: |
+          # Define git tag commit message regex rules that users should obey to use functionalities
+          #    "\d" kind regex expressions does not work!
+          REGEX_BUILD_ALL='Build docker all.*'
+          REGEX_BUILD_INDIVIDUALS='Build docker [(](.+)[)].*'
+          
+          # Get git tag and set as "git_tag" variable
+          echo "::set-output name=git_tag::${GITHUB_REF/refs\/tags\//}"
+          
+          # Get tag commit message
+          GIT_TAG_MSG="$(git tag -l --format="%(contents)" $GITHUB_REF_NAME)"
+          echo "Tag message:" $GIT_TAG_MSG
+          
+          # Check that tag commit message obeys regex rules
+          
+          # Check all
+          if [[ $GIT_TAG_MSG =~ $REGEX_BUILD_ALL ]]; then
+              echo "Action: all"
+              echo "::set-output name=action::all"
+              exit 0
+          fi
+          # Check individuals
+          if [[ $GIT_TAG_MSG =~ $REGEX_BUILD_INDIVIDUALS && ! -z "${BASH_REMATCH[1]}" ]]; then
+              echo "Action: individuals, individual_images: ${BASH_REMATCH[1]}"
+              echo "::set-output name=action::individuals"
+              echo "::set-output name=individual_images::${BASH_REMATCH[1]}"
+              exit 0
+          fi
+          # Fail message
+          echo "failure, NO REGEX IS MATCHED WITH THE TAG MESSAGE"
+
+  build-cpueff-goweb:
+    runs-on: ubuntu-latest
+    needs: [ init-job ]
+    if: |
+      needs.init-job.outputs.action == 'all' || 
+      contains(needs.init-job.outputs.docker_individual_images, 'goweb')
+    name: Build cpueff-goweb
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20'
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+      - name: Get cpueff-goweb Dockerfile
+        run: |
+          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cpueff-goweb/Dockerfile-cpueff-goweb
+      - name: Login to registry.cern.ch
+        uses: docker/login-action@v1
+        with:
+          registry: registry.cern.ch
+          username: ${{ secrets.CERN_LOGIN }}
+          password: ${{ secrets.CERN_TOKEN }}
+      - name: Publish cpueff-goweb image to registry.cern.ch
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile-cpueff-goweb
+          push: true
+          build-args: |
+            CMSMON_TAG=${{ needs.init-job.outputs.git_tag }}
+          tags: registry.cern.ch/cmsmonitoring/cpueff-goweb:${{ needs.init-job.outputs.git_tag }}
+
+  build-cpueff-spark:
+    runs-on: ubuntu-latest
+    needs: [ init-job ]
+    if: |
+      needs.init-job.outputs.action == 'all' || 
+      contains(needs.init-job.outputs.docker_individual_images, 'spark')
+    name: Build cpueff-spark
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+      - name: Get cpueff-spark Dockerfile
+        run: |
+          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cpueff-goweb/Dockerfile-cpueff-spark
+      - name: Login to registry.cern.ch
+        uses: docker/login-action@v1
+        with:
+          registry: registry.cern.ch
+          username: ${{ secrets.CERN_LOGIN }}
+          password: ${{ secrets.CERN_TOKEN }}
+      - name: Publish cpueff-spark image to registry.cern.ch
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile-cpueff-spark
+          push: true
+          build-args: |
+            CMSMON_TAG=${{ needs.init-job.outputs.git_tag }}
+          tags: registry.cern.ch/cmsmonitoring/cpueff-spark:${{ needs.init-job.outputs.git_tag }}

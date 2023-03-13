@@ -113,5 +113,8 @@ venv.bak/
 *.log
 
 
+# cpuff-goweb
+cpueff-goweb/client_env
+
 # JetBrains
 .idea

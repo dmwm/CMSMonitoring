@@ -53,8 +53,8 @@ Please open [GitHub issue](https://github.com/dmwm/CMSMonitoring/issues)
 
 - https://github.com/dmwm/das2go
 - https://dev.to/hackmamba/build-a-rest-api-with-golang-and-mongodb-gin-gonic-version-269m
-- https://github.com/dmwm/CMSKubernetes/tree/master/docker/cmsmon-rucio-ds-web
-- https://github.com/dmwm/CMSKubernetes/blob/master/kubernetes/monitoring/services/mongo/cmsmon-rucio-ds-web.yaml
+- https://github.com/dmwm/CMSKubernetes/tree/master/docker/rucio-dataset-monitoring
+- https://github.com/dmwm/CMSKubernetes/blob/master/kubernetes/monitoring/services/datasetmon
 - https://github.com/gin-gonic/gin/issues/346
 
 ###### Special Thanks

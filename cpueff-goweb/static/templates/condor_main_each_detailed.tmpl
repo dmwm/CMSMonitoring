@@ -1,0 +1,52 @@
+<!-- Copyright (c) 2023 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>* -->
+
+<div>
+    <table class="details-table table table-condensed" id="condor-detailed"
+           style="background-color: white; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;
+           border:4px solid black;">
+        <thead>
+        <tr>
+            <th scope="col" style="text-align: left;;">Links</th>
+            <th scope="col" style="text-align: left;font-weight: bold;">Site</th>
+            <th scope="col" style="text-align: left;">Tier</th>
+            <th scope="col" style="text-align: right;">Cpu Eff</th>
+            <th scope="col" style="text-align: right;">Cpus</th>
+            <th scope="col" style="text-align: right;">Cpu Time Hr</th>
+            <th scope="col" style="text-align: right;">Wall Clock Hr</th>
+            <th scope="col" style="text-align: right;">Core Time Hr</th>
+            <th scope="col" style="text-align: right;">Wasted Cpu Time Hr</th>
+            <th scope="col" style="text-align: right;">Max WMAgent Job Id</th>
+            <th scope="col" style="text-align: right;">Schedds</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .data}}
+            <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
+                <td style="text-align: left; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{ .Links }}</td>
+                <td style="text-align: left; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.Site}}</td>
+                <td style="text-align: left; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Tier}}</td>
+                <td style="min-width: 30px;!important; background-color: rgba(255,127,80,0.51); text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">%{{printf "%.2f" .CpuEff}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Cpus}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CpuTimeHr}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WallClockHr}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CoreTimeHr}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WastedCpuTimeHr}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.MaxWmagentJobId}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Schedds}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        // To be able to expand/collapse multiple rows, each datatable ID should be different
+        random_detailed_id_str = Math.random().toString(36).slice(-10)
+        document.getElementById("condor-detailed").setAttribute("id", random_detailed_id_str);
+        $('#' + random_detailed_id_str).DataTable({
+            dom: "it",
+            pageLength: 500,
+            order: [[0, 'asc']],
+        });
+    });
+</script>
