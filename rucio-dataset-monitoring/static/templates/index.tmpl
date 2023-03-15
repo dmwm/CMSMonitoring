@@ -1,11 +1,20 @@
-
 <!-- Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>* -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title> Datasets Monitoring </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"
+          type="text/css"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css"
+          rel="stylesheet"/>
+
+    <link href="https://nightly.datatables.net/responsive/css/responsive.dataTables.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <style>
     .hover-class::before {
         transform: scaleX(0);
@@ -26,41 +35,32 @@
         bottom: 0;
         left: 0;
         inset: 0 0 0 0;
-        background: hsl(200 100% 90%);
+        background: hsl(0, 100%, 90%);
         z-index: -1;
         transition: transform .3s ease;
     }
 
     .hover-class {
         position: relative;
-        font-size: 2rem;
+        font-size: 5rem;
     }
 
-    html {
-        block-size: 100%;
-        inline-size: 100%;
-    }
 
     ul {
         min-block-size: 100%;
         min-inline-size: 100%;
-        margin-top: 1em;
+        margin-top: 5em;
         box-sizing: border-box;
         display: grid;
         place-content: center;
         font-family: system-ui, sans-serif;
     }
 
-    h1 {
-        min-block-size: 100%;
-        min-inline-size: 100%;
-        margin-top: 3em;
-        box-sizing: border-box;
-        display: grid;
-        place-content: center;
+    h2 {
         color: cornflowerblue;
         font-family: system-ui, sans-serif;
     }
+
 
     @media (orientation: landscape) {
         body {
@@ -73,20 +73,59 @@
         margin: 0;
         padding: 0;
     }
+
+    .image_block {
+        width: 50%;
+        /*bottom: 0;*/
+        margin: auto;
+        display: block;
+    }
+
+    .div_img {
+        width: 100%;
+        display: block;
+        bottom: 0;
+        position: absolute;
+    }
+
 </style>
 <body>
-<h1>Data Management Monitoring</h1>
 
-<p style="text-align: center;font-family: system-ui, sans-serif; color: cadetblue">This index page is created temporarily. Please use below directories to go Production pages.</p>
+<div style="width: 100%; position: fixed; top: 0; padding: 0;margin: 0;">
+    <div class="row">
+        <div class="col-xs-6 col-sm-4">
+            <img alt="CERN CMS O&C"
+                 src="/{{.govar_BASE_EP}}/static/img/oc_icon.png"
+                 width="100" height="100">
+        </div>
+        <div class="col-xs-6 col-sm-4 align-self-center">
+            <h2>Data Management Monitoring</h2>
+        </div>
+        <div class="col-xs-6 col-sm-4 text-right">
+            <footer>
+                <img alt="CERN CMS O&C"
+                     src="/{{.govar_BASE_EP}}/static/img/oc_icon.png"
+                     style="text-align: right;"
+                     width="100" height="100">
+            </footer>
+        </div>
+    </div>
+</div>
 
 <ul class="no-bullets" style="margin-top: 10em">
-    <li><a class="hover-class" href="./rucio-ds/main">Main Table</a></li>
-    <li><a class="hover-class" href="./rucio-ds/in-tape-disk">In Both Tape and Disk Table</a></li>
-    <li><a class="hover-class" href="./rucio-ds/detailed">All Detailed Table</a>(slow)</li>
-    <li><a class="hover-class"
-           href="https://monit-grafana.cern.ch/d/000000530/cms-monitoring-project?orgId=11">Grafana</a></li>
-    <li><a class="hover-class" href="https://cms-monitoring.cern.ch/">CMS Monitoring</a></li>
+    <li><a class="hover-class" style="font-size: 30px;" href="./rucio-ds/main">Main Datasets Table</a></li>
+    <li><a class="hover-class" style="font-size: 30px" href="./rucio-ds/in-tape-disk">Datasets In Both Tape&Disk
+            Table</a></li>
+    <li><a class="hover-class" style="font-size: 30px" href="./rucio-ds/detailed">Detailed Datasets Table</a></li>
 </ul>
 
+<
+<div class="div_img">
+    <a style="text-align: center; margin: auto; display: block;"
+       href="https://indico.cern.ch/event/1126680/contributions/5081601/attachments/2531043/4354857/Data%20Management_%20status%20of%20monitoring%20and%20tools.pdf">Indico
+        Link of Data Managemtn Presentation</a>
+    <img alt="Pipeline" class="image_block"
+         src="/{{.govar_BASE_EP}}/static/img/pipeline.png">
+</div>
 </body>
 </html>
