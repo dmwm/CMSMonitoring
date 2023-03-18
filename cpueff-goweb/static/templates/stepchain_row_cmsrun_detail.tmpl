@@ -1,0 +1,142 @@
+<!-- Copyright (c) 2023 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>* -->
+
+<div>
+    <table class="details-table table table-condensed" id="sc-cmsrun-detailed"
+           style="padding-left:40px;!important; background-color: white; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;
+           border:4px solid black;">
+        <thead>
+        <tr>
+            <th>Site Detail</th>
+            <th style="text-align: left;">Links</th>
+            <th style="font-weight: bold;text-align: left;">Step Name</th>
+            <th style="font-weight: bold;text-align: left;">Job Type</th>
+            <th style="color: blue ;text-align: right;">Cpu Efficiency</th>
+            <th style="text-align: right;">Number Of Step</th>
+            <th style="text-align: right;">Mean Thread</th>
+            <th style="text-align: right;">Mean Stream</th>
+            <th style="text-align: right;">Mean Cpu Time Hr</th>
+            <th style="text-align: right;">Total Cpu Time Hr</th>
+            <th style="text-align: right;">Mean Job Time Hr</th>
+            <th style="text-align: right;">Total Job Time Hr</th>
+            <th style="text-align: right;">Total Thread Job Time Hr</th>
+            <th style="text-align: right;">Write Total MB</th>
+            <th style="text-align: right;">Read Total MB</th>
+            <th style="text-align: right;">Mean Peak Rss</th>
+            <th style="text-align: right;">Mean Peak VSize</th>
+            <th style="text-align: right;">Acquisition Era</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .data}}
+            <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
+                <td style="font-weight: lighter;text-align: center" hidden-task-attr="{{.Task}}">
+                    <i class="fa fa-plus fa-2x" style="color: green; width: 10px"></i>
+                </td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Links}}</td>
+                <td style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.StepName}}</td>
+                <td style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.JobType}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CpuEfficiency}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.NumberOfStep}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.MeanThread}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.MeanStream}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanCpuTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalCpuTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalThreadJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WriteTotalMB}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .ReadTotalMB}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanPeakRss}}</td>
+                <td style="font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanPeakVSize}}</td>
+                <td style="font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.AcquisitionEra}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        // showTaskCmsrunDetails
+        function showCmsrunSiteDetails() {
+            var tr = $(this).closest("tr");
+            // Contains slashes which can be a problem
+
+            // detail_cmsrun_value_task = tr.parentsUntil('.details-show').find("td.details-value-task").html();
+            detail_cmsrun_value_task = $(tr).find("td.dt-site-detail-control").attr('hidden-task-attr')
+            detail_cmsrun_value_stepname = $(tr).find("td.detail-cmsrun-value-stepname").text()
+            detail_cmsrun_value_jobtype = $(tr).find("td.detail-cmsrun-value-jobtype").text()
+            random_str = Math.random().toString(36).slice(-10)
+            d_class = "details-site-show"
+            row = cmsrunTable.row(tr)
+            if (!row.child.isShown()) {
+                default_bg_color = $(tr).css("background-color");
+                $(tr).addClass(d_class)
+                // $(tr).css("background-color", "#CECBCEFF")
+                row.child("<div id='" + random_str + "'>loading</div>").show()
+                var single_sc_cmsrun_detailed_request = {
+                    "Task": detail_cmsrun_value_task,
+                    "StepName": detail_cmsrun_value_stepname,
+                    "JobType": detail_cmsrun_value_jobtype,
+                }
+                if (govar_VERBOSITY > 0) {
+                    console.log(JSON.stringify(single_sc_cmsrun_detailed_request))
+                }
+                $.ajax({
+                    url: govar_SC_SITE_DETAIL_OF_EACH_CMSRUN_APIEP,
+                    type: 'post',
+                    dataType: 'html',
+                    contentType: 'application/json',
+                    data: JSON.stringify(single_sc_cmsrun_detailed_request),
+                    success: function (data) {
+                        // just to assign random div id
+                        if (govar_VERBOSITY > 1) {
+                            // console.log(data)
+                        }
+                        $("#" + random_str).html(data);
+                    },
+                });
+                //tr.addClass('selected-row-color')
+                $(tr).find("td:first").html('<i class="fa fa-minus fa-2x" style="color: red; width: 10px"></i>');
+            } else {
+                $(tr).find("td:first").html('<i class="fa fa-plus fa-2x" style="color: green; width: 10px"></i>');
+                $(tr).removeClass(d_class)
+                $(tr).css("background-color", default_bg_color)
+                row.child.hide()
+            }
+        }
+
+        // To be able to expand/collapse multiple rows, each datatable ID should be different
+        random_detailed_id_str = Math.random().toString(36).slice(-10)
+        document.getElementById("sc-cmsrun-detailed").setAttribute("id", random_detailed_id_str);
+        var cmsrunTable = $('#' + random_detailed_id_str).DataTable({
+            dom: "it",
+            pageLength: 500,
+            order: [[0, 'asc']],
+            columns: [
+                {
+                    // Details green/red "+"/"-" button
+                    className: 'dt-site-detail-control', orderable: false, defaultContent: '',
+                    width: "2%"
+                },
+                {data: "Links"},
+                {data: "StepName", name: "Step Name", className: "detail-cmsrun-value-stepname"},
+                {data: "JobType", name: "Job Type", className: "detail-cmsrun-value-jobtype"},
+                {data: "CpuEfficiency", name: 'Cpu Efficiency',},
+                {data: "NumberOfStep", name: 'Number Of Step',},
+                {data: "MeanThread", name: 'Mean Thread',},
+                {data: "MeanStream", name: 'Mean Stream',},
+                {data: "MeanCpuTimeHr", name: 'Mean Cpu Time Hr',},
+                {data: "TotalCpuTimeHr", name: 'Total Cpu Time Hr',},
+                {data: "MeanJobTimeHr", name: 'Mean Job Time Hr',},
+                {data: "TotalJobTimeHr", name: 'Total Job Time Hr',},
+                {data: "TotalThreadJobTimeHr", name: 'Total Thread Job Time Hr',},
+                {data: "WriteTotalMB", name: 'Write Total MB',},
+                {data: "ReadTotalMB", name: 'Read Total MB',},
+                {data: "MeanPeakRss", name: 'Mean Peak Rss',},
+                {data: "MeanPeakVSize", name: 'Mean Peak VSize',},
+                {data: "AcquisitionEra", name: "Acquisition Era",},
+            ],
+        });
+        cmsrunTable.on('click', 'td.dt-site-detail-control', showCmsrunSiteDetails);
+    });
+</script>

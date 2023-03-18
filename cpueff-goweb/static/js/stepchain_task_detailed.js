@@ -4,7 +4,7 @@
 // This counter will be used to get the first opening of the page.
 // If short url is used, parent URL will be changed to main pages (../)
 var GLOBAL_INITIALIZATION_COUNTER = 0
-var PAGE_ENDPOINT = "sc-main"
+var PAGE_ENDPOINT = "stepchain-detailed"
 
 // Global variable to catch latest datatables request and set if provided in short url
 var GLOBAL_DT_REQUEST_HOLDER = null;
@@ -28,6 +28,20 @@ if (govar_IS_SHORT_URL === true) {
 $(function () {
     $('[data-toggle="tooltip"]').tooltip()
 })
+
+/*
+ * helperBytesToHumanely
+ *   Converts bytes to human-readable format KB,MB,GB,TB,PB,EB(max) with 2 decimals
+ *   If you want to implement ZB, YB, etc., you need to modify Go controller that parses these values
+ *   Size data stored as bytes in integer format.
+ */
+function helperMBytesToHumanReadable(input_bytes) {
+    if (input_bytes === 0) {
+        return "0.00 MB";
+    }
+    let e = Math.floor(Math.log(input_bytes) / Math.log(1000));
+    return (input_bytes / Math.pow(1000, e)).toFixed(2) + ' ' + 'MGTPE'.charAt(e) + 'B';
+}
 
 /*
  * helperFloatPrecision
@@ -100,92 +114,42 @@ function getShortUrl() {
  */
 $(document).ready(function () {
     // CUSTOM SEARCH-BUILDER TYPES
-    // task_type
-    $.fn.dataTable.ext.searchBuilder.conditions.task_type = {
+    // job_type
+    $.fn.dataTable.ext.searchBuilder.conditions.job_type = {
         'Production': {
-            conditionName: function (dt, i18n) {
-                return 'Production';
-            },
-            isInputValid: function () {
-                return true;
-            },
-            init: function () {
-                return;
-            },
-            inputValue: function () {
-                return;
-            },
-            search: function (value) {
-                return value === 'Production';
-            },
+            conditionName: function (dt, i18n) {return 'Production';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Production';},
         },
         'Processing': {
-            conditionName: function (dt, i18n) {
-                return 'Processing';
-            },
-            isInputValid: function () {
-                return false;
-            },
-            init: function () {
-                return;
-            },
-            inputValue: function () {
-                return;
-            },
-            search: function (value) {
-                return value === 'Processing';
-            },
+            conditionName: function (dt, i18n) {return 'Processing';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Processing';},
         },
         'Merge': {
-            conditionName: function (dt, i18n) {
-                return 'Merge';
-            },
-            isInputValid: function () {
-                return false;
-            },
-            init: function () {
-                return;
-            },
-            inputValue: function () {
-                return;
-            },
-            search: function (value) {
-                return value === 'Merge';
-            },
+            conditionName: function (dt, i18n) {return 'Merge';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Merge';},
         },
         'LogCollect': {
-            conditionName: function (dt, i18n) {
-                return 'LogCollect';
-            },
-            isInputValid: function () {
-                return false;
-            },
-            init: function () {
-                return;
-            },
-            inputValue: function () {
-                return;
-            },
-            search: function (value) {
-                return value === 'LogCollect';
-            },
+            conditionName: function (dt, i18n) {return 'LogCollect';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'LogCollect';},
         },
         'Harvesting': {
-            conditionName: function (dt, i18n) {
-                return 'Harvesting';
-            },
-            isInputValid: function () {
-                return false;
-            },
-            init: function () {
-                return;
-            },
-            inputValue: function () {
-                return;
-            },
-            search: function (value) {
-                return value === 'Harvesting';
-            },
+            conditionName: function (dt, i18n) {return 'Harvesting';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Harvesting';},
         },
     }
 
@@ -212,6 +176,8 @@ $(document).ready(function () {
         var tr = $(this).closest("tr");
         // Contains slashes which can be a problem
         detail_task_name = $(tr).find("td.details-value-task").text()
+        detail_step_name = $(tr).find("td.details-value-stepname").text()
+        detail_jobtype_name = $(tr).find("td.details-value-jobtype").text()
         random_str = Math.random().toString(36).slice(-10)
         d_class = "details-show"
         row = table.row(tr)
@@ -222,12 +188,14 @@ $(document).ready(function () {
             row.child("<div id='" + random_str + "'>loading</div>").show()
             var single_sc_task_detailed_request = {
                 "Task": detail_task_name,
+                "StepName": detail_step_name,
+                "JobType": detail_jobtype_name,
             }
             if (govar_VERBOSITY > 0) {
                 console.log(JSON.stringify(single_sc_task_detailed_request))
             }
             $.ajax({
-                url: govar_SC_EACH_TASK_DETAILED_API_ENDPOINT,
+                url: govar_SC_SITE_DETAIL_OF_EACH_CMSRUN_APIEP,
                 type: 'post',
                 dataType: 'html',
                 contentType: 'application/json',
@@ -263,8 +231,9 @@ $(document).ready(function () {
         dom: "iBQplrt", // no main search ("f"), just individual column search
         language: {
             searchBuilder: {
-                clearAll: 'Reset',
-                delete: 'Delete',
+                clearAll: "",
+                delete: "Delete",
+                title: ""
             },
             processing: "Processing ...",
         },
@@ -293,7 +262,7 @@ $(document).ready(function () {
             [5, 10, 25, 50, 100, 500, 1000, 10000]
         ],
         ajax: {
-            url: govar_SC_TASK_API_ENDPOINT,
+            url: govar_SC_TASK_CMSRUN_JOBTYPE_API_ENDPOINT,
             method: "POST",
             contentType: 'application/json',
             data: function (d) {
@@ -351,8 +320,17 @@ $(document).ready(function () {
         },
         searchBuilder: {
             depthLimit: 1,
+            preDefined: {
+                criteria: [
+                    {
+                        data: 'Job Type',
+                        origData: 'JobType',
+                        condition: 'Merge',
+                    },
+                ]
+            },
             // SearchBuilder customizations to limit conditions: "Task" column not included  they are searched via "input-sc-task"
-            columns: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            columns: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -403,13 +381,22 @@ $(document).ready(function () {
                     '!between': null,
                 },
                 num: {
-                    // "int" type will have only ">", "<", "between", "null" and "!null" conditions
+                    // "int" type will have only "<=", ">=", "between", "null" and "!null" conditions
                     '=': null,
                     '!=': null,
                     '!between': null,
-                    '<=': null,
-                    '>=': null,
-                }
+                    '<': null,
+                    '>': null,
+                },
+                array: {
+                    // "array" type will have only "="(has_arr_element), "null", "!null" for STRING ARRAY columns
+                    '=': {
+                        conditionName: 'has_array_element',
+                    },
+                    '!=': null,
+                    'contains': null,
+                    'without': null,
+                },
             }
         },
         columns: [
@@ -426,75 +413,71 @@ $(document).ready(function () {
                 width: "10%",
             },
             {
-                data: "AvgCpuEff",
-                name: 'Avg Cpu Eff',
+                data: "StepName",
+                name: 'Step Name',
+                searchBuilder: {defaultCondition: "contains"},
+                className: "details-value-stepname",
+                width: "10%",
+            },
+            {
+                data: "JobType",
+                name: "Job Type",
+                searchBuilderType: 'job_type',
+                // Never give default condition, because DataTables sends lots of unnecessary queries each time.
+                className: "details-value-jobtype",
+                width: "10%",
+            },
+            {
+                data: "CpuEfficiency",
+                name: 'Cpu Efficiency',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 render: function (data, type, row, meta) {
-                    return type === 'display' ? '%' + helperFloatPrecision(data) : data;
+                    return type === 'display' ? helperFloatPrecision(data)+'%' : data;
                 },
             },
-            {
-                data: "TotalJobs",
-                name: 'Total Jobs',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+            {data: "NumberOfStep", name: 'Number Of Step', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
+            {data: "MeanThread", name: 'Mean Thread', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
+            {data: "MeanStream", name: 'Mean Stream', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
+            {data: "MeanCpuTimeHr", name: 'Mean Cpu Time Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "NumOfSteps",
-                name: 'Num Of Steps',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                data: "TotalCpuTimeHr", name: 'Total Cpu Time Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "NumOfCalculatedSteps",
-                name: 'Num Of Calculated Steps',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                data: "MeanJobTimeHr", name: 'Mean Job Time Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "NumOfThreads",
-                name: 'Num Of Threads',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                data: "TotalJobTimeHr", name: 'Total Job Time Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "NumOfStreams",
-                name: 'Num Of Streams',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
-            },
-
-            {
-                data: "AvgJobCpu",
-                name: 'Avg Job Cpu',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
-                render: function (data, type, row, meta) {
-                    return type === 'display' ? helperFloatPrecision(data) : data;
-                },
+                data: "TotalThreadJobTimeHr", name: 'Total Thread Job Time Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "AvgJobTime",
-                name: 'Avg Job Time',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
-                render: function (data, type, row, meta) {
-                    return type === 'display' ? helperFloatPrecision(data) : data;
-                },
+                data: "WriteTotalMB", name: 'Write Total MB', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperMBytesToHumanReadable(data) : data;},
             },
             {
-                data: "EraLength",
-                name: "Era Length",
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                data: "ReadTotalMB", name: 'Read Total MB', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperMBytesToHumanReadable(data) : data;},
             },
             {
-                data: "AcquisitionEra",
-                name: "Acquisition Era",
-                searchBuilderType: 'array',
-                searchBuilder: {defaultCondition: "="}
+                data: "MeanPeakRss", name: 'Mean Peak Rss', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
+            {
+                data: "MeanPeakVSize", name: 'Mean Peak VSize', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
+            },
+            {data: "EraCount", name: 'Era Count', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
+            {data: "SiteCount", name: 'Site Count', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
+            {data: "AcquisitionEra", name: "Acquisition Era", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="},},
+            {data: "Sites", name: "Sites", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="},},
         ],
         buttons: [
             {
@@ -550,14 +533,6 @@ $(document).ready(function () {
                 action: function (e, dt, node, config) {
                     //This will send the page to the location specified
                     window.open("https://github.com/dmwm/CMSMonitoring/tree/master/cpueff-goweb", "_blank");
-                }
-            },
-            {
-                className: 'btn btn-light',
-                text: '<a href="">Examples</a>',
-                action: function (e, dt, node, config) {
-                    //This will send the page to the location specified
-                    window.open("https://github.com/dmwm/CMSMonitoring/blob/master/cpueff-goweb/docs/example_query.md", "_blank");
                 }
             }
         ]
