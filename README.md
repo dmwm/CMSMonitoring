@@ -16,7 +16,11 @@ infrastructure.
     - Builds `cmsmonitoring/cmsmonit-alert` docker image and push to registry.cern.ch
     - Builds `cmsmonitoring/nats-sub` docker image and push to registry.cern.ch
 - On tag :whale: `rgo-*.*.*` :rocket:
-    - Builds `cmsmonitoring/cmsmon-rucio-ds-web` docker image using `src/go/rucio-dataset-mon-go`
+    - Builds `cmsmonitoring/rucio-mon-goweb` docker image using `rucio-dataset-monitoring`
+    - Builds `cmsmonitoring/spark2mng` docker image using `rucio-dataset-monitoring`
+- On tag :whale: `cpueff-*.*.*` :rocket:
+    - Builds `cmsmonitoring/cpueff-goweb` docker image using `cpueff-goweb`
+    - Builds `cmsmonitoring/cpueff-spark` docker image using `cpueff-goweb`
 - On tag :whale: `sqoop-*.*.*` :rocket: 
     - Builds `cmsmonitoring/sqoop` docker image and push to registry.cern.ch
 - On tag `py-*.*.*`  

@@ -1,0 +1,56 @@
+<!-- Copyright (c) 2023 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>* -->
+
+<div>
+    <table class="details-table table table-condensed" id="sc-detailed"
+           style="background-color: white; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;
+           border:4px solid black;">
+        <thead>
+        <tr>
+            <th style="text-align: left;">Links</th>
+            <th style="font-weight: bold;text-align: left;">Step Name</th>
+            <th style="font-weight: bold;text-align: left;">Job Type</th>
+            <th style="font-weight: bold;text-align: left;">Site</th>
+            <th>Avg Cpu Eff</th>
+            <th>Total Jobs</th>
+            <th>Num Of Steps</th>
+            <th>Num Of Threads</th>
+            <th>Num Of Streams</th>
+            <th>Avg Job Cpu</th>
+            <th>Avg Job Time</th>
+            <th>Era Length</th>
+            <td>Acquisition Era</td>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .data}}
+            <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Links}}</td>
+                <td style="text-align: left;font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.StepName}}</td>
+                <td style="text-align: left;font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.JobType}}</td>
+                <td style="text-align: left;font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.Site}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .AvgCpuEff}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.TotalJobs}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.NumOfSteps}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.NumOfThreads}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.NumOfStreams}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .AvgJobCpu}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .AvgJobTime}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.EraLength}}</td>
+                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.AcquisitionEra}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        // To be able to expand/collapse multiple rows, each datatable ID should be different
+        random_detailed_id_str = Math.random().toString(36).slice(-10)
+        document.getElementById("sc-detailed").setAttribute("id", random_detailed_id_str);
+        $('#' + random_detailed_id_str).DataTable({
+            dom: "it",
+            pageLength: 500,
+            order: [[0, 'asc']],
+        });
+    });
+</script>
