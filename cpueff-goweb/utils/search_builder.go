@@ -107,7 +107,7 @@ func humanSizeToBytes(input string) int64 {
 //	    It has only "<", ">", "between", "null", "!null" conditions.
 //	    In other words: before, after, between, empty, not empty
 //	- num:
-//	    It has only "<", ">", "between", "null", "!null" conditions. Used for integer columns like `TotalFileCnt`
+//	    It has only "<=", ">=", "between", "null", "!null" conditions. Used for integer columns like `TotalFileCnt`
 //	- array:
 //	    It has only "=": has_array_element, "null", "!null"  conditions. Used for string array columns
 //	- prod_accounts:
@@ -161,9 +161,9 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 		}
 	case "num":
 		switch criterion.Condition {
-		case "<":
+		case "<=":
 			return bson.M{criterion.OrigData: bson.M{"$lte": strToInt(criterion.Value[0])}}
-		case ">":
+		case ">=":
 			return bson.M{criterion.OrigData: bson.M{"$gte": strToInt(criterion.Value[0])}}
 		case "between":
 			return bson.M{
@@ -201,6 +201,8 @@ func searchBsonSelections(criterion models.SingleCriteria) bson.M {
 			ErrorLog(" searchBsonSelections failed type is: %s", criterion.Type)
 		}
 	case "wf_type":
+		return bson.M{criterion.OrigData: bson.M{"$eq": criterion.Condition}}
+	case "job_type":
 		return bson.M{criterion.OrigData: bson.M{"$eq": criterion.Condition}}
 	case "prod_accounts":
 		return bson.M{criterion.OrigData: bson.M{"$eq": criterion.Condition}}

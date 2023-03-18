@@ -79,6 +79,24 @@ type StepchainTask struct {
 	AcquisitionEra       StringArray   `bson:"AcquisitionEra,omitempty" validate:"required"`
 }
 
+// StepchainTaskCmsrunJobtype Stepchain task, cmsrun, jobtype level cpu efficiency entry
+type StepchainTaskCmsrunJobtype struct {
+	Links                template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
+	Task                 string        `bson:"Task,omitempty" validate:"required"`
+	StepName             string        `bson:"StepName,omitempty" validate:"required"`
+	JobType              string        `bson:"JobType,omitempty" validate:"required"`
+	AvgCpuEff            float64       `bson:"AvgCpuEff,omitempty" validate:"required"`
+	TotalJobs            float64       `bson:"TotalJobs,omitempty" validate:"required"`
+	NumOfSteps           float64       `bson:"NumOfSteps,omitempty" validate:"required"`
+	NumOfCalculatedSteps float64       `bson:"NumOfCalculatedSteps" validate:"required"`
+	NumOfThreads         float64       `bson:"NumOfThreads,omitempty" validate:"required"`
+	NumOfStreams         float64       `bson:"NumOfStreams,omitempty" validate:"required"`
+	AvgJobCpu            float64       `bson:"AvgJobCpu,omitempty" validate:"required"`
+	AvgJobTime           float64       `bson:"AvgJobTime,omitempty" validate:"required"`
+	EraLength            float64       `bson:"EraLength,omitempty" validate:"required"`
+	AcquisitionEra       StringArray   `bson:"AcquisitionEra,omitempty" validate:"required"`
+}
+
 // StepchainTaskCmsrunJobtypeSite Stepchain task, cmsrun, jobtype and step level cpu efficiency entry
 type StepchainTaskCmsrunJobtypeSite struct {
 	Links          template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response

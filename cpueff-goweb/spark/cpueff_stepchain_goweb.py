@@ -13,12 +13,11 @@ from datetime import date, datetime, timedelta
 
 import click
 import pandas as pd
+# CMSSpark modules
+from CMSSpark.spark_utils import get_spark_session, get_candidate_files
 from pyspark.sql.functions import (col, collect_set as _collect_set, count as _count, countDistinct, lit, mean as _mean,
                                    size as _list_size, sum as _sum, )
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType
-
-# CMSSpark modules
-from CMSSpark.spark_utils import get_spark_session, get_candidate_files
 
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
@@ -120,7 +119,8 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
 
     mongo_collection_names = (
         "sc_task",
-        "sc_task_cmsrun_jobtype_site"
+        "sc_task_cmsrun_jobtype",
+        "sc_task_cmsrun_jobtype_site",
     )
     # HDFS output dict collection:hdfs path
     hdfs_out_collection_dirs = {c: hdfs_out_dir + "/" + c for c in mongo_collection_names}
@@ -182,6 +182,22 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
         .sort(col("Task"))
     )
 
+    df_task_cmsrun_jobtype = (
+        df.groupby(["Task", "StepName", "JobType"]).agg(
+            (100 * _sum("JobCpu") / _sum("TotalThreadsJobTime")).alias("AvgCpuEff"),
+            _count(lit(1)).alias("TotalJobs"),
+            _mean("StepsLen").alias("NumOfSteps"),
+            countDistinct("StepName").alias("NumOfCalculatedSteps"),
+            _mean("NumOfThreads").alias("NumOfThreads"),
+            _mean("NumOfStreams").alias("NumOfStreams"),
+            (_sum("JobCpu") / _count(lit(1))).alias("AvgJobCpu"),
+            (_sum("JobTime") / _count(lit(1))).alias("AvgJobTime"),
+            _collect_set("AcquisitionEra").alias("AcquisitionEra"),
+        )
+        .withColumn("EraLength", _list_size(col("AcquisitionEra")))
+        .sort(col("Task"), col("StepName"), col("JobType"))
+    )
+
     df_task_cmsrun_jobtype_site = (
         df.groupby(["Task", "StepName", "JobType", "Site"]).agg(
             (100 * _sum("JobCpu") / _sum("TotalThreadsJobTime")).alias("AvgCpuEff"),
@@ -199,6 +215,8 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
 
     # Write results to HDFS temporary location
     df_task.write.save(path=hdfs_out_collection_dirs['sc_task'], format=write_format, mode=write_mode)
+    df_task_cmsrun_jobtype.write.save(path=hdfs_out_collection_dirs['sc_task_cmsrun_jobtype'],
+                                      format=write_format, mode=write_mode)
     df_task_cmsrun_jobtype_site.write.save(path=hdfs_out_collection_dirs['sc_task_cmsrun_jobtype_site'],
                                            format=write_format, mode=write_mode)
 

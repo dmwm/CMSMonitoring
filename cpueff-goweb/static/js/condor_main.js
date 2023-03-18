@@ -213,7 +213,7 @@ $(document).ready(function () {
         language: {
             searchBuilder: {
                 clearAll: "",
-                delete: 'Delete',
+                delete: "Delete",
                 title: ""
             },
             processing: "Processing ...",
@@ -307,13 +307,13 @@ $(document).ready(function () {
                     {
                         data: 'Cpu Eff Outlier',
                         origData: 'CpuEffOutlier',
-                        condition: '<',
+                        condition: '<=',
                         value: [0]
                     },
                     {
                         data: 'Wall Clock Hr',
                         origData: 'WallClockHr',
-                        condition: '>',
+                        condition: '>=',
                         value: [100]
                     },
                     {
@@ -324,7 +324,7 @@ $(document).ready(function () {
                 ]
             },
             // SearchBuilder customizations to limit conditions: "workflow" and "WMAgent_RequestName" column not included  they are searched via "input-condor-workflow" and "input-condor-wma-req-name"
-            columns: [1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+            columns: [2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -375,12 +375,12 @@ $(document).ready(function () {
                     '!between': null,
                 },
                 num: {
-                    // "int" type will have only ">", "<", "between", "null" and "!null" conditions
+                    // "int" type will have only ">=", "<=", "between", "null" and "!null" conditions
                     '=': null,
                     '!=': null,
                     '!between': null,
-                    '<=': null,
-                    '>=': null,
+                    '<': null,
+                    '>': null,
                 }
             }
         },
@@ -399,6 +399,7 @@ $(document).ready(function () {
                 data: "Type",
                 className: "details-value-type",
                 name: 'Type',
+                // Never give default condition, because DataTables sends lots of unnecessary queries each time.
                 searchBuilderType: 'wf_type',
                 width: "3%",
             },
@@ -420,29 +421,29 @@ $(document).ready(function () {
                 name: 'Cpu Eff Outlier',
                 className: 'details-value-outlier',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%"
             },
             {
                 data: "CpuEff",
                 name: 'Cpu Eff',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
-                render: function (data, type, row, meta) {return type === 'display' ? '%'+helperFloatPrecision(data) : data;},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
             },
             {
                 data: "Cpus",
                 name: 'Cpus',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
             },
             {
                 data: "CpuTimeHr",
                 name: 'Cpu Time Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -450,7 +451,7 @@ $(document).ready(function () {
                 data: "WallClockHr",
                 name: 'Wall Clock Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -458,7 +459,7 @@ $(document).ready(function () {
                 data: "CoreTimeHr",
                 name: 'Core Time Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -466,7 +467,7 @@ $(document).ready(function () {
                 data: "WastedCpuTimeHr",
                 name: 'Wasted Cpu Time Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -474,7 +475,7 @@ $(document).ready(function () {
                 data: "CpuEffT1T2",
                 name: 'Cpu Eff T1T2',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -482,14 +483,14 @@ $(document).ready(function () {
                 data: "CpusT1T2",
                 name: 'Cpus T1T2',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
             },
             {
                 data: "CpuTimeHrT1T2",
                 name: 'Cpu Time Hr T1T2',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -497,7 +498,7 @@ $(document).ready(function () {
                 data: "WallClockHrT1T2",
                 name: 'Wall Clock Hr T1T2',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -505,7 +506,7 @@ $(document).ready(function () {
                 data: "CoreTimeHrT1T2",
                 name: 'Core Time Hr T1T2',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -513,7 +514,7 @@ $(document).ready(function () {
                 data: "WastedCpuTimeHrT1T2",
                 name: 'Wasted Cpu Time Hr T1T2',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
@@ -572,14 +573,6 @@ $(document).ready(function () {
                 action: function (e, dt, node, config) {
                     //This will send the page to the location specified
                     window.open("https://github.com/dmwm/CMSMonitoring/tree/master/cpueff-goweb", "_blank");
-                }
-            },
-            {
-                className: 'btn btn-light',
-                text: '<a href="">Examples</a>',
-                action: function (e, dt, node, config) {
-                    //This will send the page to the location specified
-                    window.open("https://github.com/dmwm/CMSMonitoring/blob/master/cpueff-goweb/docs/example_query.md", "_blank");
                 }
             }
         ]

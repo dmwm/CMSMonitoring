@@ -2,9 +2,9 @@
 //
 
 // This counter will be used to get the first opening of the page.
-//     If short url is used, parent URL will be changed to main pages (../)
+// If short url is used, parent URL will be changed to main pages (../)
 var GLOBAL_INITIALIZATION_COUNTER = 0
-var PAGE_ENDPOINT = "condor-detailed"
+var PAGE_ENDPOINT = "sc-detail-task-cmsrun-jobtype"
 
 // Global variable to catch latest datatables request and set if provided in short url
 var GLOBAL_DT_REQUEST_HOLDER = null;
@@ -19,9 +19,8 @@ if (govar_IS_SHORT_URL === true) {
         console.log("[govar_IS_SHORT_URL true]")
         console.log(GLOBAL_SAVED_STATE_HOLDER)
     }
-    // Set Main workflow and WMAgent Request Name search inputs bar from short url reques
-    $('#input-condor-workflow').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputCondorWorkflow);
-    $('#input-condor-wma-req-name').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputCondorWmaReqName);
+    // Set Stepchain Task name search inputs bar from short url request
+    $('#input-sc-task').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputScTask);
 }
 
 // ---------~~~~~~~~~  FUNCTIONS AND MAIN DEFINITIONS ~~~~~~~~~---------
@@ -80,10 +79,9 @@ function getShortUrl() {
         data: JSON.stringify({
             "page": PAGE_ENDPOINT,
             "dtRequest": JSON.parse(GLOBAL_DT_REQUEST_HOLDER),
-            "savedState": JSON.parse(global_saved_state_holder),
+            "savedState": JSON.parse(GLOBAL_SAVED_STATE_HOLDER),
         }),
         success: function (data) {
-            // Call copy clipboard here
             let _shorturl = window.location.origin + '/' + govar_BASE_EP + '/short-url/' + data
             if (govar_VERBOSITY > 0) {
                 console.log("Short URL: " + _shorturl)
@@ -102,36 +100,103 @@ function getShortUrl() {
  */
 $(document).ready(function () {
     // CUSTOM SEARCH-BUILDER TYPES
-    // wf_type
-    $.fn.dataTable.ext.searchBuilder.conditions.wf_type = {
-        'production': {
-            conditionName: function (dt, i18n) {return 'production';},
+    // job_type
+    $.fn.dataTable.ext.searchBuilder.conditions.job_type = {
+        'Production': {
+            conditionName: function (dt, i18n) {return 'Production';},
             isInputValid: function () {return true;},
             init: function () {return;},
             inputValue: function () {return;},
-            search: function (value) {return value === 'production';},
+            search: function (value) {return value === 'Production';},
         },
-        'analysis': {
-            conditionName: function (dt, i18n) {return 'analysis';},
-            isInputValid: function () {return false;},
+        'Processing': {
+            conditionName: function (dt, i18n) {return 'Processing';},
+            isInputValid: function () {return true;},
             init: function () {return;},
             inputValue: function () {return;},
-            search: function (value) {return value === 'analysis';},
+            search: function (value) {return value === 'Processing';},
         },
-        'test': {
-            conditionName: function (dt, i18n) {return 'test';},
-            isInputValid: function () {return false;},
+        'Merge': {
+            conditionName: function (dt, i18n) {return 'Merge';},
+            isInputValid: function () {return true;},
             init: function () {return;},
             inputValue: function () {return;},
-            search: function (value) {return value === 'test';},
+            search: function (value) {return value === 'Merge';},
         },
-        'tier0': {
-            conditionName: function (dt, i18n) {return 'tier0';},
-            isInputValid: function () {return false;},
+        'LogCollect': {
+            conditionName: function (dt, i18n) {return 'LogCollect';},
+            isInputValid: function () {return true;},
             init: function () {return;},
             inputValue: function () {return;},
-            search: function (value) {return value === 'tier0';},
+            search: function (value) {return value === 'LogCollect';},
         },
+        'Harvesting': {
+            conditionName: function (dt, i18n) {return 'Harvesting';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Harvesting';},
+        },
+    }
+
+    /*
+    * showTaskDetails
+    *   Shows detailed individual Task information when green "+" button clicked
+    *   It uses a Go controller which returns data from sc_task_(cmsrun|jobtype|site) collections
+    *   How it works:
+    *     Gets closest "tr" row of the clicked "+" button
+    *     Gets workflow value from this "tr" dom element.
+    *       This is tricky because, "details-value-task" Class should be added to "Workflow" td(column) dom.
+    *       Thanks to DataTables, we can add html class to column elements using "className" in the DT columns array
+    *     Gets RseType value from this "tr" dom element same with "Workflow" using className.
+    *     Creates a random string to create a temporary div with unique ID for each clicked row.
+    *     Stores default background color, changes it to our color and after row is collapsed restore its background color
+    *     Sends ajax request to  `../api/rse-detail' API with a JSON request body: {"workflow": .., "type": ..} which defines the workflow.
+    *     Gets html response which is sent by the Go controller.
+    *        Go controller uses "rse_detail_table.html" template which is also uses DataTables to show pretty table
+    *        To not mix current DataTable CSS and "rse_detail_table" CSS, we used random ids and other tricks like "!important;".
+    *     And with ".html" function call, response html element showed in the dom.
+    *     Thanks to "dt-control", it allows to collapse and expand with green/red color changes.
+    */
+    function showTaskDetails() {
+        var tr = $(this).closest("tr");
+        // Contains slashes which can be a problem
+        detail_task_name = $(tr).find("td.details-value-task").text()
+        detail_step_name = $(tr).find("td.details-value-stepname").text()
+        detail_jobtype_name = $(tr).find("td.details-value-jobtype").text()
+        random_str = Math.random().toString(36).slice(-10)
+        d_class = "details-show"
+        row = table.row(tr)
+        if (!row.child.isShown()) {
+            default_bg_color = $(tr).css("background-color");
+            $(tr).addClass(d_class)
+            // $(tr).css("background-color", "#CECBCEFF")
+            row.child("<div id='" + random_str + "'>loading</div>").show()
+            var single_sc_task_detailed_request = {
+                "Task": detail_task_name,
+                "StepName": detail_step_name,
+                "JobType": detail_jobtype_name,
+            }
+            if (govar_VERBOSITY > 0) {
+                console.log(JSON.stringify(single_sc_task_detailed_request))
+            }
+            $.ajax({
+                url: govar_SC_EACH_TASK_DETAILED_API_ENDPOINT,
+                type: 'post',
+                dataType: 'html',
+                contentType: 'application/json',
+                data: JSON.stringify(single_sc_task_detailed_request),
+                success: function (data) {
+                    // just to assign random div id
+                    $("#" + random_str).html(data);
+                },
+            });
+            tr.addClass('selected-row-color')
+        } else {
+            $(tr).removeClass(d_class)
+            $(tr).css("background-color", default_bg_color)
+            row.child.hide()
+        }
     }
 
     /*
@@ -159,11 +224,11 @@ $(document).ready(function () {
             processing: "Processing ...",
         },
         stateSaveCallback: function (settings, data) {
-            // Save the last state to "global_saved_state_holder" variable to use in the short url call
-            global_saved_state_holder = JSON.stringify(data)
+            // Save the last state to "GLOBAL_SAVED_STATE_HOLDER" variable to use in the short url call
+            GLOBAL_SAVED_STATE_HOLDER = JSON.stringify(data)
             if (govar_VERBOSITY > 0) {
                 console.log("[stateSaveCallback]");
-                console.log(global_saved_state_holder);
+                console.log(GLOBAL_SAVED_STATE_HOLDER);
             }
         },
         stateLoadCallback: function (settings) {
@@ -171,16 +236,19 @@ $(document).ready(function () {
             if (govar_VERBOSITY > 0) {
                 console.log("[stateLoadCallback]");
                 console.log(GLOBAL_SAVED_STATE_HOLDER)
-                console.log(govar_CONDOR_DETAILED_API_ENDPOINT)
             }
             return JSON.parse(GLOBAL_SAVED_STATE_HOLDER);
         },
+        // stateLoadParams: function (settings, data) {
+        // },
+        // stateSaveParams: function (setting, data){
+        // },
         aLengthMenu: [
             [5, 10, 25, 50, 100, 500, 1000, 10000],
             [5, 10, 25, 50, 100, 500, 1000, 10000]
         ],
         ajax: {
-            url: govar_CONDOR_DETAILED_API_ENDPOINT,
+            url: govar_SC_TASK_CMSRUN_JOBTYPE_API_ENDPOINT,
             method: "POST",
             contentType: 'application/json',
             data: function (d) {
@@ -191,7 +259,6 @@ $(document).ready(function () {
 
                 // SearchBuilder request holder variable
                 var sbRequest = {};
-                console.log("TEST")
 
                 // Check if user created a search builder query using SB Conditions
                 try {
@@ -204,8 +271,7 @@ $(document).ready(function () {
                     // User did not create SearchBuilder query, so set the request holder variable as null
                     sbRequest = {};
                 }
-                sbRequest.inputCondorWorkflow = $("#input-condor-workflow").val();
-                sbRequest.inputCondorWmaReqName = $("#input-condor-wma-req-name").val();
+                sbRequest.inputScTask = $("#input-sc-task").val();
                 // Add SearchBuilder JSON object to DataTable main request
                 d.searchBuilderRequest = sbRequest;
 
@@ -243,15 +309,14 @@ $(document).ready(function () {
             preDefined: {
                 criteria: [
                     {
-                        data: 'Cpu Eff Outlier',
-                        origData: 'CpuEffOutlier',
-                        condition: '<=',
-                        value: [0]
+                        data: 'Job Type',
+                        origData: 'JobType',
+                        condition: 'Merge',
                     },
                 ]
             },
-            // SearchBuilder customizations to limit conditions: "workflow" and "WMAgent_RequestName" column not included  they are searched via "input-condor-workflow" and "input-condor-wma-req-name"
-            columns: [1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+            // SearchBuilder customizations to limit conditions: "Task" column not included  they are searched via "input-sc-task"
+            columns: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -259,15 +324,10 @@ $(document).ready(function () {
                 //     - html: float type columns
                 //     - date: date type columns
                 //     - num:  integer type columns
-                //     - boolean: true/false type columns
-                //     - tape_disk: TYPE column
-                //     - prod_accounts: prod accounts column
-                //     - array: array columns
-                boolean: {},
+                //     - tape_disk: Rse Type column
                 tape_disk: {},
-                prod_accounts: {},
                 html: {
-                    // "num" type will have only "starts":Greater Than" and "ends":"Less Than" conditions
+                    // "num" type will have only "starts":GreaterThan" and "ends":"LessThan" conditions
                     'starts': {
                         conditionName: 'GreaterThan',
                     },
@@ -326,92 +386,102 @@ $(document).ready(function () {
             }
         },
         columns: [
+            {
+                // Details green/red "+"/"-" button
+                data: null, className: 'dt-control', orderable: false, defaultContent: '',
+                width: "2%"
+            },
             {data: "Links", name: 'Links', width: "3%",},
             {
-                data: "Type", name: 'Type', searchBuilderType: 'wf_type', width: "3%",
+                data: "Task",
+                className: "details-value-task",
+                searchBuilder: {defaultCondition: "contains"},
+                width: "10%",
+            },
+            {
+                data: "StepName",
+                name: 'Step Name',
+                searchBuilder: {defaultCondition: "contains"},
+                className: "details-value-stepname",
+                width: "10%",
+            },
+            {
+                data: "JobType",
+                name: "Job Type",
+                searchBuilderType: 'job_type',
                 // Never give default condition, because DataTables sends lots of unnecessary queries each time.
+                className: "details-value-jobtype",
+                width: "10%",
             },
-            {data: "Workflow", searchBuilder: {defaultCondition: "contains"}, width: "5%",},
             {
-                data: "WmagentRequestName",
-                name: "WMAgent Request Name",
-                searchBuilder: {defaultCondition: "contains"},
-                width: "5%",
-            },
-            {data: "Site", searchBuilder: {defaultCondition: "contains"}, width: "5%",},
-            {data: "Tier", searchBuilder: {defaultCondition: "contains"}, width: "5%",},
-            {
-                data: "CpuEffOutlier",
-                name: 'Cpu Eff Outlier',
+                data: "AvgCpuEff",
+                name: 'Avg Cpu Eff',
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
-                width: "3%"
-            },
-            {
-                data: "CpuEff",
-                name: 'Cpu Eff',
-                searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">="},
-                width: "3%",
                 render: function (data, type, row, meta) {
-                    return type === 'display' ? helperFloatPrecision(data) +'%': data;
+                    return type === 'display' ? helperFloatPrecision(data)+'%' : data;
                 },
             },
             {
-                data: "Cpus",
-                name: 'Cpus',
+                data: "TotalJobs",
+                name: 'Total Jobs',
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
-                width: "3%",
             },
             {
-                data: "CpuTimeHr",
-                name: 'Cpu Time Hr',
+                data: "NumOfSteps",
+                name: 'Num Of Steps',
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
-                width: "3%",
-                render: function (data, type, row, meta) {
-                    return type === 'display' ? helperFloatPrecision(data) : data;
-                },
             },
             {
-                data: "WallClockHr",
-                name: 'Wall Clock Hr',
+                data: "NumOfCalculatedSteps",
+                name: 'Num Of Calculated Steps',
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
-                width: "3%",
+            },
+            {
+                data: "NumOfThreads",
+                name: 'Num Of Threads',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+            },
+            {
+                data: "NumOfStreams",
+                name: 'Num Of Streams',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+            },
+
+            {
+                data: "AvgJobCpu",
+                name: 'Avg Job Cpu',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
                 render: function (data, type, row, meta) {
                     return type === 'display' ? helperFloatPrecision(data) : data;
                 },
             },
             {
-                data: "CoreTimeHr",
-                name: 'Core Time Hr',
+                data: "AvgJobTime",
+                name: 'Avg Job Time',
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
-                width: "3%",
                 render: function (data, type, row, meta) {
                     return type === 'display' ? helperFloatPrecision(data) : data;
                 },
             },
             {
-                data: "WastedCpuTimeHr",
-                name: 'Wasted Cpu Time Hr',
+                data: "EraLength",
+                name: "Era Length",
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
-                width: "3%",
-                render: function (data, type, row, meta) {
-                    return type === 'display' ? helperFloatPrecision(data) : data;
-                },
             },
             {
-                data: "Schedds", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="}},
-            {
-                data: "MaxWmagentJobId",
-                name: "Max WMAgent Job Id",
-                searchBuilderType: 'string',
-                searchBuilder: {defaultCondition: "contains"},
-                width: "5%",
+                data: "AcquisitionEra",
+                name: "Acquisition Era",
+                searchBuilderType: 'array',
+                searchBuilder: {defaultCondition: "="},
             },
         ],
         buttons: [
@@ -451,7 +521,7 @@ $(document).ready(function () {
             {
                 className: 'btn btn-light glyphicon glyphicon-time',
                 text: 'DataTimestamp: ' + govar_SOURCE_DATE,
-                titleAttr: "This table is produced with the Condor Job Monitoring data in between 6:30AM-7:15AM CERN time",
+                titleAttr: "This table is produced with the WMArchive data in between 6:30AM-7:15AM CERN time",
             },
             {
                 className: 'btn btn-light',
@@ -472,20 +542,14 @@ $(document).ready(function () {
             }
         ]
     });
-    $('#input-condor-workflow').on('enterKey', function () {
+    $('#input-sc-task').on('enterKey', function () {
         table.draw();
     });
-    $('#input-condor-wma-req-name').on('enterKey', function () {
-        table.draw();
-    });
-    $('#input-condor-workflow').keyup(function (e) {
+    $('#input-sc-task').keyup(function (e) {
         if (e.key === 'Enter' || e.keyCode === 13) {
             $(this).trigger("enterKey");
         }
     });
-    $('#input-condor-wma-req-name').keyup(function (e) {
-        if (e.key === 'Enter' || e.keyCode === 13) {
-            $(this).trigger("enterKey");
-        }
-    });
+    // Add event listener for opening and closing details
+    table.on('click', 'td.dt-control', showTaskDetails);
 });
