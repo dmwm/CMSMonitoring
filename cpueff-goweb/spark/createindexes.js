@@ -24,6 +24,13 @@ db.condor_detailed.createIndex( { "Workflow": "text", "WmagentRequestName": "tex
 db.sc_task.createIndex( { "_id": 1, "Task": 1 } );
 db.sc_task.createIndex( { "Task": 1 } );
 
+// sc_task_cmsrun_jobtype indexes
+db.sc_task_cmsrun_jobtype.createIndex( { "_id": 1, "Task": 1 } );
+db.sc_task_cmsrun_jobtype.createIndex( { "Task": 1 } );
+db.sc_task_cmsrun_jobtype.createIndex( { "StepName": 1 } );
+db.sc_task_cmsrun_jobtype.createIndex( { "JobType": 1 } );
+db.sc_task_cmsrun_jobtype.createIndex( { "Task": "text", "StepName": "text", "JobType": "text"} );
+
 // sc_task_cmsrun_jobtype_site indexes
 db.sc_task_cmsrun_jobtype_site.createIndex( { "_id": 1, "Task": 1 } );
 db.sc_task_cmsrun_jobtype_site.createIndex( { "Task": 1 } );
