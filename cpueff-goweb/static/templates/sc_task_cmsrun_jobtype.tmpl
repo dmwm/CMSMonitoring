@@ -2,9 +2,8 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <title>CondorMain</title>
+    <title>StepchainTaskCmsrunJobtype</title>
     <link rel="icon" type="image/x-icon" href="/{{.govar_BASE_EP}}/static/img/oc_icon.ico">
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <!-- prepared using https://datatables.net/download/ -->
@@ -32,48 +31,51 @@
         body {
             font-family: 'Trebuchet MS', sans-serif;
         }
+
         /*Special settings to decrease height of SearchBuilder */
         div.dtsb-searchBuilder div.dtsb-titleRow {
             max-height: 0 !important;
         }
+
         .dtsb-criteria {
-            font-size: 12px;!important;
-            max-block-size: 2.5em;!important;
-        }
-        .dtsb-titleRow{
-            height: 0;!important;
-        }
-        div.dtsb-titleRow {
-            height: 0;!important;
-            margin-bottom: 0!important;
+            font-size: small;
+        !important;
+            max-block-size: 2.5em;
+        !important;
         }
 
-        table td {
+        .dtsb-titleRow {
+            height: 0;
+        !important;
+        }
+
+        div.dtsb-titleRow {
+            height: 0;
+        !important;
+            margin-bottom: 0 !important;
+        }
+
+        table.table td {
             font-size: 10px;
         }
 
-        table tr td:nth-child(2) {
-            width: auto;!important;
+        table.table tr td:nth-child(2) {
+            width: auto;
+        !important;
         }
 
-        table tr td:nth-child(4) {
-            min-width: 150px;!important;
-            width: auto;!important;
-            word-break: break-all;
-        }
-        table tr td:nth-child(5) {
-            min-width: 150px;!important;
+        table.table tr td:nth-child(3) {
+            min-width: 200px;!important;
             width: auto;!important;
             word-break: break-all;
         }
 
-        table tr td:nth-child(7) {
-            max-width: 100px;!important;
-            width: auto;!important;
+        table.table tr td:nth-child(n+4):nth-child(-n+5) {
+            font-weight: bold;
         }
 
         /* rest of the columns*/
-        table tr td:nth-child(n+6):nth-child(-n+18) {
+        table.table tr td:nth-child(n+4):nth-child(-n+18) {
             text-align: right;
         }
 
@@ -108,9 +110,9 @@
         var govar_SHORT_URL_REQUEST = {{.govar_SHORT_URL_REQUEST}};
         var govar_SOURCE_DATE = {{.govar_SOURCE_DATE}};
         var govar_VERBOSITY = {{.govar_VERBOSITY}};
-        var govar_CONDOR_MAIN_API_ENDPOINT = {{.govar_CONDOR_MAIN_API_ENDPOINT}};
+        var govar_SC_TASK_CMSRUN_JOBTYPE_API_ENDPOINT = {{.govar_SC_TASK_CMSRUN_JOBTYPE_API_ENDPOINT}};
         var govar_SHORT_URL_API_ENDPOINT = {{.govar_SHORT_URL_API_ENDPOINT}};
-        var govar_CONDOR_EACH_MAIN_DETAILED_API_ENDPOINT = {{.govar_CONDOR_EACH_MAIN_DETAILED_API_ENDPOINT}};
+        var govar_SC_EACH_TASK_DETAILED_API_ENDPOINT = {{.govar_SC_EACH_TASK_DETAILED_API_ENDPOINT}};
     </script>
     <!---------------------------------------------------------------------------------->
 </head>
@@ -122,7 +124,7 @@
             <a class="fa fa-home" style="font-size:18px;" href="/{{.govar_BASE_EP}}">Home</a>
         </div>
         <div class="col-xs-6 col-sm-4 align-self-center">
-            <h4> Condor CPU Efficiency </h4>
+            <h4> StepChain CPU Efficiency : Detailed </h4>
         </div>
         <div class="col-xs-6 col-sm-4 text-right">
             <footer>
@@ -140,16 +142,15 @@
     <div class="row custom-filters">
         <div class="row">
             <div class="col">
-                <input class="form-control" id="input-condor-workflow" type="search"
-                       placeholder="&#128269; Search Workflow <regex or fuzzy> <detailed queries:- add condition> <hit enter to search> "
-                       style="border-width: 3px; background-color: #FFB7001D; font-weight: bold;"
-                />
-                <input class="form-control" id="input-condor-wma-req-name" type="search"
-                       placeholder="&#128269; Search WMAgentRequestName"
+                <input class="form-control" id="input-sc-task" type="search"
+                       placeholder="&#128269; Search Task name <regex or fuzzy> <detailed queries:- add condition> <hit enter to search> "
                        style="border-width: 3px; background-color: #FFB7001D; font-weight: bold;"
                 />
             </div>
         </div>
+    </div>
+    <div class="row">
+        <hr class="rounded">
     </div>
     <table class="go-datatable table table-sm table-bordered table-hover " style="border:3px solid #F0D9DA;">
         <!-- table table-sm-->
@@ -157,44 +158,52 @@
         <tr>
             <th></th>
             <th>Links</th>
-            <th>Type</th>
-            <th>Workflow</th>
-            <th>WMAgent Request Name</th>
-            <th>Cpu Efficiency Outlier</th>
-            <th>Cpu Eff</th>
-            <th>Cpus</th>
-            <th>Cpu Time Hr</th>
-            <th>Wall Clock Hr</th>
-            <th>Core Time Hr</th>
-            <th>Wasted Cpu Time Hr</th>
-            <th>Cpu Eff T1T2</th>
-            <th>Cpus T1T2</th>
-            <th>Cpu Time Hr T1T2</th>
-            <th>Wall Clock Hr T1T2</th>
-            <th>Core Time Hr T1T2</th>
-            <th>Wasted Cpu Time Hr T1T2</th>
+            <th>Task</th>
+            <th>Step Name</th>
+            <th>Job Type</th>
+            <th>Cpu Efficiency</th>
+            <th>Number Of Step</th>
+            <th>Mean Thread</th>
+            <th>Mean Stream</th>
+            <th>Mean Cpu Time Hr</th>
+            <th>Total Cpu Time Hr</th>
+            <th>Mean Job Time Hr</th>
+            <th>Total Job Time Hr</th>
+            <th>Total Thread Job Time Hr</th>
+            <th>Write Total MB</th>
+            <th>Read Total MB</th>
+            <th>Mean Peak Rss</th>
+            <th>Mean Peak VSize</th>
+            <th>Era Count</th>
+            <th>Site Count</th>
+            <th>Acquisition Era</th>
+            <th>Sites</th>
         </tr>
         </thead>
         <tfoot hidden>
         <tr>
             <th></th>
             <th>Links</th>
-            <th>Type</th>
-            <th>Workflow</th>
-            <th>WMAgent Request Name</th>
-            <th>Cpu Efficiency Outlier</th>
-            <th>Cpu Eff</th>
-            <th>Cpus</th>
-            <th>Cpu Time Hr</th>
-            <th>Wall Clock Hr</th>
-            <th>Core Time Hr</th>
-            <th>Wasted Cpu Time Hr</th>
-            <th>Cpu Eff T1T2</th>
-            <th>Cpus T1T2</th>
-            <th>Cpu Time Hr T1T2</th>
-            <th>Wall Clock Hr T1T2</th>
-            <th>Core Time Hr T1T2</th>
-            <th>Wasted Cpu Time Hr T1T2</th>
+            <th>Task</th>
+            <th>Step Name</th>
+            <th>Job Type</th>
+            <th>Cpu Efficiency</th>
+            <th>Number Of Step</th>
+            <th>Mean Thread</th>
+            <th>Mean Stream</th>
+            <th>Mean Cpu Time Hr</th>
+            <th>Total Cpu Time Hr</th>
+            <th>Mean Job Time Hr</th>
+            <th>Total Job Time Hr</th>
+            <th>Total Thread Job Time Hr</th>
+            <th>Write Total MB</th>
+            <th>Read Total MB</th>
+            <th>Mean Peak Rss</th>
+            <th>Mean Peak VSize</th>
+            <th>Era Count</th>
+            <th>Site Count</th>
+            <th>Acquisition Era</th>
+            <th>Sites</th>
         </tr>
         </tfoot>
     </table>
@@ -217,6 +226,6 @@
         type="text/javascript"></script>
 
 <!-- main JS -->
-<script src="/{{.govar_BASE_EP}}/static/js/condor_main.js" type="text/javascript"></script>
+<script src="/{{.govar_BASE_EP}}/static/js/sc_task_cmsrun_jobtype.js" type="text/javascript"></script>
 </body>
 </html>
