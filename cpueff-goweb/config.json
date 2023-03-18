@@ -2,11 +2,11 @@
     "port": 8080,
     "is_test": false,
     "verbose": 0,
-    "env_file": "/etc/secrets/client_env",
+    "env_file": "/Users/ceyhunuzunoglu/projects/cms/CMSMonitoring/cpueff-goweb/client_env",
     "read_timeout": 600,
     "write_timeout": 600,
     "mongo_connection_timeout": 600,
-    "base_endpoint": "cpueff",
+    "base_endpoint": "web/cpueff",
     "collection_names": {
         "sc_task": "sc_task",
         "sc_task_cmsrun": "sc_task_cmsrun",

@@ -64,28 +64,28 @@ Extracted fields calculations from WMArchive `data.steps.performance` object:
 
 - raw `StepName` : step['name']
 - raw `Site` : step['site']
-- raw `NumOfStreams` : step['performance']['cpu']['NumberOfStreams']
-- raw `NumOfThreads` : step['performance']['cpu']['NumberOfThreads']
-- raw `JobCpu` : step['performance']['cpu']['TotalJobCPU']
-- raw `JobTime` : step['performance']['cpu']['TotalJobTime']
+- raw `NumOfStreams` : `step['performance']['cpu']['NumberOfStreams']`
+- raw `NumOfThreads` : `step['performance']['cpu']['NumberOfThreads']`
+- raw `JobCpu` : `step['performance']['cpu']['TotalJobCPU']`
+- raw `JobTime` : `step['performance']['cpu']['TotalJobTime']`
 - `TotalThreadsJobTime` : JobTime * NumOfThreads
-- `AcquisitionEra` : collected list of step['output']['acquisitionEra']
+- `AcquisitionEra` : collected list of `step['output']['acquisitionEra']`
 - `EraLen` : len(AcquisitionEra)
 - `StepsLen` : number of steps in `steps` json array (mostly number of cmsRun[N])
 
-| FIELD                    | EXPLANATION                                                                                                                                                  |
-|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Task**                 | group-by tag. value: WMCore **Task** name                                                                                                                    |
-| **StepName**             | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **cmsRun[N]**                                                             |
-| **JobType**              | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **jobtype**, one of Production, Processing, Merge, LogCollect, Harvesting |
-| **Site**                 | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **site**                                                                  |
-| **AvgCpuEff**            | agg field. value: `sum(JobCpu) / sum(TotalThreadsJobTime) * 100`                                                                                             |
-| **TotalJobs**            | agg field. value: `count` of group-by Task ("and Site" in detail rows)                                                                                       |
-| **NumOfSteps**           | agg field. value: `mean(NumOfSteps)`, in reality it is always same and equals to `NumOfSteps`                                                                |
-| **NumOfCalculatedSteps** | agg field. value: safety check for monitoring result. Calculated `unique count of StemName` of the data                                                      |
-| **NumOfThreads**         | agg field. value: "WallClockHr" is directly from its original value, represents `sum(WallClockHr)`                                                           |
-| **NumOfStreams**         | agg field. value: `mean(NumOfThreads)`, in reality it is always same and equals to `NumOfThreads`                                                            |
-| **AvgJobCpu**            | agg field. value: `sum( (RequestCpus * WallClockHr) - CpuTimeHr)`                                                                                            |
-| **AvgJobTime**           | agg field. value: `sum(JobTime) / count` in group-by of Task ("and Site" in detail rows)                                                                     |
-| **EraLength**            | agg field. value: number of AcquisitionEra, `mean(EraLen)`                                                                                                   |
-| **AcquisitionEra**       | agg field. value: set of AcquisitionEra                                                                                                                      |
+| FIELD                    | EXPLANATION                                                                                                                                                                         |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Task**                 | group-by tag. value: WMCore **Task** name                                                                                                                                           |
+| **StepName**             | [Used only in details row calculations] group-by tag. value: **cmsRun[N]**, WMCore job **step**'name                                                                                |
+| **JobType**              | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **jobtype**, one of Production, Processing, Merge, LogCollect, Harvesting                        |
+| **Site**                 | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **site**                                                                                         |
+| **AvgCpuEff**            | agg field. value: `sum(JobCpu) / sum(TotalThreadsJobTime) * 100`                                                                                                                    |
+| **TotalJobs**            | agg field. value: `count` of group-by Task ("and Site" in detail rows)                                                                                                              |
+| **NumOfSteps**           | agg field. value: `mean(NumOfSteps)`, total number of cmsRuns of a task. In reality it is always same and equals to raw `NumOfSteps` value of ech step.                             |
+| **NumOfCalculatedSteps** | agg field. value: calculated result after group-by `unique count of StepName` of the data. In detail page, it is mostly shown as "1" since mostly each cmsRun runs a single JobType |
+| **NumOfThreads**         | agg field. value: "WallClockHr" is directly from its original value, represents `sum(WallClockHr)`                                                                                  |
+| **NumOfStreams**         | agg field. value: `mean(NumOfThreads)`, in reality it is always same and equals to `NumOfThreads`                                                                                   |
+| **AvgJobCpu**            | agg field. value: `sum( (RequestCpus * WallClockHr) - CpuTimeHr)`                                                                                                                   |
+| **AvgJobTime**           | agg field. value: `sum(JobTime) / count` in group-by of Task ("and Site" in detail rows)                                                                                            |
+| **EraLength**            | agg field. value: number of AcquisitionEra, `mean(EraLen)`                                                                                                                          |
+| **AcquisitionEra**       | agg field. value: set of AcquisitionEra                                                                                                                                             |
