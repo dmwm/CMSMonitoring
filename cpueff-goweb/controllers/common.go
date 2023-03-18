@@ -9,7 +9,6 @@ import (
 	"github.com/dmwm/CMSMonitoring/cpueff-goweb/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"log"
 	"net/http"
 	"sort"
 )
@@ -65,6 +64,5 @@ func GetTierEfficiencies(ctx context.Context, c *gin.Context, mongoCol string) [
 			return iv.TierCpuEff < jv.TierCpuEff
 		}
 	})
-	log.Println(tierCpuEffs)
 	return tierCpuEffs
 }
