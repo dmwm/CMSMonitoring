@@ -10,33 +10,43 @@
             <th style="font-weight: bold;text-align: left;">Step Name</th>
             <th style="font-weight: bold;text-align: left;">Job Type</th>
             <th style="font-weight: bold;text-align: left;">Site</th>
-            <th>Avg Cpu Eff</th>
-            <th>Total Jobs</th>
-            <th>Num Of Steps</th>
-            <th>Num Of Threads</th>
-            <th>Num Of Streams</th>
-            <th>Avg Job Cpu</th>
-            <th>Avg Job Time</th>
-            <th>Era Length</th>
-            <td>Acquisition Era</td>
+            <th style="text-align: right;">Cpu Efficiency</th>
+            <th style="text-align: right;">Number Of Step</th>
+            <th style="text-align: right;">Mean Thread</th>
+            <th style="text-align: right;">Mean Stream</th>
+            <th style="text-align: right;">Mean Cpu Time Hr</th>
+            <th style="text-align: right;">Total Cpu Time Hr</th>
+            <th style="text-align: right;">Mean Job Time Hr</th>
+            <th style="text-align: right;">Total Job Time Hr</th>
+            <th style="text-align: right;">Total Thread Job Time Hr</th>
+            <th style="text-align: right;">Write Total MB</th>
+            <th style="text-align: right;">Read Total MB</th>
+            <th style="text-align: right;">Mean Peak Rss</th>
+            <th style="text-align: right;">Mean Peak VSize</th>
+            <th style="text-align: right;">Acquisition Era</th>
         </tr>
         </thead>
         <tbody>
         {{range .data}}
             <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
                 <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Links}}</td>
-                <td style="text-align: left;font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.StepName}}</td>
-                <td style="text-align: left;font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.JobType}}</td>
-                <td style="text-align: left;font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.Site}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .AvgCpuEff}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.TotalJobs}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.NumOfSteps}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.NumOfThreads}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.NumOfStreams}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .AvgJobCpu}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .AvgJobTime}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.EraLength}}</td>
-                <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.AcquisitionEra}}</td>
+                <td style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.StepName}}</td>
+                <td style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.JobType}}</td>
+                <td style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.Site}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CpuEfficiency}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.NumberOfStep}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.MeanThread}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.MeanStream}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanCpuTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalCpuTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalThreadJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WriteTotalMB}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .ReadTotalMB}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanPeakRss}}</td>
+                <td style="font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanPeakVSize}}</td>
+                <td style="font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.AcquisitionEra}}</td>
             </tr>
         {{end}}
         </tbody>

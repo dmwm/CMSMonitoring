@@ -4,11 +4,13 @@
 
 - Condor CPU Efficiency
     - Source: [HTCondor Job Monitoring](https://cmsmonit-docs.web.cern.ch/cms-htcondor-es/)
-    - Fields: [ClassAds and calculated fields](https://cmsmonit-docs.web.cern.ch/cms-htcondor-es/cms-htcondor-es/)
+    - Input Fields: [ClassAds and calculated fields](https://cmsmonit-docs.web.cern.ch/cms-htcondor-es/cms-htcondor-es/)
     - MONIT OpenSearch: monit-opensearch.cern.ch `monit_prod_condor_raw_metrics`
     - HDFS: `/project/monitoring/archive/condor/raw/metric`
 - StepChain CPU efficiency
-    - Source and fields: [dmwm/WMArchive](https://github.com/dmwm/WMArchive)
+    - Source: [dmwm/WMArchive](https://github.com/dmwm/WMArchive)
+    - Input
+      Fields: [WMArchive performance data structure](https://github.com/dmwm/WMArchive/blob/master/doc/performance-data-structure.md)
     - MONIT OpenSearch: monit-opensearch `monit_prod_wmarchive`
     - HDFS: `/project/monitoring/archive/wmarchive/raw/metric`
 
@@ -56,36 +58,57 @@ Aggregation results over Tier and Type(analysis, production, tier0, test)
 
 ## StepChain CPU efficiency calculations
 
-Filter: `data.meta_data.jobstate='success' AND data.meta_data.jobtype.isin(Production,Processing,Merge,LogCollect,Harvesting)`
-
+- Filter:
+  `data.meta_data.jobstate='success' AND data.meta_data.jobtype.isin(Production,Processing,Merge,LogCollect,Harvesting)`
 - [StepChain Spark Job](../spark/cpueff_stepchain_goweb.py)
+- Input
+  fields: [WMArchive performance data structure](https://github.com/dmwm/WMArchive/blob/master/doc/performance-data-structure.md)
 
-Extracted fields calculations from WMArchive `data.steps.performance` object:
+Extracted fields calculations from WMArchive `data.steps` object:
 
-- raw `StepName` : step['name']
-- raw `Site` : step['site']
-- raw `NumOfStreams` : step['performance']['cpu']['NumberOfStreams']
-- raw `NumOfThreads` : step['performance']['cpu']['NumberOfThreads']
-- raw `JobCpu` : step['performance']['cpu']['TotalJobCPU']
-- raw `JobTime` : step['performance']['cpu']['TotalJobTime']
-- `TotalThreadsJobTime` : JobTime * NumOfThreads
-- `AcquisitionEra` : collected list of step['output']['acquisitionEra']
-- `EraLen` : len(AcquisitionEra)
-- `StepsLen` : number of steps in `steps` json array (mostly number of cmsRun[N])
+| Intermediate Field       | Source                                                                        |
+|--------------------------|-------------------------------------------------------------------------------|
+| `JobType`                | `row['meta_data']['jobtype']`                                                 |
+| `StepName`               | step['name'], cmsRun[N]                                                       |
+| `Site`                   | step['site']                                                                  |
+| `nstreams`               | `step['performance']['cpu']['NumberOfStreams']`                               |
+| `nthreads`               | `step['performance']['cpu']['NumberOfThreads']`                               |
+| `cpu_time`               | `step['performance']['cpu']['TotalJobCPU']` in seconds                        |
+| `job_time`               | `step['performance']['cpu']['TotalJobTime']` in seconds                       |
+| `acquisition_era`        | appended set of `step['output']['acquisitionEra']`                            |
+| `threads_total_job_time` | `job_time * nthreads` in seconds                                              |
+| `write_total_mb`         | `step['performance']['storage']['writeTotalMB']` MB size                      |
+| `read_total_mb`          | `step['performance']['storage']['readTotalMB']` MB size                       |
+| `peak_rss`               | `step['performance']['memory']['PeakValueRss']` (residual sum of squares) RSS |
+| `peak_v_size`            | `step['performance']['memory']['PeakValueVsize']`                             |
+| `era_length`             | len(acquisition_era), number of acquisitions in step list                     |
+| `number_of_steps`        | counted steps in task step list                                               |
 
-| FIELD                    | EXPLANATION                                                                                                                                                  |
-|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Task**                 | group-by tag. value: WMCore **Task** name                                                                                                                    |
-| **StepName**             | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **cmsRun[N]**                                                             |
-| **JobType**              | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **jobtype**, one of Production, Processing, Merge, LogCollect, Harvesting |
-| **Site**                 | [Used only in details row calculations] group-by tag. value: WMCore job **step**'s **site**                                                                  |
-| **AvgCpuEff**            | agg field. value: `sum(JobCpu) / sum(TotalThreadsJobTime) * 100`                                                                                             |
-| **TotalJobs**            | agg field. value: `count` of group-by Task ("and Site" in detail rows)                                                                                       |
-| **NumOfSteps**           | agg field. value: `mean(NumOfSteps)`, in reality it is always same and equals to `NumOfSteps`                                                                |
-| **NumOfCalculatedSteps** | agg field. value: safety check for monitoring result. Calculated `unique count of StemName` of the data                                                      |
-| **NumOfThreads**         | agg field. value: "WallClockHr" is directly from its original value, represents `sum(WallClockHr)`                                                           |
-| **NumOfStreams**         | agg field. value: `mean(NumOfThreads)`, in reality it is always same and equals to `NumOfThreads`                                                            |
-| **AvgJobCpu**            | agg field. value: `sum( (RequestCpus * WallClockHr) - CpuTimeHr)`                                                                                            |
-| **AvgJobTime**           | agg field. value: `sum(JobTime) / count` in group-by of Task ("and Site" in detail rows)                                                                     |
-| **EraLength**            | agg field. value: number of AcquisitionEra, `mean(EraLen)`                                                                                                   |
-| **AcquisitionEra**       | agg field. value: set of AcquisitionEra                                                                                                                      |
+#### Final StepChain Schema
+
+| FIELD                    | EXPLANATION                                                                                                                            |
+|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| **Task**                 | group-by tag. value: WMCore **Task** name                                                                                              |
+| **StepName**             | [Used in details] group-by tag. value: **cmsRun[N]**, WMCore job **step**'name                                                         |
+| **JobType**              | [Used in details] group-by tag. value: WMCore job **step**'s **jobtype**, one of Production, Processing, Merge, LogCollect, Harvesting |
+| **Site**                 | [Used in details] group-by tag. value: WMCore job **step**'s **site**                                                                  |
+| **CpuEfficiency**        | agg field. value: `sum(cpu_time) / sum(threads_total_job_time) * 100`                                                                  |
+| **NumberOfStep**         | agg field. value: `mean(number_of_steps)`, total number of cmsRuns of a task.                                                          |
+| **MeanThread**           | agg field. value: `mean(nthreads)`, in reality it is always equal to `NumberOfThreads`                                                 |
+| **MeanStream**           | agg field. value: `mean(nstreams)`, in reality it is always equal to `NumberOfStreams`                                                 |
+| **MeanCpuTimeHr**        | agg field. value: `mean(cpu_time) / 3600` , average of `TotalJobCPU`(seconds) in hour unit                                             |
+| **TotalCpuTimeHr**       | agg field. value: `sum(cpu_time) / 3600` , sum of `TotalJobCPU`(seconds) in hour unit                                                  |
+| **MeanJobTimeHr**        | agg field. value: `mean(job_time) / 3600` , mean of `TotalJobTime`(seconds) in hour unit                                               |
+| **TotalJobTimeHr**       | agg field. value: `sum(job_time) / 3600` , sum of `TotalJobTime`(seconds) in hour unit                                                 |
+| **TotalThreadJobTimeHr** | agg field. value: `sum(threads_total_job_time) / 3600` , sum of `(TotalJobTime * NumberOfThreads) / 3600`(seconds) in hour unit        |
+| **WriteTotalMB**         | agg field. value: `sum(write_total_mb)`                                                                                                |
+| **ReadTotalMB**          | agg field. value: `sum(read_total_mb)`                                                                                                 |
+| **MeanPeakRss**          | agg field. value: `mean(peak_rss)`                                                                                                     |
+| **MeanPeakVSize**        | agg field. value: `mean(peak_v_size)`                                                                                                  |
+| **AcquisitionEra**       | agg field. value: `acquisition_era` collected list                                                                                     |
+| **EraCount**             | agg field. value: len(AcquisitionEra)                                                                                                  |
+| **SiteCount**            | agg field. value: len(Sites)                                                                                                           |
+
+## Monitoring Aggregation Pipeline
+
+![alt text](pipeline.png "data pipeline")

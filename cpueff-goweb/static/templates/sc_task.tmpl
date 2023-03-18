@@ -36,20 +36,27 @@
         div.dtsb-searchBuilder div.dtsb-titleRow {
             max-height: 0 !important;
         }
+
         .dtsb-criteria {
-            font-size: 12px;!important;
-            max-block-size: 2.5em;!important;
-        }
-        .dtsb-titleRow{
-            height: 0;!important;
-        }
-        div.dtsb-titleRow {
-            height: 0;!important;
-            margin-bottom: 0!important;
+            font-size: small;
+        !important;
+            max-block-size: 2.5em;
+        !important;
         }
 
-        table.table td {
-            font-size: x-small;
+        .dtsb-titleRow {
+            height: 0;
+        !important;
+        }
+
+        div.dtsb-titleRow {
+            height: 0;
+        !important;
+            margin-bottom: 0 !important;
+        }
+
+        table td {
+            font-size: 10px;
         }
 
         table.table tr td:nth-child(2) {
@@ -57,7 +64,7 @@
         }
 
         table.table tr td:nth-child(3) {
-            min-width: 200px;!important;
+            min-width: 150px;!important;
             width: auto;!important;
             word-break: break-all;
         }
@@ -72,7 +79,7 @@
             background-color: white;
             color: black;
             font-family: 'Trebuchet MS', sans-serif;
-            font-size: small;
+            font-size: 10px;
         }
 
         /*Importent to show processing pop-up at the top*/
@@ -109,7 +116,7 @@
 <div style="width: 100%; position: fixed; top: 0; padding: 0;margin: 0;">
     <div class="row">
         <div class="col-xs-6 col-sm-4">
-            <a class="fa fa-home" style="font-size:18px;" href="../">Home</a>
+            <a class="fa fa-home" style="font-size:18px;" href="/{{.govar_BASE_EP}}">Home</a>
         </div>
         <div class="col-xs-6 col-sm-4 align-self-center">
             <h4> StepChain CPU Efficiency </h4>
@@ -142,38 +149,50 @@
     </div>
     <table class="go-datatable table table-sm table-bordered table-hover " style="border:3px solid #F0D9DA;">
         <!-- table table-sm-->
-        <thead style="background-color: #C8D9EB; color: black; font-size: small">
+        <thead style="background-color: #C8D9EB; color: black; font-size: 10px">
         <tr>
             <th></th>
             <th>Links</th>
             <th>Task</th>
-            <th>Avg Cpu Eff</th>
-            <th>Total Jobs</th>
-            <th>Num Of Steps</th>
-            <th>Num Of Calculated Steps</th>
-            <th>Num Of Threads</th>
-            <th>Num Of Streams</th>
-            <th>Avg Job Cpu</th>
-            <th>Avg Job Time</th>
-            <th>Era Length</th>
+            <th>Cpu Efficiency</th>
+            <th>Number Of Step</th>
+            <th>Mean Thread</th>
+            <th>Mean Stream</th>
+            <th>Mean Cpu Time Hr</th>
+            <th>Total Cpu Time Hr</th>
+            <th>Mean Job Time Hr</th>
+            <th>Total Job Time Hr</th>
+            <th>Total Thread Job Time Hr</th>
+            <th>Write Total</th>
+            <th>Read Total</th>
+            <th>Mean Peak Rss</th>
+            <th>Mean Peak VSize</th>
+            <th>Era Count</th>
+            <th>Site Count</th>
             <th>Acquisition Era</th>
         </tr>
         </thead>
         <tfoot hidden>
         <tr>
-            <td></td>
+            <th></th>
             <th>Links</th>
-            <td>Task</td>
-            <td>Avg Cpu Eff</td>
-            <td>Total Jobs</td>
-            <td>Num Of Steps</td>
-            <td>Num Of Calculated Steps</td>
-            <td>Num Of Threads</td>
-            <td>Num Of Streams</td>
-            <td>Avg Job Cpu</td>
-            <td>Avg Job Time</td>
-            <th>Era Length</th>
-            <td>Acquisition Era</td>
+            <th>Task</th>
+            <th>Cpu Efficiency</th>
+            <th>Number Of Step</th>
+            <th>Mean Thread</th>
+            <th>Mean Stream</th>
+            <th>Mean Cpu Time Hr</th>
+            <th>Total Cpu Time Hr</th>
+            <th>Mean Job Time Hr</th>
+            <th>Total Job Time Hr</th>
+            <th>Total Thread Job Time Hr</th>
+            <th>Write Total</th>
+            <th>Read Total</th>
+            <th>Mean Peak Rss</th>
+            <th>Mean Peak VSize</th>
+            <th>Era Count</th>
+            <th>Site Count</th>
+            <th>Acquisition Era</th>
         </tr>
         </tfoot>
     </table>

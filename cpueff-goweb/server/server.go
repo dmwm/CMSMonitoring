@@ -69,24 +69,27 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 	engine.Use(gin.LoggerWithFormatter(middlewareLogFormatter))
 	engine.LoadHTMLGlob("static/templates/*.tmpl")
 
-	// -------------------------------- Root ------------------------------------------------------
-	engine.GET("/", func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(Config.MongoConnectionTimeout)*time.Second)
-		defer cancel()
-		tierCpuEffs := controllers.GetTierEfficiencies(ctx, c, Config.CollectionNames.CondorTiers)
-		c.HTML(http.StatusOK,
-			"index.tmpl",
-			gin.H{
-				"tierEfficiencies": tierCpuEffs,
-				"title":            "Main website",
-				"govar_BASE_EP":    Config.BaseEndpoint,
-			},
-		)
-	})
+	// ------------------------------- /Config.BaseEndpoint/ group -----------------------------------
 
-	// ------------------------------- Config.BaseEndpoint group-----------------------------------
-	e := engine.Group("/" + Config.BaseEndpoint)
+	// Give root path as / and provide ingress/auth-poxy redirection same in Config.BaseEndpoint
+	e := engine.Group("/")
 	{
+		e.GET("/", func(c *gin.Context) {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(Config.MongoConnectionTimeout)*time.Second)
+			defer cancel()
+			dataTimestamp := controllers.GetDataSourceTimestamp(ctx, c, Config.CollectionNames.DatasourceTimestamp)
+			tierCpuEffs := controllers.GetTierEfficiencies(ctx, c, Config.CollectionNames.CondorTiers)
+			c.HTML(http.StatusOK,
+				"index.tmpl",
+				gin.H{
+					"title":                  "Main website",
+					"govar_BASE_EP":          Config.BaseEndpoint,
+					"data_tier_efficiencies": tierCpuEffs,
+					"data_source_time":       dataTimestamp.StartDate + " - " + dataTimestamp.EndDate,
+				},
+			)
+		})
+
 		e.StaticFS("/static", http.Dir("./static"))
 		e.GET("/serverinfo", controllers.ServiceCtrl(GitVersion, ServiceInfo))
 		e.POST("/api/short-url", controllers.ShortUrlParamCtrl(mongoColNames.ShortUrl))
@@ -99,30 +102,40 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 		// Condor Main cpueff page
 		e.GET("/condor-main", controllers.GetCondorMainCpuEfficiencyPage(
 			mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/condor-main",
-			"../"+Config.BaseEndpoint+"/api/condor-main-each-detailed",
-			"../"+Config.BaseEndpoint+"/api/short-url",
+			"/"+Config.BaseEndpoint+"/api/condor-main",
+			"/"+Config.BaseEndpoint+"/api/condor-main-each-detailed",
+			"/"+Config.BaseEndpoint+"/api/short-url",
 			Config.BaseEndpoint,
 		))
 		// Condor Detailed cpueff page
 		e.GET("/condor-detailed", controllers.GetCondorDetailedCpuEfficiencyPage(
 			mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/condor-detailed",
-			"../"+Config.BaseEndpoint+"/api/short-url",
+			"/"+Config.BaseEndpoint+"/api/condor-detailed",
+			"/"+Config.BaseEndpoint+"/api/short-url",
 			Config.BaseEndpoint,
 		))
 		// ---------------------------------------------------------- Stepchain
 		e.POST("/api/sc-task", controllers.ScTaskCtrl(Config))
+		e.POST("/api/sc-task-cmsrun-jobtype", controllers.ScTaskCmsrunJobtypeCtrl(Config))
 		e.POST("/api/sc-task-cmsrun-jobtype-site", controllers.ScTaskCmsrunJobtypeSiteCtrl(Config))
 
-		e.POST("/api/sc-task-each-detailed", controllers.ScTaskEachCmsrunDetailCtrl(Config))
+		e.POST("/api/sc-task-each-detailed", controllers.ScEachSiteDetailCtrl(Config))
 
 		// Stepchain Main Task cpueff page
-		e.GET("/sc-main", controllers.GetStepchainMaiPage(
+		e.GET("/sc-main", controllers.GetScTaskPage(
 			mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/sc-task",
-			"../"+Config.BaseEndpoint+"/api/sc-task-each-detailed",
-			"../"+Config.BaseEndpoint+"/api/short-url",
+			"/"+Config.BaseEndpoint+"/api/sc-task",
+			"/"+Config.BaseEndpoint+"/api/sc-task-each-detailed",
+			"/"+Config.BaseEndpoint+"/api/short-url",
+			Config.BaseEndpoint,
+		))
+
+		// Stepchain Detail TaskCmsrunJobtype cpueff page
+		e.GET("/sc-detail-task-cmsrun-jobtype", controllers.GetScTaskCmsrunJobtypePage(
+			mongoColNames.DatasourceTimestamp,
+			"/"+Config.BaseEndpoint+"/api/sc-task-cmsrun-jobtype",
+			"/"+Config.BaseEndpoint+"/api/sc-task-each-detailed",
+			"/"+Config.BaseEndpoint+"/api/short-url",
 			Config.BaseEndpoint,
 		))
 
@@ -132,12 +145,13 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 		e.GET("/short-url/:id", controllers.GetIndexPageFromShortUrlId(
 			mongoColNames.ShortUrl,
 			mongoColNames.DatasourceTimestamp,
-			"../"+Config.BaseEndpoint+"/api/condor-main",
-			"../"+Config.BaseEndpoint+"/api/condor-detailed",
-			"../"+Config.BaseEndpoint+"/api/condor-main-each-detailed",
-			"../"+Config.BaseEndpoint+"/api/sc-task",
-			"../"+Config.BaseEndpoint+"/api/sc-task-each-detailed",
-			"../"+Config.BaseEndpoint+"/api/short-url",
+			"/"+Config.BaseEndpoint+"/api/condor-main",
+			"/"+Config.BaseEndpoint+"/api/condor-detailed",
+			"/"+Config.BaseEndpoint+"/api/condor-main-each-detailed",
+			"/"+Config.BaseEndpoint+"/api/sc-task",
+			"/"+Config.BaseEndpoint+"/api/sc-task-cmsrun-jobtype",
+			"/"+Config.BaseEndpoint+"/api/sc-task-each-detailed",
+			"/"+Config.BaseEndpoint+"/api/short-url",
 			Config.BaseEndpoint,
 		))
 	}
