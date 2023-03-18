@@ -152,8 +152,9 @@ $(document).ready(function () {
         dom: "iBQplrt", // no main search ("f"), just individual column search
         language: {
             searchBuilder: {
-                clearAll: 'Reset',
-                delete: 'Delete',
+                clearAll: "",
+                delete: "Delete",
+                title: ""
             },
             processing: "Processing ...",
         },
@@ -242,9 +243,9 @@ $(document).ready(function () {
             preDefined: {
                 criteria: [
                     {
-                        data: 'Cpu Eff Outlier',
+                        data: 'Cpu Efficiency Outlier',
                         origData: 'CpuEffOutlier',
-                        condition: '<',
+                        condition: '<=',
                         value: [0]
                     },
                 ]
@@ -306,12 +307,12 @@ $(document).ready(function () {
                     '!between': null,
                 },
                 num: {
-                    // "int" type will have only ">", "<", "between", "null" and "!null" conditions
+                    // "int" type will have only "<=", ">=", "between", "null" and "!null" conditions
                     '=': null,
                     '!=': null,
                     '!between': null,
-                    '<=': null,
-                    '>=': null,
+                    '<': null,
+                    '>': null,
                 },
                 array: {
                     // "array" type will have only "="(has_arr_element), "null", "!null" for STRING ARRAY columns
@@ -326,7 +327,10 @@ $(document).ready(function () {
         },
         columns: [
             {data: "Links", name: 'Links', width: "3%",},
-            {data: "Type", name: 'Type', searchBuilderType: 'wf_type', width: "3%",},
+            {
+                data: "Type", name: 'Type', searchBuilderType: 'wf_type', width: "3%",
+                // Never give default condition, because DataTables sends lots of unnecessary queries each time.
+            },
             {data: "Workflow", searchBuilder: {defaultCondition: "contains"}, width: "5%",},
             {
                 data: "WmagentRequestName",
@@ -338,33 +342,33 @@ $(document).ready(function () {
             {data: "Tier", searchBuilder: {defaultCondition: "contains"}, width: "5%",},
             {
                 data: "CpuEffOutlier",
-                name: 'Cpu Eff Outlier',
+                name: 'Cpu Efficiency Outlier',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%"
             },
             {
                 data: "CpuEff",
-                name: 'Cpu Eff',
+                name: 'Cpu Efficiency',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {
-                    return type === 'display' ? '%'+helperFloatPrecision(data) : data;
+                    return type === 'display' ? helperFloatPrecision(data) +'%': data;
                 },
             },
             {
                 data: "Cpus",
                 name: 'Cpus',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
             },
             {
                 data: "CpuTimeHr",
                 name: 'Cpu Time Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {
                     return type === 'display' ? helperFloatPrecision(data) : data;
@@ -374,7 +378,7 @@ $(document).ready(function () {
                 data: "WallClockHr",
                 name: 'Wall Clock Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {
                     return type === 'display' ? helperFloatPrecision(data) : data;
@@ -384,7 +388,7 @@ $(document).ready(function () {
                 data: "CoreTimeHr",
                 name: 'Core Time Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {
                     return type === 'display' ? helperFloatPrecision(data) : data;
@@ -394,16 +398,18 @@ $(document).ready(function () {
                 data: "WastedCpuTimeHr",
                 name: 'Wasted Cpu Time Hr',
                 searchBuilderType: 'num',
-                searchBuilder: {defaultCondition: ">"},
+                searchBuilder: {defaultCondition: ">="},
                 width: "3%",
                 render: function (data, type, row, meta) {
                     return type === 'display' ? helperFloatPrecision(data) : data;
                 },
             },
-            {data: "Schedds", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="}},
+            {
+                data: "Schedds", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="}},
             {
                 data: "MaxWmagentJobId",
                 name: "Max WMAgent Job Id",
+                searchBuilderType: 'string',
                 searchBuilder: {defaultCondition: "contains"},
                 width: "5%",
             },
@@ -462,14 +468,6 @@ $(document).ready(function () {
                 action: function (e, dt, node, config) {
                     //This will send the page to the location specified
                     window.open("https://github.com/dmwm/CMSMonitoring/tree/master/cpueff-goweb", "_blank");
-                }
-            },
-            {
-                className: 'btn btn-light',
-                text: '<a href="">Examples</a>',
-                action: function (e, dt, node, config) {
-                    //This will send the page to the location specified
-                    window.open("https://github.com/dmwm/CMSMonitoring/tree/master/cpueff-goweb/docs/example_query.md", "_blank");
                 }
             }
         ]

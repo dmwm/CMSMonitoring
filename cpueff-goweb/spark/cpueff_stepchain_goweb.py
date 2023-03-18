@@ -13,12 +13,11 @@ from datetime import date, datetime, timedelta
 
 import click
 import pandas as pd
-from pyspark.sql.functions import (col, collect_set as _collect_set, count as _count, countDistinct, lit, mean as _mean,
-                                   size as _list_size, sum as _sum, )
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType
-
 # CMSSpark modules
 from CMSSpark.spark_utils import get_spark_session, get_candidate_files
+from pyspark.sql.functions import (array_distinct, col, collect_set, flatten, mean as _mean,
+                                   size as _list_size, sum as _sum, when, )
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType, ArrayType
 
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
@@ -27,27 +26,31 @@ pd.set_option("display.max_colwidth", None)
 _DEFAULT_HDFS_FOLDER = "/project/monitoring/archive/wmarchive/raw/metric"
 _VALID_DATE_FORMATS = ["%Y/%m/%d", "%Y-%m-%d", "%Y%m%d"]
 _PROD_CMS_JOB_TYPES_FILTER = ["Production", "Processing", "Merge", "LogCollect", "Harvesting"]
+_HOUR_DENOM = 60 * 60
 
 
 def get_rdd_schema():
     """Final schema of steps"""
     return StructType(
         [
-            StructField('Ts', LongType(), nullable=True),
-            StructField('Task', StringType(), nullable=True),
-            StructField('FwjrId', StringType(), nullable=True),
+            StructField('ts', LongType(), nullable=False),
+            StructField('Task', StringType(), nullable=False),
+            StructField('fwjr_id', StringType(), nullable=True),
             StructField('JobType', StringType(), nullable=True),
             StructField('Site', StringType(), nullable=True),
-            StructField('AcquisitionEra', StringType(), nullable=True),
+            StructField('acquisition_era', ArrayType(StringType(), False), nullable=True),
             StructField('StepName', StringType(), nullable=True),
-            StructField('JobCpu', DoubleType(), nullable=True),
-            StructField('JobTime', DoubleType(), nullable=True),
-            StructField('NumOfStreams', IntegerType(), nullable=True),
-            StructField('NumOfThreads', IntegerType(), nullable=True),
-            StructField('EraLen', IntegerType(), nullable=True),
-            StructField('StepsLen', IntegerType(), nullable=True),
-            StructField('CpuEff', DoubleType(), nullable=True),
-            StructField('TotalThreadsJobTime', DoubleType(), nullable=True),
+            StructField('nstreams', IntegerType(), nullable=True),
+            StructField('nthreads', IntegerType(), nullable=True),
+            StructField('cpu_time', DoubleType(), nullable=True),
+            StructField('job_time', DoubleType(), nullable=True),
+            StructField('threads_total_job_time', DoubleType(), nullable=True),
+            StructField('era_length', IntegerType(), nullable=True),
+            StructField('number_of_steps', IntegerType(), nullable=True),
+            StructField('write_total_mb', DoubleType(), nullable=True),
+            StructField('read_total_mb', DoubleType(), nullable=True),
+            StructField('peak_rss', DoubleType(), nullable=True),
+            StructField('peak_v_size', DoubleType(), nullable=True),
         ]
     )
 
@@ -68,37 +71,43 @@ def udf_step_extract(row):
     if 'steps' in row:
         for step in row['steps']:
             if ('name' in step) and step['name'].lower().startswith('cmsrun'):
-                step_res = {'Task': _task_name, 'Ts': _ts, 'FwjrId': _fwjr_id, 'JobType': _jobtype}
+                step_res = {'Task': _task_name, 'ts': _ts, 'fwjr_id': _fwjr_id, 'JobType': _jobtype}
 
                 count += 1
                 step_res['StepName'] = step['name']
                 step_res['Site'] = step['site']
-                step_res['NumOfStreams'] = step['performance']['cpu']['NumberOfStreams']
-                step_res['NumOfThreads'] = step['performance']['cpu']['NumberOfThreads']
-                step_res['JobCpu'] = step['performance']['cpu']['TotalJobCPU']
-                step_res['JobTime'] = step['performance']['cpu']['TotalJobTime']
-                if step_res['JobCpu'] and step_res['NumOfThreads'] and step_res['JobTime']:
+                step_res['nstreams'] = step['performance']['cpu']['NumberOfStreams']
+                step_res['nthreads'] = step['performance']['cpu']['NumberOfThreads']
+                step_res['cpu_time'] = step['performance']['cpu']['TotalJobCPU']
+                step_res['job_time'] = step['performance']['cpu']['TotalJobTime']
+                step_res['acquisition_era'] = []
+                if step_res['nthreads'] and step_res['cpu_time'] and step_res['job_time']:
                     try:
-                        step_res['CpuEff'] = round(
-                            100 * (step_res['JobCpu'] / step_res['NumOfThreads']) / step_res['JobTime'], 2)
-                        step_res['TotalThreadsJobTime'] = step_res['JobTime'] * step_res['NumOfThreads']
+                        step_res['threads_total_job_time'] = step_res['job_time'] * step_res['nthreads']
                     except Exception:
-                        step_res['CpuEff'] = None
-                        step_res['TotalThreadsJobTime'] = None
-                step_res['AcquisitionEra'] = set()
+                        step_res['threads_total_job_time'] = None
                 if step['output']:
                     for outx in step['output']:
                         if outx['acquisitionEra']:
-                            step_res['AcquisitionEra'].add(outx['acquisitionEra'])
-                if step_res['AcquisitionEra']:
-                    step_res['EraLen'] = len(step_res['AcquisitionEra'])
-                    step_res['AcquisitionEra'] = step_res['AcquisitionEra'].pop()
-                else:
-                    step_res['EraLen'] = 0
-                    step_res['AcquisitionEra'] = None
+                            step_res['acquisition_era'].append(outx['acquisitionEra'])
+                if 'performance' in step:
+                    performance = step['performance']
+                    if 'storage' in performance:
+                        if 'writeTotalMB' in performance['storage']:
+                            step_res['write_total_mb'] = performance['storage']['writeTotalMB']
+                        if 'readTotalMB' in performance['storage']:
+                            step_res['read_total_mb'] = performance['storage']['readTotalMB']
+                    if 'memory' in performance:
+                        if 'PeakValueRss' in performance['memory']:
+                            step_res['peak_rss'] = performance['memory']['PeakValueRss']
+                        if 'PeakValueVsize' in performance['memory']:
+                            step_res['peak_v_size'] = performance['memory']['PeakValueVsize']
+                # Get unique with set operations
+                step_res['acquisition_era'] = list(set(step_res['acquisition_era']))
+                step_res['era_length'] = len(step_res['acquisition_era'])
                 result.append(step_res)
         if result is not None:
-            [r.setdefault("StepsLen", count) for r in result]
+            [r.setdefault("number_of_steps", count) for r in result]
             return result
 
 
@@ -120,7 +129,8 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
 
     mongo_collection_names = (
         "sc_task",
-        "sc_task_cmsrun_jobtype_site"
+        "sc_task_cmsrun_jobtype",
+        "sc_task_cmsrun_jobtype_site",
     )
     # HDFS output dict collection:hdfs path
     hdfs_out_collection_dirs = {c: hdfs_out_dir + "/" + c for c in mongo_collection_names}
@@ -164,41 +174,79 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
 
     df_rdd = df_raw.rdd.flatMap(lambda r: udf_step_extract(r))
     df = spark.createDataFrame(df_rdd, schema=get_rdd_schema()).dropDuplicates().where(
-        col("NumOfStreams").isNotNull()).cache()
+        col("nstreams").isNotNull()).cache()
 
     df_task = (
         df.groupby(["Task"]).agg(
-            (100 * _sum("JobCpu") / _sum("TotalThreadsJobTime")).alias("AvgCpuEff"),
-            _count(lit(1)).alias("TotalJobs"),
-            _mean("StepsLen").alias("NumOfSteps"),
-            countDistinct("StepName").alias("NumOfCalculatedSteps"),
-            _mean("NumOfThreads").alias("NumOfThreads"),
-            _mean("NumOfStreams").alias("NumOfStreams"),
-            (_sum("JobCpu") / _count(lit(1))).alias("AvgJobCpu"),
-            (_sum("JobTime") / _count(lit(1))).alias("AvgJobTime"),
-            _collect_set("AcquisitionEra").alias("AcquisitionEra"),
+            (100 * _sum("cpu_time") / _sum("threads_total_job_time")).alias("CpuEfficiency"),
+            _mean("number_of_steps").alias("NumberOfStep"),
+            _mean("nthreads").alias("MeanThread"),
+            _mean("nstreams").alias("MeanStream"),
+            (_mean("cpu_time") / _HOUR_DENOM).alias("MeanCpuTimeHr"),
+            (_sum("cpu_time") / _HOUR_DENOM).alias("TotalCpuTimeHr"),
+            (_mean("job_time") / _HOUR_DENOM).alias("MeanJobTimeHr"),
+            (_sum("job_time") / _HOUR_DENOM).alias("TotalJobTimeHr"),
+            (_sum("threads_total_job_time") / _HOUR_DENOM).alias("TotalThreadJobTimeHr"),
+            _sum("write_total_mb").alias("WriteTotalMB"),
+            _sum("read_total_mb").alias("ReadTotalMB"),
+            _mean(when(col("peak_rss").isNotNull(), col("peak_rss"))).alias("MeanPeakRss"),
+            _mean(when(col("peak_v_size").isNotNull(), col("peak_v_size"))).alias("MeanPeakVSize"),
+            array_distinct(flatten(collect_set(col("acquisition_era")))).alias("AcquisitionEra"),
+            collect_set("Site").alias("Sites"),
         )
-        .withColumn("EraLength", _list_size(col("AcquisitionEra")))
+        .withColumn("EraCount", _list_size(col("AcquisitionEra")))
+        .withColumn("SiteCount", _list_size(col("Sites")))
         .sort(col("Task"))
+    )
+
+    df_task_cmsrun_jobtype = (
+        df.groupby(["Task", "StepName", "JobType"]).agg(
+            (100 * _sum("cpu_time") / _sum("threads_total_job_time")).alias("CpuEfficiency"),
+            _mean("number_of_steps").alias("NumberOfStep"),
+            _mean("nthreads").alias("MeanThread"),
+            _mean("nstreams").alias("MeanStream"),
+            (_mean("cpu_time") / _HOUR_DENOM).alias("MeanCpuTimeHr"),
+            (_sum("cpu_time") / _HOUR_DENOM).alias("TotalCpuTimeHr"),
+            (_mean("job_time") / _HOUR_DENOM).alias("MeanJobTimeHr"),
+            (_sum("job_time") / _HOUR_DENOM).alias("TotalJobTimeHr"),
+            (_sum("threads_total_job_time") / _HOUR_DENOM).alias("TotalThreadJobTimeHr"),
+            _sum("write_total_mb").alias("WriteTotalMB"),
+            _sum("read_total_mb").alias("ReadTotalMB"),
+            _mean(when(col("peak_rss").isNotNull(), col("peak_rss"))).alias("MeanPeakRss"),
+            _mean(when(col("peak_v_size").isNotNull(), col("peak_v_size"))).alias("MeanPeakVSize"),
+            array_distinct(flatten(collect_set(col("acquisition_era")))).alias("AcquisitionEra"),
+            collect_set("Site").alias("Sites"),
+        )
+        .withColumn("EraCount", _list_size(col("AcquisitionEra")))
+        .withColumn("SiteCount", _list_size(col("Sites")))
+        .sort(col("Task"), col("StepName"), col("JobType"))
     )
 
     df_task_cmsrun_jobtype_site = (
         df.groupby(["Task", "StepName", "JobType", "Site"]).agg(
-            (100 * _sum("JobCpu") / _sum("TotalThreadsJobTime")).alias("AvgCpuEff"),
-            _count(lit(1)).alias("TotalJobs"),
-            _mean("StepsLen").alias("NumOfSteps"),
-            _mean("NumOfThreads").alias("NumOfThreads"),
-            _mean("NumOfStreams").alias("NumOfStreams"),
-            (_sum("JobCpu") / _count(lit(1))).alias("AvgJobCpu"),
-            (_sum("JobTime") / _count(lit(1))).alias("AvgJobTime"),
-            _collect_set("AcquisitionEra").alias("AcquisitionEra"),
+            (100 * _sum("cpu_time") / _sum("threads_total_job_time")).alias("CpuEfficiency"),
+            _mean("number_of_steps").alias("NumberOfStep"),
+            _mean("nthreads").alias("MeanThread"),
+            _mean("nstreams").alias("MeanStream"),
+            (_mean("cpu_time") / _HOUR_DENOM).alias("MeanCpuTimeHr"),
+            (_sum("cpu_time") / _HOUR_DENOM).alias("TotalCpuTimeHr"),
+            (_mean("job_time") / _HOUR_DENOM).alias("MeanJobTimeHr"),
+            (_sum("job_time") / _HOUR_DENOM).alias("TotalJobTimeHr"),
+            (_sum("threads_total_job_time") / _HOUR_DENOM).alias("TotalThreadJobTimeHr"),
+            _sum("write_total_mb").alias("WriteTotalMB"),
+            _sum("read_total_mb").alias("ReadTotalMB"),
+            _mean(when(col("peak_rss").isNotNull(), col("peak_rss"))).alias("MeanPeakRss"),
+            _mean(when(col("peak_v_size").isNotNull(), col("peak_v_size"))).alias("MeanPeakVSize"),
+            array_distinct(flatten(collect_set(col("acquisition_era")))).alias("AcquisitionEra"),
         )
-        .withColumn("EraLength", _list_size(col("AcquisitionEra")))
+        .withColumn("EraCount", _list_size(col("AcquisitionEra")))
         .sort(col("Task"), col("StepName"), col("JobType"), col("Site"))
     )
 
     # Write results to HDFS temporary location
     df_task.write.save(path=hdfs_out_collection_dirs['sc_task'], format=write_format, mode=write_mode)
+    df_task_cmsrun_jobtype.write.save(path=hdfs_out_collection_dirs['sc_task_cmsrun_jobtype'],
+                                      format=write_format, mode=write_mode)
     df_task_cmsrun_jobtype_site.write.save(path=hdfs_out_collection_dirs['sc_task_cmsrun_jobtype_site'],
                                            format=write_format, mode=write_mode)
 
