@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
     <title> CPU Efficiency Monitoring </title>
-    <link rel="shortcut icon" href="/{{.govar_BASE_EP}}/static/img/oc_icon.ico">
+    <link rel="icon" type="image/x-icon" href="/{{.govar_BASE_EP}}/static/img/oc_icon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"
           type="text/css"/>
@@ -45,13 +45,12 @@
         font-size: 5rem;
     }
 
-
     ul {
         min-block-size: 100%;
         min-inline-size: 100%;
         margin-top: 5em;
         box-sizing: border-box;
-        display: grid;
+        /*display: grid;*/
         place-content: center;
         font-family: system-ui, sans-serif;
     }
@@ -61,21 +60,42 @@
         font-family: system-ui, sans-serif;
     }
 
-
-    @media (orientation: landscape) {
-        body {
-            grid-auto-flow: column;
-        }
-    }
-
     ul.no-bullets {
         list-style-type: none;
-        margin: 0;
-        padding: 0;
+        /*margin: 0;*/
+        /*padding: 0;*/
+    }
+
+    .rtable {
+        min-block-size: 100%;
+        min-inline-size: 100%;
+        box-sizing: border-box;
+        place-content: center;
+        /*font-family: system-ui, sans-serif;*/
+    }
+
+    .rtable th {
+        font-size: 11px;
+        text-align: center;
+        background: #f2f0e6;
+        font-family: 'Courier New', monospace;
+    }
+
+    .rtable td {
+        font-family: 'Times New Roman', monospace;
+        font-size: 12px;
+        text-align: right;
+        padding: 2px 2px;
+        border: 2px solid #d9d7ce;
+    }
+
+    .rtable--flip th:not(:last-child),
+    .rtable--flip td:not(:last-child) {
+        /*border-bottom: 0;*/
     }
 
     .image_block {
-        width: 50%;
+        width: 80%;
         /*bottom: 0;*/
         margin: auto;
         display: block;
@@ -84,53 +104,17 @@
     .div_img {
         width: 100%;
         display: block;
-        bottom: 0;
-        position: absolute;
+        /*bottom: 0;*/
+        /*position: absolute;*/
     }
 
-    .rtable th {
-        font-size: 11px;
-        text-align: left;
-        background: #f2f0e6;
+    footer {
+        text-align: center;
+        padding: 3px;
+        background-color: ghostwhite;
+        font-family: 'Trebuchet MS', sans-serif;
     }
 
-    .rtable th,
-    .rtable td {
-        text-align: right;
-        padding: 6px 12px;
-        border: 2px solid #d9d7ce;
-    }
-
-    .rtable--flip {
-        display: flex;
-        overflow: hidden;
-        background: none;
-    }
-
-    .rtable--flip thead {
-        display: flex;
-        flex-shrink: 0;
-        min-width: min-content;
-    }
-
-    .rtable--flip tbody {
-        display: flex;
-        position: relative;
-        overflow-x: auto;
-        overflow-y: hidden;
-    }
-
-    .rtable--flip tr {
-        display: flex;
-        flex-direction: column;
-        min-width: min-content;
-        flex-shrink: 0;
-    }
-
-    .rtable--flip th:not(:last-child),
-    .rtable--flip td:not(:last-child) {
-        border-bottom: 0;
-    }
 </style>
 <body>
 
@@ -142,71 +126,116 @@
                  width="100" height="100">
         </div>
         <div class="col-xs-6 col-sm-4 align-self-center">
-            <h2> CMS Monitoring - CPU Efficiency </h2>
+            <h2> CPU Efficiency Monitoring </h2>
         </div>
         <div class="col-xs-6 col-sm-4 text-right">
-            <footer>
-                <img alt="CERN CMS O&C"
-                     src="/{{.govar_BASE_EP}}/static/img/oc_icon.png"
-                     style="text-align: right;"
-                     width="100" height="100">
-            </footer>
+            <img alt="CERN CMS O&C"
+                 src="/{{.govar_BASE_EP}}/static/img/oc_icon.png"
+                 style="text-align: right;"
+                 width="100" height="100">
         </div>
     </div>
 </div>
 
-<div>
-    <ul class="no-bullets" style="margin-top: 10em">
-        <li><a class="hover-class" style="font-size: 25px;" href="./{{.govar_BASE_EP}}/condor-main">Condor CPU
-                Efficiency
-                Table</a></li>
-        <li><a class="hover-class" style="font-size: 25px;" href="./{{.govar_BASE_EP}}/sc-main">Stepchain CPU Efficiency
-                Table</a></li>
-        <li><a class="hover-class" style="font-size: 25px;" href="./{{.govar_BASE_EP}}/condor-detailed">Condor CPU
-                Efficiency Table -
-                All Detailed</a>
-        </li>
-        <div>
-            <h5>Condor Tiers CPU Efficiency</h5>
-            <table id="tiers" class="rtable">
-                <thead>
-                <tr>
-                    <th>Tier</th>
-                    <th>Type</th>
-                    <th>Tier Cpu Eff</th>
-                    <th>Tier Cpus</th>
-                    <th>Tier Cpu Time Hr</th>
-                    <th>Tier Wall Clock Hr</th>
-                </tr>
-                </thead>
-                <tbody>
-                {{range .tierEfficiencies}}
-                    {{ if eq .Type "production" }}
-                        <tr style="background-color: rgba(255,127,80,0.07); font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
-                    {{else}}
-                        <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
-                    {{ end }}
-                    <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Tier}}</td>
-                    <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Type}}</td>
-                    <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TierCpuEff}}</td>
-                    <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.0f" .TierCpus }}</td>
-                    <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.0f" .TierCpuTimeHr}}</td>
-                    <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.0f" .TierWallClockHr}}</td>
-                    </tr>
-                {{end}}
-                </tbody>
-            </table>
-        </div>
+<div class="container">
+    <div class="row">
+        <div class="col-2">
 
-        <div class="div_img">
-            <a style="text-align: center; margin: auto; display: block;"
-               href="https://github.com/dmwm/CMSMonitoring/blob/master/cpueff-goweb">
-                CMSMonitoring/cpueff-goweb</a>
-            <img alt="Pipeline" class="image_block" src="/{{.govar_BASE_EP}}/static/img/pipeline.png">
         </div>
-    </ul>
+        <div class="col-8">
+            <ul class="no-bullets" style="margin-top: 7em; text-align: center">
+                <li>
+                    <a class="hover-class" style="font-size: 20px;" href="/{{.govar_BASE_EP}}/condor-main">
+                        <img width="20px" height="20px" sizes="" alt="CERN CMS O&C"
+                             src="/{{.govar_BASE_EP}}/static/img/cpu.svg">
+                        Condor CPU Efficiency Table
+                    </a>
+                </li>
+                <li>
+                    <a class="hover-class" style="font-size: 20px;" href="/{{.govar_BASE_EP}}/condor-detailed">
+                        <img width="20px" height="20px" sizes="" alt="CERN CMS O&C"
+                             src="/{{.govar_BASE_EP}}/static/img/cpu.svg">
+                        Condor CPU Efficiency Table : Detailed
+                    </a>
+                </li>
+                <li>
+                    <a class="hover-class" style="font-size: 20px; " href="/{{.govar_BASE_EP}}/stepchain-main">
+                        <img width="20px" height="20px" sizes="" alt="CERN CMS O&C"
+                             src="/{{.govar_BASE_EP}}/static/img/cpu.svg">
+                        Stepchain CPU Efficiency Table
+                    </a>
+                </li>
+                <li>
+                    <a class="hover-class" style="font-size: 20px;"
+                       href="/{{.govar_BASE_EP}}/stepchain-detailed">
+                        <img width="20px" height="20px" sizes="" alt="CERN CMS O&C"
+                             src="/{{.govar_BASE_EP}}/static/img/cpu.svg">
+                        Stepchain CPU Efficiency Table : Detailed
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+        <div class="col-2">
+
+        </div>
+    </div>
 </div>
 
 
+<div class="container" style="margin-top: 2em">
+    <div class="row">
+        <div class="col-2">
+
+        </div>
+        <div class="col-8">
+            <div>
+                <h7 style="text-align: center; display: block;font-family: 'Courier New', monospace;">
+                    Condor Tiers CPU Efficiencies
+                    [ {{ .data_source_time}} ]
+                </h7>
+                <table id="tiers" class="rtable">
+                    <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Type</th>
+                        <th>Tier Cpu Eff</th>
+                        <th>Tier Cpus</th>
+                        <th>Tier Cpu Time Hr</th>
+                        <th>Tier Wall Clock Hr</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{range .data_tier_efficiencies}}
+                        {{ if eq .Type "production" }}
+                            <tr style="background-color: rgba(255,127,80,0.07);  ">
+                        {{else}}
+                            <tr >
+                        {{ end }}
+                        <td>{{.Tier}}</td>
+                        <td>{{.Type}}</td>
+                        <td>{{printf "%.2f" .TierCpuEff}} %</td>
+                        <td>{{printf "%.0f" .TierCpus }}</td>
+                        <td>{{printf "%.0f" .TierCpuTimeHr}}</td>
+                        <td>{{printf "%.0f" .TierWallClockHr}}</td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</div>
+
 </body>
+<footer style="bottom:0; position:absolute;">
+
+    <p>2023 CMS Monitoring&Analytics &copy;
+        <a target="_blank" href="https://github.com/dmwm/CMSMonitoring/blob/master/cpueff-goweb">
+            dmwm/CMSMonitoring/cpueff-goweb
+        </a>
+    </p>
+</footer>
+
 </html>

@@ -67,38 +67,75 @@ type CondorMainEachDetailedRequest struct {
 type StepchainTask struct {
 	Links                template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
 	Task                 string        `bson:"Task,omitempty" validate:"required"`
-	AvgCpuEff            float64       `bson:"AvgCpuEff,omitempty" validate:"required"`
-	TotalJobs            float64       `bson:"TotalJobs,omitempty" validate:"required"`
-	NumOfSteps           float64       `bson:"NumOfSteps,omitempty" validate:"required"`
-	NumOfCalculatedSteps float64       `bson:"NumOfCalculatedSteps" validate:"required"`
-	NumOfThreads         float64       `bson:"NumOfThreads,omitempty" validate:"required"`
-	NumOfStreams         float64       `bson:"NumOfStreams,omitempty" validate:"required"`
-	AvgJobCpu            float64       `bson:"AvgJobCpu,omitempty" validate:"required"`
-	AvgJobTime           float64       `bson:"AvgJobTime,omitempty" validate:"required"`
-	EraLength            float64       `bson:"EraLength,omitempty" validate:"required"`
-	AcquisitionEra       StringArray   `bson:"AcquisitionEra,omitempty" validate:"required"`
+	CpuEfficiency        float64       `bson:"CpuEfficiency,omitempty" validate:"required"`
+	NumberOfStep         float64       `bson:"NumberOfStep,omitempty" validate:"required"`
+	MeanThread           float64       `bson:"MeanThread" validate:"required"`
+	MeanStream           float64       `bson:"MeanStream,omitempty" validate:"required"`
+	MeanCpuTimeHr        float64       `bson:"MeanCpuTimeHr,omitempty" validate:"required"`
+	TotalCpuTimeHr       float64       `bson:"TotalCpuTimeHr,omitempty" validate:"required"`
+	MeanJobTimeHr        float64       `bson:"MeanJobTimeHr,omitempty" validate:"required"`
+	TotalJobTimeHr       float64       `bson:"TotalJobTimeHr,omitempty" validate:"required"`
+	TotalThreadJobTimeHr float64       `bson:"TotalThreadJobTimeHr,omitempty"`
+	WriteTotalMB         float64       `bson:"WriteTotalMB,omitempty"`
+	ReadTotalMB          float64       `bson:"ReadTotalMB,omitempty"`
+	MeanPeakRss          float64       `bson:"MeanPeakRss,omitempty"`
+	MeanPeakVSize        float64       `bson:"MeanPeakVSize,omitempty"`
+	EraCount             float64       `bson:"EraCount,omitempty"`
+	SiteCount            float64       `bson:"SiteCount,omitempty"`
+	AcquisitionEra       StringArray   `bson:"AcquisitionEra,omitempty"`
 }
 
-// StepchainTaskCmsrunJobtypeSite Stepchain task, cmsrun, jobtype and step level cpu efficiency entry
-type StepchainTaskCmsrunJobtypeSite struct {
-	Links          template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
-	Task           string        `bson:"Task,omitempty" validate:"required"`
-	StepName       string        `bson:"StepName,omitempty" validate:"required"`
-	JobType        string        `bson:"JobType,omitempty" validate:"required"`
-	Site           string        `bson:"Site,omitempty" validate:"required"`
-	AvgCpuEff      float64       `bson:"AvgCpuEff,omitempty" validate:"required"`
-	TotalJobs      float64       `bson:"TotalJobs,omitempty" validate:"required"`
-	NumOfSteps     float64       `bson:"NumOfSteps,omitempty" validate:"required"`
-	NumOfThreads   float64       `bson:"NumOfThreads,omitempty" validate:"required"`
-	NumOfStreams   float64       `bson:"NumOfStreams,omitempty" validate:"required"`
-	AvgJobCpu      float64       `bson:"AvgJobCpu,omitempty" validate:"required"`
-	AvgJobTime     float64       `bson:"AvgJobTime,omitempty" validate:"required"`
-	EraLength      float64       `bson:"EraLength,omitempty" validate:"required"`
-	AcquisitionEra StringArray   `bson:"AcquisitionEra,omitempty" validate:"required"`
+// StepchainTaskWithCmsrunJobtype Stepchain task, cmsrun, jobtype level cpu efficiency entry
+type StepchainTaskWithCmsrunJobtype struct {
+	Links                template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
+	Task                 string        `bson:"Task,omitempty" validate:"required"`
+	StepName             string        `bson:"StepName,omitempty" validate:"required"`
+	JobType              string        `bson:"JobType,omitempty" validate:"required"`
+	CpuEfficiency        float64       `bson:"CpuEfficiency,omitempty" validate:"required"`
+	NumberOfStep         float64       `bson:"NumberOfStep,omitempty" validate:"required"`
+	MeanThread           float64       `bson:"MeanThread" validate:"required"`
+	MeanStream           float64       `bson:"MeanStream,omitempty" validate:"required"`
+	MeanCpuTimeHr        float64       `bson:"MeanCpuTimeHr,omitempty" validate:"required"`
+	TotalCpuTimeHr       float64       `bson:"TotalCpuTimeHr,omitempty" validate:"required"`
+	MeanJobTimeHr        float64       `bson:"MeanJobTimeHr,omitempty" validate:"required"`
+	TotalJobTimeHr       float64       `bson:"TotalJobTimeHr,omitempty" validate:"required"`
+	TotalThreadJobTimeHr float64       `bson:"TotalThreadJobTimeHr,omitempty"`
+	WriteTotalMB         float64       `bson:"WriteTotalMB,omitempty"`
+	ReadTotalMB          float64       `bson:"ReadTotalMB,omitempty"`
+	MeanPeakRss          float64       `bson:"MeanPeakRss,omitempty"`
+	MeanPeakVSize        float64       `bson:"MeanPeakVSize,omitempty"`
+	EraCount             float64       `bson:"EraCount,omitempty"`
+	SiteCount            float64       `bson:"SiteCount,omitempty"`
+	AcquisitionEra       StringArray   `bson:"AcquisitionEra,omitempty"`
+	Sites                StringArray   `bson:"Sites,omitempty"`
 }
 
-// ScTaskEachDetailedRequest accepts Task name and returns this Task's details
-type ScTaskEachDetailedRequest struct {
+// StepchainTaskWithCmsrunJobtypeSite Stepchain task, cmsrun, jobtype and step level cpu efficiency entry
+type StepchainTaskWithCmsrunJobtypeSite struct {
+	Links                template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
+	Task                 string        `bson:"Task,omitempty" validate:"required"`
+	StepName             string        `bson:"StepName,omitempty" validate:"required"`
+	JobType              string        `bson:"JobType,omitempty" validate:"required"`
+	Site                 string        `bson:"Site,omitempty" validate:"required"`
+	CpuEfficiency        float64       `bson:"CpuEfficiency,omitempty" validate:"required"`
+	NumberOfStep         float64       `bson:"NumberOfStep,omitempty" validate:"required"`
+	MeanThread           float64       `bson:"MeanThread" validate:"required"`
+	MeanStream           float64       `bson:"MeanStream,omitempty" validate:"required"`
+	MeanCpuTimeHr        float64       `bson:"MeanCpuTimeHr,omitempty" validate:"required"`
+	TotalCpuTimeHr       float64       `bson:"TotalCpuTimeHr,omitempty" validate:"required"`
+	MeanJobTimeHr        float64       `bson:"MeanJobTimeHr,omitempty" validate:"required"`
+	TotalJobTimeHr       float64       `bson:"TotalJobTimeHr,omitempty" validate:"required"`
+	TotalThreadJobTimeHr float64       `bson:"TotalThreadJobTimeHr,omitempty"`
+	WriteTotalMB         float64       `bson:"WriteTotalMB,omitempty"`
+	ReadTotalMB          float64       `bson:"ReadTotalMB,omitempty"`
+	MeanPeakRss          float64       `bson:"MeanPeakRss,omitempty"`
+	MeanPeakVSize        float64       `bson:"MeanPeakVSize,omitempty"`
+	EraCount             float64       `bson:"EraCount,omitempty"`
+	AcquisitionEra       StringArray   `bson:"AcquisitionEra,omitempty"`
+}
+
+// StepchainRowDetailRequest accepts Task name and returns this Task's details
+type StepchainRowDetailRequest struct {
 	Task     string `json:"Task" validate:"required" binding:"required"`
 	StepName string `json:"StepName"` // should not be required
 	JobType  string `json:"JobType"`  // should not be required

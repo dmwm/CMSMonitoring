@@ -1,0 +1,64 @@
+<!-- Copyright (c) 2023 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>* -->
+
+<div>
+    <table class="site-details-table table table-condensed" id="sc-site-detail-row-table"
+           style="background-color: white; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;
+           border:4px solid black;">
+        <thead>
+        <tr>
+            <th></th>
+            <th style="font-weight: bold;text-align: left;">Step Name</th>
+            <th style="font-weight: bold;text-align: left;">Job Type</th>
+            <th style="font-weight: bold;text-align: left;">Site</th>
+            <th style="color: blue ;text-align: right;">Cpu Efficiency</th>
+            <th style="text-align: right;">Number Of Step</th>
+            <th style="text-align: right;">Mean Thread</th>
+            <th style="text-align: right;">Mean Stream</th>
+            <th style="text-align: right;">Mean Cpu Time Hr</th>
+            <th style="text-align: right;">Total Cpu Time Hr</th>
+            <th style="text-align: right;">Mean Job Time Hr</th>
+            <th style="text-align: right;">Total Job Time Hr</th>
+            <th style="text-align: right;">Total Thread Job Time Hr</th>
+            <th style="text-align: right;">Write Total MB</th>
+            <th style="text-align: right;">Read Total MB</th>
+            <th style="text-align: right;">Mean Peak Rss</th>
+            <th style="text-align: right;">Mean Peak VSize</th>
+            <th style="text-align: right;">Acquisition Era</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range $index, $e := .data}}
+            <tr style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">
+                <th style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{addTmplF $index 1}}</th>
+                <td style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.StepName}}</td>
+                <td style="text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.JobType}}</td>
+                <td style="color:red; text-align: left;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.Site}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CpuEfficiency}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.NumberOfStep}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.MeanThread}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.MeanStream}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanCpuTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalCpuTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .TotalThreadJobTimeHr}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WriteTotalMB}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .ReadTotalMB}}</td>
+                <td style="text-align: right;font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanPeakRss}}</td>
+                <td style="font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .MeanPeakVSize}}</td>
+                <td style="font-size: x-small;font-family: 'Trebuchet MS', sans-serif;">{{.AcquisitionEra}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</div>
+<script>
+    // To be able to expand/collapse multiple rows, each datatable ID should be different
+    random_detailed_id_str = Math.random().toString(36).slice(-10)
+    document.getElementById("sc-site-detail-row-table").setAttribute("id", random_detailed_id_str);
+    var siteDetailsTable = $('#' + random_detailed_id_str).DataTable({
+        dom: "t",
+        pageLength: 500,
+        order: [[0, 'asc']],
+    })
+</script>

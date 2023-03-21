@@ -37,6 +37,10 @@ using JQuery [datatables](https://datatables.net/).
 - [Calculations](docs/aggregations.md)
 - [Short URL implementation](docs/short_url.md)
 
+### Pipeline
+
+![alt text](docs/pipeline.png "data pipeline")
+
 ###### Bug Report & Contribution
 
 Please open [GitHub issue](https://github.com/dmwm/CMSMonitoring/issues)

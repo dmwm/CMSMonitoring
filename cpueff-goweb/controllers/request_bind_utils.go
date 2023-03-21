@@ -51,9 +51,9 @@ func bindRequest(c *gin.Context, req interface{}) (any, error) {
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
 		utils.InfoLogV2("incoming request body bind to: %s", "CondorMainEachDetailedRequest")
 		return r, err
-	case models.ScTaskEachDetailedRequest:
+	case models.StepchainRowDetailRequest:
 		err := c.ShouldBindBodyWith(&r, binding.JSON)
-		utils.InfoLogV2("incoming request body bind to: %s", "ScTaskEachDetailedRequest")
+		utils.InfoLogV2("incoming request body bind to: %s", "StepchainRowDetailRequest")
 		return r, err
 	default:
 		utils.ErrorLog("unknown request struct, it did not match: %#v", req)
