@@ -21,6 +21,7 @@ type SearchBuilderRequest struct {
 	InputCondorWorkflow   string           `json:"inputCondorWorkflow,omitempty"`   // Main search bar entry for wf
 	InputCondorWmaReqName string           `json:"inputCondorWmaReqName,omitempty"` // Main search bar entry for WMAgent_RequestName
 	InputScTask           string           `json:"inputScTask,omitempty"`           // Main search bar entry for SC task name
+	InputScSite           string           `json:"inputScSite,omitempty"`           // Main search bar entry for SC task name
 }
 
 // SingleCriteria condition object of SearchBuilderRequest
@@ -51,6 +52,8 @@ func (r *SearchBuilderRequest) GetPrettyURL() string {
 		prettyUrl += "wmareq:" + r.InputCondorWmaReqName + "+"
 	} else if r.InputScTask != "" {
 		prettyUrl += "task:" + r.InputScTask + "+"
+	} else if r.InputScSite != "" {
+		prettyUrl += "site:" + r.InputScSite + "+"
 	}
 	for _, c := range r.Criteria {
 		prettyUrl = prettyUrl +

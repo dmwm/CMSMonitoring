@@ -266,6 +266,8 @@ $(document).ready(function () {
                     // User did not create SearchBuilder query, so set the request holder variable as null
                     sbRequest = {};
                 }
+
+                // SearchBuilder set values from INPUT for Workflow and WMAgent_RequestName
                 sbRequest.inputCondorWorkflow = $("#input-condor-workflow").val();
                 sbRequest.inputCondorWmaReqName = $("#input-condor-wma-req-name").val();
                 // Add SearchBuilder JSON object to DataTable main request

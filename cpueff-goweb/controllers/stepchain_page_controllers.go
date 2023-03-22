@@ -20,8 +20,8 @@ var (
 
 // --------------------------- Stepchain Main Controller Functions ------------------------------------------
 
-// StepchainMainCtrl direct API: controller of Task
-func StepchainMainCtrl(configs models.Configuration) gin.HandlerFunc {
+// StepchainMainPageCtrl direct API: controller of Task
+func StepchainMainPageCtrl(configs models.Configuration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// We need to provide models.DataTableSearchBuilderRequest to the controller initializer and use same type in casting
 		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
@@ -85,10 +85,10 @@ func utilScTaskAddExternalLinks(cpuEffs []models.StepchainTask, dataTimestamp mo
 	}
 }
 
-// ----------------------------------------------------------------------------------------------------------------
+// --------------------------- Stepchain Detailed(Task+Cmsrun+Jobtype) Controller Functions ------------------------------------------
 
-// StepchainDetailedCtrl direct API: controller of TaskCmsrunJobtype (each of them grouped by, so includes group-by columns)
-func StepchainDetailedCtrl(configs models.Configuration) gin.HandlerFunc {
+// StepchainDetailedPageCtrl direct API: controller of TaskCmsrunJobtype (each of them grouped by, so includes group-by columns)
+func StepchainDetailedPageCtrl(configs models.Configuration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// We need to provide models.DataTableCustomRequest to the controller initializer and use same type in casting
 		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
@@ -98,8 +98,6 @@ func StepchainDetailedCtrl(configs models.Configuration) gin.HandlerFunc {
 		return
 	}
 }
-
-// [Stepchain Task+Cmsrun+Jobtype controller utils] -------------------------------------------
 
 // getStepchainTaskCmsrunJobtypeResults get query results efficiently
 func getStepchainTaskCmsrunJobtypeResults(ctx context.Context, c *gin.Context, configs models.Configuration, req models.DataTableRequest) models.DatatableBaseResponse {
@@ -153,6 +151,59 @@ func utilScTaskCmsrunJobtypeExternalLinks(cpuEffs []models.StepchainTaskWithCmsr
 		cpuEffs[i].Links = template.HTML(replacer.Replace(links.LinkReqMgr + " - " + links.LinkEsWmarchive))
 	}
 }
+
+// --------------------------- Stepchain SiteDetailed(Task+Cmsrun+Jobtype+Site) Controller Functions ------------------------------------------
+
+// StepchainSiteDetailedPageCtrl direct API: controller of TaskCmsrunJobtypeSite (each of them grouped by, so includes group-by columns)
+func StepchainSiteDetailedPageCtrl(configs models.Configuration) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// We need to provide models.DataTableCustomRequest to the controller initializer and use same type in casting
+		ctx, cancel, req := InitializeCtxAndBindRequestBody(c, models.DataTableRequest{})
+		defer cancel()
+
+		c.JSON(http.StatusOK, getStepchainTaskCmsrunJobtypeSiteResults(ctx, c, configs, req.(models.DataTableRequest)))
+		return
+	}
+}
+
+// getStepchainTaskCmsrunJobtypeSiteResults get query results efficiently
+func getStepchainTaskCmsrunJobtypeSiteResults(ctx context.Context, c *gin.Context, configs models.Configuration, req models.DataTableRequest) models.DatatableBaseResponse {
+	collection := mymongo.GetCollection(configs.CollectionNames.ScTaskCmsrunJobtypeSite)
+	var cpuEffs []models.StepchainTaskWithCmsrunJobtypeSite
+
+	// Should use SearchBuilderRequest query
+	searchQuery := mymongo.SearchQueryForSearchBuilderRequest(&req.SearchBuilderRequest, models.Stepchain)
+	sortQuery := mymongo.SortQueryBuilder(&req, stepchainUniqueSortColumn)
+	length := req.Length
+	skip := req.Start
+	cursor, err := mymongo.GetFindQueryResults(ctx, collection, searchQuery, sortQuery, skip, length)
+	if err != nil {
+		utils.ErrorResponse(c, "Find query failed", err, "")
+	}
+	if err = cursor.All(ctx, &cpuEffs); err != nil {
+		utils.ErrorResponse(c, "stepchain task-cmsrun-jobtype-site cpu eff cursor failed", err, "")
+	}
+
+	// Get processed data time period: start date and end date that
+	dataTimestamp := GetDataSourceTimestamp(ctx, c, configs.CollectionNames.DatasourceTimestamp)
+
+	// Add Links of other services for the workflow/task to the 'Links' column
+	utilScTaskCmsrunJobtypeSiteExternalLinks(cpuEffs, dataTimestamp, configs.ExternalLinks)
+
+	totalRecCount := getScFilteredCount(ctx, c, collection, searchQuery, req.Draw)
+	if totalRecCount < 0 {
+		utils.ErrorResponse(c, "getFilteredCount cursor failed", err, "datatables draw value cannot be less than 1, it is: "+string(rune(req.Draw)))
+	}
+	filteredRecCount := totalRecCount
+	return models.DatatableBaseResponse{
+		Draw:            req.Draw,
+		RecordsTotal:    totalRecCount,
+		RecordsFiltered: filteredRecCount,
+		Data:            cpuEffs,
+	}
+}
+
+// ------------------------------- Common utils -----------------------------------------------------------------------
 
 // getScFilteredCount total document count of the filter result in the stepchain DBs
 func getScFilteredCount(ctx context.Context, c *gin.Context, collection *mongo.Collection, query bson.M, draw int) int64 {

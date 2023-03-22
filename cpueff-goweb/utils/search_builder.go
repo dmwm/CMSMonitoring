@@ -228,6 +228,9 @@ func GetSearchBuilderBson(sb *models.SearchBuilderRequest, sourceService string)
 		if sb.InputScTask != "" {
 			andQuery = append(andQuery, bson.M{"Task": primitive.Regex{Pattern: sb.InputScTask, Options: "im"}})
 		}
+		if sb.InputScSite != "" {
+			andQuery = append(andQuery, bson.M{"Site": primitive.Regex{Pattern: sb.InputScSite, Options: "im"}})
+		}
 	}
 	// Rest of search builder
 	for _, condition := range sb.Criteria {

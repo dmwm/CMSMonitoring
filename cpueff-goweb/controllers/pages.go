@@ -111,12 +111,36 @@ func GetScTaskCmsrunJobtypePage(collectionName, scTaskCmsrunJobtypeApiEP, scTask
 	}
 }
 
+// GetScTaskCmsrunJobtypeSitePage serves stepchain_task_site_detailed.tmpl page
+func GetScTaskCmsrunJobtypeSitePage(collectionName, scTaskCmsrunJobtypeSiteApiEP, shortUrlApiEP, baseEP string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), mymongo.Timeout)
+		defer cancel()
+		// get source data creation time
+		dataTimestamp := GetDataSourceTimestamp(ctx, c, collectionName)
+		c.HTML(
+			http.StatusOK,
+			"stepchain_task_site_detailed.tmpl",
+			gin.H{
+				"govar_VERBOSITY":    utils.Verbose,
+				"govar_IS_SHORT_URL": false,
+				"govar_SOURCE_DATE":  dataTimestamp.StartDate + " - " + dataTimestamp.EndDate,
+				"govar_SC_TASK_CMSRUN_JOBTYPE_SITE_API_ENDPOINT": scTaskCmsrunJobtypeSiteApiEP,
+				"govar_SHORT_URL_API_ENDPOINT":                   shortUrlApiEP,
+				"govar_BASE_EP":                                  baseEP,
+			},
+		)
+		return
+	}
+}
+
 // ------------------------------------------------------------------ Common
 
 // GetIndexPageFromShortUrlId controller that returns page from short url hash id
 func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampCollectionName,
 	condorMainApiEP, condorDetailedApiEP, condorMainEachDetailedApiEP,
-	scTaskApiEP, ScTaskCmsrunJobtypeApiEP, scTaskEachCmsrunDetailsApiEP, scCmsrunEachSiteDetailsApiEP,
+	scTaskApiEP, ScTaskCmsrunJobtypeApiEP, scTaskCmsrunJobtypeSiteApiEP,
+	scTaskEachCmsrunDetailsApiEP, scCmsrunEachSiteDetailsApiEP,
 	shortUrlApiEP, baseEP string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var templateName string
@@ -140,6 +164,8 @@ func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampColle
 			templateName = "stepchain_task.tmpl"
 		case "stepchain-detailed":
 			templateName = "stepchain_task_detailed.tmpl"
+		case "stepchain-site-detailed":
+			templateName = "stepchain_task_site_detailed.tmpl"
 		default:
 			utils.ErrorLog("No Page definition found in Short Url request: " + shortUrlObj.Page)
 			return
@@ -150,20 +176,21 @@ func GetIndexPageFromShortUrlId(shortUrlCollectionName, datasourceTimestampColle
 			http.StatusOK,
 			templateName,
 			gin.H{
-				"govar_VERBOSITY":                              utils.Verbose,
-				"govar_IS_SHORT_URL":                           true,
-				"govar_SHORT_URL_REQUEST":                      shortUrlObj.Request,
-				"govar_DT_SAVED_STATE":                         shortUrlObj.SavedState,
-				"govar_SOURCE_DATE":                            dataTimestamp.StartDate + " - " + dataTimestamp.EndDate,
-				"govar_CONDOR_MAIN_API_ENDPOINT":               condorMainApiEP,
-				"govar_CONDOR_DETAILED_API_ENDPOINT":           condorDetailedApiEP,
-				"govar_CONDOR_EACH_MAIN_DETAILED_API_ENDPOINT": condorMainEachDetailedApiEP,
-				"govar_SC_TASK_API_ENDPOINT":                   scTaskApiEP,
-				"govar_SC_TASK_CMSRUN_JOBTYPE_API_ENDPOINT":    ScTaskCmsrunJobtypeApiEP,
-				"govar_SC_CMSRUN_DETAIL_OF_EACH_TASK_APIEP":    scTaskEachCmsrunDetailsApiEP,
-				"govar_SC_SITE_DETAIL_OF_EACH_CMSRUN_APIEP":    scCmsrunEachSiteDetailsApiEP,
-				"govar_SHORT_URL_API_ENDPOINT":                 shortUrlApiEP,
-				"govar_BASE_EP":                                baseEP,
+				"govar_VERBOSITY":                                utils.Verbose,
+				"govar_IS_SHORT_URL":                             true,
+				"govar_SHORT_URL_REQUEST":                        shortUrlObj.Request,
+				"govar_DT_SAVED_STATE":                           shortUrlObj.SavedState,
+				"govar_SOURCE_DATE":                              dataTimestamp.StartDate + " - " + dataTimestamp.EndDate,
+				"govar_CONDOR_MAIN_API_ENDPOINT":                 condorMainApiEP,
+				"govar_CONDOR_DETAILED_API_ENDPOINT":             condorDetailedApiEP,
+				"govar_CONDOR_EACH_MAIN_DETAILED_API_ENDPOINT":   condorMainEachDetailedApiEP,
+				"govar_SC_TASK_API_ENDPOINT":                     scTaskApiEP,
+				"govar_SC_TASK_CMSRUN_JOBTYPE_API_ENDPOINT":      ScTaskCmsrunJobtypeApiEP,
+				"govar_SC_TASK_CMSRUN_JOBTYPE_SITE_API_ENDPOINT": scTaskCmsrunJobtypeSiteApiEP,
+				"govar_SC_CMSRUN_DETAIL_OF_EACH_TASK_APIEP":      scTaskEachCmsrunDetailsApiEP,
+				"govar_SC_SITE_DETAIL_OF_EACH_CMSRUN_APIEP":      scCmsrunEachSiteDetailsApiEP,
+				"govar_SHORT_URL_API_ENDPOINT":                   shortUrlApiEP,
+				"govar_BASE_EP":                                  baseEP,
 			},
 		)
 		return

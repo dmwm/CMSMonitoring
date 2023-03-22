@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>StepchainMain</title>
+    <title>StepchainTaskCmsrunJobtypeSite</title>
     <link rel="icon" type="image/x-icon" href="/{{.govar_BASE_EP}}/static/img/oc_icon.ico">
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <!-- prepared using https://datatables.net/download/ -->
@@ -55,34 +55,41 @@
             margin-bottom: 0 !important;
         }
 
-        table td {
+        table.table td {
             font-size: 10px;
         }
 
-        table.table tr td:nth-child(2) {
-            width: auto;!important;
+        table.table tr td:nth-child(1) {
+            width: auto;
+        !important;
         }
 
-        table.table tr td:nth-child(3) {
-            min-width: 150px;!important;
+        table.table tr td:nth-child(2) {
+            min-width: 200px;!important;
             width: auto;!important;
             word-break: break-all;
         }
-        /*table.go-datatable tr th:nth-child(4) {*/
-        /*    color: blue;*/
-        /*}*/
+
+        table.table tr td:nth-child(n+3):nth-child(-n+5) {
+            font-weight: bold;
+        }
 
         /* rest of the columns*/
-        table.table tr td:nth-child(n+4):nth-child(-n+18) {
+        table.table tr td:nth-child(n+5):nth-child(-n+18) {
             text-align: right;
         }
+        table.table tr td:nth-child(20) {
+            word-break: break-all;
+            min-width: 75px;
+        }
+
 
         /*Hover text for data timestamp*/
         .tooltip > .tooltip-inner {
             background-color: white;
             color: black;
             font-family: 'Trebuchet MS', sans-serif;
-            font-size: 10px;
+            font-size: small;
         }
 
         /*Importent to show processing pop-up at the top*/
@@ -108,10 +115,8 @@
         var govar_SHORT_URL_REQUEST = {{.govar_SHORT_URL_REQUEST}};
         var govar_SOURCE_DATE = {{.govar_SOURCE_DATE}};
         var govar_VERBOSITY = {{.govar_VERBOSITY}};
-        var govar_SC_TASK_API_ENDPOINT = {{.govar_SC_TASK_API_ENDPOINT}};
+        var govar_SC_TASK_CMSRUN_JOBTYPE_SITE_API_ENDPOINT = {{.govar_SC_TASK_CMSRUN_JOBTYPE_SITE_API_ENDPOINT}};
         var govar_SHORT_URL_API_ENDPOINT = {{.govar_SHORT_URL_API_ENDPOINT}};
-        var govar_SC_CMSRUN_DETAIL_OF_EACH_TASK_APIEP = {{.govar_SC_CMSRUN_DETAIL_OF_EACH_TASK_APIEP}};
-        var govar_SC_SITE_DETAIL_OF_EACH_CMSRUN_APIEP = {{.govar_SC_SITE_DETAIL_OF_EACH_CMSRUN_APIEP}};
     </script>
     <!---------------------------------------------------------------------------------->
 </head>
@@ -123,7 +128,7 @@
             <a class="fa fa-home" style="font-size:18px;" href="/{{.govar_BASE_EP}}">Home</a>
         </div>
         <div class="col-xs-6 col-sm-4 align-self-center">
-            <h4> StepChain CPU Efficiency </h4>
+            <h4> StepChain CPU Efficiency : Site (All) Detailed </h4>
         </div>
         <div class="col-xs-6 col-sm-4 text-right">
             <footer>
@@ -140,9 +145,14 @@
     </div>
     <div class="row custom-filters">
         <div class="row">
-            <div class="col">
+            <div class="col-xs-3">
+                <input class="form-control" id="input-sc-site" type="search"
+                       placeholder="&#128269; Search Site <hit Enter> [regex|fuzzy] "
+                       style="border-width: 3px; background-color: #FFB7001D; "/>
+            </div>
+            <div class="col-xs-9">
                 <input class="form-control" id="input-sc-task" type="search"
-                       placeholder="&#128269; Search Task name [regex|fuzzy] <detailed queries:- Add Condition> <hit Enter>"
+                       placeholder="&#128269; Search Task [regex|fuzzy] <detailed queries:- Add Condition> <hit Enter>"
                        style="border-width: 3px; background-color: #FFB7001D; font-weight: bold;"
                 />
             </div>
@@ -152,9 +162,11 @@
         <!-- table table-sm-->
         <thead style="background-color: #C8D9EB; color: black; font-size: 10px">
         <tr>
-            <th></th>
             <th>Links</th>
             <th>Task</th>
+            <th>Step Name</th>
+            <th>Job Type</th>
+            <th>Site</th>
             <th style="color: blue;">Cpu Efficiency</th>
             <th>Number Of Step</th>
             <th>Mean Thread</th>
@@ -164,20 +176,21 @@
             <th>Mean Job Time Hr</th>
             <th>Total Job Time Hr</th>
             <th>Total Thread Job Time Hr</th>
-            <th>Write Total</th>
-            <th>Read Total</th>
+            <th>Write Total MB</th>
+            <th>Read Total MB</th>
             <th>Mean Peak Rss</th>
             <th>Mean Peak VSize</th>
             <th>Era Count</th>
-            <th>Site Count</th>
             <th>Acquisition Era</th>
         </tr>
         </thead>
         <tfoot hidden>
         <tr>
-            <th></th>
             <th>Links</th>
             <th>Task</th>
+            <th>Step Name</th>
+            <th>Job Type</th>
+            <th>Site</th>
             <th>Cpu Efficiency</th>
             <th>Number Of Step</th>
             <th>Mean Thread</th>
@@ -187,12 +200,11 @@
             <th>Mean Job Time Hr</th>
             <th>Total Job Time Hr</th>
             <th>Total Thread Job Time Hr</th>
-            <th>Write Total</th>
-            <th>Read Total</th>
+            <th>Write Total MB</th>
+            <th>Read Total MB</th>
             <th>Mean Peak Rss</th>
             <th>Mean Peak VSize</th>
             <th>Era Count</th>
-            <th>Site Count</th>
             <th>Acquisition Era</th>
         </tr>
         </tfoot>
@@ -216,6 +228,6 @@
         type="text/javascript"></script>
 
 <!-- main JS -->
-<script src="/{{.govar_BASE_EP}}/static/js/stepchain_task.js" type="text/javascript"></script>
+<script src="/{{.govar_BASE_EP}}/static/js/stepchain_task_site_detailed.js" type="text/javascript"></script>
 </body>
 </html>
