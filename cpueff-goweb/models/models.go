@@ -15,42 +15,52 @@ type StringArray []string
 
 // CondorWfCpuEff Condor workflow level cpu efficiency entry
 type CondorWfCpuEff struct {
-	Links               template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
-	Type                string        `bson:"Type,omitempty" validate:"required"`
-	Workflow            string        `bson:"Workflow,omitempty" validate:"required"`
-	WmagentRequestName  string        `bson:"WmagentRequestName,omitempty"`
-	CpuEffOutlier       int64         `bson:"CpuEffOutlier,omitempty" validate:"required"`
-	CpuEff              float64       `bson:"CpuEff,omitempty" validate:"required"`
-	Cpus                int64         `bson:"Cpus,omitempty" validate:"required"`
-	CpuTimeHr           float64       `bson:"CpuTimeHr,omitempty" validate:"required"`
-	WallClockHr         float64       `bson:"WallClockHr,omitempty" validate:"required"`
-	CoreTimeHr          float64       `bson:"CoreTimeHr,omitempty" validate:"required"`
-	WastedCpuTimeHr     float64       `bson:"WastedCpuTimeHr,omitempty" validate:"required"`
-	CpuEffT1T2          float64       `bson:"CpuEffT1T2,omitempty" validate:"required"`
-	CpusT1T2            int64         `bson:"CpusT1T2,omitempty" validate:"required"`
-	CpuTimeHrT1T2       float64       `bson:"CpuTimeHrT1T2,omitempty" validate:"required"`
-	WallClockHrT1T2     float64       `bson:"WallClockHrT1T2,omitempty" validate:"required"`
-	CoreTimeHrT1T2      float64       `bson:"CoreTimeHrT1T2,omitempty" validate:"required"`
-	WastedCpuTimeHrT1T2 float64       `bson:"WastedCpuTimeHrT1T2,omitempty" validate:"required"`
+	Links                template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
+	Type                 string        `bson:"Type,omitempty" validate:"required"`
+	Workflow             string        `bson:"Workflow,omitempty" validate:"required"`
+	WmagentRequestName   string        `bson:"WmagentRequestName,omitempty"`
+	CpuEffOutlier        int64         `bson:"CpuEffOutlier,omitempty" validate:"required"`
+	CpuEff               float64       `bson:"CpuEff,omitempty" validate:"required"`
+	NonEvictionEff       float64       `bson:"NonEvictionEff,omitempty" validate:"required"`
+	EvictionAwareEffDiff float64       `bson:"EvictionAwareEffDiff,omitempty" validate:"required"`
+	ScheduleEff          float64       `bson:"ScheduleEff,omitempty" validate:"required"`
+	Cpus                 int64         `bson:"Cpus,omitempty" validate:"required"`
+	CpuTimeHr            float64       `bson:"CpuTimeHr,omitempty" validate:"required"`
+	WallClockHr          float64       `bson:"WallClockHr,omitempty" validate:"required"`
+	CoreTimeHr           float64       `bson:"CoreTimeHr,omitempty" validate:"required"`
+	CommittedCoreHr      float64       `bson:"CommittedCoreHr,omitempty" validate:"required"`
+	CommittedWallClockHr float64       `bson:"CommittedWallClockHr,omitempty" validate:"required"`
+	WastedCpuTimeHr      float64       `bson:"WastedCpuTimeHr,omitempty" validate:"required"`
+	CpuEffT1T2           float64       `bson:"CpuEffT1T2,omitempty" validate:"required"`
+	CpusT1T2             int64         `bson:"CpusT1T2,omitempty" validate:"required"`
+	CpuTimeHrT1T2        float64       `bson:"CpuTimeHrT1T2,omitempty" validate:"required"`
+	WallClockHrT1T2      float64       `bson:"WallClockHrT1T2,omitempty" validate:"required"`
+	CoreTimeHrT1T2       float64       `bson:"CoreTimeHrT1T2,omitempty" validate:"required"`
+	WastedCpuTimeHrT1T2  float64       `bson:"WastedCpuTimeHrT1T2,omitempty" validate:"required"`
 }
 
 // CondorSiteCpuEff Condor site level cpu efficiency entry
 type CondorSiteCpuEff struct {
-	Links              template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
-	Type               string        `bson:"Type,omitempty" validate:"required"`
-	Workflow           string        `bson:"Workflow,omitempty" validate:"required"`
-	WmagentRequestName string        `bson:"WmagentRequestName,omitempty"`
-	Site               string        `bson:"Site,omitempty"`
-	Tier               string        `bson:"Tier,omitempty"`
-	CpuEffOutlier      int64         `bson:"CpuEffOutlier,omitempty" validate:"required"`
-	CpuEff             float64       `bson:"CpuEff,omitempty" validate:"required"`
-	Cpus               int64         `bson:"Cpus,omitempty" validate:"required"`
-	CpuTimeHr          float64       `bson:"CpuTimeHr,omitempty" validate:"required"`
-	WallClockHr        float64       `bson:"WallClockHr,omitempty" validate:"required"`
-	CoreTimeHr         float64       `bson:"CoreTimeHr,omitempty" validate:"required"`
-	WastedCpuTimeHr    float64       `bson:"WastedCpuTimeHr,omitempty" validate:"required"`
-	Schedds            StringArray   `bson:"Schedds"`
-	MaxWmagentJobId    string        `bson:"MaxWmagentJobId"`
+	Links                template.HTML `bson:"Links,omitempty"` // not belongs to actual data but required for carrying links to datatable response
+	Type                 string        `bson:"Type,omitempty" validate:"required"`
+	Workflow             string        `bson:"Workflow,omitempty" validate:"required"`
+	WmagentRequestName   string        `bson:"WmagentRequestName,omitempty"`
+	Site                 string        `bson:"Site,omitempty"`
+	Tier                 string        `bson:"Tier,omitempty"`
+	CpuEffOutlier        int64         `bson:"CpuEffOutlier,omitempty" validate:"required"`
+	CpuEff               float64       `bson:"CpuEff,omitempty" validate:"required"`
+	NonEvictionEff       float64       `bson:"NonEvictionEff,omitempty" validate:"required"`
+	EvictionAwareEffDiff float64       `bson:"EvictionAwareEffDiff,omitempty" validate:"required"`
+	ScheduleEff          float64       `bson:"ScheduleEff,omitempty" validate:"required"`
+	Cpus                 int64         `bson:"Cpus,omitempty" validate:"required"`
+	CpuTimeHr            float64       `bson:"CpuTimeHr,omitempty" validate:"required"`
+	WallClockHr          float64       `bson:"WallClockHr,omitempty" validate:"required"`
+	CoreTimeHr           float64       `bson:"CoreTimeHr,omitempty" validate:"required"`
+	CommittedCoreHr      float64       `bson:"CommittedCoreHr,omitempty" validate:"required"`
+	CommittedWallClockHr float64       `bson:"CommittedWallClockHr,omitempty" validate:"required"`
+	WastedCpuTimeHr      float64       `bson:"WastedCpuTimeHr,omitempty" validate:"required"`
+	Schedds              StringArray   `bson:"Schedds"`
+	MaxWmagentJobId      string        `bson:"MaxWmagentJobId"`
 }
 
 // CondorMainEachDetailedRequest accepts Type, Workflow, WmagentRequestName, CpuEffOutlier and returns this workflow's site details

@@ -7,16 +7,14 @@ Description : Generate aggregated information about workflows/requests cpu effic
               the parameters. And send results to MongoDB for a Go web service using intermediate steps.
 """
 import json
-
-import click
 import os
 from datetime import datetime, date, timedelta
 
-from pyspark.sql.functions import array_max, col, collect_set, lit, upper, when, sum as _sum
-from pyspark.sql.types import StructType, LongType, StringType, StructField, DoubleType, IntegerType
-
+import click
 # CMSSpark modules
 from CMSSpark.spark_utils import get_candidate_files, get_spark_session
+from pyspark.sql.functions import array_max, col, collect_set, lit, upper, when, sum as _sum
+from pyspark.sql.types import StructType, LongType, StringType, StructField, DoubleType, IntegerType
 
 # global variables
 _VALID_TYPES = ["analysis", "production", "folding@home", "test"]
@@ -43,8 +41,10 @@ def _get_schema():
                         StructField("Tier", StringType(), nullable=True),
                         StructField("Type", StringType(), nullable=True),
                         StructField("WallClockHr", DoubleType(), nullable=False),
-                        StructField("CpuTimeHr", DoubleType(), nullable=True),
-                        StructField("RequestCpus", DoubleType(), nullable=True),
+                        StructField("CpuTimeHr", DoubleType(), nullable=False),
+                        StructField("CommittedCoreHr", DoubleType(), nullable=False),
+                        StructField("CommittedWallClockHr", DoubleType(), nullable=False),
+                        StructField("RequestCpus", DoubleType(), nullable=False),
                         StructField("CpuEff", DoubleType(), nullable=True),
                         StructField("CpuEffOutlier", IntegerType(), nullable=True),
                     ]
@@ -139,22 +139,32 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
     group_by_cols_detailed = ["Type", "Workflow", "WmagentRequestName", "Site", "Tier", "CpuEffOutlier"]
     df_detailed = raw_df.groupby(group_by_cols_detailed).agg(
         (100 * _sum("CpuTimeHr") / _sum("CoreTimeHr")).alias("CpuEff"),
+        (100 * _sum("CpuTimeHr") / _sum("CommittedCoreHr")).alias("NonEvictionEff"),
+        (100 * _sum("CommittedWallClockHr") / _sum("WallClockHr")).alias("ScheduleEff"),
         _sum("RequestCpus").alias("Cpus"),
         _sum("CpuTimeHr").alias("CpuTimeHr"),
         _sum("WallClockHr").alias("WallClockHr"),
         _sum("CoreTimeHr").alias("CoreTimeHr"),
+        _sum("CommittedCoreHr").alias("CommittedCoreHr"),
+        _sum("CommittedWallClockHr").alias("CommittedWallClockHr"),
         _sum("WastedCpuTimeHr").alias("WastedCpuTimeHr"),
         collect_set("ScheddName").alias("Schedds"),
         array_max(collect_set("WMAgent_JobID")).alias("MaxWmagentJobId"),
-    ).sort(col("Type").desc(), col("Workflow"), col("WmagentRequestName"), col("Site"), col("CoreTimeHr"))
+    ).withColumn("EvictionAwareEffDiff", col('NonEvictionEff') - col('CpuEff'))
+    df_detailed = df_detailed.sort(col("Type").desc(), col("Workflow"), col("WmagentRequestName"), col("Site"),
+                                   col("CoreTimeHr"))
 
     T1T2_Tiers = ("T1", "T2")
     group_by_cols_main = ["Type", "Workflow", "WmagentRequestName", "CpuEffOutlier"]
     df_main = raw_df.groupby(group_by_cols_main).agg(
         (100 * _sum("CpuTimeHr") / _sum("CoreTimeHr")).alias("CpuEff"),
+        (100 * _sum("CpuTimeHr") / _sum("CommittedCoreHr")).alias("NonEvictionEff"),
+        (100 * _sum("CommittedWallClockHr") / _sum("WallClockHr")).alias("ScheduleEff"),
         _sum("RequestCpus").alias("Cpus"),
         _sum("CpuTimeHr").alias("CpuTimeHr"),
         _sum("WallClockHr").alias("WallClockHr"),
+        _sum("CommittedCoreHr").alias("CommittedCoreHr"),
+        _sum("CommittedWallClockHr").alias("CommittedWallClockHr"),
         _sum("CoreTimeHr").alias("CoreTimeHr"),
         _sum("WastedCpuTimeHr").alias("WastedCpuTimeHr"),
         (100 *
@@ -166,7 +176,8 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
         _sum(when(col("Tier").isin(*T1T2_Tiers), col("WallClockHr"))).alias("WallClockHrT1T2"),
         _sum(when(col("Tier").isin(*T1T2_Tiers), col("CoreTimeHr"))).alias("CoreTimeHrT1T2"),
         _sum(when(col("Tier").isin(*T1T2_Tiers), col("WastedCpuTimeHr"))).alias("WastedCpuTimeHrT1T2"),
-    ).sort(col("Type").desc(), col("Workflow"), col("WmagentRequestName"), col("CoreTimeHr"))
+    ).withColumn("EvictionAwareEffDiff", col('NonEvictionEff') - col('CpuEff'))
+    df_main = df_main.sort(col("Type").desc(), col("Workflow"), col("WmagentRequestName"), col("CoreTimeHr"))
 
     df_tiers_overview = raw_df.filter(col("Tier") != "UNKNOWN").groupby("Tier", "Type").agg(
         (100 * _sum("CpuTimeHr") / _sum("CoreTimeHr")).alias("TierCpuEff"),

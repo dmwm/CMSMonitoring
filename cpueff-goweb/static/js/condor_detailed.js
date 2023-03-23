@@ -360,6 +360,30 @@ $(document).ready(function () {
                 },
             },
             {
+                data: "NonEvictionEff",
+                name: 'Non Eviction Eff',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+            },
+            {
+                data: "EvictionAwareEffDiff",
+                name: 'Eviction Aware Eff Diff',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+            },
+            {
+                data: "ScheduleEff",
+                name: 'Schedule Eff',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+            },
+            {
                 data: "Cpus",
                 name: 'Cpus',
                 searchBuilderType: 'num',
@@ -395,6 +419,22 @@ $(document).ready(function () {
                 render: function (data, type, row, meta) {
                     return type === 'display' ? helperFloatPrecision(data) : data;
                 },
+            },
+            {
+                data: "CommittedCoreHr",
+                name: 'Committed Core Hr',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
+            },
+            {
+                data: "CommittedWallClockHr",
+                name: 'Committed Wall Clock Hr',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
                 data: "WastedCpuTimeHr",

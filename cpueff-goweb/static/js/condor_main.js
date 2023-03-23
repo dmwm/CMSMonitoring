@@ -326,7 +326,7 @@ $(document).ready(function () {
                 ]
             },
             // SearchBuilder customizations to limit conditions: "workflow" and "WMAgent_RequestName" column not included  they are searched via "input-condor-workflow" and "input-condor-wma-req-name"
-            columns: [2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+            columns: [2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -435,6 +435,30 @@ $(document).ready(function () {
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
             },
             {
+                data: "NonEvictionEff",
+                name: 'Non Eviction Eff',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+            },
+            {
+                data: "EvictionAwareEffDiff",
+                name: 'Eviction Aware Eff Diff',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+            },
+            {
+                data: "ScheduleEff",
+                name: 'Schedule Eff',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+            },
+            {
                 data: "Cpus",
                 name: 'Cpus',
                 searchBuilderType: 'num',
@@ -460,6 +484,22 @@ $(document).ready(function () {
             {
                 data: "CoreTimeHr",
                 name: 'Core Time Hr',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
+            },
+            {
+                data: "CommittedCoreHr",
+                name: 'Committed Core Hr',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
+            },
+            {
+                data: "CommittedWallClockHr",
+                name: 'Committed Wall Clock Hr',
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
                 width: "3%",
