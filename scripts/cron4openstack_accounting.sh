@@ -10,7 +10,7 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 
 # Do not change the order of "--output_file"([0],[1]) which is replaced in K8s run
 py_input_args=(
-    --output_file "/eos/user/c/cmsmonit/www/openstack_accounting/openstack_accounting.html"
+    --output_file "/eos/user/c/cmsmonit/www/eos_openstack/openstack_accounting.html"
     --summary_json "/eos/cms/store/accounting/openstack_accounting_summary.json"
     --static_html_dir "${script_dir}/../src/html/openstack_accounting"
 )

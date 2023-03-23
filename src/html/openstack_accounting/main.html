@@ -15,6 +15,7 @@
     <style>
         body {
 	        font-family: 'Trebuchet MS', sans-serif;
+	        font-size: x-small;
         }
         /* Search bar */
         .dataTables_filter input {
@@ -23,8 +24,8 @@
           font-size: 14px;
           font-weight: bold;
         }
-        table td {
-            word-break: break-all;
+        table th {
+            white-space: wrap;
         }
         /* From 2nd column, align to right */
         table td:nth-child(n+2) {
@@ -161,7 +162,7 @@
                 "oSearch": { "sSearch": searchString },
                 language: {
                     search: "_INPUT_",
-                    searchPlaceholder: "--- Search Openstack project ---",
+                    searchPlaceholder: "--- Search Project ---",
                 },
                 lengthChange: false,
                 "footerCallback": function ( row, data, start, end, display ) {

@@ -13,7 +13,7 @@ from datetime import datetime
 
 import click
 import pandas as pd
-from schema import Schema, Use, SchemaError, Or
+from schema import Schema, Use, SchemaError
 
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
@@ -51,35 +51,35 @@ SUMMARY_SCHEMA = Schema([{'openstackProjectName': str,
 
 
 SUMMARY_COL_ORDER = {'openstackProjectName': 'Openstack Project Name',
-                     'maxTotalInstances': 'maxTotalInstances',
-                     'maxTotalCores': 'maxTotalCores',
-                     'maxTotalRAMSize': 'maxTotalRAMSize',
-                     'maxSecurityGroups': 'maxSecurityGroups',
-                     'maxTotalFloatingIps': 'maxTotalFloatingIps',
-                     'maxServerMeta': 'maxServerMeta',
-                     'maxImageMeta': 'maxImageMeta',
-                     'maxPersonality': 'maxPersonality',
-                     'maxPersonalitySize': 'maxPersonalitySize',
-                     'maxSecurityGroupRules': 'maxSecurityGroupRules',
-                     'maxTotalKeypairs': 'maxTotalKeypairs',
-                     'maxServerGroups': 'maxServerGroups',
-                     'maxServerGroupMembers': 'maxServerGroupMembers',
-                     'totalRAMUsed': 'totalRAMUsed',
-                     'totalCoresUsed': 'totalCoresUsed',
-                     'totalInstancesUsed': 'totalInstancesUsed',
-                     'totalFloatingIpsUsed': 'totalFloatingIpsUsed',
-                     'totalSecurityGroupsUsed': 'totalSecurityGroupsUsed',
-                     'totalServerGroupsUsed': 'totalServerGroupsUsed',
-                     'maxTotalVolumes': 'maxTotalVolumes',
-                     'maxTotalSnapshots': 'maxTotalSnapshots',
-                     'maxTotalVolumeGigabytes': 'maxTotalVolumeGigabytes',
-                     'maxTotalBackups': 'maxTotalBackups',
-                     'maxTotalBackupGigabytes': 'maxTotalBackupGigabytes',
-                     'totalVolumesUsed': 'totalVolumesUsed',
-                     'totalGigabytesUsed': 'totalGigabytesUsed',
-                     'totalSnapshotsUsed': 'totalSnapshotsUsed',
-                     'totalBackupsUsed': 'totalBackupsUsed',
-                     'totalBackupGigabytesUsed': 'totalBackupGigabytesUsed'}
+                     'maxTotalInstances': 'Max Total Instances',
+                     'maxTotalCores': 'Max Total Cores',
+                     'maxTotalRAMSize': 'Max Total RAM Size',
+                     'maxSecurityGroups': 'Max Security Groups',
+                     'maxTotalFloatingIps': 'Max Total Floating Ips',
+                     'maxServerMeta': 'Max Server Meta',
+                     'maxImageMeta': 'Max Image Meta',
+                     'maxPersonality': 'Max Personality',
+                     'maxPersonalitySize': 'Max Personality Size',
+                     'maxSecurityGroupRules': 'Max Security Group Rules',
+                     'maxTotalKeypairs': 'Max Total Keypairs',
+                     'maxServerGroups': 'Max Server Groups',
+                     'maxServerGroupMembers': 'MaxServerGroupMembers',
+                     'totalRAMUsed': 'Total RAM Used',
+                     'totalCoresUsed': 'Total Cores Used',
+                     'totalInstancesUsed': 'Total Instances Used',
+                     'totalFloatingIpsUsed': 'Total Floating Ips Used',
+                     'totalSecurityGroupsUsed': 'Total Security Groups Used',
+                     'totalServerGroupsUsed': 'Total Server Groups Used',
+                     'maxTotalVolumes': 'Max Total Volumes',
+                     'maxTotalSnapshots': 'Max Total Snapshots',
+                     'maxTotalVolumeGigabytes': 'Max Total Volume Gigabytes',
+                     'maxTotalBackups': 'Max Total Backups',
+                     'maxTotalBackupGigabytes': 'Max Total Backup Gigabytes',
+                     'totalVolumesUsed': 'Total Volumes Used',
+                     'totalGigabytesUsed': 'Total Gigabytes Used',
+                     'totalSnapshotsUsed': 'Total Snapshots Used',
+                     'totalBackupsUsed': 'Total Backups Used',
+                     'totalBackupGigabytesUsed': 'Total Backup Gigabytes Used'}
 
 def tstamp():
     """Return timestamp for logging"""
@@ -92,7 +92,7 @@ def get_update_time_of_file(summary_file):
         # Set update time to eos file modification time, minimum of 2
         summary_ts = os.path.getmtime(summary_file)
         try:
-            return datetime.utcfromtimestamp(min(ec_ts, non_ec_ts, summary_ts)).strftime('%Y-%m-%d %H:%M:%S')
+            return datetime.utcfromtimestamp(summary_ts).strftime('%Y-%m-%d %H:%M:%S')
         except OSError as e:
             print(tstamp(), "ERROR: could not get last modification time of file:", str(e))
     else:
@@ -156,14 +156,14 @@ def create_main_html(df_summary, update_time, base_html_directory):
 @click.option("--summary_json", required=True, help="/eos/cms/store/eos_accounting_summary.json")
 @click.option("--static_html_dir", default=None, required=True,
               help="Html directory for main html template. For example: ~/CMSMonitoring/src/html/eos_path_size")
-def main(output_file=None, non_ec_json=None, ec_json=None, summary_json=None, static_html_dir=None):
+def main(output_file=None, summary_json=None, static_html_dir=None):
     """Main function combines xrdcp and EOS results then creates HTML page
     """
-    joint_update_time = get_update_time_of_file(non_ec_json, ec_json, summary_json)
+    joint_update_time = get_update_time_of_file(summary_json)
     print("[INFO] Update time of input files:", joint_update_time)
 
     df_summary = get_df_with_validation(summary_json, SUMMARY_SCHEMA, SUMMARY_COL_ORDER)
-    main_html = create_main_html(df_non_ec, df_ec, df_summary, joint_update_time, static_html_dir)
+    main_html = create_main_html(df_summary, joint_update_time, static_html_dir)
     with open(output_file, "w") as f:
         f.write(main_html)
 
