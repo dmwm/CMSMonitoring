@@ -1,9 +1,9 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
-# Create html table for EOS paths' size
+# Create html table for Openstack Projects accounting
 #
-# acronjob: $HOME/CMSMonitoring/scripts/eos_path_size.sh
+# acronjob: path to be defined
 #
 
 import json
@@ -87,9 +87,9 @@ def tstamp():
 
 
 def get_update_time_of_file(summary_file):
-    """Create update time depending on reading EOS results from file or directly from command"""
+    """Create update time depending on reading Openstack accounting results from file"""
     if summary_file:
-        # Set update time to eos file modification time, minimum of 2
+        # Set update time to Openstack accounting file modification time, minimum of 2
         summary_ts = os.path.getmtime(summary_file)
         try:
             return datetime.utcfromtimestamp(summary_ts).strftime('%Y-%m-%d %H:%M:%S')
@@ -153,12 +153,10 @@ def create_main_html(df_summary, update_time, base_html_directory):
 
 @click.command()
 @click.option("--output_file", default=None, required=True, help="For example: /eos/.../www/test/test.html")
-@click.option("--summary_json", required=True, help="/eos/cms/store/eos_accounting_summary.json")
+@click.option("--summary_json", required=True, help="/eos/cms/store/accounting/openstack_accounting_summary.json")
 @click.option("--static_html_dir", default=None, required=True,
-              help="Html directory for main html template. For example: ~/CMSMonitoring/src/html/eos_path_size")
+              help="Html directory for main html template. For example: ~/CMSMonitoring/src/html/openstack_accounting")
 def main(output_file=None, summary_json=None, static_html_dir=None):
-    """Main function combines xrdcp and EOS results then creates HTML page
-    """
     joint_update_time = get_update_time_of_file(summary_json)
     print("[INFO] Update time of input files:", joint_update_time)
 
