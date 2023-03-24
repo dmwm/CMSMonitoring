@@ -131,8 +131,9 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 			Config.BaseEndpoint,
 		))
 		// ---------------------------------------------------------- Stepchain
-		e.POST("/api/sc-task", controllers.StepchainMainCtrl(Config))
-		e.POST("/api/sc-task-cmsrun-jobtype", controllers.StepchainDetailedCtrl(Config))
+		e.POST("/api/sc-task", controllers.StepchainMainPageCtrl(Config))
+		e.POST("/api/sc-task-cmsrun-jobtype", controllers.StepchainDetailedPageCtrl(Config))
+		e.POST("/api/sc-task-cmsrun-jobtype-site", controllers.StepchainSiteDetailedPageCtrl(Config))
 
 		e.POST("/api/sc-row-cmsrun-detail", controllers.StepchainRowCmsrunDetailCtrl(Config))
 		e.POST("/api/sc-row-site-detail", controllers.StepchainRowSiteDetailCtrl(Config))
@@ -157,6 +158,14 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 			Config.BaseEndpoint,
 		))
 
+		// Stepchain Detail TaskCmsrunJobtype cpueff page
+		e.GET("/stepchain-site-detailed", controllers.GetScTaskCmsrunJobtypeSitePage(
+			mongoColNames.DatasourceTimestamp,
+			"/"+Config.BaseEndpoint+"/api/sc-task-cmsrun-jobtype-site",
+			"/"+Config.BaseEndpoint+"/api/short-url",
+			Config.BaseEndpoint,
+		))
+
 		// ---------------------------------------------------------- Short URL
 
 		// Short url result page
@@ -168,6 +177,7 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 			"/"+Config.BaseEndpoint+"/api/condor-main-each-detailed",
 			"/"+Config.BaseEndpoint+"/api/sc-task",
 			"/"+Config.BaseEndpoint+"/api/sc-task-cmsrun-jobtype",
+			"/"+Config.BaseEndpoint+"/api/sc-task-cmsrun-jobtype-site",
 			"/"+Config.BaseEndpoint+"/api/sc-row-cmsrun-detail",
 			"/"+Config.BaseEndpoint+"/api/sc-row-site-detail",
 			"/"+Config.BaseEndpoint+"/api/short-url",

@@ -67,13 +67,13 @@
             word-break: break-all;
         }
 
-        table tr td:nth-child(8) {
+        table tr td:nth-child(13) {
             max-width: 100px;!important;
             width: auto;!important;
         }
 
         /* rest of the columns*/
-        table tr td:nth-child(n+9):nth-child(-n+18) {
+        table tr td:nth-child(n+9):nth-child(-n+2) {
             text-align: right;
         }
 
@@ -139,11 +139,11 @@
         <div class="row">
             <div class="col">
                 <input class="form-control" id="input-condor-workflow" type="search"
-                       placeholder="&#128269; Search Workflow <regex or fuzzy> <detailed queries:- add condition> <hit enter to search> "
+                       placeholder="&#128269; Search Workflow [regex|fuzzy] <detailed queries:- Add Condition> <hit Enter>"
                        style="border-width: 3px; background-color: #FFB7001D; font-weight: bold;"
                 />
                 <input class="form-control" id="input-condor-wma-req-name" type="search"
-                       placeholder="&#128269; Search WMAgentRequestName"
+                       placeholder="&#128269; Search WMAgentRequestName [regex|fuzzy]"
                        style="border-width: 3px; background-color: #FFB7001D; font-weight: bold;"
                 />
             </div>
@@ -161,10 +161,15 @@
             <th>Tier</th>
             <th>Cpu Efficiency Outlier</th>
             <th>Cpu Eff</th>
+            <th>Non Eviction Eff</th>
+            <th>Eviction Aware Eff Diff</th>
+            <th>Schedule Eff</th>
             <th>Cpus</th>
             <th>Cpu Time Hr</th>
             <th>Wall Clock Hr</th>
             <th>Core Time Hr</th>
+            <th>Committed Core Hr</th>
+            <th>Committed Wall Clock Hr</th>
             <th>Wasted Cpu Time Hr</th>
             <th>Schedds</th>
             <th>Max WMAgent Job Id</th>
@@ -180,10 +185,15 @@
             <th>Tier</th>
             <th>Cpu Efficiency Outlier</th>
             <th>Cpu Eff</th>
+            <th>Non Eviction Eff</th>
+            <th>Eviction Aware Eff Diff</th>
+            <th>Schedule Eff</th>
             <th>Cpus</th>
             <th>Cpu Time Hr</th>
             <th>Wall Clock Hr</th>
             <th>Core Time Hr</th>
+            <th>Committed Core Hr</th>
+            <th>Committed Wall Clock Hr</th>
             <th>Wasted Cpu Time Hr</th>
             <th>Schedds</th>
             <th>Max WMAgent Job Id</th>

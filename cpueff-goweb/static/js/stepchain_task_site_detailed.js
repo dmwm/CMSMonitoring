@@ -4,7 +4,7 @@
 // This counter will be used to get the first opening of the page.
 // If short url is used, parent URL will be changed to main pages (../)
 var GLOBAL_INITIALIZATION_COUNTER = 0
-var PAGE_ENDPOINT = "stepchain-main"
+var PAGE_ENDPOINT = "stepchain-site-detailed"
 
 // Global variable to catch latest datatables request and set if provided in short url
 var GLOBAL_DT_REQUEST_HOLDER = null;
@@ -19,8 +19,9 @@ if (govar_IS_SHORT_URL === true) {
         console.log("[govar_IS_SHORT_URL true]")
         console.log(GLOBAL_SAVED_STATE_HOLDER)
     }
-    // Set Stepchain Task name search inputs bar from short url request
+    // Set Stepchain Task and Site name search inputs bar from short url request
     $('#input-sc-task').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputScTask);
+    $('#input-sc-site').val(govar_SHORT_URL_REQUEST.searchBuilderRequest.inputScSite);
 }
 
 // ---------~~~~~~~~~  FUNCTIONS AND MAIN DEFINITIONS ~~~~~~~~~---------
@@ -113,60 +114,44 @@ function getShortUrl() {
  * DataTables engine is starting to run ...
  */
 $(document).ready(function () {
-    /*
-    * showTaskDetails
-    *   Shows detailed individual Task information when green "+" button clicked
-    *   It uses a Go controller which returns data from sc_task_(cmsrun|jobtype|site) collections
-    *   How it works:
-    *     Gets closest "tr" row of the clicked "+" button
-    *     Gets workflow value from this "tr" dom element.
-    *       This is tricky because, "details-value-task" Class should be added to "Workflow" td(column) dom.
-    *       Thanks to DataTables, we can add html class to column elements using "className" in the DT columns array
-    *     Gets RseType value from this "tr" dom element same with "Workflow" using className.
-    *     Creates a random string to create a temporary div with unique ID for each clicked row.
-    *     Stores default background color, changes it to our color and after row is collapsed restore its background color
-    *     Sends ajax request to  `../api/rse-detail' API with a JSON request body: {"workflow": .., "type": ..} which defines the workflow.
-    *     Gets html response which is sent by the Go controller.
-    *        Go controller uses "rse_detail_table.html" template which is also uses DataTables to show pretty table
-    *        To not mix current DataTable CSS and "rse_detail_table" CSS, we used random ids and other tricks like "!important;".
-    *     And with ".html" function call, response html element showed in the dom.
-    *     Thanks to "dt-control", it allows to collapse and expand with green/red color changes.
-    */
-    function showTaskDetails() {
-        var tr = $(this).closest("tr");
-        // Contains slashes which can be a problem
-        detail_task_name = $(tr).find("td.details-value-task").text()
-        random_str = Math.random().toString(36).slice(-10)
-        d_class = "details-show"
-        row = table.row(tr)
-        if (!row.child.isShown()) {
-            default_bg_color = $(tr).css("background-color");
-            $(tr).addClass(d_class)
-            // $(tr).css("background-color", "#CECBCEFF")
-            row.child("<div id='" + random_str + "'>loading</div>").show()
-            var single_sc_task_detailed_request = {
-                "Task": detail_task_name,
-            }
-            if (govar_VERBOSITY > 0) {
-                console.log(JSON.stringify(single_sc_task_detailed_request))
-            }
-            $.ajax({
-                url: govar_SC_CMSRUN_DETAIL_OF_EACH_TASK_APIEP,
-                type: 'post',
-                dataType: 'html',
-                contentType: 'application/json',
-                data: JSON.stringify(single_sc_task_detailed_request),
-                success: function (data) {
-                    // just to assign random div id
-                    $("#" + random_str).html(data);
-                },
-            });
-            tr.addClass('selected-row-color')
-        } else {
-            $(tr).removeClass(d_class)
-            $(tr).css("background-color", default_bg_color)
-            row.child.hide()
-        }
+    // CUSTOM SEARCH-BUILDER TYPES
+    // job_type
+    $.fn.dataTable.ext.searchBuilder.conditions.job_type = {
+        'Production': {
+            conditionName: function (dt, i18n) {return 'Production';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Production';},
+        },
+        'Processing': {
+            conditionName: function (dt, i18n) {return 'Processing';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Processing';},
+        },
+        'Merge': {
+            conditionName: function (dt, i18n) {return 'Merge';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Merge';},
+        },
+        'LogCollect': {
+            conditionName: function (dt, i18n) {return 'LogCollect';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'LogCollect';},
+        },
+        'Harvesting': {
+            conditionName: function (dt, i18n) {return 'Harvesting';},
+            isInputValid: function () {return true;},
+            init: function () {return;},
+            inputValue: function () {return;},
+            search: function (value) {return value === 'Harvesting';},
+        },
     }
 
     /*
@@ -218,7 +203,7 @@ $(document).ready(function () {
             [5, 10, 25, 50, 100, 500, 1000, 10000]
         ],
         ajax: {
-            url: govar_SC_TASK_API_ENDPOINT,
+            url: govar_SC_TASK_CMSRUN_JOBTYPE_SITE_API_ENDPOINT,
             method: "POST",
             contentType: 'application/json',
             data: function (d) {
@@ -242,8 +227,9 @@ $(document).ready(function () {
                     sbRequest = {};
                 }
 
-                // SearchBuilder set value from INPUT for Task
+                // SearchBuilder set values from INPUT for Task and Site
                 sbRequest.inputScTask = $("#input-sc-task").val();
+                sbRequest.inputScSite = $("#input-sc-site").val();
                 // Add SearchBuilder JSON object to DataTable main request
                 d.searchBuilderRequest = sbRequest;
 
@@ -279,7 +265,7 @@ $(document).ready(function () {
         searchBuilder: {
             depthLimit: 1,
             // SearchBuilder customizations to limit conditions: "Task" column not included  they are searched via "input-sc-task"
-            columns: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+            columns: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -349,11 +335,6 @@ $(document).ready(function () {
             }
         },
         columns: [
-            {
-                // Details green/red "+"/"-" button
-                data: null, className: 'dt-control', orderable: false, defaultContent: '',
-                width: "2%"
-            },
             {data: "Links", name: 'Links', width: "3%",},
             {
                 data: "Task",
@@ -362,11 +343,35 @@ $(document).ready(function () {
                 width: "10%",
             },
             {
+                data: "StepName",
+                name: 'Step Name',
+                searchBuilder: {defaultCondition: "contains"},
+                className: "details-value-stepname",
+                width: "10%",
+            },
+            {
+                data: "JobType",
+                name: "Job Type",
+                searchBuilderType: 'job_type',
+                // Never give default condition, because DataTables sends lots of unnecessary queries each time.
+                className: "details-value-jobtype",
+                width: "10%",
+            },
+            {
+                data: "Site",
+                name: "Site",
+                className: "details-value-site",
+                searchBuilder: {defaultCondition: "contains"},
+                width: "10%",
+            },
+            {
                 data: "CpuEfficiency",
                 name: 'Cpu Efficiency',
                 searchBuilderType: 'num',
                 searchBuilder: {defaultCondition: ">="},
-                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+                render: function (data, type, row, meta) {
+                    return type === 'display' ? helperFloatPrecision(data)+'%' : data;
+                },
             },
             {data: "NumberOfStep", name: 'Number Of Step', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
             {data: "MeanThread", name: 'Mean Thread', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
@@ -391,11 +396,11 @@ $(document).ready(function () {
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "WriteTotalMB", name: 'Write Total', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                data: "WriteTotalMB", name: 'Write Total MB', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
                 render: function (data, type, row, meta) {return type === 'display' ? helperMBytesToHumanReadable(data) : data;},
             },
             {
-                data: "ReadTotalMB", name: 'Read Total', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                data: "ReadTotalMB", name: 'Read Total MB', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
                 render: function (data, type, row, meta) {return type === 'display' ? helperMBytesToHumanReadable(data) : data;},
             },
             {
@@ -407,7 +412,6 @@ $(document).ready(function () {
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {data: "EraCount", name: 'Era Count', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
-            {data: "SiteCount", name: 'Site Count', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},},
             {data: "AcquisitionEra", name: "Acquisition Era", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="},},
         ],
         buttons: [
@@ -476,6 +480,12 @@ $(document).ready(function () {
             $(this).trigger("enterKey");
         }
     });
-    // Add event listener for opening and closing details
-    table.on('click', 'td.dt-control', showTaskDetails);
+    $('#input-sc-site').on('enterKey', function () {
+        table.draw();
+    });
+    $('#input-sc-site').keyup(function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            $(this).trigger("enterKey");
+        }
+    });
 });

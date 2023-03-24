@@ -285,6 +285,8 @@ $(document).ready(function () {
                     // User did not create SearchBuilder query, so set the request holder variable as null
                     sbRequest = {};
                 }
+
+                // SearchBuilder set value from INPUT for Task
                 sbRequest.inputScTask = $("#input-sc-task").val();
                 // Add SearchBuilder JSON object to DataTable main request
                 d.searchBuilderRequest = sbRequest;

@@ -26,7 +26,9 @@ type Configuration struct {
 // ExternalLinks mongo collection names struct
 type ExternalLinks struct {
 	StrStartDate             string `json:"str_start_date"`              // replace string of str_start_date
+	StrStartDateMsec         string `json:"str_start_date_msec"`         // replace string of str_start_date_msec
 	StrEndDate               string `json:"str_end_date"`                // replace string of str_end_date
+	StrEndDateMsec           string `json:"str_end_date_msec"`           // replace string of str_end_date_msec
 	StrWorkflow              string `json:"str_workflow"`                // replace string of str_workflow
 	StrWmagentRequestName    string `json:"str_wmagent_request_name"`    // replace string of str_wmagent_request_name
 	StrSite                  string `json:"str_site"`                    // replace string of str_wmagent_request_name
@@ -37,6 +39,8 @@ type ExternalLinks struct {
 	LinkMonteCarloManagement string `json:"link_monte_carlo_management"` // link of string of link_monte_carlo_management
 	LinkEsCms                string `json:"link_es_cms"`                 // link of string of link_es_cms
 	LinkEsCmsWithSite        string `json:"link_es_cms_with_site"`       // link of string of link_es_cms_with_site
+	LinkGrafana              string `json:"link_grafana"`                // link of string of link_grafana
+	LinkGrafanaWithSite      string `json:"link_grafana_with_site"`      // link of string of link_grafana_with_site
 	LinkDmytroProdMon        string `json:"link_dmytro_prod_mon"`        // link of string of link_dmytro_prod_mon
 	LinkUnifiedReport        string `json:"link_unified_report"`         // link of string of link_unified_logs
 	LinkEsWmarchive          string `json:"link_es_wmarchive"`           // link of string of link_es_wmarchive stepchain

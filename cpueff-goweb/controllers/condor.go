@@ -13,7 +13,9 @@ import (
 	"html/template"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -98,10 +100,13 @@ func utilCondorMainAddExternalLinks(wfCpuEffs []models.CondorWfCpuEff, dataTimes
 			links.StrEndDate, dataTimestamp.EndDate,
 			links.StrWorkflow, wfCpuEffs[i].Workflow,
 			links.StrWmagentRequestName, wfCpuEffs[i].WmagentRequestName,
+			links.StrStartDateMsec, dateToMsecStr(dataTimestamp.StartDate),
+			links.StrEndDateMsec, dateToMsecStr(dataTimestamp.EndDate),
 		)
 		// Assign complete link HTML dom to the 'Links' column : "McM - PMon - Unified - ES_T1T2"
 		wfCpuEffs[i].Links = template.HTML(replacer.Replace(
-			links.LinkMonteCarloManagement + " - " + links.LinkDmytroProdMon + " - " + links.LinkUnifiedReport + " - " + links.LinkEsCms,
+			links.LinkMonteCarloManagement + " - " + links.LinkDmytroProdMon + " - " +
+				links.LinkUnifiedReport + " - " + links.LinkEsCms + " - " + links.LinkGrafana,
 		))
 	}
 }
@@ -146,7 +151,7 @@ func CondorMainEachDetailedRowCtrl(configs models.Configuration) gin.HandlerFunc
 		utilCondorSiteDetailedAddExternalLinks(detailedRows, dataTimestamp, configs.ExternalLinks)
 
 		c.HTML(http.StatusOK,
-			"condor_main_each_detailed.tmpl",
+			"condor_row_site_detailed.tmpl",
 			gin.H{"data": detailedRows},
 		)
 		return
@@ -163,10 +168,12 @@ func utilCondorSiteDetailedAddExternalLinks(siteCpuEffs []models.CondorSiteCpuEf
 			links.StrWorkflow, siteCpuEffs[i].Workflow,
 			links.StrWmagentRequestName, siteCpuEffs[i].WmagentRequestName,
 			links.StrSite, siteCpuEffs[i].Site,
+			links.StrStartDateMsec, dateToMsecStr(dataTimestamp.StartDate),
+			links.StrEndDateMsec, dateToMsecStr(dataTimestamp.EndDate),
 		)
 		// Assign complete link HTML dom to the 'Links' column : "Unified - ES_T1T2"
 		siteCpuEffs[i].Links = template.HTML(replacer.Replace(
-			links.LinkUnifiedReport + " - " + links.LinkEsCmsWithSite,
+			links.LinkUnifiedReport + " - " + links.LinkEsCmsWithSite + " - " + links.LinkGrafanaWithSite,
 		))
 	}
 }
@@ -242,4 +249,10 @@ func getCondorDetailedResults(ctx context.Context, c *gin.Context, configs model
 		RecordsFiltered: filteredRecCount,
 		Data:            siteCpuEffs,
 	}
+}
+
+// dateToMsecStr used to define Grafana dashboard msec "from" "to" dates from time duration of Spark job
+func dateToMsecStr(dateString string) string {
+	date, _ := time.Parse("2006-01-02", dateString)
+	return strconv.FormatInt(date.UnixMilli(), 10)
 }
