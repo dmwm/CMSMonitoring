@@ -18,6 +18,7 @@ from schema import Schema, Use, SchemaError
 
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
+total_row_openstackProjectName = "TOTAL"
 
 SUMMARY_SCHEMA = Schema([{'openstackProjectName': str,
                           'maxTotalInstances': Use(int),
@@ -113,7 +114,21 @@ def get_df_with_validation(json_file, schema, column_order):
         json_arr = schema.validate(json_arr)
 
         # orient values reads json array
-        return pd.DataFrame(json_arr, columns=column_order.keys()).rename(columns=column_order)
+        df = pd.DataFrame(json_arr, columns=column_order.keys()).rename(columns=column_order)
+
+        # Find the dict with openstackProjectName= "TOTAL" in JSON array
+        total_dict = next(
+            (sub for sub in json_arr if sub['openstackProjectName'] == total_row_openstackProjectName),
+            None
+        )
+        # remove TOTAL row from json array
+        json_arr.remove(total_dict)
+
+        # Create 2 level columns dataframe to make total row to fit the top like column names.
+        columns = list(zip(SUMMARY_COL_ORDER.values(), total_dict.values()))
+        df.columns = pd.MultiIndex.from_tuples(columns)
+
+        return df
     except SchemaError as e:
         print(tstamp(), "Data not exist or not valid:", str(e))
         sys.exit(1)
