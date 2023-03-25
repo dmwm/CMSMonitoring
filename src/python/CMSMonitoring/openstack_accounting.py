@@ -3,7 +3,8 @@
 # Author: Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
 # Create html table for Openstack Projects accounting
 #
-# acronjob: path to be defined
+# cron job script    : scripts/cron4openstack_accounting.sh
+# Kubernetes service : https://github.com/dmwm/CMSKubernetes/blob/master/kubernetes/monitoring/services/cron-size-quotas.yaml
 #
 
 import json
@@ -47,9 +48,10 @@ SUMMARY_SCHEMA = Schema([{'openstackProjectName': str,
                           'totalGigabytesUsed': Use(int),
                           'totalSnapshotsUsed': Use(int),
                           'totalBackupsUsed': Use(int),
-                          'totalBackupGigabytesUsed': Use(int),}])
+                          'totalBackupGigabytesUsed': Use(int), }])
 
-
+# DO NOT FORGET TO UPDATE "columnDefs" VISIBILITY IN JavaScript TEMPLATE: src/html/openstack_accounting/main.html
+# ORDER IS IMPORTANT IN PYTHON DICTS AND IT IS USED IN JS "columnDefs" ARRAY
 SUMMARY_COL_ORDER = {'openstackProjectName': 'Openstack Project Name',
                      'maxTotalInstances': 'Max Total Instances',
                      'maxTotalCores': 'Max Total Cores',
@@ -80,6 +82,7 @@ SUMMARY_COL_ORDER = {'openstackProjectName': 'Openstack Project Name',
                      'totalSnapshotsUsed': 'Total Snapshots Used',
                      'totalBackupsUsed': 'Total Backups Used',
                      'totalBackupGigabytesUsed': 'Total Backup Gigabytes Used'}
+
 
 def tstamp():
     """Return timestamp for logging"""
