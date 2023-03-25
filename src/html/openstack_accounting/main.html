@@ -15,12 +15,11 @@
     <style>
         body {
 	        font-family: 'Trebuchet MS', sans-serif;
-	        font-size: x-small;
         }
         /* Search bar */
-        .dataTables_filter input {
-          border: 7px solid Tomato;
-          width: 400px;
+        #DataTables_Table_0_filter input{
+          border: 3px solid Tomato;!important;
+          width: 300px;!important;
           font-size: 14px;
           font-weight: bold;
         }
@@ -74,7 +73,6 @@
 
         <!--         Divider   -->
         .divider {
-<!--            width:500px;-->
             text-align:center;
         }
         .divider hr {
@@ -90,7 +88,7 @@
             <div class="col-xs-6 col-sm-4">
                 <footer>
                     <img alt="CERN CMS" src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg"
-                         width="60" height="60">
+                         width="40" height="40">
                 </footer>
             </div>
             <div class="col-xs-6 col-sm-4 align-self-center">
@@ -99,7 +97,7 @@
             <div class="col-xs-6 col-sm-4 text-right ">
                 <footer>
                     <img alt="CERN CMS O&C" src="https://cds.cern.ch/record/1306150/files/cmsLogo_image.jpg" style="text-align: right;"
-                         width="60" height="60">
+                         width="40" height="40">
                 </footer>
             </div>
         </div>
@@ -115,17 +113,17 @@
     </div>
     <div id="explanations" style="display: none; margin-top: 2%;">
         <pre>
-  Source code: <a href="https://github.com/dmwm/CMSMonitoring/xxxxx">CMSMonitoring/xxxx.py</a>
-  TO BE COMPLETED
+  Cron script: <a href="https://github.com/dmwm/CMSMonitoring/blob/master/scripts/cron4openstack_accounting.sh" target="_blank">CMSMonitoring/scripts/cron4openstack_accounting.sh</a>
+  Python code: <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/python/CMSMonitoring/openstack_accounting.py" target="_blank">openstack_accounting.py</a>
+  HTML/JS: <a href="https://github.com/dmwm/CMSMonitoring/blob/master/src/html/openstack_accounting/main.html" target="_blank">html/openstack_accounting/main.html</a>
+  Source Input File: /eos/cms/store/accounting/openstack_accounting_summary.json
+  Last Update UTC: last modification of input JSON file
+  Responsible team for the source file: <a href="https://its.cern.ch/jira/browse/CMSVOC" target="_blank">CMS VOC</a>
+  There are many <b>hidden columns</b>, use <b>Column Visibility</b> button to make them visible.
         </pre>
 	</div>
 
-  <div class="container" style="display:block; width:100%">
-  
-    <div class="divider" style="text-align:center; font-size: 20px; font-weight: bold;">
-      SUMMARY <hr />
-    </div>
-
+  <div class="container" style="display:block; width:90%">
   ____SUMMARY_BLOCK____
 
   </div>
@@ -162,7 +160,7 @@
                 "oSearch": { "sSearch": searchString },
                 language: {
                     search: "_INPUT_",
-                    searchPlaceholder: "--- Search Project ---",
+                    searchPlaceholder: "--- Search Openstack Project ---",
                 },
                 lengthChange: false,
                 "footerCallback": function ( row, data, start, end, display ) {
@@ -178,6 +176,18 @@
                       this.footer().innerHTML = sum;
                     } );
                 },
+                // DEFAULT SHOW ONLY: 0: 'Openstack Project Name', 14: 'Total RAM Used', 15: 'Total Cores Used' and 16: 'Total Instances Used' columns.
+                // UPDATE WHEN SCHEMA CHANGES!
+                "columnDefs": [
+                  {
+                    "targets": [0, 14, 15, 16] ,
+                     "visible": true
+                  },
+                  {
+                    "targets": '_all',
+                    "visible": false
+                  }
+                ],
                 buttons: [
                   {
                     extend: 'copyHtml5',
