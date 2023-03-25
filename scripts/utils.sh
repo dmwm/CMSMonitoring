@@ -181,7 +181,7 @@ function util_cron_send_start() {
     # If K8S_ENV is not set, use default tag
     env=${K8S_ENV:-default}
     script=$(util_dotless_name "$script_name_with_extension")
-    cat <<EOF | curl --data-binary @- "$PUSHGATEWAY_URL"/metrics/job/cmsmon-cron-"${env}"/instance/"$(hostname)"
+    cat <<EOF | curl -s -S --data-binary @- "$PUSHGATEWAY_URL"/metrics/job/cmsmon-cron-"${env}"/instance/"$(hostname)"
 # TYPE cmsmon_cron_start_${env}_${script} gauge
 # HELP cmsmon_cron_start_${env}_${script} cronjob START Unix time
 cmsmon_cron_start_${env}_${script}{script="${script}", env="${env}", period="${period}"} $(date +%s)
@@ -209,7 +209,7 @@ function util_cron_send_end() {
     # If K8S_ENV is not set, use default tag
     env=${K8S_ENV:-default}
     script=$(util_dotless_name "$script_name_with_extension")
-    cat <<EOF | curl --data-binary @- "$PUSHGATEWAY_URL"/metrics/job/cmsmon-cron-"${env}"/instance/"$(hostname)"
+    cat <<EOF | curl -s -S --data-binary @- "$PUSHGATEWAY_URL"/metrics/job/cmsmon-cron-"${env}"/instance/"$(hostname)"
 # TYPE cmsmon_cron_end_${env}_${script} gauge
 # HELP cmsmon_cron_end_${env}_${script} cronjob END Unix time
 cmsmon_cron_end_${env}_${script}{script="${script}", env="${env}", period="${period}", status="${exit_code}"} $(date +%s)

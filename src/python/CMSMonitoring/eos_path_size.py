@@ -186,7 +186,7 @@ def main(output_file=None, non_ec_json=None, ec_json=None, summary_json=None, st
     df_ec = get_df_with_validation(ec_json, EC_SCHEMA, EC_COL_ORDER)
     df_summary = get_df_with_validation(summary_json, SUMMARY_SCHEMA, SUMMARY_COL_ORDER)
     main_html = create_main_html(df_non_ec, df_ec, df_summary, joint_update_time, static_html_dir)
-    with open(output_file, "w") as f:
+    with open(output_file, "w+") as f:
         f.write(main_html)
 
 
