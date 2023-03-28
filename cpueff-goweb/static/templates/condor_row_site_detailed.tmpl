@@ -10,6 +10,10 @@
             <th scope="col" style="text-align: left;font-weight: bold;">Site</th>
             <th scope="col" style="text-align: left;">Tier</th>
             <th scope="col" style="text-align: right;">Cpu Eff</th>
+            <th scope="col" style="text-align: right;">Non Eviction Eff</th>
+            <th scope="col" style="text-align: right;">Eviction Aware Eff Diff</th>
+            <th scope="col" style="text-align: right;">Schedule Eff</th>
+            <th scope="col" style="text-align: right;">Cmssw Read Time Pct</th>
             <th scope="col" style="text-align: right;">Cpus</th>
             <th scope="col" style="text-align: right;">Cpu Time Hr</th>
             <th scope="col" style="text-align: right;">Wall Clock Hr</th>
@@ -26,6 +30,10 @@
                 <td style="text-align: left; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;font-weight: bold;background-color: aliceblue">{{.Site}}</td>
                 <td style="text-align: left; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Tier}}</td>
                 <td style="min-width: 30px;!important; background-color: rgba(255,127,80,0.51); text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">%{{printf "%.2f" .CpuEff}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">%{{printf "%.2f" .NonEvictionEff}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">%{{printf "%.2f" .EvictionAwareEffDiff}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">%{{printf "%.2f" .ScheduleEff}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">%{{printf "%.2f" .CmsswReadTimePercentage}}</td>
                 <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Cpus}}</td>
                 <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CpuTimeHr}}</td>
                 <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WallClockHr}}</td>

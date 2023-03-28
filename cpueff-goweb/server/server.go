@@ -102,6 +102,7 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 					"govar_BASE_EP":          Config.BaseEndpoint,
 					"data_tier_efficiencies": tierCpuEffs,
 					"data_source_time":       dataTimestamp.StartDate + " - " + dataTimestamp.EndDate,
+					"govar_GIT_TAG":          GitVersion,
 				},
 			)
 		})

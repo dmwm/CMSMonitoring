@@ -110,9 +110,10 @@
 
     footer {
         text-align: center;
-        padding: 3px;
+        padding: 10px;
         background-color: ghostwhite;
-        font-family: 'Trebuchet MS', sans-serif;
+        width: 100%;
+        font-family: 'Times New Roman', monospace;
     }
 
 </style>
@@ -240,10 +241,14 @@
 </body>
 <footer style="bottom:0; position:absolute;">
 
-    <p>2023 CMS Monitoring&Analytics &copy;
+    <p><span>&nbsp;&nbsp;&nbsp;</span>2023 CMS Monitoring&Analytics &nbsp; &copy; &nbsp;
         <a target="_blank" href="https://github.com/dmwm/CMSMonitoring/blob/master/cpueff-goweb">
             dmwm/CMSMonitoring/cpueff-goweb
         </a>
+        <img width="20px" height="20px" sizes="" alt="gh" src="/{{.govar_BASE_EP}}/static/img/github-mark.svg">
+        &nbsp; | &nbsp; <span style="color: #0969da;"> Tag :</span>
+        <a target="_blank" href="https://github.com/dmwm/CMSMonitoring/releases/tag/{{.govar_GIT_TAG}}">{{.govar_GIT_TAG}}</a>
+        <img width="20px" height="20px" sizes="" alt="gh" src="/{{.govar_BASE_EP}}/static/img/github-mark.svg">
     </p>
 </footer>
 
