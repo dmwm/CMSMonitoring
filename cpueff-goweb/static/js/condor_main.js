@@ -459,6 +459,14 @@ $(document).ready(function () {
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
             },
             {
+                data: "CmsswReadTimePercentage",
+                name: 'Cmssw Read Time Pct',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data)+'%' : data;},
+            },
+            {
                 data: "Cpus",
                 name: 'Cpus',
                 searchBuilderType: 'num',
