@@ -81,11 +81,12 @@ func MainRouter(mongoColNames *models.MongoCollectionNames) http.Handler {
 
 	// ------------------------------- /Config.BaseEndpoint/ group -----------------------------------
 
-	// Give root path as / and provide ingress/auth-poxy redirection same in Config.BaseEndpoint
+	// Give root path as / and provide ingress/auth-poxy redirection same with Config.BaseEndpoint
+	// See: https://gitlab.cern.ch/cmsmonitoring/cmsmon-configs/-/blob/master/cmsmon-auth/config.json#L105
 	e := engine.Group("/")
 
 	if Config.IsTest {
-		// In test base endpoint and the engine endpoint should be same, there is no redirection
+		// In test, base endpoint and the engine endpoint should be same, there is no redirection via ingress
 		e = engine.Group("/" + Config.BaseEndpoint)
 	}
 
