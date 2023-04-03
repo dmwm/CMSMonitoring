@@ -118,3 +118,4 @@ cpueff-goweb/client_env
 
 # JetBrains
 .idea
+*.DS_Store

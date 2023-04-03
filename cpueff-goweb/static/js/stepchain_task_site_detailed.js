@@ -265,7 +265,7 @@ $(document).ready(function () {
         searchBuilder: {
             depthLimit: 1,
             // SearchBuilder customizations to limit conditions: "Task" column not included  they are searched via "input-sc-task"
-            columns: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+            columns: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
             conditions: {
                 // "num" type hacking. "num" always parse numeric values, but we need whole string like "10TB"
                 // that's why we use "html" type, but it will be used in numeric columns
@@ -393,6 +393,18 @@ $(document).ready(function () {
             },
             {
                 data: "TotalThreadJobTimeHr", name: 'Total Thread Job Time Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
+            },
+            {
+                data: "WriteTotalSecs", name: 'Write Total Secs', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
+            },
+            {
+                data: "ReadTotalSecs", name: 'Read Total Secs', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
+            },
+            {
+                data: "ReadTimePercentage", name: 'Read Time Pct', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {

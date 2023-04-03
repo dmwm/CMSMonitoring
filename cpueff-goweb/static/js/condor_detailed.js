@@ -455,6 +455,16 @@ $(document).ready(function () {
                 },
             },
             {
+                data: "CommittedOverMaxWallTimeAvg",
+                name: 'Committed Over Max Wall Time Avg',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {
+                    return type === 'display' ? helperFloatPrecision(data) : data;
+                },
+            },
+            {
                 data: "Schedds", searchBuilderType: 'array', searchBuilder: {defaultCondition: "="}},
             {
                 data: "MaxWmagentJobId",
