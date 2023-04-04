@@ -13,7 +13,7 @@ from datetime import datetime, date, timedelta
 import click
 # CMSSpark modules
 from CMSSpark.spark_utils import get_candidate_files, get_spark_session
-from pyspark.sql.functions import array_max, col, collect_set, lit, upper, when, sum as _sum
+from pyspark.sql.functions import array_max, col, collect_set, lit, upper, when, sum as _sum, avg as _avg
 from pyspark.sql.types import StructType, LongType, StringType, StructField, DoubleType, IntegerType
 
 # global variables
@@ -44,6 +44,7 @@ def _get_schema():
                         StructField("CpuTimeHr", DoubleType(), nullable=True),
                         StructField("CommittedCoreHr", DoubleType(), nullable=True),
                         StructField("CommittedWallClockHr", DoubleType(), nullable=True),
+                        StructField("MaxWallTimeMins", DoubleType(), nullable=True),
                         StructField("RequestCpus", DoubleType(), nullable=True),
                         StructField("ChirpCMSSWReadTimeMsecs", DoubleType(), nullable=True),
                         StructField("ChirpCMSSWElapsed", DoubleType(), nullable=True),
@@ -133,6 +134,8 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
                     col("WallClockHr") * col("RequestCpus"))
         .withColumn("WastedCpuTimeHr",
                     ((col("RequestCpus") * col("WallClockHr")) - col("CpuTimeHr")))
+        .withColumn("CommittedOverMaxWallTime",
+                    60 * col("CommittedWallClockHr") / col("MaxWallTimeMins"))
         .withColumn("Tier", upper(col("Tier")))
         .withColumn("WmagentRequestName", col("WMAgent_RequestName"))
     ).cache()
@@ -143,7 +146,7 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
         (100 * _sum("CpuTimeHr") / _sum("CoreTimeHr")).alias("CpuEff"),
         (100 * _sum("CpuTimeHr") / _sum("CommittedCoreHr")).alias("NonEvictionEff"),
         (100 * _sum("CommittedWallClockHr") / _sum("WallClockHr")).alias("ScheduleEff"),
-        ((_sum("ChirpCMSSWReadTimeMsecs") / 1000) / _sum("ChirpCMSSWElapsed")).alias("CmsswReadTimePercentage"),
+        (100 * (_sum("ChirpCMSSWReadTimeMsecs") / 1000) / _sum("ChirpCMSSWElapsed")).alias("CmsswReadTimePercentage"),
         _sum("RequestCpus").alias("Cpus"),
         _sum("CpuTimeHr").alias("CpuTimeHr"),
         _sum("WallClockHr").alias("WallClockHr"),
@@ -151,6 +154,7 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
         _sum("CommittedCoreHr").alias("CommittedCoreHr"),
         _sum("CommittedWallClockHr").alias("CommittedWallClockHr"),
         _sum("WastedCpuTimeHr").alias("WastedCpuTimeHr"),
+        _avg("CommittedOverMaxWallTime").alias("CommittedOverMaxWallTimeAvg"),
         collect_set("ScheddName").alias("Schedds"),
         array_max(collect_set("WMAgent_JobID")).alias("MaxWmagentJobId"),
     ).withColumn("EvictionAwareEffDiff", col('NonEvictionEff') - col('CpuEff'))
@@ -163,7 +167,7 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
         (100 * _sum("CpuTimeHr") / _sum("CoreTimeHr")).alias("CpuEff"),
         (100 * _sum("CpuTimeHr") / _sum("CommittedCoreHr")).alias("NonEvictionEff"),
         (100 * _sum("CommittedWallClockHr") / _sum("WallClockHr")).alias("ScheduleEff"),
-        ((_sum("ChirpCMSSWReadTimeMsecs") / 1000) / _sum("ChirpCMSSWElapsed")).alias("CmsswReadTimePercentage"),
+        (100 * (_sum("ChirpCMSSWReadTimeMsecs") / 1000) / _sum("ChirpCMSSWElapsed")).alias("CmsswReadTimePercentage"),
         _sum("RequestCpus").alias("Cpus"),
         _sum("CpuTimeHr").alias("CpuTimeHr"),
         _sum("WallClockHr").alias("WallClockHr"),
@@ -171,6 +175,7 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
         _sum("CommittedWallClockHr").alias("CommittedWallClockHr"),
         _sum("CoreTimeHr").alias("CoreTimeHr"),
         _sum("WastedCpuTimeHr").alias("WastedCpuTimeHr"),
+        _avg("CommittedOverMaxWallTime").alias("CommittedOverMaxWallTimeAvg"),
         (100 *
          _sum(when(col("Tier").isin(*T1T2_Tiers), col("CpuTimeHr"))) /
          _sum(when(col("Tier").isin(*T1T2_Tiers), col("CoreTimeHr")))

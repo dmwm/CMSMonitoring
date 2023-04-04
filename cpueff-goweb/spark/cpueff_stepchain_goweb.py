@@ -49,6 +49,8 @@ def get_rdd_schema():
             StructField('number_of_steps', IntegerType(), nullable=True),
             StructField('write_total_mb', DoubleType(), nullable=True),
             StructField('read_total_mb', DoubleType(), nullable=True),
+            StructField('read_total_secs', DoubleType(), nullable=True),
+            StructField('write_total_secs', DoubleType(), nullable=True),
             StructField('peak_rss', DoubleType(), nullable=True),
             StructField('peak_v_size', DoubleType(), nullable=True),
         ]
@@ -97,6 +99,10 @@ def udf_step_extract(row):
                             step_res['write_total_mb'] = performance['storage']['writeTotalMB']
                         if 'readTotalMB' in performance['storage']:
                             step_res['read_total_mb'] = performance['storage']['readTotalMB']
+                        if 'writeTotalSecs' in performance['storage'] and performance['storage']['writeTotalSecs']:
+                            step_res['write_total_secs'] = float(performance['storage']['writeTotalSecs'])
+                        if 'readTotalSecs' in performance['storage'] and performance['storage']['readTotalSecs']:
+                            step_res['read_total_secs'] = float(performance['storage']['readTotalSecs'])
                     if 'memory' in performance:
                         if 'PeakValueRss' in performance['memory']:
                             step_res['peak_rss'] = performance['memory']['PeakValueRss']
@@ -187,6 +193,9 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
             (_mean("job_time") / _HOUR_DENOM).alias("MeanJobTimeHr"),
             (_sum("job_time") / _HOUR_DENOM).alias("TotalJobTimeHr"),
             (_sum("threads_total_job_time") / _HOUR_DENOM).alias("TotalThreadJobTimeHr"),
+            _sum("write_total_secs").alias("WriteTotalSecs"),
+            _sum("read_total_secs").alias("ReadTotalSecs"),
+            (100 * _sum("read_total_secs") / _sum("job_time")).alias("ReadTimePercentage"),
             _sum("write_total_mb").alias("WriteTotalMB"),
             _sum("read_total_mb").alias("ReadTotalMB"),
             _mean(when(col("peak_rss").isNotNull(), col("peak_rss"))).alias("MeanPeakRss"),
@@ -210,6 +219,9 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
             (_mean("job_time") / _HOUR_DENOM).alias("MeanJobTimeHr"),
             (_sum("job_time") / _HOUR_DENOM).alias("TotalJobTimeHr"),
             (_sum("threads_total_job_time") / _HOUR_DENOM).alias("TotalThreadJobTimeHr"),
+            _sum("write_total_secs").alias("WriteTotalSecs"),
+            _sum("read_total_secs").alias("ReadTotalSecs"),
+            (100 * _sum("read_total_secs") / _sum("job_time")).alias("ReadTimePercentage"),
             _sum("write_total_mb").alias("WriteTotalMB"),
             _sum("read_total_mb").alias("ReadTotalMB"),
             _mean(when(col("peak_rss").isNotNull(), col("peak_rss"))).alias("MeanPeakRss"),
@@ -233,6 +245,9 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
             (_mean("job_time") / _HOUR_DENOM).alias("MeanJobTimeHr"),
             (_sum("job_time") / _HOUR_DENOM).alias("TotalJobTimeHr"),
             (_sum("threads_total_job_time") / _HOUR_DENOM).alias("TotalThreadJobTimeHr"),
+            _sum("write_total_secs").alias("WriteTotalSecs"),
+            _sum("read_total_secs").alias("ReadTotalSecs"),
+            (100 * _sum("read_total_secs") / _sum("job_time")).alias("ReadTimePercentage"),
             _sum("write_total_mb").alias("WriteTotalMB"),
             _sum("read_total_mb").alias("ReadTotalMB"),
             _mean(when(col("peak_rss").isNotNull(), col("peak_rss"))).alias("MeanPeakRss"),

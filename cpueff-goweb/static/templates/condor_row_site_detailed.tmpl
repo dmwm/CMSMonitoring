@@ -19,6 +19,7 @@
             <th scope="col" style="text-align: right;">Wall Clock Hr</th>
             <th scope="col" style="text-align: right;">Core Time Hr</th>
             <th scope="col" style="text-align: right;">Wasted Cpu Time Hr</th>
+            <th scope="col" style="text-align: right;">Committed Over Max Wall Time Avg</th>
             <th scope="col" style="text-align: right;">Max WMAgent Job Id</th>
             <th scope="col" style="text-align: right;">Schedds</th>
         </tr>
@@ -39,6 +40,7 @@
                 <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WallClockHr}}</td>
                 <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CoreTimeHr}}</td>
                 <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .WastedCpuTimeHr}}</td>
+                <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{printf "%.2f" .CommittedOverMaxWallTimeAvg}}</td>
                 <td style="font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.MaxWmagentJobId}}</td>
                 <td style="text-align: right; font-size: x-small; font-family: 'Trebuchet MS', sans-serif;">{{.Schedds}}</td>
             </tr>

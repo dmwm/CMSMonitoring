@@ -522,6 +522,16 @@ $(document).ready(function () {
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
+                data: "CommittedOverMaxWallTimeAvg",
+                name: 'Committed Over Max Wall Time Avg',
+                searchBuilderType: 'num',
+                searchBuilder: {defaultCondition: ">="},
+                width: "3%",
+                render: function (data, type, row, meta) {
+                    return type === 'display' ? helperFloatPrecision(data) : data;
+                },
+            },
+            {
                 data: "CpuEffT1T2",
                 name: 'Cpu Eff T1T2',
                 searchBuilderType: 'num',
