@@ -83,7 +83,7 @@ SUMMARY_COL_ORDER = {'openstackProjectName': 'Openstack Project Name',
                      'totalGigabytesUsed': 'Total Gigabytes Used',
                      'totalSnapshotsUsed': 'Total Snapshots Used',
                      'totalBackupsUsed': 'Total Backups Used',
-                     'totalBackupGigabytesUsed': 'Total Backup Gigabytes Used'
+                     'totalBackupGigabytesUsed': 'Total Backup Gigabytes Used',
                      'contacts': 'Contacts'}
 
 
