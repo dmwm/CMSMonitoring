@@ -49,7 +49,8 @@ SUMMARY_SCHEMA = Schema([{'openstackProjectName': str,
                           'totalGigabytesUsed': Use(int),
                           'totalSnapshotsUsed': Use(int),
                           'totalBackupsUsed': Use(int),
-                          'totalBackupGigabytesUsed': Use(int), }])
+                          'totalBackupGigabytesUsed': Use(int),
+                          'contacts': str, }])
 
 # DO NOT FORGET TO UPDATE "columnDefs" VISIBILITY IN JavaScript TEMPLATE: src/html/openstack_accounting/main.html
 # ORDER IS IMPORTANT IN PYTHON DICTS AND IT IS USED IN JS "columnDefs" ARRAY
@@ -82,7 +83,8 @@ SUMMARY_COL_ORDER = {'openstackProjectName': 'Openstack Project Name',
                      'totalGigabytesUsed': 'Total Gigabytes Used',
                      'totalSnapshotsUsed': 'Total Snapshots Used',
                      'totalBackupsUsed': 'Total Backups Used',
-                     'totalBackupGigabytesUsed': 'Total Backup Gigabytes Used'}
+                     'totalBackupGigabytesUsed': 'Total Backup Gigabytes Used'
+                     'contacts': 'Contacts'}
 
 
 def tstamp():
