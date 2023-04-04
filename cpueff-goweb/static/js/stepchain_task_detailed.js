@@ -461,11 +461,11 @@ $(document).ready(function () {
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "WriteTotalSecs", name: 'Write Total Secs', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                data: "WriteTotalHr", name: 'Write Total Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {
-                data: "ReadTotalSecs", name: 'Read Total Secs', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
+                data: "ReadTotalHr", name: 'Read Total Hr', searchBuilderType: 'num', searchBuilder: {defaultCondition: ">="},
                 render: function (data, type, row, meta) {return type === 'display' ? helperFloatPrecision(data) : data;},
             },
             {

@@ -110,8 +110,8 @@ Extracted fields calculations from WMArchive `data.steps` object:
 | **MeanJobTimeHr**        | agg field. value: `mean(job_time) / 3600` , mean of `TotalJobTime`(seconds) in hour unit                                               |
 | **TotalJobTimeHr**       | agg field. value: `sum(job_time) / 3600` , sum of `TotalJobTime`(seconds) in hour unit                                                 |
 | **TotalThreadJobTimeHr** | agg field. value: `sum(threads_total_job_time) / 3600` , sum of `(TotalJobTime * NumberOfThreads) / 3600`(seconds) in hour unit        |
-| **WriteTotalSecs**       | agg field. value: `sum(write_total_secs)`                                                                                              |
-| **ReadTotalSecs**        | agg field. value: `sum(read_total_secs)`                                                                                               |
+| **WriteTotalHr**         | agg field. value: `sum(write_total_secs) / 3600`                                                                                       |
+| **ReadTotalHr**          | agg field. value: `sum(read_total_secs) / 3600`                                                                                        |
 | **ReadTimePercentage**   | agg field. value: `(100 * sum(read_total_secs) / sum(job_time))`                                                                       |
 | **WriteTotalMB**         | agg field. value: `sum(write_total_mb)`                                                                                                |
 | **ReadTotalMB**          | agg field. value: `sum(read_total_mb)`                                                                                                 |
