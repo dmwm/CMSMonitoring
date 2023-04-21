@@ -79,7 +79,7 @@ function run_spark() {
         --master yarn --conf spark.ui.showConsoleProgress=false --conf spark.sql.session.timeZone=UTC
         --conf "spark.driver.bindAddress=0.0.0.0" --conf "spark.driver.host=${K8SHOST}"
         --conf "spark.driver.port=${PORT1}" --conf "spark.driver.blockManager.port=${PORT2}"
-        --driver-memory=8g --executor-memory=8g --packages org.apache.spark:spark-avro_2.12:3.3.1
+        --driver-memory=8g --executor-memory=8g --packages org.apache.spark:spark-avro_2.12:3.4.0
     )
 
     py_input_args=(--hdfs_out_dir "$hdfs_out_dir" --start_date "$start_date" --end_date "$end_date")
