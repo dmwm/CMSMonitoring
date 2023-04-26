@@ -7,7 +7,7 @@ set -e
 TZ=UTC
 SCHEMA="CMS_RUCIO_PROD"
 # Suggested order
-RUCIO_TABLES="replicas dids contents dataset_locks locks rules rules_history rses"
+RUCIO_TABLES="replicas dids contents dataset_locks locks rules rules_history requests_history subscriptions rses"
 
 myname=$(basename "$0")
 BASE_PATH=$(util_get_config_val "$myname")
