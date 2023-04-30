@@ -138,7 +138,7 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
                     60 * col("CommittedWallClockHr") / col("MaxWallTimeMins"))
         .withColumn("Tier", upper(col("Tier")))
         .withColumn("WmagentRequestName", col("WMAgent_RequestName"))
-    ).cache()
+    )
 
     # Order is important
     group_by_cols_detailed = ["Type", "Workflow", "WmagentRequestName", "Site", "Tier", "CpuEffOutlier"]
