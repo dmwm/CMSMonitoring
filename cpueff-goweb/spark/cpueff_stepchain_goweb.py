@@ -180,7 +180,7 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
 
     df_rdd = df_raw.rdd.flatMap(lambda r: udf_step_extract(r))
     df = spark.createDataFrame(df_rdd, schema=get_rdd_schema()).dropDuplicates().where(
-        col("nstreams").isNotNull()).cache()
+        col("nstreams").isNotNull())
 
     df_task = (
         df.groupby(["Task"]).agg(
