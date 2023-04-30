@@ -90,8 +90,8 @@ type StepchainTask struct {
 	MeanJobTimeHr        float64       `bson:"MeanJobTimeHr,omitempty" validate:"required"`
 	TotalJobTimeHr       float64       `bson:"TotalJobTimeHr,omitempty" validate:"required"`
 	TotalThreadJobTimeHr float64       `bson:"TotalThreadJobTimeHr,omitempty"`
-	WriteTotalSecs       float64       `bson:"WriteTotalSecs,omitempty"`
-	ReadTotalSecs        float64       `bson:"ReadTotalSecs,omitempty"`
+	WriteTotalHr         float64       `bson:"WriteTotalHr,omitempty"`
+	ReadTotalHr          float64       `bson:"ReadTotalHr,omitempty"`
 	ReadTimePercentage   float64       `bson:"ReadTimePercentage,omitempty"`
 	WriteTotalMB         float64       `bson:"WriteTotalMB,omitempty"`
 	ReadTotalMB          float64       `bson:"ReadTotalMB,omitempty"`
@@ -117,8 +117,8 @@ type StepchainTaskWithCmsrunJobtype struct {
 	MeanJobTimeHr        float64       `bson:"MeanJobTimeHr,omitempty" validate:"required"`
 	TotalJobTimeHr       float64       `bson:"TotalJobTimeHr,omitempty" validate:"required"`
 	TotalThreadJobTimeHr float64       `bson:"TotalThreadJobTimeHr,omitempty"`
-	WriteTotalSecs       float64       `bson:"WriteTotalSecs,omitempty"`
-	ReadTotalSecs        float64       `bson:"ReadTotalSecs,omitempty"`
+	WriteTotalHr         float64       `bson:"WriteTotalHr,omitempty"`
+	ReadTotalHr          float64       `bson:"ReadTotalHr,omitempty"`
 	ReadTimePercentage   float64       `bson:"ReadTimePercentage,omitempty"`
 	WriteTotalMB         float64       `bson:"WriteTotalMB,omitempty"`
 	ReadTotalMB          float64       `bson:"ReadTotalMB,omitempty"`
@@ -146,8 +146,8 @@ type StepchainTaskWithCmsrunJobtypeSite struct {
 	MeanJobTimeHr        float64       `bson:"MeanJobTimeHr,omitempty" validate:"required"`
 	TotalJobTimeHr       float64       `bson:"TotalJobTimeHr,omitempty" validate:"required"`
 	TotalThreadJobTimeHr float64       `bson:"TotalThreadJobTimeHr,omitempty"`
-	WriteTotalSecs       float64       `bson:"WriteTotalSecs,omitempty"`
-	ReadTotalSecs        float64       `bson:"ReadTotalSecs,omitempty"`
+	WriteTotalHr         float64       `bson:"WriteTotalHr,omitempty"`
+	ReadTotalHr          float64       `bson:"ReadTotalHr,omitempty"`
 	ReadTimePercentage   float64       `bson:"ReadTimePercentage,omitempty"`
 	WriteTotalMB         float64       `bson:"WriteTotalMB,omitempty"`
 	ReadTotalMB          float64       `bson:"ReadTotalMB,omitempty"`
