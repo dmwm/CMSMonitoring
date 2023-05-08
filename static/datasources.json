@@ -109,11 +109,6 @@
         "type": "elasticsearch",
         "database": "cmssdt-scram-access*"
     },
-    "cmst0_agg": {
-        "id": 10325,
-        "type": "elasticsearch",
-        "database": "[monit_prod_cmst0_agg-*]"
-    },
     "cmstest-victoriametrics": {
         "id": 9472,
         "type": "prometheus",
@@ -279,51 +274,6 @@
         "type": "prometheus",
         "database": ""
     },
-    "Elasticsearch": {
-        "id": 9679,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-1": {
-        "id": 9702,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-2": {
-        "id": 9703,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-3": {
-        "id": 10138,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-4": {
-        "id": 10140,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-5": {
-        "id": 10281,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-6": {
-        "id": 10358,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-7": {
-        "id": 10359,
-        "type": "elasticsearch",
-        "database": ""
-    },
-    "Elasticsearch-8": {
-        "id": 10360,
-        "type": "elasticsearch",
-        "database": ""
-    },
     "es-cms": {
         "id": 8983,
         "type": "elasticsearch",
@@ -337,12 +287,27 @@
     "es-cms-logmon": {
         "id": 9999,
         "type": "elasticsearch",
-        "database": "cms-logmon-*"
+        "database": "[logmon-spider-*]"
     },
-    "es-cms-test": {
-        "id": 9919,
+    "es-cms-test-crab": {
+        "id": 10412,
         "type": "elasticsearch",
-        "database": "[cms-test-k8s-20*]"
+        "database": "[test-crab-wa1-*]"
+    },
+    "es-cms-test-wma-agent-count": {
+        "id": 10408,
+        "type": "elasticsearch",
+        "database": "[test-wmarchive-agent-count-*]"
+    },
+    "es-cms1-test": {
+        "id": 10370,
+        "type": "elasticsearch",
+        "database": "[cms-20*]"
+    },
+    "es-cms7-test-ceyhun": {
+        "id": 10371,
+        "type": "elasticsearch",
+        "database": "[cms-*]"
     },
     "ES_cms_rucio_enr": {
         "id": 9732,
@@ -444,10 +409,20 @@
         "type": "elasticsearch",
         "database": "[monit_prod_crab_*]"
     },
+    "monit_dmwm_ms_pileup": {
+        "id": 10402,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-ms-pileup_raw_cms-ms-pileup-*]"
+    },
     "monit_eos_ioapp": {
         "id": 10338,
         "type": "influxdb",
         "database": "monit_production_eos_users"
+    },
+    "monit_eos_mon_tzero": {
+        "id": 10403,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms_eos_mon_raw_tzero-*]"
     },
     "monit_eoscmsquotas": {
         "id": 9003,
@@ -508,6 +483,11 @@
         "id": 10326,
         "type": "elasticsearch",
         "database": "[monit_prod_cmst0_agg*]"
+    },
+    "monit_es_cmst0_raw": {
+        "id": 10325,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cmst0_raw*]"
     },
     "monit_es_condor": {
         "id": 8787,
@@ -832,51 +812,6 @@
     "MySQL": {
         "id": 9485,
         "type": "mysql",
-        "database": ""
-    },
-    "Prometheus": {
-        "id": 9528,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-1": {
-        "id": 9537,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-2": {
-        "id": 9869,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-3": {
-        "id": 9870,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-4": {
-        "id": 9872,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-5": {
-        "id": 10011,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-6": {
-        "id": 10114,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-7": {
-        "id": 10115,
-        "type": "prometheus",
-        "database": ""
-    },
-    "Prometheus-8": {
-        "id": 10173,
-        "type": "prometheus",
         "database": ""
     },
     "Prometheus-FL": {
