@@ -27,35 +27,32 @@ def main(output=None, template_dir=None):
     RSE_EXPRESSION = r"rse_type=DISK&cms_type=real&tier<3&tier>0\(T2_US_Caltech_Ceph|T2_PL_Warsaw)"
 
     rses = list(client.list_rses(rse_expression=RSE_EXPRESSION))
-    rse_names = []
-    for e in rses:
-        rse_names.append(e["rse"])
+    rse_names = [name["rse"] for name in rses]
     rse_names.sort()
 
     static_space = []
     used_space = []
     fraction_space = []
     free_space = []
+    rse_names_final = []
 
     for rse in rse_names:
         site_usage = list(client.get_rse_usage(rse))
+        sources = {el["source"]: el["used"] for el in site_usage if el["source"] in ["static", "rucio"]}
+        if len(sources) == 2:  # checking if both rucio and static info exists
+            static_space.append(sources["static"] * 1e-12)
+            used_space.append(sources["rucio"] * 1e-12)
+            fraction_space.append(100. * used_space[-1] / static_space[-1])
+            free_space.append(static_space[-1] - used_space[-1])
+            rse_names_final.append(rse)
 
-        for source in site_usage:
-            if source["source"] == "static":
-                total = source["used"]
-                static_space.append(total * 1e-12)
-            if source["source"] == "rucio":
-                rucio = source["used"]
-                used_space.append(rucio * 1e-12)
+    # print(f"rse_names: {rse_names_final},\nlen: {len(rse_names)}\n")
+    # print(f"fraction_space: {fraction_space},\nlen: {len(fraction_space)}\n")
+    # print(f"free_space: {free_space},\nlen: {len(free_space)}\n")
+    # print(f"static_space: {static_space},\nlen: {len(static_space)}\n")
+    # print(f"used_space: {used_space},\nlen: {len(used_space)}\n")
 
-        fraction_space.append(100. * used_space[-1] / static_space[-1])
-        free_space.append(static_space[-1] - used_space[-1])
-
-    # print(rse_names)
-    # print(fraction_space)
-    # print(free_space)
-
-    data = {'RSE': rse_names, '   Used space   ': used_space, '   Total space   ': static_space,
+    data = {'RSE': rse_names_final, '   Used space   ': used_space, '   Total space   ': static_space,
             '   Fraction used (%)   ': fraction_space, '   Free space   ': free_space}
 
     df = pd.DataFrame.from_dict(data=data).round(1)
@@ -67,14 +64,13 @@ def main(output=None, template_dir=None):
     )
     html = html.replace('style="text-align: right;"', "")
 
-    #
     with open(os.path.join(template_dir, "htmltemplate.html")) as f:
         htm_template = f.read()
 
     current_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     main_html = htm_template.replace("XXX", current_date)
     main_html = main_html.replace("____MAIN_BLOCK____", html)
-    #
+
     with open(output, "w+") as f:
         f.write(main_html)
 
