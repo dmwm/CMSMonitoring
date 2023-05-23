@@ -53,6 +53,7 @@ function run_spark() {
     export PYTHONPATH=$script_dir:$PYTHONPATH
     spark_submit_args=(
         --master yarn --conf spark.ui.showConsoleProgress=false --conf spark.sql.session.timeZone=UTC
+        --conf spark.shuffle.useOldFetchProtocol=true
         --conf "spark.driver.bindAddress=0.0.0.0" --conf "spark.driver.host=${K8SHOST}"
         --conf "spark.driver.port=${PORT1}" --conf "spark.driver.blockManager.port=${PORT2}"
         --driver-memory=8g --executor-memory=8g
