@@ -31,11 +31,10 @@ jobs:
           go build -o datasources datasources.go
           go build -o ggus_alerting ggus_alerting.go
           go build -o ggus_parser ggus_parser.go
-          go build -o intelligence intelligence.go
           go build -o ssb_alerting ssb_alerting.go
           go build -o es_exporter es_exporter.go
           mv monit alert annotationManager datasources ggus_alerting \
-            ggus_parser intelligence ssb_alerting es_exporter ../../../cmsmon-tools
+            ggus_parser ssb_alerting es_exporter ../../../cmsmon-tools
           cd ../NATS
           go build -o dbs_vm dbs_vm.go
           go build -o nats-pub nats-pub.go
@@ -70,30 +69,6 @@ jobs:
       - name: Get git tag
         id: get_tag
         run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-
-      - name: Build cmsmon-int image
-        run: |
-          echo Image tag: ${{ steps.get_tag.outputs.tag }}
-          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-intelligence/Dockerfile
-          sed -i -e "s,ENV CMSMON_TAG=.*,ENV CMSMON_TAG=${{steps.get_tag.outputs.tag}},g" Dockerfile
-          docker build . --tag docker.pkg.github.com/dmwm/cmsmon-int/cmsmon-int
-          docker tag docker.pkg.github.com/dmwm/cmsmon-int/cmsmon-int registry.cern.ch/cmsmonitoring/cmsmon-int
-
-      - name: Login to registry.cern.ch
-        uses: docker/login-action@v1.6.0
-        with:
-          registry: registry.cern.ch
-          username: ${{ secrets.CERN_LOGIN }}
-          password: ${{ secrets.CERN_TOKEN }}
-
-      - name: Publish cmsmon-int image to registry.cern.ch
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ secrets.CERN_LOGIN }}
-          password: ${{ secrets.CERN_TOKEN }}
-          registry: registry.cern.ch
-          repository: cmsmonitoring/cmsmon-int
-          tag_with_ref: true
 
       - name: Build cmsmon-alerts image
         run: |
