@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Author: Nikodemas Tuckus <ntuckus AT gmail [DOT] com>
+This script copies Grafana dashboard jsons, tars them and puts them into HDFS and EOS folder
+"""
 import os
 import sys
 import json
