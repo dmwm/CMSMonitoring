@@ -16,15 +16,18 @@ import click
 
 baseUrl = 'https://monit-grafana.cern.ch/api'
 
+
 def updatePathEnding(path):
     if not path.endswith("/"):
         path += "/"
     return path
+
+
 def getGrafanaAuth(fname):
     if not os.path.exists(fname):
         print("File {} does not exist".format(fname))
         sys.exit(1)
-    with open(fname, 'r+') as keyFile:
+    with open(fname, 'r') as keyFile:
         SECRET_KEY = json.load(keyFile).get('SECRET_KEY')
     headers = {"Authorization": "Bearer %s" % SECRET_KEY}
     return headers
