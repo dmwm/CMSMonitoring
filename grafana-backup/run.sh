@@ -54,4 +54,4 @@ function onExit() {
 }
 
 # Execute
-/data/cms/cmsmonitoringbackup/dashboard-exporter.py --token $2 --hdfs-path $3 --filesystem-path $4
+./dashboard-exporter.py --token $2 --hdfs-path $3 --filesystem-path $4
