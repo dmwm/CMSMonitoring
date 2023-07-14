@@ -42,3 +42,9 @@ dbs_file_lumis_day_retention="30 days ago"
 dbs_file_lumis_dir="/project/awg/cms/dbs/PROD_GLOBAL"
 dbs_file_lumis_day=$(date -d "$dbs_file_lumis_day_retention" +%Y-%m-%d)
 util_hdfs_delete "$dbs_file_lumis_dir/$dbs_file_lumis_day/FILE_LUMIS" "DBS3 FILE_LUMIS"
+
+# TASKS (cms-tasks.sh | /project/awg/cms/crab/tasks) 30 days retention policy
+tasks_day_retention="30 days ago"
+tasks_dir="/project/awg/cms/crab/tasks"
+tasks_day=$(date -d "$tasks_day_retention" +%Y-%m-%d)
+util_hdfs_delete "$tasks_dir/$tasks_day" "TASKS"

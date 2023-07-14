@@ -7,5 +7,6 @@
   "cms-dbs3-files.sh": "/tmp/cmssqoop/dev-test/dbs3verify/CMS_DBS3_PROD_GLOBAL/files",
   "phedex-blk-replicas-snapshot.sh": "/tmp/cmssqoop/dev-test/phedex/block-replicas-snapshots/csv",
   "phedex-file-catalog.sh": "/tmp/cmssqoop/dev-test/phedex/catalog/csv",
-  "rucio_table_dumps.sh": "/tmp/cmssqoop/dev-test/rucio"
+  "rucio_table_dumps.sh": "/tmp/cmssqoop/dev-test/rucio",
+  "cms-tasks.sh": "/tmp/cmssqoop/dev-test/tasks"
 }
