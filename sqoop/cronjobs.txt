@@ -19,7 +19,10 @@ MAILTO=""
 # DBS full dumps
 00 05 * * *   cd /data/sqoop; ./run.sh ./scripts/dbs3_full_global.sh
 
-# Run only in production, paranthesis are important
+# TASKS dump
+00 02 * * *   cd /data/sqoop; ./run.sh ./scripts/cms-tasks.sh
+
+# Run only in production, parenthesis are important
 00 14 * * * [[ $CMSSQOOP_ENV == "prod" ]] && ( cd /data; /data/sqoop/run.sh /data/monit -query="stats" -token /etc/secrets/token -hdfs=/etc/secrets/hdfs.json -creds=/etc/secrets/cms-es-size.json -verbose 1 -inject 2>&1 1>& monit.log )
 
 # HDFS directories retention policy cleaner
