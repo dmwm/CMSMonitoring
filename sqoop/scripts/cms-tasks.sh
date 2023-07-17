@@ -19,7 +19,8 @@ myname=$(basename "$0")
 BASE_PATH=$(util_get_config_val "$myname")
 DAILY_PATH="${BASE_PATH}/$(date +%Y-%m-%d)"
 START_TIME=$(date +%s)
-pg_metric_db="CRAB_TASKS"
+LOG_FILE=log/$(date +'%F_%H%M%S')_$myname
+pg_metric_db="TASKS"
 util4logi "CMSSQOOP_ENV=${CMSSQOOP_ENV}, CMSSQOOP_CONFIGS=${CMSSQOOP_CONFIGS}." >>"$LOG_FILE".stdout
 
 # Check hadoop executable exist
@@ -79,7 +80,7 @@ sqoop_dump_tasks_cmd() {
 # ----------------------------------------------------------------------------------- RUN
 
 # Run import
-sqoop_dump_crab_cmd >>"$LOG_FILE".stdout 2>&1
+sqoop_dump_tasks_cmd >>"$LOG_FILE".stdout 2>&1
 
 # Give read permission to the new folder and sub folders after the dump is finished
 hadoop fs -chmod -R o+rx "$DAILY_PATH"
