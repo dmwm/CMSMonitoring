@@ -535,19 +535,12 @@ func groupESIndex(name string) string {
 	return s
 }
 
-// helper function to merge two maps
-func mergeMaps(m1 map[string]interface{}, m2 map[string]interface{}) map[string]interface{} {
-	for k, v := range m2 {
-		m1[k] = v
-	}
-	return m1
-}
-
 // helper function to parse stats meta-data
-func parseStats(short_term_data map[string]interface{}, long_term_data map[string]interface{}, verbose int) []Record {
-	short_term_indices := short_term_data["indices"].(map[string]interface{})
-	long_term_indices := long_term_data["indices"].(map[string]interface{})
-	indices := mergeMaps(short_term_indices, long_term_indices)
+func parseStats(data map[string]interface{}, verbose int) []Record {
+	indices, ok := data["indices"].(map[string]interface{})
+	if !ok {
+		log.Fatalf("Invalid indices received from 'stats' query")
+	}
 	var cmsIndexes []string
 	for _, d := range DataSources {
 		db := d.Database
@@ -589,8 +582,11 @@ func parseStats(short_term_data map[string]interface{}, long_term_data map[strin
 // helper function to deal with stats query
 func getStats(short_term_url string, long_term_url string, t string, short_term_dbid int, long_term_dbid int, database string, q string, esapi string, idx int, limit int, verbose int, stompConfig StompConfig, inject bool, hdfs string) {
 	short_term_data := run(short_term_url, t, short_term_dbid, database, q, esapi, idx, limit, verbose)
-	long_term_data := run(short_term_url, t, long_term_dbid, database, q, esapi, idx, limit, verbose)
-	records := parseStats(short_term_data, long_term_data, verbose)
+	records := parseStats(short_term_data, verbose)
+	injectRecords(stompConfig, records, verbose, inject)
+
+	long_term_data := run(long_term_url, t, long_term_dbid, database, q, esapi, idx, limit, verbose)
+	records = parseStats(long_term_data, verbose)
 	injectRecords(stompConfig, records, verbose, inject)
 }
 
