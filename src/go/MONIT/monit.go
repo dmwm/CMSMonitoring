@@ -535,9 +535,19 @@ func groupESIndex(name string) string {
 	return s
 }
 
+// helper function to merge two maps
+func mergeMaps(m1 map[string]interface{}, m2 map[string]interface{}) map[string]interface{} {
+	for k, v := range m2 {
+		m1[k] = v
+	}
+	return m1
+}
+
 // helper function to parse stats meta-data
-func parseStats(data map[string]interface{}, verbose int) []Record {
-	indices := data["indices"].(map[string]interface{})
+func parseStats(short_term_data map[string]interface{}, long_term_data map[string]interface{}, verbose int) []Record {
+	short_term_indices := short_term_data["indices"].(map[string]interface{})
+	long_term_indices := long_term_data["indices"].(map[string]interface{})
+	indices := mergeMaps(short_term_indices, long_term_indices)
 	var cmsIndexes []string
 	for _, d := range DataSources {
 		db := d.Database
@@ -574,6 +584,14 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 		}
 	}
 	return out
+}
+
+// helper function to deal with stats query
+func getStats(short_term_url string, long_term_url string, t string, short_term_dbid int, long_term_dbid int, database string, q string, esapi string, idx int, limit int, verbose int, stompConfig StompConfig, inject bool, hdfs string) {
+	short_term_data := run(short_term_url, t, short_term_dbid, database, q, esapi, idx, limit, verbose)
+	long_term_data := run(short_term_url, t, long_term_dbid, database, q, esapi, idx, limit, verbose)
+	records := parseStats(short_term_data, long_term_data, verbose)
+	injectRecords(stompConfig, records, verbose, inject)
 }
 
 // helper function to read given file with hdfs paths and dump their sizes
@@ -978,13 +996,35 @@ func main() {
 	}
 	dbID := dbid
 	var database, dbtype string
+	if token == "" {
+		log.Fatalf("Please provide valid token")
+	}
 	if strings.Contains(q, "stats") {
-		// per our discussion with MONIT team
-		// https://cern.service-now.com/service-portal?id=ticket&table=u_request_fulfillment&n=RQF1647972
+		// per our discussion with MONIT team (RQF1647972)
 		// we only need to use some dbid for _stats ES API, here I use
-		// 9573, the id of monit_prod_cms-es-size_raw_elasticsearch collection
-		dbid = 9573
-		url = fmt.Sprintf("%s/api/datasources/proxy/%d/_stats/store", url, dbid)
+		// 9573, the id of monit_prod_cms-es-size_raw_elasticsearch datasource, and 9582
+		// the id of monit_prod_condor_agg_metric datasource
+		short_term_dbid := 9573
+		long_term_dbid := 9582
+		short_term_url := fmt.Sprintf("%s/api/datasources/proxy/%d/monit_prod*/_stats/store", url, short_term_dbid)
+		long_term_url := fmt.Sprintf("%s/api/datasources/proxy/%d/monit_prod*/_stats/store", url, long_term_dbid)
+		getStats(short_term_url, long_term_url, t, short_term_dbid, long_term_dbid, database, q, esapi, idx, limit, verbose, stompConfig, inject, hdfs)
+		// obtain HDFS records if requested
+		if hdfs != "" {
+			records := hdfsDump(hdfs, verbose)
+			injectRecords(stompConfig, records, verbose, inject)
+		}
+		if verbose > 1 {
+			log.Println("short_term_url ", short_term_url)
+			log.Println("long_term_url  ", long_term_url)
+			log.Println("token          ", t)
+			log.Println("query          ", q)
+			log.Println("short_term_dbid", short_term_dbid)
+			log.Println("long_term_dbid ", long_term_dbid)
+			log.Println("esapi          ", esapi)
+			log.Println("hdfs           ", hdfs)
+		}
+		return
 	} else {
 		if dbname == "" && url == defaultUrl {
 			log.Fatalf("Please provide valid dbname")
@@ -998,9 +1038,6 @@ func main() {
 	if dbID > 0 {
 		dbid = dbID
 	}
-	if token == "" {
-		log.Fatalf("Please provide valid token")
-	}
 	if verbose > 1 {
 		log.Println("url     ", url)
 		log.Println("token   ", t)
@@ -1013,16 +1050,6 @@ func main() {
 		log.Println("hdfs    ", hdfs)
 	}
 	data := run(url, t, dbid, database, q, esapi, idx, limit, verbose)
-	if strings.Contains(q, "stats") {
-		records := parseStats(data, verbose)
-		injectRecords(stompConfig, records, verbose, inject)
-		// obtain HDFS records if requested
-		if hdfs != "" {
-			records = hdfsDump(hdfs, verbose)
-			injectRecords(stompConfig, records, verbose, inject)
-		}
-		return
-	}
 	d, e := json.Marshal(data)
 	if e == nil {
 		fmt.Println(string(d))
