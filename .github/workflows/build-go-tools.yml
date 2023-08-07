@@ -29,12 +29,8 @@ jobs:
           go build -o alert alert.go
           go build -o annotationManager annotationManager.go
           go build -o datasources datasources.go
-          go build -o ggus_alerting ggus_alerting.go
-          go build -o ggus_parser ggus_parser.go
-          go build -o ssb_alerting ssb_alerting.go
           go build -o es_exporter es_exporter.go
-          mv monit alert annotationManager datasources ggus_alerting \
-            ggus_parser ssb_alerting es_exporter ../../../cmsmon-tools
+          mv monit alert annotationManager datasources es_exporter ../../../cmsmon-tools
           cd ../NATS
           go build -o dbs_vm dbs_vm.go
           go build -o nats-pub nats-pub.go
