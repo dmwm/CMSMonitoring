@@ -134,6 +134,9 @@ def get_df_with_validation(json_file, schema, column_order):
     except SchemaError as e:
         print(tstamp(), "Data not exist or not valid:", str(e))
         sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(tstamp(), json_file, "file is empty:", str(e))
+        sys.exit(1)
 
 
 def get_html_template(base_html_directory=None):
