@@ -77,11 +77,10 @@ type Params struct {
 	Verbose   int
 	Config    StompConfig
 	Inject    bool
-	HDFS      string
 }
 
 // builder function to get default params for stats query
-func NewStatsParams(url string, token string, q string, verbose int, config StompConfig, inject bool, hdfs string) *Params {
+func NewStatsParams(url string, token string, q string, verbose int, config StompConfig, inject bool) *Params {
 	// per our discussion with MONIT team (RQF1647972)
 	// we only need to use some dbid for _stats ES API, here I use
 	// 9573, the id of monit_prod_cms-es-size_raw_elasticsearch datasource, and 9582
@@ -96,12 +95,11 @@ func NewStatsParams(url string, token string, q string, verbose int, config Stom
 		Verbose:   verbose,
 		Config:    config,
 		Inject:    inject,
-		HDFS:      hdfs,
 	}
 }
 
 // builder function of params for queries
-func NewParams(url string, token string, q string, dbname string, dbid int, database string, dbtype string, esapi string, hdfs string, verbose int) *Params {
+func NewParams(url string, token string, q string, dbname string, dbid int, database string, dbtype string, esapi string, verbose int) *Params {
 	return &Params{
 		URL:      url,
 		Token:    token,
@@ -112,7 +110,6 @@ func NewParams(url string, token string, q string, dbname string, dbid int, data
 		DBType:   dbtype,
 		ESAPI:    esapi,
 		Verbose:  verbose,
-		HDFS:     hdfs,
 	}
 }
 
@@ -124,7 +121,6 @@ func (sp *Params) PrintStatsParams() {
 	log.Println("query          ", sp.Query)
 	log.Println("short_term_dbid", sp.ShortDBID)
 	log.Println("long_term_dbid ", sp.LongDBID)
-	log.Println("hdfs           ", sp.HDFS)
 	log.Println("inject to MONIT", sp.Inject)
 }
 
@@ -138,7 +134,6 @@ func (p *Params) PrintParams() {
 	log.Println("database", p.Database)
 	log.Println("dbtype  ", p.DBType)
 	log.Println("esapi   ", p.ESAPI)
-	log.Println("hdfs    ", p.HDFS)
 }
 
 // helper function to either read file content or return given string
@@ -491,7 +486,7 @@ func queryURL(rurl string, headers [][]string, verbose int) Record {
 }
 
 // helper function to run ES/InfluxDB or MONIT query
-func run(p Params) Record {
+func run(p *Params) Record {
 	var headers [][]string
 	bearer := fmt.Sprintf("Bearer %s", p.Token)
 	h := []string{"Authorization", bearer}
@@ -663,12 +658,12 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 // helper function to deal with stats query
 func getStats(statsParams Params) {
 	statsParams.URL = statsParams.ShortURL
-	short_term_data := run(statsParams)
+	short_term_data := run(&statsParams)
 	records := parseStats(short_term_data, statsParams.Verbose)
 	injectRecords(statsParams.Config, records, statsParams.Verbose, statsParams.Inject)
 
 	statsParams.URL = statsParams.LongURL
-	long_term_data := run(statsParams)
+	long_term_data := run(&statsParams)
 	records = parseStats(long_term_data, statsParams.Verbose)
 	injectRecords(statsParams.Config, records, statsParams.Verbose, statsParams.Inject)
 }
@@ -989,6 +984,9 @@ func main() {
 	}
 	var e error
 	// Fetch data sources from Grafana and write to file. Requires admin token.
+	if token == "" {
+		log.Fatalf("Please provide valid token")
+	}
 	if writeDataSourcesTo != "" {
 		DataSources, e = datasources(defaultUrl, token, verbose)
 		if e == nil {
@@ -1071,11 +1069,8 @@ func main() {
 	}
 	dbID := dbid
 	var database, dbtype string
-	if token == "" {
-		log.Fatalf("Please provide valid token")
-	}
 	if strings.Contains(q, "stats") {
-		statsParams := NewStatsParams(url, token, q, verbose, stompConfig, inject, hdfs)
+		statsParams := NewStatsParams(defaultUrl, t, q, verbose, stompConfig, inject)
 		getStats(*statsParams)
 		// obtain HDFS records if requested
 		if hdfs != "" {
@@ -1099,11 +1094,11 @@ func main() {
 	if dbID > 0 {
 		dbid = dbID
 	}
-	params := NewParams(url, t, q, dbname, dbid, database, dbtype, esapi, hdfs, verbose)
+	params := NewParams(url, t, q, dbname, dbid, database, dbtype, esapi, verbose)
 	if verbose > 0 {
 		params.PrintParams()
 	}
-	data := run(*params)
+	data := run(params)
 	d, e := json.Marshal(data)
 	if e == nil {
 		fmt.Println(string(d))
