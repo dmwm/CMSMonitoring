@@ -60,6 +60,82 @@ func (c *StompConfig) String() string {
 	return fmt.Sprintf("<StompConfig uri=%s producer=%s topic=%s>", c.URI, c.Producer, c.Topic)
 }
 
+// represents parameters needed to run queries
+type Params struct {
+	URL       string
+	DBName    string
+	DBID      int
+	Database  string
+	DBType    string
+	ESAPI     string
+	ShortDBID int    // index id in a short term storage cluster
+	LongDBID  int    // index id in a long term storage cluster
+	ShortURL  string // request URL for short term cluster stats
+	LongURL   string // request URL for long term cluster stats
+	Token     string
+	Query     string
+	Verbose   int
+	Config    StompConfig
+	Inject    bool
+}
+
+// builder function to get default params for stats query
+func NewStatsParams(url string, token string, q string, verbose int, config StompConfig, inject bool) *Params {
+	// per our discussion with MONIT team (RQF1647972)
+	// we only need to use some dbid for _stats ES API, here I use
+	// 9573, the id of monit_prod_cms-es-size_raw_elasticsearch datasource, and 9582
+	// the id of monit_prod_condor_agg_metric datasource
+	return &Params{
+		ShortDBID: 9573,
+		LongDBID:  9582,
+		ShortURL:  fmt.Sprintf("%s/api/datasources/proxy/9573/monit_prod*/_stats/store", url),
+		LongURL:   fmt.Sprintf("%s/api/datasources/proxy/9582/monit_prod*/_stats/store", url),
+		Token:     token,
+		Query:     q,
+		Verbose:   verbose,
+		Config:    config,
+		Inject:    inject,
+	}
+}
+
+// builder function of params for queries
+func NewParams(url string, token string, q string, dbname string, dbid int, database string, dbtype string, esapi string, verbose int) *Params {
+	return &Params{
+		URL:      url,
+		Token:    token,
+		Query:    q,
+		DBName:   dbname,
+		DBID:     dbid,
+		Database: database,
+		DBType:   dbtype,
+		ESAPI:    esapi,
+		Verbose:  verbose,
+	}
+}
+
+// helper function to print stats Params
+func (sp *Params) PrintStatsParams() {
+	log.Println("short_term_url ", sp.ShortURL)
+	log.Println("long_term_url  ", sp.LongURL)
+	log.Println("token          ", sp.Token)
+	log.Println("query          ", sp.Query)
+	log.Println("short_term_dbid", sp.ShortDBID)
+	log.Println("long_term_dbid ", sp.LongDBID)
+	log.Println("inject to MONIT", sp.Inject)
+}
+
+// helper function to print Params
+func (p *Params) PrintParams() {
+	log.Println("url     ", p.URL)
+	log.Println("token   ", p.Token)
+	log.Println("query   ", p.Query)
+	log.Println("dbname  ", p.DBName)
+	log.Println("dbid    ", p.DBID)
+	log.Println("database", p.Database)
+	log.Println("dbtype  ", p.DBType)
+	log.Println("esapi   ", p.ESAPI)
+}
+
 // helper function to either read file content or return given string
 func read(r string) string {
 	if _, err := os.Stat(r); err == nil {
@@ -410,29 +486,29 @@ func queryURL(rurl string, headers [][]string, verbose int) Record {
 }
 
 // helper function to run ES/InfluxDB or MONIT query
-func run(rurl, token string, dbid int, dbname, query, esapi string, idx, limit, verbose int) Record {
+func run(p *Params) Record {
 	var headers [][]string
-	bearer := fmt.Sprintf("Bearer %s", token)
+	bearer := fmt.Sprintf("Bearer %s", p.Token)
 	h := []string{"Authorization", bearer}
 	headers = append(headers, h)
 	h = []string{"Accept", "application/json"}
 	headers = append(headers, h)
 
-	q := strings.ToLower(query)
+	q := strings.ToLower(p.Query)
 	if strings.Contains(q, "elasticsearch") {
-		return queryES(rurl, dbid, dbname, query, esapi, headers, verbose)
+		return queryES(p.URL, p.DBID, p.Database, p.Query, p.ESAPI, headers, p.Verbose)
 	} else if strings.Contains(q, "query") {
-		return queryES(rurl, dbid, dbname, query, esapi, headers, verbose)
+		return queryES(p.URL, p.DBID, p.Database, p.Query, p.ESAPI, headers, p.Verbose)
 	} else if strings.Contains(q, "select") {
-		return queryIDB(rurl, dbid, dbname, query, headers, verbose)
+		return queryIDB(p.URL, p.DBID, p.Database, p.Query, headers, p.Verbose)
 	} else if strings.Contains(q, "show") {
-		return queryIDB(rurl, dbid, dbname, query, headers, verbose)
+		return queryIDB(p.URL, p.DBID, p.Database, p.Query, headers, p.Verbose)
 	}
 	// perform query for given url
-	if verbose > 0 {
-		log.Println("Run query for given URL:", rurl)
+	if p.Verbose > 0 {
+		log.Println("Run query for given URL:", p.URL)
 	}
-	return queryURL(rurl, headers, verbose)
+	return queryURL(p.URL, headers, p.Verbose)
 }
 
 // helper function to read single JSON or list of JSON records from
@@ -537,7 +613,10 @@ func groupESIndex(name string) string {
 
 // helper function to parse stats meta-data
 func parseStats(data map[string]interface{}, verbose int) []Record {
-	indices := data["indices"].(map[string]interface{})
+	indices, ok := data["indices"].(map[string]interface{})
+	if !ok {
+		log.Fatalf("Invalid indices received from 'stats' query")
+	}
 	var cmsIndexes []string
 	for _, d := range DataSources {
 		db := d.Database
@@ -574,6 +653,19 @@ func parseStats(data map[string]interface{}, verbose int) []Record {
 		}
 	}
 	return out
+}
+
+// helper function to deal with stats query
+func getStats(statsParams Params) {
+	statsParams.URL = statsParams.ShortURL
+	short_term_data := run(&statsParams)
+	records := parseStats(short_term_data, statsParams.Verbose)
+	injectRecords(statsParams.Config, records, statsParams.Verbose, statsParams.Inject)
+
+	statsParams.URL = statsParams.LongURL
+	long_term_data := run(&statsParams)
+	records = parseStats(long_term_data, statsParams.Verbose)
+	injectRecords(statsParams.Config, records, statsParams.Verbose, statsParams.Inject)
 }
 
 // helper function to read given file with hdfs paths and dump their sizes
@@ -838,10 +930,6 @@ func main() {
 	flag.StringVar(&creds, "creds", "", "json document with MONIT credentials")
 	var hdfs string
 	flag.StringVar(&hdfs, "hdfs", "", "json document with HDFS paths, see doc/hdfs/hdfs.json")
-	var idx int
-	flag.IntVar(&idx, "idx", 0, "verbosity level")
-	var limit int
-	flag.IntVar(&limit, "limit", 0, "verbosity level")
 	var listDataSources bool
 	flag.BoolVar(&listDataSources, "datasources", false, "list MONIT datasources")
 	var writeDataSourcesTo string
@@ -896,6 +984,9 @@ func main() {
 	}
 	var e error
 	// Fetch data sources from Grafana and write to file. Requires admin token.
+	if token == "" {
+		log.Fatalf("Please provide valid token")
+	}
 	if writeDataSourcesTo != "" {
 		DataSources, e = datasources(defaultUrl, token, verbose)
 		if e == nil {
@@ -979,12 +1070,17 @@ func main() {
 	dbID := dbid
 	var database, dbtype string
 	if strings.Contains(q, "stats") {
-		// per our discussion with MONIT team
-		// https://cern.service-now.com/service-portal?id=ticket&table=u_request_fulfillment&n=RQF1647972
-		// we only need to use some dbid for _stats ES API, here I use
-		// 9573, the id of monit_prod_cms-es-size_raw_elasticsearch collection
-		dbid = 9573
-		url = fmt.Sprintf("%s/api/datasources/proxy/%d/_stats/store", url, dbid)
+		statsParams := NewStatsParams(defaultUrl, t, q, verbose, stompConfig, inject)
+		getStats(*statsParams)
+		// obtain HDFS records if requested
+		if hdfs != "" {
+			records := hdfsDump(hdfs, verbose)
+			injectRecords(stompConfig, records, verbose, inject)
+		}
+		if verbose > 0 {
+			statsParams.PrintStatsParams()
+		}
+		return
 	} else {
 		if dbname == "" && url == defaultUrl {
 			log.Fatalf("Please provide valid dbname")
@@ -998,31 +1094,11 @@ func main() {
 	if dbID > 0 {
 		dbid = dbID
 	}
-	if token == "" {
-		log.Fatalf("Please provide valid token")
+	params := NewParams(url, t, q, dbname, dbid, database, dbtype, esapi, verbose)
+	if verbose > 0 {
+		params.PrintParams()
 	}
-	if verbose > 1 {
-		log.Println("url     ", url)
-		log.Println("token   ", t)
-		log.Println("query   ", q)
-		log.Println("dbname  ", dbname)
-		log.Println("dbid    ", dbid)
-		log.Println("database", database)
-		log.Println("dbtype  ", dbtype)
-		log.Println("esapi   ", esapi)
-		log.Println("hdfs    ", hdfs)
-	}
-	data := run(url, t, dbid, database, q, esapi, idx, limit, verbose)
-	if strings.Contains(q, "stats") {
-		records := parseStats(data, verbose)
-		injectRecords(stompConfig, records, verbose, inject)
-		// obtain HDFS records if requested
-		if hdfs != "" {
-			records = hdfsDump(hdfs, verbose)
-			injectRecords(stompConfig, records, verbose, inject)
-		}
-		return
-	}
+	data := run(params)
 	d, e := json.Marshal(data)
 	if e == nil {
 		fmt.Println(string(d))
