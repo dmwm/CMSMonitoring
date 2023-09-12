@@ -25,7 +25,7 @@ jobs:
         run: |
           mkdir cmsmon-tools
           cd src/go/MONIT
-          go build -o monit monit.go -s -w -extldflags -static
+          go build -ldflags "-s -w -extldflags '-static'" -o monit monit.go
           go build -o alert alert.go
           go build -o annotationManager annotationManager.go
           go build -o datasources datasources.go
