@@ -26,15 +26,15 @@ jobs:
           mkdir cmsmon-tools
           cd src/go/MONIT
           CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o monit monit.go
-          go build -o alert alert.go
-          go build -o annotationManager annotationManager.go
-          go build -o datasources datasources.go
-          go build -o es_exporter es_exporter.go
+          CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o alert alert.go
+          CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o annotationManager annotationManager.go
+          CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o datasources datasources.go
+          CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o es_exporter es_exporter.go
           mv monit alert annotationManager datasources es_exporter ../../../cmsmon-tools
           cd ../NATS
-          go build -o dbs_vm dbs_vm.go
-          go build -o nats-pub nats-pub.go
-          go build -o nats-sub nats-sub.go
+          CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o dbs_vm dbs_vm.go
+          CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o nats-pub nats-pub.go
+          CGO_ENABLED=0 go build -ldflags "-s -w -extldflags '-static'" -o nats-sub nats-sub.go
           mv dbs_vm nats-pub nats-sub ../../../cmsmon-tools
           cd ../../../
           tar cfz cmsmon-tools.tar.gz cmsmon-tools
