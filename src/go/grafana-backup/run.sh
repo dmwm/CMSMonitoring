@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/sh
 # shellcheck disable=SC1090
 
 # This script copies Grafana dashboard jsons, tar them and put into EOS folder.
@@ -18,7 +18,7 @@ fi
 . ../scripts/utils.sh
 
 # Authenticate with Kerberos keytab
-util_kerberos_auth_with_keytab $1
+util_kerberos_auth_with_keytab "$1"
 
 # Change working directory
 cd "$(dirname "$0")" || exit
@@ -26,17 +26,16 @@ cd "$(dirname "$0")" || exit
 addr=cms-comp-monit-alerts@cern.ch
 
 # Call func function on exit
-trap onExit exit
+trap onExit EXIT
 
 # Define func
-function onExit() {
-  local status=$?
+onExit() {
+  status=$?
   if [ $status -ne 0 ]; then
-    local msg="Grafana backup cron failure. Please see Kubernetes cluster logs"
+    msg="Grafana backup cron failure. Please see Kubernetes cluster logs"
     if [ -f ./amtool ]; then
       expire=$(date -d '+1 hour' --rfc-3339=ns | tr ' ' 'T')
-      local expire
-      local urls="http://cms-monitoring.cern.ch:30093 http://cms-monitoring-ha1.cern.ch:30093 http://cms-monitoring-ha2.cern.ch:30093"
+      urls="http://cms-monitoring.cern.ch:30093 http://cms-monitoring-ha1.cern.ch:30093 http://cms-monitoring-ha2.cern.ch:30093"
       for url in $urls; do
         ./amtool alert add grafana_backup_failure \
           alertname=grafana_backup_failure severity=monitoring tag=cronjob alert=amtool \
@@ -54,4 +53,4 @@ function onExit() {
 }
 
 # Execute
-./dashboard-exporter --token $2 --filesystem-path $4
+./dashboard-exporter --token "$2" --filesystem-path "$3"
