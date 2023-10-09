@@ -2,7 +2,7 @@ import os
 import json
 import time
 import logging
-from StompAMQ7 import StompAMQ7
+from .StompAMQ7 import StompAMQ7
 
 
 def credentials(f_name):
