@@ -9,7 +9,7 @@
 ##H        run.sh keytab keys/token.json /eos/cms/store/group/offcomp_monit/
 
 # help definition
-if [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ] || [ "$1" == "help" ] || [ "$1" == "" ]; then
+if [ "$1" = "-h" ] || [ "$1" = "-help" ] || [ "$1" = "--help" ] || [ "$1" = "help" ] || [ "$1" = "" ]; then
     grep "^##H" <"$0" | sed -e "s,##H,,g"
     exit 1
 fi

@@ -4,34 +4,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/urfave/cli/v2"
 	"archive/tar" // Import the "tar" package for tar file operations
+
+	"github.com/urfave/cli/v2"
 )
 
-
-const baseUrl = "https://monit-grafana.cern.ch/api"
+const (
+	baseUrl       = "https://monit-grafana.cern.ch/api"
+	grafanaFolder = "./grafana"
+	tarFileName   = "grafanaBackup.tar.gz"
+)
 
 type Dashboard struct {
 	Uid   string `json:"uid"`
 	Title string `json:"title"`
 }
 
-func updatePathEnding(path string) string {
-	if !strings.HasSuffix(path, "/") {
-		path += "/"
-	}
-	return path
-}
-
 func getGrafanaAuth(fname string) (string, error) {
 	if _, err := os.Stat(fname); os.IsNotExist(err) {
-		return "", fmt.Errorf("File %s does not exist", fname)
+		return "", fmt.Errorf("file %s does not exist", fname)
 	}
 
 	file, err := os.Open(fname)
@@ -48,19 +47,168 @@ func getGrafanaAuth(fname string) (string, error) {
 
 	secretKey, ok := data["SECRET_KEY"].(string)
 	if !ok {
-		return "", fmt.Errorf("Failed to get SECRET_KEY from file")
+		return "", fmt.Errorf("failed to get SECRET_KEY from file")
 	}
 
 	headers := fmt.Sprintf("Bearer %s", secretKey)
 	return headers, nil
 }
 
-func createBackUpFiles(dashboard Dashboard, folderTitle, headers string) {
-	// Function to create backup files
+func createBackUpFiles(dashboard Dashboard, folderTitle, headers string) error {
+	allJson := []Dashboard{}
+
+	dashboardUid := dashboard.Uid
+	path := filepath.Join("grafana", "dashboards", folderTitle)
+
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		return err
+	}
+
+	dashboardUrl := filepath.Join(baseUrl, "dashboards/uid", dashboardUid)
+	fmt.Println("dashboardUrl", dashboardUrl)
+	req, err := http.NewRequest("GET", dashboardUrl, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", headers)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var dashboardData Dashboard
+	if err := json.Unmarshal(body, &dashboardData); err != nil {
+		return err
+	}
+
+	titleOfDashboard := strings.ReplaceAll(dashboardData.Title, " ", "_")
+	titleOfDashboard = strings.ReplaceAll(titleOfDashboard, ".", "_")
+	titleOfDashboard = strings.ReplaceAll(titleOfDashboard, "/", "_")
+	uidOfDashboard := dashboardData.Uid
+
+	filenameForFolder := fmt.Sprintf("%s/%s-%s.json", path, titleOfDashboard, uidOfDashboard)
+	fmt.Println("filenameForFolder", filenameForFolder)
+	if err := os.WriteFile(filenameForFolder, body, os.ModePerm); err != nil {
+		return err
+	}
+
+	fmt.Println(strings.Repeat("*", 10) + "\n")
+	allJson = append(allJson, dashboardData)
+
+	filenameForAllJson := filepath.Join(path, "all.json")
+	fmt.Println("filenameForAllJson", filenameForAllJson)
+	allJsonBytes, err := json.Marshal(allJson)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filenameForAllJson, allJsonBytes, os.ModePerm); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func searchFoldersFromGrafana(headers string) {
-	// Function to search folders and perform backup operations
+func searchFoldersFromGrafana(headers string) error {
+	foldersUrl := filepath.Join(baseUrl, "search?folderIds=0&orgId=11")
+
+	req, err := http.NewRequest("GET", foldersUrl, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", headers)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("request %s, failed with reason: %s", foldersUrl, resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var foldersJson []Dashboard
+	if err := json.Unmarshal(body, &foldersJson); err != nil {
+		return err
+	}
+
+	for _, folder := range foldersJson {
+		folderId := folder.Uid
+		folderTitle := folder.Title
+
+		if folderTitle != "Production" && folderTitle != "Development" && folderTitle != "Playground" && folderTitle != "Backup" {
+			folderTitle = "General"
+			dashboard := folder
+			if err := createBackUpFiles(dashboard, folderTitle, headers); err != nil {
+				return err
+			}
+		} else {
+			dashboardQueryUrl := filepath.Join(baseUrl, "search?folderIds="+folderId+"&orgId=11&query=")
+
+			fmt.Println("individualFolderUrl", dashboardQueryUrl)
+
+			req, err := http.NewRequest("GET", dashboardQueryUrl, nil)
+			if err != nil {
+				return err
+			}
+			req.Header.Set("Authorization", headers)
+
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("request %s, failed with reason: %s", dashboardQueryUrl, resp.Status)
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			pathToDb := filepath.Join("grafana")
+			if err := os.MkdirAll(pathToDb, os.ModePerm); err != nil {
+				return err
+			}
+
+			filenameForFolder := filepath.Join(pathToDb, folderId+"-"+folderTitle+".json")
+			fmt.Println("filenameForFolder", filenameForFolder)
+			if err := os.WriteFile(filenameForFolder, body, os.ModePerm); err != nil {
+				return err
+			}
+
+			var folderData []Dashboard
+			if err := json.Unmarshal(body, &folderData); err != nil {
+				return err
+			}
+
+			dashboardsAmount := len(folderData)
+			for index, dashboard := range folderData {
+				folderTitle := dashboard.Title
+				fmt.Printf("Index/Amount: %d/%d\n", index, dashboardsAmount)
+
+				if err := createBackUpFiles(dashboard, folderTitle, headers); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func createTar(path, tarName string) error {
@@ -134,8 +282,7 @@ func getDate() (string, string, string) {
 
 func copyToFileSystem(archive, baseDir string) error {
 	day, mon, year := getDate()
-	baseDir = updatePathEnding(baseDir)
-	path := fmt.Sprintf("%s%s/%s/%s", baseDir, year, mon, day)
+	path := filepath.Join(baseDir, year, mon, day)
 
 	if err := os.MkdirAll(path, os.ModePerm); err != nil {
 		return err
@@ -154,6 +301,24 @@ func copyToFileSystem(archive, baseDir string) error {
 	listCmd.Stderr = os.Stderr
 	if err := listCmd.Run(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func backupGrafana(headers, filesystemPath string) error {
+	searchFoldersFromGrafana(headers)
+
+	if err := createTar(grafanaFolder, tarFileName); err != nil {
+		return fmt.Errorf("error creating tar: %v", err)
+	}
+
+	if err := copyToFileSystem(tarFileName, filesystemPath); err != nil {
+		return fmt.Errorf("error copying to filesystem: %v", err)
+	}
+
+	if err := removeTempFiles(grafanaFolder); err != nil {
+		return fmt.Errorf("error removing temp files: %v", err)
 	}
 
 	return nil
@@ -181,23 +346,14 @@ func main() {
 
 			headers, err := getGrafanaAuth(tokenFile)
 			if err != nil {
-				return err
+				log.Fatalf("Error getting Grafana auth: %v", err)
 			}
 
-			searchFoldersFromGrafana(headers)
-
-			if err := createTar("./grafana", "grafanaBackup.tar.gz"); err != nil {
-				return err
+			if err := backupGrafana(headers, filesystemPath); err != nil {
+				log.Fatalf("Error backing up Grafana: %v", err)
 			}
 
-			if err := copyToFileSystem("grafanaBackup.tar.gz", filesystemPath); err != nil {
-				return err
-			}
-
-			if err := removeTempFiles("./grafana/"); err != nil {
-				return err
-			}
-
+			fmt.Println("Backup completed successfully")
 			return nil
 		},
 	}
