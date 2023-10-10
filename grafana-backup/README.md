@@ -1,7 +1,7 @@
 ## Grafana backup
 Gets json definitions of all CMSMonitoring related dashboards using Grafana API.
 
-Then compresses and puts them to HDFS folder under `/cms/backups/grafana/` and EOS folder `/eos/cms/store/group/offcomp_monit/`.
+Then compresses and puts them to EOS folder `/eos/cms/store/group/offcomp_monit/grafana_backup`.
 
 
 ## Requirements
@@ -25,7 +25,7 @@ rm -rf alertmanager-0.23.0.linux-amd64*
 
 - Run the file:
 ```sh
-python3 dashboard-exporter.py --token keys.json --hdfs-path /path/to/h_backup/ --filesystem-path /path/to/fs_backup/
+python3 dashboard-exporter.py --token keys.json --filesystem-path /path/to/fs_backup/
 ```
 - Set file executable:
 ```sh
