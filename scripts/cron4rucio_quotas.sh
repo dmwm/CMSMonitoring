@@ -16,7 +16,7 @@ if [ -n "$K8S_ENV" ]; then
 
     # Rucio API setup
     export X509_USER_PROXY=/etc/proxy/proxy
-    source /cvmfs/cms.cern.ch/rucio/setup-py3.sh
+    export RUCIO_HOME=/cvmfs/cms.cern.ch/rucio/x86_64/rhel9/py3/current
     util_kerberos_auth_with_keytab /etc/secrets/keytab
     python3 "${script_dir}"/../src/python/CMSMonitoring/rucio_quotas.py \
         --output "$output_" \
