@@ -4,15 +4,16 @@
 Author: Nikodemas Tuckus <ntuckus AT gmail [DOT] com>
 This script copies Grafana dashboard jsons, tars them and puts them into EOS folder
 """
-import os
-import sys
+import datetime
 import json
-import time
+import os
 import shutil
-import tarfile
-import requests
 import subprocess
+import sys
+import tarfile
+
 import click
+import requests
 
 base_url = "https://monit-grafana.cern.ch/api"
 grafana_folder = "./grafana"
@@ -127,7 +128,7 @@ def remove_temp_files(path):
 
 
 def get_date():
-    dt = time.gmtime().strftime("%Y/%m/%d")
+    dt = datetime.datetime.now().strftime("%Y/%m/%d")
     return dt
 
 
@@ -151,7 +152,7 @@ def copy_to_filesystem(archive, base_dir):
 
 @click.command()
 @click.option(
-    "--token", "fname", required=True, help="Grafana token location JSON file"
+    "--token", "fname", required=True, help="Grafana token JSON file location"
 )
 @click.option("--filesystem-path", required=True, help="Path for Grafana backup in EOS")
 def main(fname, filesystem_path):

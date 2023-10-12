@@ -34,7 +34,7 @@ trap onExit exit
 function onExit() {
   local status=$?
   if [ $status -ne 0 ]; then
-    local msg="Grafana backup cron failure. Please see Kubernetes cluster logs"
+    local msg="Grafana backup cron failure. Please see Kubernetes 'cron' cluster 'hdfs' namespace logs."
     if [ -f ./amtool ]; then
       expire=$(date -d '+1 hour' --rfc-3339=ns | tr ' ' 'T')
       local expire
