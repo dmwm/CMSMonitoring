@@ -2,122 +2,122 @@
 # -*- coding: utf-8 -*-
 """
 Author: Nikodemas Tuckus <ntuckus AT gmail [DOT] com>
-This script copies Grafana dashboard jsons, tars them and puts them into HDFS and EOS folder
+This script copies Grafana dashboard jsons, tars them and puts them into EOS folder
 """
-import os
-import sys
+import datetime
 import json
-import time
+import os
 import shutil
-import tarfile
-import requests
 import subprocess
+import sys
+import tarfile
+
 import click
+import requests
 
-baseUrl = 'https://monit-grafana.cern.ch/api'
-
-
-def updatePathEnding(path):
-    if not path.endswith("/"):
-        path += "/"
-    return path
+base_url = "https://monit-grafana.cern.ch/api"
+grafana_folder = "./grafana"
+tar_file_name = "grafanaBackup.tar.gz"
 
 
-def getGrafanaAuth(fname):
+def get_grafana_auth(fname):
     if not os.path.exists(fname):
-        print("File {} does not exist".format(fname))
+        print(f"File {fname} does not exist")
         sys.exit(1)
-    with open(fname, 'r') as keyFile:
-        SECRET_KEY = json.load(keyFile).get('SECRET_KEY')
-    headers = {"Authorization": "Bearer %s" % SECRET_KEY}
+    with open(fname, "r") as keyFile:
+        secret_key = json.load(keyFile).get("SECRET_KEY")
+    headers = {"Authorization": f"Bearer {secret_key}"}
     return headers
 
 
-def createBackUpFiles(dashboard, folderTitle, headers):
-    allJson = []
+def create_backup_files(dashboard, folder_title, headers):
+    all_json = []
 
-    dashboardUid = dashboard.get('uid')
-    path = "grafana/dashboards/%s" % folderTitle
+    dashboard_uid = dashboard.get("uid")
+    path = f"grafana/dashboards/{folder_title}"
 
     if not os.path.exists(path):
         try:
-            os.makedirs(os.path.join('grafana', 'dashboards', folderTitle))
-            print("Successfully created the directory %s " % path)
+            os.makedirs(os.path.join("grafana", "dashboards", folder_title))
+            print(f"Successfully created the directory {path}")
         except OSError:
-            print("Creation of the directory %s failed" % path)
-    dashboardUrl = '%s/dashboards/uid/%s' % (baseUrl, dashboardUid)
-    print('dashboardUrl', dashboardUrl)
-    req = requests.get(dashboardUrl, headers=headers)
-    dashboardData = req.json().get('dashboard')
+            print(f"Creation of the directory {path} failed")
+    dashboard_url = f"{base_url}/dashboards/uid/{dashboard_uid}"
+    print("dashboard_url", dashboard_url)
+    req = requests.get(dashboard_url, headers=headers)
+    dashboard_data = req.json().get("dashboard")
 
     # Replace characters that might cause harm
-    titleOfDashboard = dashboardData.get('title').replace(" ", "").replace(".", "_").replace("/", "_")
-    uidOfDashboard = dashboardData.get('uid')
+    title_of_dashboard = (
+        dashboard_data.get("title").replace(" ", "").replace(".", "_").replace("/", "_")
+    )
+    uid_of_dashboard = dashboard_data.get("uid")
 
-    filenameForFolder = '%s/%s-%s.json' % (path, titleOfDashboard, uidOfDashboard)
-    print('filenameForFolder', filenameForFolder)
-    with open(filenameForFolder, "w+") as jsonFile:
-        json.dump(dashboardData, jsonFile)
-    print('*' * 10 + '\n')
-    allJson.append(dashboardData)
+    filename_for_folder = f"{path}/{title_of_dashboard}-{uid_of_dashboard}.json"
+    print("filename_for_folder", filename_for_folder)
+    with open(filename_for_folder, "w+") as jsonFile:
+        json.dump(dashboard_data, jsonFile)
+    print("*" * 10 + "\n")
+    all_json.append(dashboard_data)
 
-    filenameForAllJson = '%s/all.json' % path
-    print('filenameForAllJson', filenameForAllJson)
-    with open(filenameForAllJson, "w+") as jsonFile:
-        json.dump(allJson, jsonFile)
+    filename_for_all_json = f"{path}/all.json"
+    print("filename_for_all_json", filename_for_all_json)
+    with open(filename_for_all_json, "w+") as jsonFile:
+        json.dump(all_json, jsonFile)
 
 
-def searchFoldersFromGrafana(headers):
-    foldersUrl = 'https://monit-grafana.cern.ch/api/search?folderIds=0&orgId=11'
+def search_folders_from_grafana(headers):
+    folders_url = f"{base_url}/search?folderIds=0&orgId=11"
 
-    req = requests.get(foldersUrl, headers=headers)
+    req = requests.get(folders_url, headers=headers)
     if req.status_code != 200:
-        print("Request {}, failed with reason: {}".format(foldersUrl, req.reason))
+        print(f"Request {folders_url}, failed with reason: {req.reason}")
         sys.exit(1)
-    foldersJson = req.json()
+    folders_json = req.json()
 
-    for folder in foldersJson:
-        folderId = folder.get('id')
-        folderTitle = folder.get('title')
+    for folder in folders_json:
+        folder_id = folder.get("id")
+        folder_title = folder.get("title")
 
-        if folderTitle not in ['Production', 'Development', 'Playground', 'Backup']:
-            folderTitle = 'General'
+        if folder_title not in ["Production", "Development", "Playground", "Backup"]:
+            folder_title = "General"
             dashboard = folder
-            createBackUpFiles(dashboard, folderTitle, headers)
+            create_backup_files(dashboard, folder_title, headers)
 
         else:
-            dashboardQuery = 'search?folderIds=%s&orgId=11&query=' % folderId
-            dashboardQueryUrl = '%s/%s' % (baseUrl, dashboardQuery)
+            dashboard_query_url = os.path.join(
+                base_url, f"search?folderIds={folder_id}&orgId=11&query="
+            )
 
-            print('individualFolderUrl', dashboardQueryUrl)
+            print("individualFolderUrl", dashboard_query_url)
 
-            req = requests.get(dashboardQueryUrl, headers=headers)
-            folderData = req.json()
+            req = requests.get(dashboard_query_url, headers=headers)
+            folder_data = req.json()
 
-            pathToDb = os.path.abspath("grafana")
-            if not os.path.exists(pathToDb):
-                os.makedirs(pathToDb)
+            path_to_db = os.path.abspath("grafana")
+            if not os.path.exists(path_to_db):
+                os.makedirs(path_to_db)
 
-            filenameForFolder = 'grafana/%s-%s.json' % (folderId, folderTitle)
-            with open(filenameForFolder, "w+") as jsonFile:
-                json.dump(folderData, jsonFile)
+            filename_for_folder = f"grafana/{folder_id}-{folder_title}.json"
+            with open(filename_for_folder, "w+") as jsonFile:
+                json.dump(folder_data, jsonFile)
 
-            dashboardsAmount = len(folderData)
-            for index, dashboard in enumerate(folderData):
-                folderTitle = dashboard.get('folderTitle')
-                print('Index/Amount: %s/%s' % (index, dashboardsAmount))
+            dashboards_amount = len(folder_data)
+            for index, dashboard in enumerate(folder_data):
+                folder_title = dashboard.get("folderTitle")
+                print(f"Index/Amount: {index}/{dashboards_amount}")
 
-                createBackUpFiles(dashboard, folderTitle, headers)
+                create_backup_files(dashboard, folder_title, headers)
 
 
-def createTar(path, tar_name):
+def create_tar(path, tar_name):
     with tarfile.open(tar_name, "w:gz") as tar_handle:
         for root, _, files in os.walk(path):
             for file in files:
                 tar_handle.add(os.path.join(root, file))
 
 
-def removeTempFiles(path):
+def remove_temp_files(path):
     for root, dirs, files in os.walk(path):
         for f in files:
             os.unlink(os.path.join(root, f))
@@ -128,72 +128,41 @@ def removeTempFiles(path):
 
 
 def get_date():
-    gmt = time.gmtime()
-    year = str(gmt.tm_year)
-    mon = gmt.tm_mon
-    if len(str(mon)) == 1:
-        mon = '0{}'.format(mon)
-    else:
-        mon = str(mon)
-    day = gmt.tm_mday
-    if len(str(day)) == 1:
-        day = '0{}'.format(day)
-    else:
-        day = str(day)
-    return day, mon, year
+    dt = datetime.datetime.now().strftime("%Y/%m/%d")
+    return dt
 
 
-def copyToHDFS(archive, hdfs_path):
-    day, mon, year = get_date()
-    hdfs_path = updatePathEnding(hdfs_path)
-    path = f'{hdfs_path}{year}/{mon}/{day}'
-    print("Copy backup to {}".format(path))
-    cmd = 'hadoop fs -mkdir -p {}'.format(path)
+def copy_to_filesystem(archive, base_dir):
+    dt = get_date()
+    path = os.path.join(base_dir, dt)
+    print(f"Copy backup to {path}")
+    cmd = f"mkdir -p {path}"
     output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     if output:
         print(output)
-    cmd = 'hadoop fs -put {} {}'.format(archive, path)
-    print('Execute: {}'.format(cmd))
+    cmd = f"cp {archive} {path}"
+    print(f"Execute: {cmd}")
     output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     if output:
         print(output)
-    cmd = 'hadoop fs -ls {}'.format(path)
+    cmd = f"ls {path}"
     output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    print("New backup: {}".format(output))
-
-
-def copyToFileSystem(archive, base_dir):
-    day, mon, year = get_date()
-    base_dir = updatePathEnding(base_dir)
-    path = f'{base_dir}{year}/{mon}/{day}'
-    print("Copy backup to {}".format(path))
-    cmd = 'mkdir -p {}'.format(path)
-    output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    if output:
-        print(output)
-    cmd = 'cp {} {}'.format(archive, path)
-    print('Execute: {}'.format(cmd))
-    output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    if output:
-        print(output)
-    cmd = 'ls {}'.format(path)
-    output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    print("New backup: {}".format(output))
+    print(f"New backup: {output}")
 
 
 @click.command()
-@click.option("--token", "fname", required=True, help="Grafana token location JSON file")
-@click.option("--hdfs-path", required=True, help="Path for Grafana backup in HDFS")
+@click.option(
+    "--token", "fname", required=True, help="Grafana token JSON file location"
+)
 @click.option("--filesystem-path", required=True, help="Path for Grafana backup in EOS")
-def main(fname, hdfs_path, filesystem_path):
-    click.echo(f"Input Arguments: token:{fname}, hdfs_path:{hdfs_path}, filesystem_path:{filesystem_path}")
-    headers = getGrafanaAuth(fname)
-    searchFoldersFromGrafana(headers)
-    createTar('./grafana', 'grafanaBackup.tar.gz')
-    copyToHDFS('grafanaBackup.tar.gz', hdfs_path)
-    copyToFileSystem('grafanaBackup.tar.gz', filesystem_path)
-    removeTempFiles('./grafana/')
+def main(fname, filesystem_path):
+    click.echo(f"Input Arguments: token:{fname}, filesystem_path:{filesystem_path}")
+    headers = get_grafana_auth(fname)
+    search_folders_from_grafana(headers)
+    create_tar(grafana_folder, tar_file_name)
+    copy_to_filesystem(tar_file_name, filesystem_path)
+    remove_temp_files(grafana_folder)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
