@@ -25,7 +25,7 @@ def to_chunks(data, samples=1000):
         yield data[i : i + samples]
 
 
-def send_to_amq(data, confs, batch_size, topic=None, doc_type=None):
+def send_to_amq(data, confs, batch_size, topic=None, doc_type=None, overwrite_meta_ts=False):
     """Sends list of dictionary in chunks"""
     wait_seconds = 0.001
     if confs:
@@ -54,8 +54,9 @@ def send_to_amq(data, confs, batch_size, topic=None, doc_type=None):
             )
             messages = []
             for msg in chunk:
+                ts = None if not overwrite_meta_ts else msg.get('timestamp', None) 
                 notif, _, _ = stomp_amq.make_notification(
-                    payload=msg, doc_type=doc_type, producer=producer
+                    payload=msg, doc_type=doc_type, producer=producer, ts=ts
                 )
                 messages.append(notif)
             if messages:
