@@ -54,7 +54,7 @@ def send_to_amq(data, confs, batch_size, topic=None, doc_type=None, overwrite_me
             )
             messages = []
             for msg in chunk:
-                ts = None if not overwrite_meta_ts else msg.get('timestamp', None) 
+                ts = None if not overwrite_meta_ts else msg.get("timestamp")
                 notif, _, _ = stomp_amq.make_notification(
                     payload=msg, doc_type=doc_type, producer=producer, ts=ts
                 )
