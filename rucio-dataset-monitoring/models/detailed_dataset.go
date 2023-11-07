@@ -19,7 +19,7 @@ type DetailedDataset struct {
 	RseKind              string      `bson:"RseKind" validate:"required"`
 	SizeBytes            int64       `bson:"SizeBytes"`
 	LastAccess           Epoch       `bson:"LastAccess"` // Last access to dataset in ISO8601 format
-	CreatedAt            Epoch       `bson:"CreatedAt"` // Latest created at of the dataset in ISO8601 format
+	LastCreate           Epoch       `bson:"LastCreate"` // Latest created at of the dataset in ISO8601 format
 	IsFullyReplicated    bool        `bson:"IsFullyReplicated"`
 	IsLocked             string      `bson:"IsLocked"`
 	FilePercentage       float64     `bson:"FilePercentage"`
