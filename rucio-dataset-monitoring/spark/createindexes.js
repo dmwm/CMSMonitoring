@@ -23,6 +23,7 @@ db.detailed_datasets.createIndex( { "Dataset": 1 } );
 db.detailed_datasets.createIndex( { "Type": 1 } );
 db.detailed_datasets.createIndex( { "RSE": 1 } );
 db.detailed_datasets.createIndex( { "LastAccess": 1 } );
+db.detailed_datasets.createIndex( { "LastCreate": 1 } );
 db.detailed_datasets.createIndex( { "ProdAccounts": 1 } );
 db.detailed_datasets.createIndex( { "BlockRuleIDs": 1 } );
 db.detailed_datasets.createIndex( { "Dataset": 1, "Type": 1 } );

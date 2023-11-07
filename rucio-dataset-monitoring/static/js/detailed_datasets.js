@@ -390,6 +390,12 @@ $(document).ready(function () {
                 searchBuilder: {defaultCondition: "between"},
                 width: "10%"
             },
+            {
+                data: "LastCreate",
+                searchBuilderType: 'date',
+                searchBuilder: {defaultCondition: "between"},
+                width: "10%"
+            },
             {data: "IsFullyReplicated", searchBuilderType: 'boolean'},
             {data: "IsLocked", searchBuilder: {defaultCondition: "contains"}},
             {data: "FilePercentage", searchBuilder: {defaultCondition: ">"}},
