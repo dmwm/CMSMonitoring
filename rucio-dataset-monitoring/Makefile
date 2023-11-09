@@ -1,5 +1,5 @@
-VERSION := $(shell git describe --tags)
-flags := -ldflags="-s -w -X main.gitVersion=${VERSION}"
+VERSION=`git describe --tags`
+flags=-ldflags="-s -w -X main.gitVersion=${VERSION}"
 
 all: build
 
