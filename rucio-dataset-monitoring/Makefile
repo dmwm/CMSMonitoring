@@ -1,16 +1,16 @@
-VERSION=`git describe --tags`
-flags=-ldflags="-s -w -X main.gitVersion=${VERSION}"
+VERSION := $(shell git describe --tags)
+flags := -ldflags="-s -w -X main.gitVersion=${VERSION}"
 
 all: build
 
 vet:
-	go vet .
+    go vet .
 
 build:
-	go clean; rm -rf pkg rucio-dataset-monitoring*; CGO_ENABLED=0 go build ${flags}
+    go clean; rm -rf pkg rucio-dataset-monitoring*; go build -tags netgo ${flags}
 
 install:
-	go install
+    go install
 
 clean:
-	go clean; rm -rf pkg
+    go clean; rm -rf pkg
