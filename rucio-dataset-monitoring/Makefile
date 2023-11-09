@@ -1,5 +1,5 @@
 VERSION=`git describe --tags`
-flags=-ldflags "-s -w -extldflags '-static' -X main.gitVersion=${VERSION}"
+flags=-ldflags="-s -w -X main.gitVersion=${VERSION}"
 
 all: build
 
