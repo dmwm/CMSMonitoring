@@ -7,8 +7,7 @@
 The `rucio-dataset-monitoring` package serves [Rucio](https://rucio.readthedocs.io/) aggregated data, which is stored in MongoDB,
 using JQuery [datatables](https://datatables.net/).
 
-Package development is in still progress. You may see test page from :rocket: [here](http://cmsweb-test1.cern.ch:31280/) :rocket: , beware that some
-functionalities not there yet.
+You may see page :rocket: [here](https://cms-dm-monitoring.cern.ch/) :rocket:.
 
 ### Introduction
 
