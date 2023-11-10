@@ -7,7 +7,7 @@ vet:
 	go vet .
 
 build:
-	go clean; rm -rf pkg rucio-dataset-monitoring*; go build ${flags}
+	go clean; rm -rf pkg rucio-dataset-monitoring*; go build -tags netgo ${flags}
 
 install:
 	go install
