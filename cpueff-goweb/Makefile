@@ -7,7 +7,7 @@ vet:
 	go vet .
 
 build:
-	go clean; rm -rf pkg cpueff-goweb*; go build ${flags}
+	go clean; rm -rf pkg cpueff-goweb*; go build -tags netgo ${flags}
 
 install:
 	go install
