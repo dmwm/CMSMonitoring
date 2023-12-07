@@ -9,6 +9,16 @@
         "type": "elasticsearch",
         "database": "[ceph_s3_access-]YYYY.MM.DD"
     },
+    "cms-mongo-preprod-nodexpo": {
+        "id": 10423,
+        "type": "prometheus",
+        "database": ""
+    },
+    "cms-mongo-prod-nodexpo": {
+        "id": 10420,
+        "type": "prometheus",
+        "database": ""
+    },
     "cms-monitoring-agg ": {
         "id": 9950,
         "type": "prometheus",
@@ -46,11 +56,6 @@
     },
     "cmsmonitoring-victoriametrics-agg-1h": {
         "id": 10278,
-        "type": "prometheus",
-        "database": ""
-    },
-    "cmsmonitoring-victoriametrics-agg-long": {
-        "id": 10280,
         "type": "prometheus",
         "database": ""
     },
@@ -108,11 +113,6 @@
         "id": 9288,
         "type": "elasticsearch",
         "database": "cmssdt-scram-access*"
-    },
-    "cmstest-victoriametrics": {
-        "id": 9472,
-        "type": "prometheus",
-        "database": ""
     },
     "CMSWEB": {
         "id": 8973,
@@ -254,6 +254,11 @@
         "type": "prometheus",
         "database": ""
     },
+    "cmsweb-testbed2": {
+        "id": 10595,
+        "type": "prometheus",
+        "database": ""
+    },
     "cmsweb-testbednew-nodexpo": {
         "id": 10128,
         "type": "prometheus",
@@ -284,6 +289,26 @@
         "type": "elasticsearch",
         "database": "cmssdt-relvals_stats_summary-*"
     },
+    "es-cms-crab-condor-ekong": {
+        "id": 10509,
+        "type": "elasticsearch",
+        "database": "[crab-condor-ekong*]"
+    },
+    "es-cms-crab-ekong": {
+        "id": 10502,
+        "type": "elasticsearch",
+        "database": "[crab-data-ekong1*]"
+    },
+    "es-cms-crab-tape-recall": {
+        "id": 10503,
+        "type": "elasticsearch",
+        "database": "[crab-tape-recall-daily-ekong*]"
+    },
+    "es-cms-crab-tape-recall-rules": {
+        "id": 10512,
+        "type": "elasticsearch",
+        "database": "[crab-tape-recall-rules-ekong*]"
+    },
     "es-cms-logmon": {
         "id": 9999,
         "type": "elasticsearch",
@@ -293,6 +318,41 @@
         "id": 10412,
         "type": "elasticsearch",
         "database": "[test-crab-wa1-*]"
+    },
+    "es-cms-test-dbs-rucio-inconsistency": {
+        "id": 10537,
+        "type": "elasticsearch",
+        "database": "[test-dbs-rucio-inconsistency-*]"
+    },
+    "es-cms-test-rucio-account-activity-usage": {
+        "id": 10477,
+        "type": "elasticsearch",
+        "database": "[test-rucio-user-account-usage-activity-monitoring*]"
+    },
+    "es-cms-test-rucio-account-usage-locks": {
+        "id": 10563,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "es-cms-test-rucio-account-usage-new": {
+        "id": 10478,
+        "type": "elasticsearch",
+        "database": "[test-rucio-account-usage-monitoring*]"
+    },
+    "es-cms-test-rucio-activity-user-usage": {
+        "id": 10564,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "es-cms-test-rucio-rse-usage-monitoring": {
+        "id": 10547,
+        "type": "elasticsearch",
+        "database": "[test-rucio-rse-usage-monitoring-*]"
+    },
+    "es-cms-test-rucio-subscriptions-monitoring": {
+        "id": 10501,
+        "type": "elasticsearch",
+        "database": "[test-rucio-subscriptions-monitoring*]"
     },
     "es-cms-test-wma-agent-count": {
         "id": 10408,
@@ -333,6 +393,31 @@
         "id": 9540,
         "type": "prometheus",
         "database": ""
+    },
+    "monit-es-factory-pilot-efficiency-test": {
+        "id": 10514,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-test_raw_factory_pilot_efficiency_data*]"
+    },
+    "monit-prod-rucio-acc-usage": {
+        "id": 10592,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "monit-prod-rucio-acc-usage-locks": {
+        "id": 10591,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "monit-prod-rucio-subscriptions": {
+        "id": 10559,
+        "type": "elasticsearch",
+        "database": ""
+    },
+    "monit-prod-xrootd-transfer": {
+        "id": 10516,
+        "type": "elasticsearch",
+        "database": "[monit_prod_xrootd_raw_transfer*]"
     },
     "monit-timber-cms-crab-httpcall": {
         "id": 10185,
@@ -410,9 +495,9 @@
         "database": "[monit_prod_crab_*]"
     },
     "monit_dmwm_ms_pileup": {
-        "id": 10402,
+        "id": 10419,
         "type": "elasticsearch",
-        "database": "[monit_prod_cms-ms-pileup_raw_cms-ms-pileup-*]"
+        "database": "[monit_prod_cms-ms-pileup*]"
     },
     "monit_eos_ioapp": {
         "id": 10338,
@@ -787,7 +872,7 @@
     "monit_prod_tier0wmagent": {
         "id": 9113,
         "type": "elasticsearch",
-        "database": "[monit_prod_tier0wmagent_raw_metric-]YYYY-MM-DD"
+        "database": ""
     },
     "monit_prod_wmagent": {
         "id": 7617,
@@ -812,11 +897,6 @@
     "MySQL": {
         "id": 9485,
         "type": "mysql",
-        "database": ""
-    },
-    "Prometheus-FL": {
-        "id": 10012,
-        "type": "prometheus",
         "database": ""
     },
     "Rucio-graphite-dev": {
@@ -853,11 +933,6 @@
         "id": 8981,
         "type": "elasticsearch",
         "database": "[monit_prod_crab_raw_taskworker-*]"
-    },
-    "test-vm-agg": {
-        "id": 9970,
-        "type": "prometheus",
-        "database": ""
     },
     "WMArchive": {
         "id": 7572,
