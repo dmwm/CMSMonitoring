@@ -2,6 +2,8 @@
 # Retention policy cleaner for CMS Monitoring HDFS paths
 # shellcheck disable=SC2181
 
+export PATH=$PATH:/usr/hdp/hadoop/bin
+
 #######################################
 # Deletes HDFS directory and print meaningful message
 # Arguments:
