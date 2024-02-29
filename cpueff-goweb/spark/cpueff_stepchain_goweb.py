@@ -71,7 +71,7 @@ def udf_step_extract(row):
     _jobtype = row['meta_data']['jobtype']
     _ts = row['meta_data']['ts']
     if 'steps' in row and row['steps']:
-        for step in row['steps']:
+        for step in filter(None, row['steps']):
             if ('name' in step) and step['name'].lower().startswith('cmsrun'):
                 step_res = {'Task': _task_name, 'ts': _ts, 'fwjr_id': _fwjr_id, 'JobType': _jobtype}
 
