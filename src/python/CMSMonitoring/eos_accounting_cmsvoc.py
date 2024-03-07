@@ -1,7 +1,14 @@
 # Germano Massullo - germano.massullo@cern.ch
 # Dario Mapelli - dario.mapelli@cern.ch
 
-# This script is running in acrontab in lxplus under the personal account (not 'cmsvoc' service account) of the CMS VOC, because such account has full permissions.
+# This script is running in acrontab in lxplus under the personal account (not 'cmsvoc' service account) of the CMS VOC, because such account has full permissions. This python script cannot be run directly on lxplus, the acrontab must run it from the following bash script
+"""
+#!bin/bash
+
+# This script is run by acrontab on lxplus
+source /etc/profile
+python3 eos_accounting_cmsvoc.py
+"""
 # A very extensive explanation of this script is available at
 # https://its.cern.ch/jira/browse/CMSMONIT-521?focusedId=4724501&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-4724501
 # Its text cannot be pasted here for both reserved comments and lack of layout capabilities in a Python file compared to a comment in a Jira ticket.
