@@ -236,7 +236,7 @@ def main(start_date, end_date, hdfs_out_dir, last_n_days):
         spark.read.option("basePath", _DEFAULT_HDFS_FOLDER)
         .json(
             get_candidate_files(
-                start_date, end_date, spark, base=_DEFAULT_HDFS_FOLDER, day_delta=2
+                start_date, end_date, spark, base=_DEFAULT_HDFS_FOLDER, day_delta=1
             )
         )
         .select(["data.*", "metadata.timestamp"])
