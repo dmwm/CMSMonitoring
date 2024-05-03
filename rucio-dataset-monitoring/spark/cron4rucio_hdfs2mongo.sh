@@ -12,6 +12,7 @@ set -e
 ##H   - keytab        : Kerberos auth file to connect Spark Analytix cluster (cmsmonit)
 ##H   - hdfs          : HDFS_PATH output path that include spark job results. Mongoimport will import them.
 ##H   - mongohost     : MongoDB host
+##H   - mongoport     : MongoDB port
 ##H   - mongouser     : MongoDB user which has write access to required MongoDB database/collection
 ##H   - mongopass     : MongoDB user password
 ##H   - mongowritedb  : MongoDB database name that results will be written
@@ -19,9 +20,8 @@ set -e
 ##H   - wdir          : working directory
 ##H
 ##H Usage Example:
-##H    ./cron4rucio_hdfs2mongo.sh --keytab ./keytab --hdfs /tmp/cmsmonit --mongohost $MONGO_HOST \
-##H        --mongouser $MONGO_ROOT_USERNAME --mongopass $MONGO_ROOT_PASSWORD --mongowritedb rucio \
-##H        --mongoauthdb admin --wdir $WDIR
+##H    ./cron4rucio_hdfs2mongo.sh --keytab ./keytab --hdfs /tmp/cmsmonit --mongohost $MONGO_HOST --mongoport $MONGO_PORT \
+##H        --mongouser $MONGO_ROOT_USERNAME --mongopass $MONGO_ROOT_PASSWORD --mongowritedb rucio --mongoauthdb admin --wdir $WDIR
 ##H
 ##H How to test:
 ##H   - You can test just by giving different '--mongowritedb'.
@@ -51,12 +51,12 @@ if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "-hel
     exit 0
 fi
 util_cron_send_start "$myname" "1d"
-unset -v KEYTAB_SECRET HDFS_PATH ARG_MONGOHOST ARG_MONGOUSER ARG_MONGOPASS ARG_MONGOWRITEDB ARG_MONGOAUTHDB WDIR help
+unset -v KEYTAB_SECRET HDFS_PATH ARG_MONGOHOST ARG_MONGOPORT ARG_MONGOUSER ARG_MONGOPASS ARG_MONGOWRITEDB ARG_MONGOAUTHDB WDIR help
 # ------------------------------------------------------------------------------------------------------------- PREPARE
 util4datasetmon_input_args_parser $@
 
-util4logi "Parameters: KEYTAB_SECRET:${KEYTAB_SECRET} HDFS_PATH:${HDFS_PATH} ARG_MONGOHOST:${ARG_MONGOHOST} ARG_MONGOUSER:${ARG_MONGOUSER} ARG_MONGOWRITEDB:${ARG_MONGOWRITEDB} ARG_MONGOAUTHDB:${ARG_MONGOAUTHDB} WDIR:${WDIR}"
-util_check_vars HDFS_PATH ARG_MONGOHOST ARG_MONGOUSER ARG_MONGOPASS ARG_MONGOWRITEDB ARG_MONGOAUTHDB WDIR
+util4logi "Parameters: KEYTAB_SECRET:${KEYTAB_SECRET} HDFS_PATH:${HDFS_PATH} ARG_MONGOHOST:${ARG_MONGOHOST} ARG_MONGOPORT:${ARG_MONGOPORT} ARG_MONGOUSER:${ARG_MONGOUSER} ARG_MONGOWRITEDB:${ARG_MONGOWRITEDB} ARG_MONGOAUTHDB:${ARG_MONGOAUTHDB} WDIR:${WDIR}"
+util_check_vars HDFS_PATH ARG_MONGOHOST ARG_MONGOPORT ARG_MONGOUSER ARG_MONGOPASS ARG_MONGOWRITEDB ARG_MONGOAUTHDB WDIR
 util_setup_spark_k8s
 
 # Check commands/CLIs exist
@@ -83,7 +83,7 @@ function run_mongo_import() {
     hadoop fs -getmerge "$hdfs_out_dir"/part-*.json "$local_json_merge_file"
 
     mongoimport --drop --type=json \
-        --host "$ARG_MONGOHOST" --username "$ARG_MONGOUSER" --password "$ARG_MONGOPASS" \
+        --host "$ARG_MONGOHOST" --port "$ARG_MONGOPORT" --username "$ARG_MONGOUSER" --password "$ARG_MONGOPASS" \
         --authenticationDatabase "$ARG_MONGOAUTHDB" --db "$ARG_MONGOWRITEDB" \
         --collection "$collection" --file "$local_json_merge_file"
     util4logi "Mongoimport finished. ${hdfs_out_dir} imported to collection: ${collection}"
@@ -105,7 +105,7 @@ run_mongo_import "${HDFS_PATH}/${hdfs_datasets_in_tape_and_disk}" "$col_datasets
 # Write current date to json file and import it to MongoDB "source_timestamp" collection for Go Web Page.
 echo "{\"createdAt\": \"$(date +%Y-%m-%d)\"}" >source_timestamp.json
 mongoimport --drop --type=json \
-    --host "$ARG_MONGOHOST" --username "$ARG_MONGOUSER" --password "$ARG_MONGOPASS" \
+    --host "$ARG_MONGOHOST" --port "$ARG_MONGOPORT" --username "$ARG_MONGOUSER" --password "$ARG_MONGOPASS" \
     --authenticationDatabase "$ARG_MONGOAUTHDB" --db "$ARG_MONGOWRITEDB" \
     --collection "source_timestamp" --file source_timestamp.json
 
@@ -115,7 +115,7 @@ util4logi "source_timestamp collection is updated with current date"
 # Modify JS script
 sed -i "s/_MONGOWRITEDB_/$ARG_MONGOWRITEDB/g" "$script_dir"/createindexes.js
 
-mongosh --host "$ARG_MONGOHOST" --username "$ARG_MONGOUSER" --password "$ARG_MONGOPASS" \
+mongosh --host "$ARG_MONGOHOST" --port "$ARG_MONGOPORT" --username "$ARG_MONGOUSER" --password "$ARG_MONGOPASS" \
     --authenticationDatabase "$ARG_MONGOAUTHDB" <"$script_dir"/createindexes.js
 util4logi "MongoDB indexes are created for datasets and detailed_datasets collections"
 
