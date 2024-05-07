@@ -166,7 +166,7 @@
             <th>WMAgent Request Name</th>
             <th>Cpu Efficiency Outlier</th>
             <th>Cpu Eff</th>
-            <th>Non Eviction Eff</th>
+            <th id="badput">Badput (Non Eviction Eff) <span><a href="#star" style="text-decoration: none; color: inherit;">*</a></span></th>
             <th>Eviction Aware Eff Diff</th>
             <th>Schedule Eff</th>
             <th>Cmssw Read Time Pct</th>
@@ -186,40 +186,12 @@
             <th>Wasted Cpu Time Hr T1T2</th>
         </tr>
         </thead>
-        <tfoot hidden>
-        <tr>
-            <th></th>
-            <th>Links</th>
-            <th>Type</th>
-            <th>Workflow</th>
-            <th>WMAgent Request Name</th>
-            <th>Cpu Efficiency Outlier</th>
-            <th>Cpu Eff</th>
-            <th>Non Eviction Eff</th>
-            <th>Eviction Aware Eff Diff</th>
-            <th>Schedule Eff</th>
-            <th>Cmssw Read Time Pct</th>
-            <th>Cpus</th>
-            <th>Cpu Time Hr</th>
-            <th>Wall Clock Hr</th>
-            <th>Core Time Hr</th>
-            <th>Committed Core Hr</th>
-            <th>Committed Wall Clock Hr</th>
-            <th>Wasted Cpu Time Hr</th>
-            <th>Committed Over Max Wall Time Avg</th>
-            <th>Cpu Eff T1T2</th>
-            <th>Cpus T1T2</th>
-            <th>Cpu Time Hr T1T2</th>
-            <th>Wall Clock Hr T1T2</th>
-            <th>Core Time Hr T1T2</th>
-            <th>Wasted Cpu Time Hr T1T2</th>
-        </tr>
-        </tfoot>
     </table>
 </div>
 
-<div class="footer" style="bottom: 0px; width: 100%;background-color: #262626;border-top: 1px solid #333;">
+<div class="footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%; background-color: #262626; border-top: 1px solid #333; padding-right: 20px;">
     <img alt='CERN' src='/{{.govar_BASE_EP}}/static/img/LogoOutline-White.svg' style="height: 70px;margin: 20px;">
+    <p style="color: white; text-align: center; font-size: 12px; margin-top: -10px;">Badput is calculated by dividing the sum of CpuTimeHr by the sum of CommittedCoreHr. In case of evictions, CommittedCoreHr indicates the CPU time of the last retry, while CpuTimeHr is the total walltime for all the job retries.<a id="star" href="#badput">*</a></p>
 </div>
 
 <!-- prepared using https://datatables.net/download/ -->
