@@ -67,7 +67,7 @@ sqoop_dump_tasks_cmd() {
       --num-mappers $NUM_MAPPERS \
       --split-by TM_START_TIME \
       --fetch-size 3000 \
-      --map-column-java TM_TASK_FAILURE=String,TM_SPLIT_ARGS=String,TM_OUTFILES=String,TM_TFILE_OUTFILES=String,TM_EDM_OUTFILES=String,TM_ARGUMENTS=String,PANDA_RESUBMITTED_JOBS=String,TM_OUTPUT_DATASET=String,TM_TASK_WARNINGS=String,TM_USER_FILES=String,TM_USER_CONFIG=String,TM_MULTIPUB_RULE=String \
+      --map-column-java TM_TASK_FAILURE=String,TM_SPLIT_ARGS=String,TM_OUTFILES=String,TM_TFILE_OUTFILES=String,TM_EDM_OUTFILES=String,TM_ARGUMENTS=String,TM_OUTPUT_DATASET=String,TM_TASK_WARNINGS=String,TM_USER_FILES=String,TM_USER_CONFIG=String,TM_MULTIPUB_RULE=String \
       --target-dir "$DAILY_PATH" \
       --table \""$SCHEMA"."$TABLE"\" \
       --as-avrodatafile \
