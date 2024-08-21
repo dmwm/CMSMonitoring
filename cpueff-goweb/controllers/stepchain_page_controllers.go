@@ -145,10 +145,11 @@ func utilScTaskCmsrunJobtypeExternalLinks(cpuEffs []models.StepchainTaskWithCmsr
 			links.StrEndDate, dataTimestamp.EndDate,
 			links.StrTaskNamePrefix, utilGetTaskNamePrefix(cpuEffs[i].Task),
 			links.StrTaskName, cpuEffs[i].Task,
+			links.StrJobType, cpuEffs[i].JobType,
 		)
 		// Kibana needs full task name, but reqmgr2 accepts only "X" from task name of "/X/Y"
 		// Assign complete link HTML dom to the 'Links' column : "ReqMgr - WMArchive(MONIT)"
-		cpuEffs[i].Links = template.HTML(replacer.Replace(links.LinkReqMgr + " - " + links.LinkEsWmarchive))
+		cpuEffs[i].Links = template.HTML(replacer.Replace(links.LinkReqMgr + " - " + links.LinkEsWmarchiveJobType))
 	}
 }
 
