@@ -3,13 +3,19 @@
         "id": 9668,
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_metric*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
+    },
+    "auth-rpoxy-server-testbed": {
+        "id": 10949,
+        "type": "prometheus",
+        "database": "",
+        "url": "https://cmsweb-testbed.cern.ch:8443/metrics"
     },
     "Ceph ES Access": {
         "id": 9953,
         "type": "elasticsearch",
         "database": "[ceph_s3_access-]YYYY.MM.DD",
-        "url": "https://es-ceph.cern.ch/es/"
+        "url": "https://os-ceph.cern.ch/os/"
     },
     "cms-mongo-preprod-nodexpo": {
         "id": 10423,
@@ -93,55 +99,55 @@
         "id": 9283,
         "type": "elasticsearch",
         "database": "cmssdt-apache-cmssdt-*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "cmssdt-generic": {
         "id": 9282,
         "type": "elasticsearch",
         "database": "cmssdt-*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "cmssdt-ib-dataset": {
         "id": 9284,
         "type": "elasticsearch",
         "database": "cmssdt-ib-dataset*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "cmssdt-ib-matrix": {
         "id": 9285,
         "type": "elasticsearch",
         "database": "cmssdt-ib-matrix*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "cmssdt-ibs": {
         "id": 9286,
         "type": "elasticsearch",
         "database": "cmssdt-ibs*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "cmssdt-jenkins-ibs": {
         "id": 9301,
         "type": "elasticsearch",
         "database": "cmssdt-jenkins-ibs-*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "cmssdt-jenkins-jobs": {
         "id": 9287,
         "type": "elasticsearch",
         "database": "cmssdt-jenkins-jobs-*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "cmssdt-relvals_stats_summary": {
         "id": 9015,
         "type": "elasticsearch",
         "database": "cmssdt-relvals_stats_summary-*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt1.cern.ch:443/os"
     },
     "cmssdt-scram-access": {
         "id": 9288,
         "type": "elasticsearch",
         "database": "cmssdt-scram-access*",
-        "url": "https://es-cmssdt1.cern.ch:443/es"
+        "url": "https://os-cmssdt.cern.ch:443/os"
     },
     "CMSWEB": {
         "id": 8973,
@@ -327,7 +333,7 @@
         "id": 9956,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-training*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "cmweb Loki": {
         "id": 9925,
@@ -345,103 +351,145 @@
         "id": 8983,
         "type": "elasticsearch",
         "database": "[cms-20*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-crab-condor-ekong": {
         "id": 10509,
         "type": "elasticsearch",
         "database": "[crab-condor-ekong*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-crab-ekong": {
         "id": 10502,
         "type": "elasticsearch",
         "database": "[crab-data-ekong1*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-crab-tape-recall": {
         "id": 10503,
         "type": "elasticsearch",
         "database": "[crab-tape-recall-daily-ekong*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-crab-tape-recall-rules": {
         "id": 10512,
         "type": "elasticsearch",
         "database": "[crab-tape-recall-rules-ekong*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-logmon": {
         "id": 9999,
         "type": "elasticsearch",
         "database": "[logmon-spider-*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "es-cms-test": {
+        "id": 10370,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-crab": {
         "id": 10412,
         "type": "elasticsearch",
         "database": "[test-crab-wa1-*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-dbs-rucio-inconsistency": {
         "id": 10537,
         "type": "elasticsearch",
         "database": "[test-dbs-rucio-inconsistency-*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-rucio-account-activity-usage": {
         "id": 10477,
         "type": "elasticsearch",
         "database": "[test-rucio-user-account-usage-activity-monitoring*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-rucio-account-usage-locks": {
         "id": 10563,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-rucio-account-usage-new": {
         "id": 10478,
         "type": "elasticsearch",
         "database": "[test-rucio-account-usage-monitoring*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-rucio-activity-user-usage": {
         "id": 10564,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "es-cms-test-rucio-dbs-all-unavailable-inconsistency": {
+        "id": 10791,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-rucio-dbs-inconsistency": {
         "id": 10613,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "es-cms-test-rucio-dbs-inconsistency-agg": {
+        "id": 10781,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "es-cms-test-rucio-dbs-inconsistency-daily": {
+        "id": 10782,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "es-cms-test-rucio-dbs-unavailable-inconsistency": {
+        "id": 10762,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-rucio-rse-usage-monitoring": {
         "id": 10547,
         "type": "elasticsearch",
         "database": "[test-rucio-rse-usage-monitoring-*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-rucio-subscriptions-monitoring": {
         "id": 10501,
         "type": "elasticsearch",
         "database": "[test-rucio-subscriptions-monitoring*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms-test-wma-agent-count": {
         "id": 10408,
         "type": "elasticsearch",
         "database": "[test-wmarchive-agent-count-*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+        "url": "https://os-cms.cern.ch:443/os"
     },
-    "es-cms1-test": {
-        "id": 10370,
-        "type": "elasticsearch",
-        "database": "[cms-20*]",
-        "url": "https://es-cms1.cern.ch:443/es"
+    "es-cms-test-zeina-detailed": {
+        "id": 11005,
+        "type": "grafana-opensearch-datasource",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "es-cms-test-zeina-main": {
+        "id": 10995,
+        "type": "grafana-opensearch-datasource",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "es-cms-test-zeina-tnd": {
+        "id": 11006,
+        "type": "grafana-opensearch-datasource",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "es-cms7-test-ceyhun": {
         "id": 10371,
@@ -453,13 +501,13 @@
         "id": 9732,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_enr_events-]YYYY-MM-DD",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "ES_cms_rucio_raw_events": {
         "id": 9269,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_raw_events*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "Graphite": {
         "id": 10305,
@@ -479,125 +527,173 @@
         "database": "",
         "url": "http://monit-prometheus.cern.ch:9090/"
     },
+    "monit-cms-dmops-dbs-rucio-all-unav": {
+        "id": 10975,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM",
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
+    },
+    "monit-cms-dmops-dbs-rucio-inc": {
+        "id": 10973,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM",
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
+    },
+    "monit-cms-dmops-rucio-dbs-inc": {
+        "id": 10974,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM",
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
+    },
     "monit-es-factory-pilot-efficiency-test": {
         "id": 10514,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-test_raw_factory_pilot_efficiency_data*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit-prod-rucio-acc-usage": {
         "id": 10592,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit-prod-rucio-acc-usage-locks": {
         "id": 10591,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
+    },
+    "monit-prod-rucio-activity-account-usage": {
+        "id": 10789,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
+    },
+    "monit-prod-rucio-activity-usage": {
+        "id": 10785,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit-prod-rucio-subscriptions": {
         "id": 10559,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
+    },
+    "monit-prod-xrootd": {
+        "id": 10757,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit-prod-xrootd-transfer": {
         "id": 10516,
         "type": "elasticsearch",
         "database": "[monit_prod_xrootd_raw_transfer*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit-timber-cms-crab-httpcall": {
         "id": 10185,
         "type": "elasticsearch",
         "database": "[monit_private_crab_logs_crabhttpcall-]YYYY-MM-DD",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cms-crab-publisher": {
         "id": 9830,
         "type": "elasticsearch",
         "database": "[monit_private_crab_logs_crabpublisher-]*",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cms-crab-rest": {
         "id": 10246,
         "type": "elasticsearch",
         "database": "[monit_private_crab_logs_crabrest-]*",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cms-crab-taskworker": {
         "id": 9795,
         "type": "elasticsearch",
         "database": "[monit_private_crab_logs_crabtaskworker-]YYYY-MM-DD",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cms-crab-taskworker_kafka_ts": {
         "id": 9851,
         "type": "elasticsearch",
         "database": "[monit_private_crab_logs_crabtaskworker-]*",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cms-k8s-auth-new": {
         "id": 10075,
         "type": "elasticsearch",
         "database": "[monit_private_cmsweb-auth_logs_cmsweb-auth-]YYYY-MM-DD",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cmswebk8s-apache": {
         "id": 9660,
         "type": "elasticsearch",
         "database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cmswebk8s-apache-2": {
         "id": 9706,
         "type": "elasticsearch",
         "database": "[monit_private_cmswebk8s_logs_frontend-]YYYY-MM-DD",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
+    },
+    "monit-timber-cmswebk8s-aps": {
+        "id": 10990,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM.DD",
+        "url": "https://monit-timberprivate.cern.ch:443/os"
+    },
+    "monit-timber-cmswebk8s-aps-test": {
+        "id": 11083,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM.DD",
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-cmswebk8s-generic": {
         "id": 10315,
         "type": "elasticsearch",
         "database": "[monit_private_cmswebk8s_logs_generic-]YYYY-MM-DD",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit-timber-si-factory": {
         "id": 9908,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-si-factory_logs_*-]YYYY-MM-DD",
-        "url": "https://monit-timber.cern.ch:443/es"
+        "url": "https://monit-timber.cern.ch:443/os"
     },
     "monit_aaa_subscription": {
         "id": 9466,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_aaa_subscription_raw_metric*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_cmpwg": {
         "id": 9960,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-cmpwg_raw_profiling_document-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_cms_es_xrootd_agg": {
         "id": 9957,
         "type": "elasticsearch",
         "database": "[monit_prod_xrootd_agg_transfer-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_condor": {
         "id": 7668,
         "type": "elasticsearch",
         "database": "[monit_prod_condor*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_crab": {
         "id": 8978,
         "type": "elasticsearch",
         "database": "[monit_prod_crab_*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_crab_test": {
         "id": 10642,
@@ -609,7 +705,7 @@
         "id": 10419,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-ms-pileup*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_eos_ioapp": {
         "id": 10338,
@@ -621,205 +717,205 @@
         "id": 10403,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_eos_mon_raw_tzero-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_eoscmsquotas": {
         "id": 9003,
         "type": "elasticsearch",
         "database": "[monit_prod_eoscmsquotas*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_cms_eos_mon": {
         "id": 10363,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_eos_mon_raw_metric-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cms_rucio_daily_dataset_stats": {
         "id": 10151,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_raw_daily_stats-]YYYY-MM-DD",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_cms_rucio_monthly_stats": {
         "id": 10362,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_raw_monthly_stats-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cms_rucio_weekly_stats": {
         "id": 10361,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_rucio_raw_weekly_stats-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cmsjm_agg": {
         "id": 9582,
         "type": "elasticsearch",
         "database": "[monit_prod_condor_agg_metric-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cmsjm_hist": {
         "id": 9683,
         "type": "elasticsearch",
         "database": "[monit_prod_condor-hist_agg_metric*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cmssst": {
         "id": 9475,
         "type": "elasticsearch",
         "database": "[monit_prod_cmssst*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cmssst_test": {
         "id": 9980,
         "type": "elasticsearch",
         "database": "[monit_prod_cmssst*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cmssw_pop": {
         "id": 9751,
         "type": "elasticsearch",
         "database": "[monit_prod_cmssw_pop_raw_metric-]YYYY-MM-DD",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_cmssw_pop_kafka_ts": {
         "id": 9845,
         "type": "elasticsearch",
         "database": "[monit_prod_cmssw_pop_raw_metric-]YYYY-MM-DD",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_cmst0_agg": {
         "id": 10326,
         "type": "elasticsearch",
         "database": "[monit_prod_cmst0_agg*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_cmst0_raw": {
         "id": 10325,
         "type": "elasticsearch",
         "database": "[monit_prod_cmst0_raw*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_condor": {
         "id": 8787,
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_metric-*]YYYY-MM-DD",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_condor-test": {
         "id": 9307,
         "type": "elasticsearch",
         "database": "[monit_prod_condor-test_raw_metric*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_condor_2": {
         "id": 9847,
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_metric-*]YYYY-MM-DD",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_condor_overview": {
         "id": 9236,
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_overview*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_condor_tasks": {
         "id": 9039,
         "type": "elasticsearch",
         "database": "[monit_prod_condor_raw_task-*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_factory_pilot_data": {
         "id": 9509,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_raw_factory_*_data*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_fts_agg": {
         "id": 9733,
         "type": "elasticsearch",
         "database": "[monit_prod_fts_agg*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_ftsloganalysis": {
         "id": 9558,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-fts-logsanalysis_raw_metric*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_sam3-qa_enr": {
         "id": 10152,
         "type": "elasticsearch",
         "database": "monit_prod_sam3-qa_enr_metric-*",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_sam3_enr": {
         "id": 9677,
         "type": "elasticsearch",
         "database": "monit_prod_sam3_enr_*",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_sitemon_agg": {
         "id": 9673,
         "type": "elasticsearch",
         "database": "monit_prod_sitemon_agg_*",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_sitemon_endpoint": {
         "id": 9839,
         "type": "elasticsearch",
         "database": "[monit_prod_sitemon_agg_endpoint-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_sitemon_latest": {
         "id": 10007,
         "type": "elasticsearch",
         "database": "monit_prod_sitemon_enr_latest*",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_sitemon_metric": {
         "id": 9840,
         "type": "elasticsearch",
         "database": "[monit_prod_sitemon_agg_metric-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_sitemon_site": {
         "id": 9841,
         "type": "elasticsearch",
         "database": "[monit_prod_sitemon_agg_site-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_sitemon_site-stats": {
         "id": 9842,
         "type": "elasticsearch",
         "database": "[monit_prod_sitemon_agg_site-stats*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_toolsandint": {
         "id": 9040,
         "type": "elasticsearch",
         "database": "[monit_prod_toolsandint*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_transfers": {
         "id": 9756,
         "type": "elasticsearch",
         "database": "[monit_prod_transfers]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_es_xcache_classads": {
         "id": 9331,
         "type": "elasticsearch",
         "database": "[monit_prod_cmsxcache_raw_classads_v001-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_es_xcache_xrootd": {
         "id": 9332,
         "type": "elasticsearch",
         "database": "[monit_prod_cmsxcache_raw_xrootd_v001-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_grafana_config": {
         "id": 9589,
@@ -1017,85 +1113,115 @@
         "id": 8533,
         "type": "elasticsearch",
         "database": "[monit_prod_kpi*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_os_cms_xrootd_cache": {
         "id": 10619,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_cms-es-size_raw_elasticsearch": {
         "id": 9573,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-es-size_raw_elasticsearch*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_cms-es-size_raw_hdfs": {
         "id": 9574,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-es-size_raw_hdfs*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_cms-training": {
         "id": 9411,
         "type": "elasticsearch",
         "database": "[monit_prod_cms-training*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_cms_aaa-ng": {
         "id": 9231,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_raw_aaa-ng*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_fts": {
         "id": 9233,
         "type": "elasticsearch",
         "database": "[monit_prod_fts_*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_phedex_dbs": {
         "id": 7571,
         "type": "elasticsearch",
         "database": "[monit_prod_phedex_dbs_*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "monit_prod_tier0wmagent": {
         "id": 9113,
         "type": "elasticsearch",
         "database": "",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_wmagent": {
         "id": 7617,
         "type": "elasticsearch",
         "database": "[monit_prod_wmagent_*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_prod_wmagentqa": {
         "id": 8429,
         "type": "elasticsearch",
         "database": "[monit_prod_wmagentqa_*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "monit_timberprivate_crab": {
         "id": 10183,
         "type": "elasticsearch",
         "database": "[monit_private_crab*]",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "monit_timberprivate_crabpublisher": {
         "id": 10184,
         "type": "elasticsearch",
         "database": "[monit_private_crab_logs_crabpublisher-]*",
-        "url": "https://monit-timberprivate.cern.ch:443/es"
+        "url": "https://monit-timberprivate.cern.ch:443/os"
     },
     "MySQL": {
         "id": 9485,
         "type": "mysql",
         "database": "",
         "url": ""
+    },
+    "OpenSearch": {
+        "id": 10958,
+        "type": "grafana-opensearch-datasource",
+        "database": "",
+        "url": ""
+    },
+    "os-cms-crab-condor-taskdb": {
+        "id": 11045,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM",
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "os-cms-crab-tape-recall-daily": {
+        "id": 11046,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM",
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "os-cms-crab-tape-recall-rules": {
+        "id": 11047,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM",
+        "url": "https://os-cms.cern.ch:443/os"
+    },
+    "os-cms-crab-taskdb": {
+        "id": 11048,
+        "type": "grafana-opensearch-datasource",
+        "database": "[logstash-]YYYY.MM",
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "Rucio-graphite-dev": {
         "id": 9259,
@@ -1107,25 +1233,25 @@
         "id": 8980,
         "type": "elasticsearch",
         "database": "[monit_prod_crab_raw_schedd-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
-    },
-    "SI-codor-test": {
-        "id": 9480,
-        "type": "elasticsearch",
-        "database": "[monit_prod_cms-test_raw_si_condor*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
     },
     "SI-condor": {
         "id": 8993,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_raw_si_condor*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
+    },
+    "SI-condor-test": {
+        "id": 9480,
+        "type": "elasticsearch",
+        "database": "[monit_prod_cms-test_raw_si_condor*]",
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "SI-frontend": {
         "id": 9710,
         "type": "elasticsearch",
         "database": "[monit_prod_cms_raw_si_frontend*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "Stackdriver": {
         "id": 9527,
@@ -1137,24 +1263,36 @@
         "id": 8981,
         "type": "elasticsearch",
         "database": "[monit_prod_crab_raw_taskworker-*]",
-        "url": "https://monit-opensearch-lt.cern.ch:443/es"
+        "url": "https://monit-opensearch-lt.cern.ch:443/os"
+    },
+    "tmp-test": {
+        "id": 10940,
+        "type": "grafana-opensearch-datasource",
+        "database": "",
+        "url": "https://os-cms.cern.ch:443/os"
     },
     "WMArchive": {
         "id": 7572,
         "type": "elasticsearch",
         "database": "[monit_prod_wmarchive_*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
+    },
+    "WMArchive-test": {
+        "id": 10726,
+        "type": "elasticsearch",
+        "database": "",
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "WMArchive_kafka_ts": {
         "id": 9846,
         "type": "elasticsearch",
         "database": "[monit_prod_wmarchive_*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     },
     "WMArchive_record_time": {
         "id": 9952,
         "type": "elasticsearch",
         "database": "[monit_prod_wmarchive_*]",
-        "url": "https://monit-opensearch.cern.ch:443/es"
+        "url": "https://monit-opensearch.cern.ch:443/os"
     }
 }
