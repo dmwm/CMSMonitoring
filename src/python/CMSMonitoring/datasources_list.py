@@ -38,7 +38,7 @@ or through the GRAFANA_ADMIN_TOKEN environment variable.
 
 def get_datasources(token, base="https://monit-grafana.cern.ch"):
     headers = {
-        "Authorization": "Bearer {}".format(token),
+        "Authorization": f"Bearer {token}",
         "Content-type": "application/x-ndjson",
         "Accept": "application/json",
     }
@@ -54,7 +54,7 @@ def get_datasources(token, base="https://monit-grafana.cern.ch"):
         x["name"]: {
             "id": x["id"],
             "type": x["type"],
-            "database": x["database"],
+            "database": x["jsonData"].get("database") or x["database"] or x["jsonData"].get("index", ""),
             "url": x["url"],
         }
         for x in fullResponse
