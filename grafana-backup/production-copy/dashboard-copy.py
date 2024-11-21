@@ -41,6 +41,21 @@ def get_folder_uid(base_url, headers, folder_name):
     return None
 
 
+def get_folder_permissions(base_url, headers, folder_uid):
+    """Fetch the permissions of a folder."""
+    response = requests.get(f"{base_url}/api/folders/{folder_uid}/permissions", headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
+def update_folder_permissions(base_url, headers, folder_uid, permissions):
+    """Set permissions for a folder."""
+    payload = {"items": permissions}
+    response = requests.post(f"{base_url}/api/folders/{folder_uid}/permissions", headers=headers, json=payload)
+    response.raise_for_status()
+    logging.info(f"Permissions for folder UID '{folder_uid}' have been updated.")
+
+
 def delete_folder(base_url, headers, folder_uid):
     """Delete a folder by its UID."""
     response = requests.delete(f"{base_url}/api/folders/{folder_uid}", headers=headers)
@@ -49,15 +64,23 @@ def delete_folder(base_url, headers, folder_uid):
 
 
 def create_folder(base_url, headers, folder_name):
-    """Create a folder. If it exists, delete and recreate it."""
+    """Create a folder. If it exists, delete and recreate it while preserving permissions."""
     folder_uid = get_folder_uid(base_url, headers, folder_name)
+    preserved_permissions = []
+
     if folder_uid:
-        logging.info(f"Folder '{folder_name}' exists. Overwriting...")
+        logging.info(f"Folder '{folder_name}' exists. Fetching permissions and overwriting...")
+        preserved_permissions = get_folder_permissions(base_url, headers, folder_uid)
         delete_folder(base_url, headers, folder_uid)
+
     response = requests.post(f"{base_url}/api/folders", headers=headers, json={"title": folder_name})
     response.raise_for_status()
     folder = response.json()
     logging.info(f"Created folder '{folder_name}'.")
+
+    if preserved_permissions:
+        update_folder_permissions(base_url, headers, folder["uid"], preserved_permissions)
+
     return folder["id"]
 
 
