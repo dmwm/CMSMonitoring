@@ -2,6 +2,7 @@
 
 set -e
 
+# This script copies Grafana dashboards from the folder "Production" to "Production Copy".
 ##H Usage: run.sh GRAFANA_URL API_TOKEN
 ##H Example:
 ##H        run.sh https://grafana-url.com your-api-token
@@ -14,7 +15,6 @@ fi
 # Arguments
 GRAFANA_URL="$1"
 API_TOKEN="$2"
-shift 2
 
 addr=cms-comp-monit-alerts@cern.ch
 
@@ -23,13 +23,13 @@ trap onExit EXIT
 function onExit() {
   local status=$?
   if [ $status -ne 0 ]; then
-    local msg="Grafana dashboard sync job failure. Please see Kubernetes 'cron' cluster logs."
+    local msg="Grafana dashboard copy cron failure. Please see Kubernetes 'cron' cluster logs."
     if [ -x ./amtool ]; then
       expire=$(date -d '+1 hour' --rfc-3339=ns | tr ' ' 'T')
       local urls="http://cms-monitoring.cern.ch:30093 http://cms-monitoring-ha1.cern.ch:30093 http://cms-monitoring-ha2.cern.ch:30093"
       for url in $urls; do
-        ./amtool alert add grafana_dashboard_sync_failure \
-          alertname=grafana_dashboard_sync_failure severity=critical tag=cronjob alert=amtool \
+        ./amtool alert add grafana_dashboard_copy_failure \
+          alertname=grafana_dashboard_copy_failure severity=monitoring tag=cronjob alert=amtool \
           --end="$expire" \
           --annotation=summary="$msg" \
           --annotation=date="$(date)" \
@@ -38,7 +38,7 @@ function onExit() {
           --alertmanager.url="$url"
       done
     else
-      echo "$msg" | mail -s "Cron alert grafana_dashboard_sync_failure" "$addr"
+      echo "$msg" | mail -s "Cron alert grafana_dashboard_copy_failure" "$addr"
     fi
   fi
 }

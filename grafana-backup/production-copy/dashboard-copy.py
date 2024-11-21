@@ -1,10 +1,24 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+This script copies Grafana dashboards from one folder to another.
+"""
 import datetime
+import json
 import logging
+import sys
 
 import click
 import requests
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+def get_grafana_auth(fname):
+    """Load Grafana authentication token from a file."""
+    with open(fname, "r") as token_file:
+        token = json.load(token_file)["production_copy_token"]
+    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
 
 def get_folder_id(base_url, headers, folder_name):
@@ -17,12 +31,29 @@ def get_folder_id(base_url, headers, folder_name):
     return None
 
 
+def get_folder_uid(base_url, headers, folder_name):
+    """Fetch the folder UID for a given folder name."""
+    response = requests.get(f"{base_url}/api/folders", headers=headers)
+    response.raise_for_status()
+    for folder in response.json():
+        if folder["title"] == folder_name:
+            return folder["uid"]
+    return None
+
+
+def delete_folder(base_url, headers, folder_uid):
+    """Delete a folder by its UID."""
+    response = requests.delete(f"{base_url}/api/folders/{folder_uid}", headers=headers)
+    response.raise_for_status()
+    logging.info(f"Deleted folder with UID {folder_uid}.")
+
+
 def create_folder(base_url, headers, folder_name):
-    """Create a folder if it doesn't already exist."""
-    folder_id = get_folder_id(base_url, headers, folder_name)
-    if folder_id:
-        logging.info(f"Folder '{folder_name}' already exists.")
-        return folder_id
+    """Create a folder. If it exists, delete and recreate it."""
+    folder_uid = get_folder_uid(base_url, headers, folder_name)
+    if folder_uid:
+        logging.info(f"Folder '{folder_name}' exists. Overwriting...")
+        delete_folder(base_url, headers, folder_uid)
     response = requests.post(f"{base_url}/api/folders", headers=headers, json={"title": folder_name})
     response.raise_for_status()
     folder = response.json()
@@ -54,9 +85,9 @@ def copy_dashboard(base_url, headers, dashboard, target_folder_id):
 
 @click.command()
 @click.option("--url", required=True, help="Base URL of the Grafana instance")
-@click.option("--token", required=True, help="API or Service Account token for authentication")
-def main(url, token):
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+@click.option("--token", "fname", required=True, help="API or Service Account token for authentication")
+def main(url, fname):
+    headers = get_grafana_auth(fname)
     source_folder_name = "Production"
     target_folder_name = "Production Copy"
 
@@ -74,4 +105,8 @@ def main(url, token):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+        sys.exit(1)
