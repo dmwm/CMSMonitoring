@@ -9,7 +9,7 @@ Then compresses and puts them to EOS folder `/eos/cms/store/group/offcomp_monit/
 
 ```
     {
-        "SECRET_KEY": "YOUR_SECRET_KEY"
+        "filesystem_exporter_token": "YOUR_SECRET_KEY"
     }
 ```
 

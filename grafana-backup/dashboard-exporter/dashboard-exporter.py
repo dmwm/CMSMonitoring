@@ -25,7 +25,7 @@ def get_grafana_auth(fname):
         print(f"File {fname} does not exist")
         sys.exit(1)
     with open(fname, "r") as keyFile:
-        secret_key = json.load(keyFile).get("SECRET_KEY")
+        secret_key = json.load(keyFile).get("filesystem_exporter_token")
     headers = {"Authorization": f"Bearer {secret_key}"}
     return headers
 
