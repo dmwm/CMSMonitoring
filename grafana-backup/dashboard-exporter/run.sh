@@ -17,7 +17,7 @@ if [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ] || [ "$1" == 
 fi
 
 # Get utils functions
-. ../scripts/utils.sh
+. ../../scripts/utils.sh
 
 # Authenticate with Kerberos keytab
 util_kerberos_auth_with_keytab "$1"
