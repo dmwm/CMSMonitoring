@@ -12,8 +12,10 @@ from datetime import datetime
 
 import click
 import pandas as pd
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
-    col, collect_list, concat_ws, countDistinct, first, greatest, lit, lower, when,
+    col, collect_list, concat_ws, countDistinct, first, greatest, lit, when, broadcast, lower,
     avg as _avg,
     count as _count,
     hex as _hex,
@@ -22,10 +24,7 @@ from pyspark.sql.functions import (
     split as _split,
     sum as _sum,
 )
-
 from pyspark.sql.types import LongType
-from pyspark import SparkContext
-from pyspark.sql import SparkSession
 
 # Local
 import dbs_schemas
@@ -52,6 +51,13 @@ def get_spark_session(app_name):
     return SparkSession.builder.config(conf=sc._conf).getOrCreate()
 
 
+def get_csvreader(spark):
+    """CSV reader for DBS csv gz format"""
+    return (
+        spark.read.format("csv").option("nullValue", "null").option("mode", "FAILFAST")
+    )
+
+
 def get_df_rses(spark):
     """Get pandas dataframe of RSES
     """
@@ -68,15 +74,12 @@ def get_df_rses(spark):
                     .otherwise('prod')
                     ) \
         .select(['rse_id', 'RSE', 'RSE_TYPE', 'rse_tier', 'rse_country', 'rse_kind'])
-    return df_rses
+    return broadcast(df_rses)
 
 
 def get_df_replicas(spark):
     """Create main replicas dataframe by selecting only Disk or Tape RSEs in Rucio REPLICAS table
     """
-    # List of all RSE id list
-    # rse_id_list = df_pd_rses['replica_rse_id'].to_list()
-    # .filter(col('rse_id').isin(rse_id_list)) \
     return spark.read.format('avro').load(HDFS_RUCIO_REPLICAS) \
         .filter(col('SCOPE') == 'cms') \
         .filter(col('STATE') == 'A') \
@@ -90,18 +93,6 @@ def get_df_replicas(spark):
 
 def get_df_dids_files(spark):
     """Create spark dataframe for DIDS table by selecting only Files in Rucio DIDS table.
-
-    Filters:
-        - DELETED_AT not null
-        - HIDDEN = 0
-        - SCOPE = cms
-        - DID_TYPE = F
-
-    Columns selected:
-        - f_name: file name
-        - f_size_dids: represents size of a file in DIDS table
-        - dids_accessed_at: file last access time
-        - dids_created_at: file creation time
     """
     return spark.read.format('avro').load(HDFS_RUCIO_DIDS) \
         .filter(col('DELETED_AT').isNull()) \
@@ -117,21 +108,16 @@ def get_df_dids_files(spark):
 
 def get_df_dbs_f_d(spark):
     """Create a dataframe for FILE-DATASET membership/ownership map
-
-    Columns selected: f_name, dataset
     """
-    dbs_files = csvreader.schema(dbs_schemas.schema_files()).load(HDFS_DBS_FILES) \
+    dbs_files = get_csvreader(spark).schema(dbs_schemas.schema_files()).load(HDFS_DBS_FILES) \
         .withColumnRenamed('LOGICAL_FILE_NAME', 'f_name') \
-        .withColumnRenamed('DATASET_ID', 'f_dataset_id') \
-        .select(['f_name', 'f_dataset_id'])
-    dbs_datasets = csvreader.schema(dbs_schemas.schema_datasets()).load(HDFS_DBS_DATASETS) \
+        .select(['f_name', 'DATASET_ID'])
+    dbs_datasets = get_csvreader(spark).schema(dbs_schemas.schema_datasets()).load(HDFS_DBS_DATASETS) \
         .filter(col('IS_DATASET_VALID') == '1') \
-        .withColumnRenamed('DATASET_ID', 'd_dataset_id') \
-        .withColumnRenamed('DATASET', 'd_dataset') \
-        .select(['d_dataset_id', 'd_dataset'])
-    df_dbs_f_d = dbs_files.join(dbs_datasets, dbs_files.f_dataset_id == dbs_datasets.d_dataset_id, how='left') \
-        .withColumnRenamed('f_dataset_id', 'dataset_id') \
-        .withColumnRenamed('d_dataset', 'dataset') \
+        .select(['DATASET_ID', 'DATASET'])
+    df_dbs_f_d = dbs_files.join(dbs_datasets, ["DATASET_ID"], how='left') \
+        .withColumnRenamed('DATASET_ID', 'dataset_id') \
+        .withColumnRenamed('DATASET', 'dataset') \
         .select(['dataset_id', 'f_name', 'dataset'])
     return df_dbs_f_d
 
@@ -139,9 +125,9 @@ def get_df_dbs_f_d(spark):
 def get_df_ds_general_info(spark):
     """Calculate real size and total file counts of dataset: RealSize, TotalFileCnt
     """
-    dbs_files = csvreader.schema(dbs_schemas.schema_files()).load(HDFS_DBS_FILES) \
+    dbs_files = get_csvreader(spark).schema(dbs_schemas.schema_files()).load(HDFS_DBS_FILES) \
         .select(['DATASET_ID', 'FILE_SIZE', 'LOGICAL_FILE_NAME'])
-    dbs_datasets = csvreader.schema(dbs_schemas.schema_datasets()).load(HDFS_DBS_DATASETS) \
+    dbs_datasets = get_csvreader(spark).schema(dbs_schemas.schema_datasets()).load(HDFS_DBS_DATASETS) \
         .select(['DATASET_ID'])
     return dbs_datasets.join(dbs_files, ['DATASET_ID'], how='left') \
         .groupby('DATASET_ID') \
@@ -170,13 +156,8 @@ def get_df_file_rse_ts_size(df_replicas_j_dids):
     Firstly, REPLICAS size value will be used. If there are files with no size values, DIDS size values will be used:
     see 'when' function order. For accessed_at and created_at, their max values will be got.
 
-    Columns: file, rse_id, accessed_at, f_size, created_at
-
     df_file_rse_ts_size: files and their rse_id, size and access time are completed
     """
-
-    # f_size is not NULL, already verified.
-    # df_file_rse_ts_size.filter(col('f_size').isNull()).limit(5).toPandas()
     return df_replicas_j_dids \
         .withColumn('f_size',
                     when(col('f_size_replicas').isNotNull(), col('f_size_replicas'))
@@ -202,12 +183,6 @@ def get_df_dataset_file_rse_ts_size(df_file_rse_ts_size, df_dbs_f_d):
         .join(df_dbs_f_d, ['f_name'], how='left') \
         .fillna("UnknownDatasetNameOfFiles_MonitoringTag", subset=['dataset']) \
         .select(['dataset_id', 'dataset', 'f_name', 'rse_id', 'accessed_at', 'created_at', 'f_size'])
-
-    # f_c = df_dataset_file_rse_ts_size.select('f_name').distinct().count()
-    # f_w_no_dataset_c = df_dataset_file_rse_ts_size.filter(col('dataset').isNull()).select('f_name').distinct().count()
-    # print('Distinct file count:', f_c)
-    # print('Files with no dataset name count:', f_w_no_dataset_c)
-    # print('% of null dataset name in all files:', round(f_w_no_dataset_c / f_c, 3) * 100)
 
     return df_dataset_file_rse_ts_size
 
@@ -252,14 +227,6 @@ def get_df_sub_rse_details(df_enr_with_rse_info):
 
     df_main_datasets_and_rses: RSE name, dataset and their size and access time calculations
     """
-    # Get RSE ID:NAME map
-    # rses_id_name_map = dict(df_pd_rses[['replica_rse_id', 'rse']].values)
-    # rses_id_type_map = dict(df_pd_rses[['replica_rse_id', 'rse_type']].values)
-    # rses_id_tier_map = dict(df_pd_rses[['replica_rse_id', 'rse_tier']].values)
-    # rses_id_country_map = dict(df_pd_rses[['replica_rse_id', 'rse_country']].values)
-    # rses_id_kind_map = dict(df_pd_rses[['replica_rse_id', 'rse_kind']].values)
-    # .replace(rses_id_name_map, subset=['rse_id']) \
-    # , 'rse_tier', 'rse_country', 'rse_kind',
     return df_enr_with_rse_info \
         .groupby(['rse_id', 'dataset']) \
         .agg(_sum(col('f_size')).alias('SizeInRseBytes'),
@@ -283,7 +250,6 @@ def get_df_main_datasets(df_sub_rse_details, df_ds_general_info):
 
     Get last access of dataframe in all RSE(s)
     """
-    # Order of the select is important
     df = df_sub_rse_details \
         .groupby(['RseType', 'Dataset']) \
         .agg(_max(col('SizeInRseBytes')).cast(LongType()).alias('Max'),
@@ -308,22 +274,15 @@ def get_df_main_datasets(df_sub_rse_details, df_ds_general_info):
 def main(hdfs_out_dir):
     """Main function that run Spark dataframe creations and save results to HDFS directory as JSON lines
     """
-    global csvreader
-
     hdfs_out_dir = hdfs_out_dir + "/" + HDFS_SUB_DIR
     # HDFS output file format. If you change, please modify bin/cron4rucio_ds_mongo.sh accordingly.
     write_format = 'json'
     write_mode = 'overwrite'
 
-    spark = get_spark_session(app_name='cms-monitoring-rucio-datasets-for-mongo')
+    spark = get_spark_session(app_name='cms-monitoring-rucio-datasets')
     # Set TZ as UTC. Also set in the spark-submit confs.
     spark.conf.set("spark.sql.session.timeZone", "UTC")
-    # csvreader
-    csvreader = spark.read.format("csv") \
-        .option("nullValue", "null") \
-        .option("mode", "FAILFAST")
 
-    # The reason that we have lots of functions that returns PySpark dataframes is mainly for code readability.
     df_rses = get_df_rses(spark)
     df_dbs_f_d = get_df_dbs_f_d(spark)
     df_ds_general_info = get_df_ds_general_info(spark)
