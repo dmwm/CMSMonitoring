@@ -16,6 +16,7 @@ from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     coalesce,
+    broadcast,
     col,
     collect_set,
     countDistinct,
@@ -80,7 +81,6 @@ def get_csvreader(spark):
 
 def get_df_dbs_files(spark):
     """Create DBS Files table dataframe"""
-    # Get DBS-Files required fields
     return (
         get_csvreader(spark)
         .schema(dbs_schemas.schema_files())
@@ -93,7 +93,6 @@ def get_df_dbs_files(spark):
 
 def get_df_dbs_blocks(spark):
     """Create DBS Blocks table dataframe"""
-    # Get DBS-Blocks required fields
     return (
         get_csvreader(spark)
         .schema(dbs_schemas.schema_blocks())
@@ -104,7 +103,6 @@ def get_df_dbs_blocks(spark):
 
 def get_df_dbs_datasets(spark):
     """Create DBS Datasets table dataframe"""
-    # Get DBS-Datasets required fields
     return (
         get_csvreader(spark)
         .schema(dbs_schemas.schema_datasets())
@@ -116,45 +114,41 @@ def get_df_dbs_datasets(spark):
 
 def get_df_dbs_f_d_map(spark):
     """Create dataframe for DBS dataset:file map"""
-    # Get DBS Datasets-Files map with required fields
-    dbs_files = get_df_dbs_files(spark).withColumnRenamed("DATASET_ID", "F_DATASET_ID")
+    dbs_files = get_df_dbs_files(spark)
     dbs_datasets = get_df_dbs_datasets(spark)
-    return dbs_files.join(
-        dbs_datasets, dbs_files.F_DATASET_ID == dbs_datasets.DATASET_ID, how="inner"
-    ).select(["DATASET_ID", "DATASET", "FILE_NAME"])
+    return dbs_files.join(dbs_datasets, ["DATASET_ID"], how="inner").select(
+        ["DATASET_ID", "DATASET", "FILE_NAME"]
+    )
 
 
 def get_df_dbs_b_d_map(spark):
     """Create dataframe for DBS dataset:block map"""
-    # Get DBS Datasets-Blocks map with required fields
-    dbs_blocks = get_df_dbs_blocks(spark).withColumnRenamed(
-        "DATASET_ID", "B_DATASET_ID"
-    )
+    dbs_blocks = get_df_dbs_blocks(spark)
     dbs_datasets = get_df_dbs_datasets(spark)
-    return dbs_blocks.join(
-        dbs_datasets, dbs_blocks.B_DATASET_ID == dbs_datasets.DATASET_ID, how="inner"
-    ).select(["DATASET_ID", "DATASET", "BLOCK_NAME"])
+    return dbs_blocks.join(dbs_datasets, ["DATASET_ID"], how="inner").select(
+        ["DATASET_ID", "DATASET", "BLOCK_NAME"]
+    )
 
 
 def get_df_ds_file_and_block_cnt(spark):
-    """Calculate total file and block count of a dataset"""
-    # DBS Dataset file count. It will be used as a reference to define if dataset is fully replicated in RSE.
-    _df1 = (
+    """Calculate total file and block count of a DBS dataset
+
+    It will be used as a reference to define if dataset is fully replicated in RSE.
+    """
+    file_count_df = (
         get_df_dbs_f_d_map(spark)
         .groupby(["DATASET"])
         .agg(countDistinct(col("FILE_NAME")).alias("TOT_FILE_CNT"))
         .select(["DATASET", "TOT_FILE_CNT"])
     )
-    # DBS Dataset block count.
-    _df2 = (
+    block_count_df = (
         get_df_dbs_b_d_map(spark)
         .groupby(["DATASET"])
         .agg(countDistinct(col("BLOCK_NAME")).alias("TOT_BLOCK_CNT"))
-        .withColumnRenamed("DATASET", "B_DATASET")
-        .select(["B_DATASET", "TOT_BLOCK_CNT"])
+        .select(["DATASET", "TOT_BLOCK_CNT"])
     )
 
-    return _df1.join(_df2, _df1.DATASET == _df2.B_DATASET, how="inner").select(
+    return file_count_df.join(block_count_df, ["DATASET"], how="inner").select(
         ["DATASET", "TOT_BLOCK_CNT", "TOT_FILE_CNT"]
     )
 
@@ -164,8 +158,7 @@ def get_df_ds_file_and_block_cnt(spark):
 
 def get_df_rses(spark):
     """Create rucio RSES table dataframe with some rse tag calculations"""
-    # Rucio Rses required fields
-    return (
+    df_rses = (
         spark.read.format("avro")
         .load(HDFS_RUCIO_RSES)
         .filter(col("DELETED_AT").isNull())
@@ -194,11 +187,11 @@ def get_df_rses(spark):
         )
         .select(["rse_id", "RSE", "RSE_TYPE", "rse_tier", "rse_country", "rse_kind"])
     )
+    return broadcast(df_rses)
 
 
 def get_df_replicas(spark):
     """Create rucio Replicas table dataframe"""
-    # Rucio Replicas required fields
     return (
         spark.read.format("avro")
         .load(HDFS_RUCIO_REPLICAS)
@@ -216,8 +209,7 @@ def get_df_replicas(spark):
 
 
 def get_df_dids_files(spark):
-    """Create rucio DIDS table dataframe with just for files"""
-    # Rucio Dids only files required fields
+    """Create rucio DIDS table dataframe for files"""
     return (
         spark.read.format("avro")
         .load(HDFS_RUCIO_DIDS)
@@ -225,24 +217,6 @@ def get_df_dids_files(spark):
         .filter(col("HIDDEN") == "0")
         .filter(col("SCOPE") == "cms")
         .filter(col("DID_TYPE") == "F")
-        .withColumnRenamed("NAME", "f_name")
-        .withColumnRenamed("ACCESSED_AT", "dids_accessed_at")
-        .withColumnRenamed("CREATED_AT", "dids_created_at")
-        .withColumn("f_size_dids", col("BYTES").cast(LongType()))
-        .select(["f_name", "f_size_dids", "dids_accessed_at", "dids_created_at"])
-    )
-
-
-def get_df_dids_datasets(spark):
-    """Create rucio DIDS table dataframe with just for datasets"""
-    # Rucio Dids only datasets required fields
-    return (
-        spark.read.format("avro")
-        .load(HDFS_RUCIO_DIDS)
-        .filter(col("DELETED_AT").isNull())
-        .filter(col("HIDDEN") == "0")
-        .filter(col("SCOPE") == "cms")
-        .filter(col("DID_TYPE") == "C")
         .withColumnRenamed("NAME", "f_name")
         .withColumnRenamed("ACCESSED_AT", "dids_accessed_at")
         .withColumnRenamed("CREATED_AT", "dids_created_at")
@@ -261,7 +235,6 @@ def get_df_dlocks(spark):
     - "sync-rules" represents all SYNC account rules. It can 1 or many. Because of their quantity, this solution is
     applied to provide better visualization.
     """
-    # Get DatasetLocks required fields
     df_dlocks = (
         spark.read.format("avro")
         .load(HDFS_RUCIO_DLOCKS)
@@ -287,7 +260,7 @@ def get_df_dlocks(spark):
         how="left",
     ).select(["rse_id", "dlocks_block_name", "account", "rule_id", "DATASET_ID"])
 
-    # Change SYNC rule_ids to "sync-rules", because there are so many of them
+    # Change SYNC rule_ids to "sync-rules", because there are too many of them
     df_dlocks = df_dlocks.withColumn(
         "rule_id",
         when(col("account") == SYNC_PREFIX, "sync-rules").otherwise(col("rule_id")),
@@ -443,7 +416,6 @@ def get_df_main_datasets_in_each_rse(spark):
         )
     )
 
-    # Add Block level locks tags
     df_dlocks = get_df_dlocks(spark)
     # if      ( BlockCount/TOT_BLOCK_CNT == ProdLockedBlockCount ): FULLY
     # else if ( ProdLockedBlockCount >=1                         ): PARTIAL
@@ -485,7 +457,6 @@ def get_df_main_datasets_in_each_rse(spark):
         )
     )
 
-    # Add RSE tags
     df_rses = get_df_rses(spark)
     return (
         df.join(df_rses, ["RSE"], how="left")
@@ -521,7 +492,6 @@ def get_df_main_datasets_in_each_rse(spark):
 
 def get_df_main_datasets_in_both_disk_and_tape(df_main_datasets_in_each_rse):
     """Produce datasets that are in both DISK and TAPE with additional fields"""
-    # Use only production RSEs with selected fields
     df = df_main_datasets_in_each_rse.filter(col("RseKind") == "prod").select(
         [
             "Type",
@@ -535,7 +505,6 @@ def get_df_main_datasets_in_both_disk_and_tape(df_main_datasets_in_each_rse):
             "BlockCount",
         ]
     )
-    # Find datasets in both TAPE and DISK
     df_datasets_in_both = (
         df.select(["Dataset", "Type"])
         .groupby(["Dataset"])
@@ -619,14 +588,12 @@ def main(hdfs_out_dir):
     write_format = "json"
     write_mode = "overwrite"
 
-    spark = get_spark_session(
-        app_name="cms-monitoring-rucio-detailed-datasets-for-mongo"
-    )
+    spark = get_spark_session(app_name="cms-monitoring-rucio-detailed-datasets")
     # Set TZ as UTC. Also set in the spark-submit confs.
     spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     # Detailed datasets
-    df_datasets_in_each_rse = get_df_main_datasets_in_each_rse(spark)
+    df_datasets_in_each_rse = get_df_main_datasets_in_each_rse(spark).cache()
     df_datasets_in_each_rse.write.save(
         path=hdfs_out_dir_detailed, format=write_format, mode=write_mode
     )
