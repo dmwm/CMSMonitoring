@@ -1,3 +1,10 @@
+# Builds and publish cmsmonitoring/cpueff-spark  and/or cmsmonitoring/cpueff-goweb docker images
+
+# Works only with git tag commit messages
+#   - "Build docker all": builds cpueff-goweb and cpueff-spark
+#   - "Build docker (goweb) foo bla": builds only cpueff-goweb
+#   - "Build docker (spark) foo bla": builds only cpueff-spark
+
 name: Build docker images
 on:
   push:
