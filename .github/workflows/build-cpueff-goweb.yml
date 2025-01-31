@@ -56,8 +56,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init-job ]
     if: |
-      steps.init-job.outputs.action == 'all' || 
-      contains(steps.init-job.outputs.docker_individual_images, 'goweb')
+      needs.init-job.outputs.action == 'all' || 
+      contains(needs.init-job.outputs.docker_individual_images, 'goweb')
     name: Build cpueff-goweb
     steps:
       - name: Set up Go
@@ -83,15 +83,15 @@ jobs:
           file: ./Dockerfile-cpueff-goweb
           push: true
           build-args: |
-            CMSMON_TAG=${{ steps.init-job.outputs.git_tag }}
-          tags: registry.cern.ch/cmsmonitoring/cpueff-goweb:${{ steps.init-job.outputs.git_tag }}
+            CMSMON_TAG=${{ needs.init-job.outputs.git_tag }}
+          tags: registry.cern.ch/cmsmonitoring/cpueff-goweb:${{ needs.init-job.outputs.git_tag }}
 
   build-cpueff-spark:
     runs-on: ubuntu-latest
     needs: [ init-job ]
     if: |
-      steps.init-job.outputs.action == 'all' || 
-      contains(steps.init-job.outputs.docker_individual_images, 'spark')
+      needs.init-job.outputs.action == 'all' || 
+      contains(needs.init-job.outputs.docker_individual_images, 'spark')
     name: Build cpueff-spark
     steps:
       - uses: actions/checkout@v3
@@ -113,5 +113,5 @@ jobs:
           file: ./Dockerfile-cpueff-spark
           push: true
           build-args: |
-            CMSMON_TAG=${{ steps.init-job.outputs.git_tag }}
-          tags: registry.cern.ch/cmsmonitoring/cpueff-spark:${{ steps.init-job.outputs.git_tag }}
+            CMSMON_TAG=${{ needs.init-job.outputs.git_tag }}
+          tags: registry.cern.ch/cmsmonitoring/cpueff-spark:${{ needs.init-job.outputs.git_tag }}
