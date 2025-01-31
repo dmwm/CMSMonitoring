@@ -28,7 +28,7 @@ jobs:
           REGEX_BUILD_INDIVIDUALS='Build docker [(](.+)[)].*'
           
           # Get git tag and set as "git_tag" variable
-          echo "git_tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          echo "git_tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
           
           # Get tag commit message
           GIT_TAG_MSG="$(git tag -l --format="%(contents)" $GITHUB_REF_NAME)"
@@ -39,14 +39,14 @@ jobs:
           # Check all
           if [[ $GIT_TAG_MSG =~ $REGEX_BUILD_ALL ]]; then
               echo "Action: all"
-              echo "action=all" >> $GITHUB_ENV
+              echo "action=all" >> $GITHUB_OUTPUT
               exit 0
           fi
           # Check individuals
           if [[ $GIT_TAG_MSG =~ $REGEX_BUILD_INDIVIDUALS && ! -z "${BASH_REMATCH[1]}" ]]; then
               echo "Action: individuals, individual_images: ${BASH_REMATCH[1]}"
-              echo "action=individuals" >> $GITHUB_ENV
-              echo "individual_images=${BASH_REMATCH[1]}" >> $GITHUB_ENV
+              echo "action=individuals" >> $GITHUB_OUTPUT
+              echo "individual_images=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
               exit 0
           fi
           # Fail message
@@ -56,8 +56,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init-job ]
     if: |
-      needs.init-job.outputs.action == 'all' || 
-      contains(needs.init-job.outputs.docker_individual_images, 'goweb')
+      steps.init-job.outputs.action == 'all' || 
+      contains(steps.init-job.outputs.docker_individual_images, 'goweb')
     name: Build cpueff-goweb
     steps:
       - name: Set up Go
@@ -83,15 +83,15 @@ jobs:
           file: ./Dockerfile-cpueff-goweb
           push: true
           build-args: |
-            CMSMON_TAG=${{ needs.init-job.outputs.git_tag }}
-          tags: registry.cern.ch/cmsmonitoring/cpueff-goweb:${{ needs.init-job.outputs.git_tag }}
+            CMSMON_TAG=${{ steps.init-job.outputs.git_tag }}
+          tags: registry.cern.ch/cmsmonitoring/cpueff-goweb:${{ steps.init-job.outputs.git_tag }}
 
   build-cpueff-spark:
     runs-on: ubuntu-latest
     needs: [ init-job ]
     if: |
-      needs.init-job.outputs.action == 'all' || 
-      contains(needs.init-job.outputs.docker_individual_images, 'spark')
+      steps.init-job.outputs.action == 'all' || 
+      contains(steps.init-job.outputs.docker_individual_images, 'spark')
     name: Build cpueff-spark
     steps:
       - uses: actions/checkout@v3
@@ -113,5 +113,5 @@ jobs:
           file: ./Dockerfile-cpueff-spark
           push: true
           build-args: |
-            CMSMON_TAG=${{ needs.init-job.outputs.git_tag }}
-          tags: registry.cern.ch/cmsmonitoring/cpueff-spark:${{ needs.init-job.outputs.git_tag }}
+            CMSMON_TAG=${{ steps.init-job.outputs.git_tag }}
+          tags: registry.cern.ch/cmsmonitoring/cpueff-spark:${{ steps.init-job.outputs.git_tag }}
