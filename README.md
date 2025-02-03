@@ -12,9 +12,6 @@ infrastructure.
 
 - On tag :whale: `go-*.*.*` :rocket:
     - Builds go executables and release `cmsmon-tools`
-    - Builds `cmsmonitoring/cmsmonit-int` docker image and push to registry.cern.ch
-    - Builds `cmsmonitoring/cmsmonit-alert` docker image and push to registry.cern.ch
-    - Builds `cmsmonitoring/nats-sub` docker image and push to registry.cern.ch
 - On tag :whale: `rgo-*.*.*` :rocket:
     - Builds `cmsmonitoring/rucio-mon-goweb` docker image using `rucio-dataset-monitoring`
     - Builds `cmsmonitoring/spark2mng` docker image using `rucio-dataset-monitoring`
@@ -27,5 +24,4 @@ infrastructure.
     - New release of CMSMonitoring PyPi module https://pypi.org/project/CMSMonitoring/
 - On tag `drpy-*.*.*`
     - Builds `cmsmonitoring/cmsmon-py` docker image and push to registry.cern.ch
-- Syntax check on special conditions
-    - Check validations of json and yaml files only that kind of files are changed
+- Syntax check of json and yaml files

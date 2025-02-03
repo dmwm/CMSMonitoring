@@ -13,37 +13,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: ^1.20
+          go-version: ^1.23
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get git tag
         id: get_tag
-        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
+        run: echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
-      - name: Build sqoop image
+      - name: Get sqoop Dockerfile
         run: |
-          echo Image tag: ${{ steps.get_tag.outputs.tag }}
           curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/sqoop/Dockerfile
-          sed -i -e "s,ENV CMSMON_TAG=.*,ENV CMSMON_TAG=${{steps.get_tag.outputs.tag}},g" Dockerfile
-          docker build . --tag docker.pkg.github.com/dmwm/sqoop/sqoop
-          docker tag docker.pkg.github.com/dmwm/sqoop/sqoop registry.cern.ch/cmsmonitoring/sqoop
 
       - name: Login to registry.cern.ch
-        uses: docker/login-action@v1.6.0
+        uses: docker/login-action@v3
         with:
           registry: registry.cern.ch
           username: ${{ secrets.CERN_LOGIN }}
           password: ${{ secrets.CERN_TOKEN }}
 
       - name: Publish sqoop image to registry.cern.ch
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v6
         with:
-          username: ${{ secrets.CERN_LOGIN }}
-          password: ${{ secrets.CERN_TOKEN }}
-          registry: registry.cern.ch
-          repository: cmsmonitoring/sqoop
-          tag_with_ref: true
+          context: ./
+          file: ./Dockerfile
+          push: true
+          build-args: |
+            CMSMON_TAG=${{ steps.get_tag.outputs.tag }}
+          tags: registry.cern.ch/cmsmonitoring/sqoop:${{ steps.get_tag.outputs.tag }}, registry.cern.ch/cmsmonitoring/sqoop:latest

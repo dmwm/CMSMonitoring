@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: ^1.20
+          go-version: ^1.23
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
         run: |
@@ -60,32 +60,3 @@ jobs:
           asset_path: ./cmsmon-tools.tar.gz
           asset_name: cmsmon-tools.tar.gz
           asset_content_type: application/octet-stream
-
-      # --- Build and push docker images ---
-      - name: Get git tag
-        id: get_tag
-        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-
-      - name: Build cmsmon-alerts image
-        run: |
-          echo Image tag: ${{ steps.get_tag.outputs.tag }}
-          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-alerts/Dockerfile
-          sed -i -e "s,ENV CMSMON_TAG=.*,ENV CMSMON_TAG=${{steps.get_tag.outputs.tag}},g" Dockerfile
-          docker build . --tag docker.pkg.github.com/dmwm/cmsmon-alerts/cmsmon-alerts
-          docker tag docker.pkg.github.com/dmwm/cmsmon-alerts/cmsmon-alerts registry.cern.ch/cmsmonitoring/cmsmon-alerts
-
-      - name: Login to registry.cern.ch
-        uses: docker/login-action@v1.6.0
-        with:
-          registry: registry.cern.ch
-          username: ${{ secrets.CERN_LOGIN }}
-          password: ${{ secrets.CERN_TOKEN }}
-
-      - name: Publish cmsmon-alerts image to registry.cern.ch
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ secrets.CERN_LOGIN }}
-          password: ${{ secrets.CERN_TOKEN }}
-          registry: registry.cern.ch
-          repository: cmsmonitoring/cmsmon-alerts
-          tag_with_ref: true
