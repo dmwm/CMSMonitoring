@@ -24,13 +24,11 @@ jobs:
           ref: ${{ github.ref }}
       - id: step1
         run: |
-          # Define git tag commit message regex rules that users should obey to use functionalities
-          #    "\d" kind regex expressions does not work!
           REGEX_BUILD_ALL='Build docker all.*'
           REGEX_BUILD_INDIVIDUALS='Build docker [(](.+)[)].*'
           
           # Get git tag and set as "git_tag" variable
-          echo "::set-output name=git_tag::${GITHUB_REF/refs\/tags\//}"
+          echo "git_tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
           
           # Get tag commit message
           GIT_TAG_MSG="$(git tag -l --format="%(contents)" $GITHUB_REF_NAME)"
@@ -41,14 +39,14 @@ jobs:
           # Check all
           if [[ $GIT_TAG_MSG =~ $REGEX_BUILD_ALL ]]; then
               echo "Action: all"
-              echo "::set-output name=action::all"
+              echo "action=all" >> $GITHUB_OUTPUT
               exit 0
           fi
           # Check individuals
           if [[ $GIT_TAG_MSG =~ $REGEX_BUILD_INDIVIDUALS && ! -z "${BASH_REMATCH[1]}" ]]; then
               echo "Action: individuals, individual_images: ${BASH_REMATCH[1]}"
-              echo "::set-output name=action::individuals"
-              echo "::set-output name=individual_images::${BASH_REMATCH[1]}"
+              echo "action=individuals" >> $GITHUB_OUTPUT
+              echo "individual_images=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
               exit 0
           fi
           # Fail message
@@ -65,7 +63,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '^1.20'
+          go-version: '^1.23'
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
@@ -73,13 +71,13 @@ jobs:
         run: |
           curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cpueff-goweb/Dockerfile-cpueff-goweb
       - name: Login to registry.cern.ch
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: registry.cern.ch
           username: ${{ secrets.CERN_LOGIN }}
           password: ${{ secrets.CERN_TOKEN }}
       - name: Publish cpueff-goweb image to registry.cern.ch
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: ./
           file: ./Dockerfile-cpueff-goweb
@@ -103,13 +101,13 @@ jobs:
         run: |
           curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cpueff-goweb/Dockerfile-cpueff-spark
       - name: Login to registry.cern.ch
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: registry.cern.ch
           username: ${{ secrets.CERN_LOGIN }}
           password: ${{ secrets.CERN_TOKEN }}
       - name: Publish cpueff-spark image to registry.cern.ch
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: ./
           file: ./Dockerfile-cpueff-spark
