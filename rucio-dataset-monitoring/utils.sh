@@ -3,7 +3,7 @@
 # Copyright (c) 2022 - Ceyhun Uzunoglu <ceyhunuzngl AT gmail dot com>
 
 function util4datasetmon_input_args_parser() {
-    unset -v KEYTAB_SECRET HDFS_PATH ARG_MONGOHOST ARG_MONGOPORT ARG_MONGOUSER ARG_MONGOPASS ARG_MONGOWRITEDB ARG_MONGOAUTHDB PORT1 PORT2 K8SHOST WDIR help
+    unset -v KEYTAB_SECRET HDFS_PATH CONF_FILE ARG_MONGOHOST ARG_MONGOPORT ARG_MONGOUSER ARG_MONGOPASS ARG_MONGOWRITEDB ARG_MONGOAUTHDB PORT1 PORT2 K8SHOST WDIR help
     # Dictionary to keep variables
     declare -A arr
 
@@ -18,6 +18,7 @@ function util4datasetmon_input_args_parser() {
         case "$1" in
         --keytab)       arr["KEYTAB_SECRET"]=$2     ; shift 2 ;;
         --hdfs)         arr["HDFS_PATH"]=$2         ; shift 2 ;;
+        --conf)         arr["CONF_FILE"]=$2         ; shift 2 ;;
         --mongohost)    arr["ARG_MONGOHOST"]=$2     ; shift 2 ;;
         --mongoport)    arr["ARG_MONGOPORT"]=$2     ; shift 2 ;;
         --mongouser)    arr["ARG_MONGOUSER"]=$2     ; shift 2 ;;
