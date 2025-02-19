@@ -79,8 +79,6 @@ HDFS_PATH=${HDFS_PATH%/}
 hdfs_out="${HDFS_PATH}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
 hdfs_out_yesterday="${HDFS_PATH}/rucio_ds_for_mongo/$(date -d "yesterday" '+%Y-%m-%d')"
 
-# Run main datasets: path suffix is "/main"
-run_spark "datasets.py" "$hdfs_out" 2>&1
 #Run detailed datasets: paths suffixes are "/detailed" and "/both"
 run_spark "detailed_datasets.py" "$hdfs_out" 2>&1
 
