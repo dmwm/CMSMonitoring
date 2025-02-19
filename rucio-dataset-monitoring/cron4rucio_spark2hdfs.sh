@@ -29,11 +29,15 @@ if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "-hel
 fi
 util_cron_send_start "$myname" "1d"
 export PYTHONPATH=$script_dir:$PYTHONPATH
+export PATH=$PATH:/usr/hdp/hadoop/bin
 unset -v KEYTAB_SECRET HDFS_PATH PORT1 PORT2 K8SHOST WDIR
 # ------------------------------------------------------------------------------------------------------------- PREPARE
 util4datasetmon_input_args_parser $@
 
-util4logi "Parameters: KEYTAB_SECRET:${KEYTAB_SECRET} HDFS_PATH:${HDFS_PATH} PORT1:${PORT1} PORT2:${PORT2} K8SHOST:${K8SHOST} WDIR:${WDIR}"
+ES_INDEX="test-tunikode-detailed"
+ES_HOST="os-cms.cern.ch/os"
+
+util4logi "Parameters: KEYTAB_SECRET:${KEYTAB_SECRET} HDFS_PATH:${HDFS_PATH} CONF_FILE:${CONF_FILE} ES_INDEX:${ES_INDEX} ES_HOST:${ES_HOST} PORT1:${PORT1} PORT2:${PORT2} K8SHOST:${K8SHOST} WDIR:${WDIR}"
 util_check_vars HDFS_PATH PORT1 PORT2 K8SHOST
 util_setup_spark_k8s
 
@@ -59,7 +63,7 @@ function run_spark() {
         --driver-memory=8g --executor-memory=8g
         --packages org.apache.spark:spark-avro_2.12:3.4.0
     )
-    py_input_args=(--hdfs_out_dir "$hdfs_out_dir")
+    py_input_args=(--hdfs_out_dir "$hdfs_out_dir" --es_host "$ES_HOST" --es_index "$ES_INDEX" --es_secret_file "$CONF_FILE")
 
     # Run
     spark-submit "${spark_submit_args[@]}" "${script_dir}/${spark_py_file}" \
@@ -76,11 +80,9 @@ function run_spark() {
 HDFS_PATH=${HDFS_PATH%/}
 
 ########## Arrange a temporary HDFS directory that current Kerberos user can use for datasets collection
-hdfs_out="${HDFS_PATH}/rucio_ds_for_mongo/$(date +%Y-%m-%d)"
-hdfs_out_yesterday="${HDFS_PATH}/rucio_ds_for_mongo/$(date -d "yesterday" '+%Y-%m-%d')"
+hdfs_out="${HDFS_PATH}/$(date +%Y-%m-%d)"
+hdfs_out_yesterday="${HDFS_PATH}/$(date -d "yesterday" '+%Y-%m-%d')"
 
-# Run main datasets: path suffix is "/main"
-run_spark "datasets.py" "$hdfs_out" 2>&1
 #Run detailed datasets: paths suffixes are "/detailed" and "/both"
 run_spark "detailed_datasets.py" "$hdfs_out" 2>&1
 
