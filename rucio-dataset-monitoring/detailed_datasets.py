@@ -6,13 +6,15 @@ Author      : Ceyhun Uzunoglu <ceyhunuzngl AT gmail [DOT] com>
 Description : This Spark job creates detailed datasets(in each RSEs) results by aggregating Rucio&DBS tables and
                 save result to HDFS directory as a source to MongoDB of go web service
 """
-
+import time
 # system modules
 from datetime import datetime
+from decimal import Decimal
 
 import click
 import pandas as pd
 from pyspark import SparkContext
+from pyspark.sql import DataFrame, DataFrameReader
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     coalesce,
@@ -28,14 +30,15 @@ from pyspark.sql.functions import (
     when,
     hex as _hex,
     max as _max,
-    size as _size,
     split as _split,
     sum as _sum,
+    unix_timestamp
 )
 from pyspark.sql.types import IntegerType, LongType, DecimalType
 
 # Local
 import dbs_schemas
+import osearch
 
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
@@ -62,24 +65,23 @@ PROD_ACCOUNTS = [
 SYNC_PREFIX = "sync"
 
 HDFS_SUB_DIR_DETAILED = "detailed"
-HDFS_SUB_DIR_IN_BOTH = "in_tape_and_disk"
 
 
-def get_spark_session(app_name):
+def get_spark_session(app_name: str) -> SparkSession:
     """Get or create the spark context and session."""
     sc = SparkContext(appName=app_name)
     return SparkSession.builder.config(conf=sc._conf).getOrCreate()
 
 
 # --------------------------------------------------------------------------------------------------------------- DBS
-def get_csvreader(spark):
+def get_csvreader(spark: SparkSession) -> DataFrameReader:
     """CSV reader for DBS csv gz format"""
     return (
         spark.read.format("csv").option("nullValue", "null").option("mode", "FAILFAST")
     )
 
 
-def get_df_dbs_files(spark):
+def get_df_dbs_files(spark: SparkSession) -> DataFrame:
     """Create DBS Files table dataframe"""
     return (
         get_csvreader(spark)
@@ -91,7 +93,7 @@ def get_df_dbs_files(spark):
     )
 
 
-def get_df_dbs_blocks(spark):
+def get_df_dbs_blocks(spark: SparkSession) -> DataFrame:
     """Create DBS Blocks table dataframe"""
     return (
         get_csvreader(spark)
@@ -101,7 +103,7 @@ def get_df_dbs_blocks(spark):
     )
 
 
-def get_df_dbs_datasets(spark):
+def get_df_dbs_datasets(spark: SparkSession) -> DataFrame:
     """Create DBS Datasets table dataframe"""
     return (
         get_csvreader(spark)
@@ -112,7 +114,7 @@ def get_df_dbs_datasets(spark):
     )
 
 
-def get_df_dbs_f_d_map(spark):
+def get_df_dbs_f_d_map(spark: SparkSession) -> DataFrame:
     """Create dataframe for DBS dataset:file map"""
     dbs_files = get_df_dbs_files(spark)
     dbs_datasets = get_df_dbs_datasets(spark)
@@ -121,7 +123,7 @@ def get_df_dbs_f_d_map(spark):
     )
 
 
-def get_df_dbs_b_d_map(spark):
+def get_df_dbs_b_d_map(spark: SparkSession) -> DataFrame:
     """Create dataframe for DBS dataset:block map"""
     dbs_blocks = get_df_dbs_blocks(spark)
     dbs_datasets = get_df_dbs_datasets(spark)
@@ -130,7 +132,7 @@ def get_df_dbs_b_d_map(spark):
     )
 
 
-def get_df_ds_file_and_block_cnt(spark):
+def get_df_ds_file_and_block_cnt(spark: SparkSession) -> DataFrame:
     """Calculate total file and block count of a DBS dataset
 
     It will be used as a reference to define if dataset is fully replicated in RSE.
@@ -156,7 +158,7 @@ def get_df_ds_file_and_block_cnt(spark):
 # ---------------------------------------------------------------------------------------------------------------------
 
 
-def get_df_rses(spark):
+def get_df_rses(spark: SparkSession) -> DataFrame:
     """Create rucio RSES table dataframe with some rse tag calculations"""
     df_rses = (
         spark.read.format("avro")
@@ -190,7 +192,7 @@ def get_df_rses(spark):
     return broadcast(df_rses)
 
 
-def get_df_replicas(spark):
+def get_df_replicas(spark: SparkSession) -> DataFrame:
     """Create rucio Replicas table dataframe"""
     return (
         spark.read.format("avro")
@@ -208,7 +210,7 @@ def get_df_replicas(spark):
     )
 
 
-def get_df_dids_files(spark):
+def get_df_dids_files(spark: SparkSession) -> DataFrame:
     """Create rucio DIDS table dataframe for files"""
     return (
         spark.read.format("avro")
@@ -225,7 +227,7 @@ def get_df_dids_files(spark):
     )
 
 
-def get_df_dlocks(spark):
+def get_df_dlocks(spark: SparkSession) -> DataFrame:
     """Create rucio DatasetLocks table dataframe
 
     - If account is sync, use sync prefix for all of them. Filter only production accounts.
@@ -302,7 +304,7 @@ def get_df_dlocks(spark):
     )
 
 
-def get_df_files_enriched(spark):
+def get_df_files_enriched(spark: SparkSession) -> DataFrame:
     """Enriched files with REPLICAS and DIDS
 
     Add replica size, access time and creation of replica files of each RSE.
@@ -332,17 +334,17 @@ def get_df_files_enriched(spark):
     ).select(["f_name", "RSE", "f_size", "accessed_at", "created_at"])
 
 
-def get_df_datasets_files_phase1(spark):
+def get_df_datasets_files_phase1(spark: SparkSession) -> DataFrame:
     """Files with dataset name
 
     Map dataset-RSE and files with enriched values.
     """
-    df_files__enriched = get_df_files_enriched(spark)
+    df_files_enriched = get_df_files_enriched(spark)
     df_dbs_f_d_map = get_df_dbs_f_d_map(spark)
     return (
-        df_files__enriched.join(
+        df_files_enriched.join(
             df_dbs_f_d_map,
-            df_files__enriched.f_name == df_dbs_f_d_map.FILE_NAME,
+            df_files_enriched.f_name == df_dbs_f_d_map.FILE_NAME,
             how="left",
         )
         .fillna("UnknownDatasetNameOfFiles_MonitoringTag", subset=["DATASET"])
@@ -355,7 +357,7 @@ def get_df_datasets_files_phase1(spark):
     )
 
 
-def get_df_main_datasets_in_each_rse(spark):
+def get_df_main_datasets_in_each_rse(spark: SparkSession) -> DataFrame:
     """Main"""
     # Add last access and size of dataset for each RSE
     # ( Dataset, RSE ) + ( FileCount, AccessedFileCount, LastAccess, LastCreate, SizeBytes )
@@ -487,88 +489,58 @@ def get_df_main_datasets_in_each_rse(spark):
                 "BlockRuleIDs",
             ]
         )
+        .withColumn("timestamp", unix_timestamp())
     )
 
 
-def get_df_main_datasets_in_both_disk_and_tape(df_main_datasets_in_each_rse):
-    """Produce datasets that are in both DISK and TAPE with additional fields"""
-    df = df_main_datasets_in_each_rse.filter(col("RseKind") == "prod").select(
-        [
-            "Type",
-            "Dataset",
-            "RSE",
-            "RseKind",
-            "SizeBytes",
-            "IsFullyReplicated",
-            "IsLocked",
-            "FileCount",
-            "BlockCount",
-        ]
-    )
-    df_datasets_in_both = (
-        df.select(["Dataset", "Type"])
-        .groupby(["Dataset"])
-        .agg(collect_set(col("Type")).alias("TypeSet"))
-        .filter(_size(col("TypeSet")) > 1)
-        .select(["Dataset"])
-    )
+def get_index_schema():
+    return {
+        "settings": {"index": {"number_of_shards": 1, "number_of_replicas": 1}},
+        "mappings": {
+            "properties": {
+                "Type": {"type": "keyword"},
+                "Dataset": {"type": "keyword"},
+                "RSE": {"type": "keyword"},
+                "Tier": {"type": "keyword"},
+                "C": {"type": "keyword"},
+                "RseKind": {"type": "keyword"},
+                "SizeBytes": {"type": "long"},
+                "LastAccess": {"format": "epoch_second", "type": "date"},
+                "LastCreate": {"format": "epoch_second", "type": "date"},
+                "IsFullyReplicated": {"type": "boolean"},
+                "IsLocked": {"type": "keyword"},
+                "FilePercentage": {"type": "float"},
+                "FileCount": {"type": "integer"},
+                "AccessedFileCount": {"type": "integer"},
+                "BlockCount": {"type": "integer"},
+                "ProdLockedBlockCount": {"type": "integer"},
+                "ProdAccounts": {"type": "keyword"},
+                "BlockRuleIDs": {"type": "keyword"},
+                "timestamp": {"format": "epoch_second", "type": "date"},
+            }
+        },
+    }
 
-    # Use only datasets are in both Tape and Disk; filter out others
-    df = df_datasets_in_both.join(df, ["Dataset"], how="left")
 
-    df = (
-        df.groupby(["Dataset"])
-        .agg(
-            _max(col("SizeBytes")).alias("MaxSize"),
-            # Tape
-            sort_array(collect_set(when(col("Type") == "TAPE", col("RSE")))).alias(
-                "TapeRseSet"
-            ),
-            countDistinct(when(col("Type") == "TAPE", col("RSE"))).alias(
-                "TapeRseCount"
-            ),
-            _sum(
-                when(col("Type") == "TAPE", col("IsFullyReplicated").cast("long"))
-            ).alias("TapeFullyReplicatedRseCount"),
-            _sum(
-                when(
-                    col("Type") == "TAPE",
-                    col("IsLocked").eqNullSafe("FULLY").cast("long"),
-                )
-            ).alias("TapeFullyLockedRseCount"),
-            # Disk
-            sort_array(collect_set(when(col("Type") == "DISK", col("RSE")))).alias(
-                "DiskRseSet"
-            ),
-            countDistinct(when(col("Type") == "DISK", col("RSE"))).alias(
-                "DiskRseCount"
-            ),
-            _sum(
-                when(col("Type") == "DISK", col("IsFullyReplicated").cast("long"))
-            ).alias("DiskFullyReplicatedRseCount"),
-            _sum(
-                when(
-                    col("Type") == "DISK",
-                    col("IsLocked").eqNullSafe("FULLY").cast("long"),
-                )
-            ).alias("DiskFullyLockedRseCount"),
-        )
-        .select(
-            [
-                "Dataset",
-                "MaxSize",
-                "TapeFullyReplicatedRseCount",
-                "DiskFullyReplicatedRseCount",
-                "TapeFullyLockedRseCount",
-                "DiskFullyLockedRseCount",
-                "TapeRseCount",
-                "DiskRseCount",
-                "TapeRseSet",
-                "DiskRseSet",
-            ]
-        )
+def drop_nulls_in_dict(d):
+    def convert_value(value):
+        if value is None:
+            return None
+        if isinstance(value, Decimal):
+            return float(value)
+        return value
+
+    return {k: convert_value(v) for k, v in d.items() if convert_value(v) is not None}
+
+
+def send(part, opensearch_host, es_secret_file, es_index_template):
+    """Send given data to OpenSearch"""
+    client = osearch.get_es_client(opensearch_host, es_secret_file, get_index_schema())
+    # Monthly index format: index_mod="M"
+    idx = client.get_or_create_index(
+        timestamp=time.time(), index_template=es_index_template, index_mod="D"
     )
-    return df
+    client.send(idx, part, metadata=None, batch_size=10000, drop_nulls=False)
 
 
 @click.command()
@@ -577,15 +549,35 @@ def get_df_main_datasets_in_both_disk_and_tape(df_main_datasets_in_each_rse):
     default=None,
     type=str,
     required=True,
-    help="I.e. /tmp/${KERBEROS_USER}/rucio_ds_mongo/$(date +%Y-%m-%d) ",
+    help="I.e. /tmp/${KERBEROS_USER}/rucio_ds_detailed/$(date +%Y-%m-%d) ",
 )
-def main(hdfs_out_dir):
+@click.option(
+    "--es_host",
+    required=True,
+    default=None,
+    type=str,
+    help="OpenSearch host name without port: os-cms.cern.ch/os",
+)
+@click.option(
+    "--es_secret_file",
+    required=True,
+    default=None,
+    type=str,
+    help='OpenSearch secret file that contains "user:pass" only',
+)
+@click.option(
+    "--es_index",
+    required=True,
+    default=None,
+    type=str,
+    help='OpenSearch index template (prefix), i.e.: "test-wmarchive-agent-count"',
+)
+def main(hdfs_out_dir: str, es_host=None, es_secret_file=None, es_index=None) -> None:
     """Main function that run Spark dataframe creations and save results to HDFS directory as JSON lines"""
     hdfs_out_dir_detailed = hdfs_out_dir + "/" + HDFS_SUB_DIR_DETAILED
-    hdfs_out_dir_in_both = hdfs_out_dir + "/" + HDFS_SUB_DIR_IN_BOTH
 
     # HDFS output file format. If you change, please modify bin/cron4rucio_ds_mongo.sh accordingly.
-    write_format = "json"
+    write_format = "parquet"
     write_mode = "overwrite"
 
     spark = get_spark_session(app_name="cms-monitoring-rucio-detailed-datasets")
@@ -598,13 +590,17 @@ def main(hdfs_out_dir):
         path=hdfs_out_dir_detailed, format=write_format, mode=write_mode
     )
 
-    # Datasets in both Tape and Disk
-    df_datasets_in_both_disk_and_tape = get_df_main_datasets_in_both_disk_and_tape(
-        df_datasets_in_each_rse
-    )
-    df_datasets_in_both_disk_and_tape.write.save(
-        path=hdfs_out_dir_in_both, format=write_format, mode=write_mode
-    )
+    for part in df_datasets_in_each_rse.rdd.mapPartitions(
+        lambda p: [[drop_nulls_in_dict(x.asDict()) for x in p]]
+    ).toLocalIterator():
+        part_size = len(part)
+        print(f"Length of partition: {part_size}")
+        send(
+            part,
+            opensearch_host=es_host,
+            es_secret_file=es_secret_file,
+            es_index_template=es_index,
+        )
 
 
 if __name__ == "__main__":
