@@ -125,7 +125,3 @@ cms_sqoop_dump_start{table=z} 3
 A while later, when you check your prometheus, you'll see only 1 metric `cms_sqoop_dump_start{table=z} 3` which is
 normal and expected result. Instead, we put table and DB names to metric names to not face with these kind of problems.
 You can use `__name__` metric in your PromQL queries, i.e. `{__name__=~"cms_sqoop_dump_start_.*"}` .
-
-## TODO : 
-
-Discuss degrading CMS_DBS3_PROD_PHYS* table dumps. It was suggested in October 2022 O&C week.
