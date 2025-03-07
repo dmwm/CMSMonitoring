@@ -101,11 +101,6 @@ done
 hadoop fs -chmod -R o+rx "$DAILY_BASE_PATH"
 error_count=$(($error_count + $?))
 
-# Copy daily results to legacy production folder
-if [ "$CMSSQOOP_ENV" = "prod" ]; then
-    copy_to_legacy_folders "$DAILY_BASE_PATH" "$LEGACY_PROD_PATH" "$LOG_FILE"
-    error_count=$(($error_count + $?))
-fi
 # ---------------------------------------------------------------------------- STATISTICS
 # total duration
 duration=$(($(date +%s) - START_TIME))
