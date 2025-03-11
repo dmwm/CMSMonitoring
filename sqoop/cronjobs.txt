@@ -4,10 +4,6 @@ MAILTO=""
 # ASO dump
 42 03 * * * cd /data/sqoop; ./run.sh ./scripts/cms-aso.sh
 
-# PhEDEX dumps
-22 03 * * * cd /data/sqoop; ./run.sh ./scripts/phedex-blk-replicas-snapshot.sh
-43 03 * * * cd /data/sqoop; ./run.sh ./scripts/phedex-file-catalog.sh
-
 # DBS dumps
 27 03 * * *   cd /data/sqoop; ./run.sh ./scripts/cms-dbs3-datasets.sh
 32 03 * * *   cd /data/sqoop; ./run.sh ./scripts/cms-dbs3-blocks.sh

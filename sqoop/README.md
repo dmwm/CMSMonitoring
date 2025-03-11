@@ -7,16 +7,17 @@ Main repository for sqoop dumps
 | **DB Schema or Explanation**                          | **HDFS Location**                                                                                                       |
 |-------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | CMS RUCIO_PROD                                        | `/project/awg/cms/rucio/YYYY-MM-DD`                                                                                     |
-| CMS_DBS3_PROD_GLOBAL                                  | `/project/awg/cms/dbs/PROD_GLOBAL/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_GLOBAL/current`(legacy, updated daily) |
-| CMS_DBS3_PROD_PHYS01                                  | `/project/awg/cms/dbs/PROD_PHYS01/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_PHYS01/current`(legacy, updated daily) |
-| CMS_DBS3_PROD_PHYS02                                  | `/project/awg/cms/dbs/PROD_PHYS02/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_PHYS02/current`(legacy, updated daily) |
-| CMS_DBS3_PROD_PHYS03                                  | `/project/awg/cms/dbs/PROD_PHYS03/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_PHYS03/current`(legacy, updated daily) |
+| CMS_DBS3_PROD_GLOBAL                                  | `/project/awg/cms/dbs/PROD_GLOBAL/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_GLOBAL/current`(legacy) |
+| CMS_DBS3_PROD_PHYS01                                  | `/project/awg/cms/dbs/PROD_PHYS01/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_PHYS01/current`(legacy) |
+| CMS_DBS3_PROD_PHYS02                                  | `/project/awg/cms/dbs/PROD_PHYS02/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_PHYS02/current`(legacy) |
+| CMS_DBS3_PROD_PHYS03                                  | `/project/awg/cms/dbs/PROD_PHYS03/YYYY-MM-DD` or `/project/awg/cms/CMS_DBS3_PROD_PHYS03/current`(legacy) |
 | CMS_ASO filetransfersdb                               | `/project/awg/cms/CMS_ASO/filetransfersdb`                                                                              |
+| CMS tasks                               | `/project/awg/cms/crab/tasks/`                                                                              |
 | DBS "CUSTOM" Files(use `PROD_GLOBAL` for full dump)   | `/project/awg/cms/dbs3verify/CMS_DBS3_PROD_GLOBAL/files`                                                                | 
 | DBS "CUSTOM" Blocks(use `PROD_GLOBAL` for full dump)  | `/project/awg/cms/dbs3verify/CMS_DBS3_PROD_GLOBAL/blocks`                                                               |
 | DBS "CUSTOM" Datasets(use `PROD_GLOBAL` for fulldump) | `/project/awg/cms/dbs3verify/CMS_DBS3_PROD_GLOBAL/datasets`                                                             |
-| phedex-blk-replicas-snapshot                          | `/project/awg/cms/phedex/block-replicas-snapshots/csv`                                                                  |
-| phedex-file-catalog                                    | `/project/awg/cms/phedex/catalog/csv`                                                                                   |
+| phedex-blk-replicas-snapshot                          | `/project/awg/cms/phedex/block-replicas-snapshots/csv` (legacy)                                                                  |
+| phedex-file-catalog                                    | `/project/awg/cms/phedex/catalog/csv` (legacy)                                                                                   |
 
 ## Deployment requirements
 
@@ -124,15 +125,3 @@ cms_sqoop_dump_start{table=z} 3
 A while later, when you check your prometheus, you'll see only 1 metric `cms_sqoop_dump_start{table=z} 3` which is
 normal and expected result. Instead, we put table and DB names to metric names to not face with these kind of problems.
 You can use `__name__` metric in your PromQL queries, i.e. `{__name__=~"cms_sqoop_dump_start_.*"}` .
-
-## TODO 1 :
-
-Legacy folders(/current, /old) will be continued to use, daily results will be copied to these directories in full DBS dumps.
-
-After our users moved their codebases to new daily directories, we can remove these copy functions.
-
-Util function is: `copy_to_legacy_folders` in utils.sh
-
-## TODO 2 : 
-
-Discuss degrading CMS_DBS3_PROD_PHYS* table dumps. It was suggested in October 2022 O&C week.
