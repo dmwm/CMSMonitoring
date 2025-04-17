@@ -4,6 +4,8 @@ set -e
 # Reference: some features/logics are copied from sqoop_utils.sh and cms-dbs3-full-copy.sh
 . "${WDIR}/sqoop/scripts/utils.sh"
 
+export PATH="$PATH:/usr/hdp/sqoop/bin/"
+
 TZ=UTC
 SCHEMA="CMS_RUCIO_PROD"
 # Suggested order
@@ -36,7 +38,7 @@ sqoop_full_dump_rucio_cmd() {
     util4logi "${SCHEMA}.${TABLE} : import starting.. "
     pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
     #
-    /usr/hdp/sqoop/bin/sqoop import \
+    sqoop import \
         -Dmapreduce.job.user.classpath.first=true \
         -Doraoop.timestamp.string=false \
         -Dmapred.child.java.opts="-Djava.security.egd=file:/dev/../dev/urandom" \

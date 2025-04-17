@@ -1,7 +1,7 @@
 function setJava()
 {
   export PATH="$PATH:/usr/hdp/sqoop/bin/"
-  DEFAULT_JAVA_HOME='/usr/lib/jvm/java-1.8.0'
+  DEFAULT_JAVA_HOME='/usr/lib/jvm/java-11-openjdk'
   if [ -z $1 ]
   then
      JAVA_HOME=$DEFAULT_JAVA_HOME

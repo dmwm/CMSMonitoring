@@ -50,17 +50,16 @@ else
     echo "$(date --rfc-3339=seconds) [ERROR]" "<$*> failed" >/proc/$crondpid/fd/1 2>&1
     expire=$(date -d '+2 hour' --rfc-3339=ns | tr ' ' 'T')
     for amhost in $ALERT_MANAGER_HOSTS; do
-        amtool alert add sqoop_failure alertname='sqoop job failure' \
-            job="$*" \
+        amtool alert add sqoop_failure "alertname=\"sqoop job failure\"" \
+            "job=\"$*\"" \
             host="$(hostname)" \
             severity=high \
-            tag=k8s \
+            tag=sqoop \
             alert=amtool \
-            kind=cluster \
-            service=sqoop \
+            service=monitoring \
             --end="$expire" \
-            --annotation=summary="Sqoop job failure" \
-            --annotation=date="$(date)" \
+            --annotation="summary=\"Sqoop job failure\"" \
+            --annotation="date=\"$(date)\"" \
             --alertmanager.url="$amhost"
     done
 fi
