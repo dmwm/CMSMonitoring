@@ -9,6 +9,8 @@ set -e
 . "${WDIR}/sqoop/scripts/utils.sh"
 TZ=UTC
 
+export PATH="$PATH:/usr/hdp/sqoop/bin/"
+
 # --------------------------------------------------------------------------------- PREPS
 SCHEMA="CMS_ANALYSIS_REQMGR"
 TABLE="TASKS"
@@ -59,7 +61,7 @@ sqoop_dump_tasks_cmd() {
     util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $NUM_MAPPERS .."
     pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
     #
-    /usr/hdp/sqoop/bin/sqoop import \
+    sqoop import \
       -Dmapreduce.job.user.classpath.first=true \
       -Ddfs.client.socket-timeout=120000 \
       -Dmapred.child.java.opts="-Djava.security.egd=file:/dev/../dev/urandom" \

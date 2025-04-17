@@ -1,7 +1,7 @@
 #!/bin/bash
-. "${WDIR}/sqoop/scripts/sqoop_utils.sh"
 . "${WDIR}/sqoop/scripts/utils.sh"
-setJava
+
+export PATH="$PATH:/usr/hdp/sqoop/bin/"
 
 TZ=UTC
 myname=$(basename "$0")
@@ -46,8 +46,8 @@ sqoop import \
     --fields-terminated-by , --escaped-by \\ --optionally-enclosed-by '\"' \
     1>"$LOG_FILE".stdout 2>"$LOG_FILE".stderr
 
-OUTPUT_ERROR=$(grep -E "ERROR tool.ImportTool: Error during import: Import job failed!" <"$LOG_FILE".stderr)
-TRANSF_INFO=$(grep -E "INFO mapreduce.ImportJobBase: Transferred" <"$LOG_FILE".stderr)
+OUTPUT_ERROR=$(grep -E "ERROR .* Import failed" <"$LOG_FILE".stderr)
+TRANSF_INFO=$(grep -E "INFO .* Transferred" <"$LOG_FILE".stderr)
 
 if [[ $OUTPUT_ERROR == *"ERROR"* || ! $TRANSF_INFO == *"INFO"* ]]; then
     util4loge "Error occurred, check $LOG_FILE"

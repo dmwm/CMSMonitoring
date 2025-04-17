@@ -10,6 +10,8 @@ set -e
 . "${WDIR}/sqoop/scripts/utils.sh"
 TZ=UTC
 
+export PATH="$PATH:/usr/hdp/sqoop/bin/"
+
 # --------------------------------------------------------------------------------- PREPS
 SCHEMA="CMS_DBS3_PROD_GLOBAL_OWNER"
 # Sorted in ascending size order which is the suggested order to decrease run time
@@ -62,7 +64,7 @@ sqoop_dump_dbs_cmd() {
     util4logi "${SCHEMA}.${TABLE} : import starting with num-mappers as $NUM_MAPPERS .."
     pushg_dump_start_time "$myname" "$pg_metric_db" "$SCHEMA" "$TABLE"
     #
-    /usr/hdp/sqoop/bin/sqoop import -Dmapreduce.job.user.classpath.first=true -Doraoop.timestamp.string=false \
+    sqoop import -Dmapreduce.job.user.classpath.first=true -Doraoop.timestamp.string=false \
         -Dmapred.child.java.opts="-Djava.security.egd=file:/dev/../dev/urandom" -Ddfs.client.socket-timeout=120000 \
         --fetch-size 10000 --fields-terminated-by , --escaped-by \\ --optionally-enclosed-by '\"' \
         -z --direct --throw-on-error --num-mappers $NUM_MAPPERS \
