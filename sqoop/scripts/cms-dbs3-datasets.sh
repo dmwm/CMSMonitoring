@@ -49,8 +49,8 @@ sqoop import \
     --fields-terminated-by , --escaped-by \\ --optionally-enclosed-by '\"' \
     1>"$LOG_FILE".stdout 2>"$LOG_FILE".stderr
 
-OUTPUT_ERROR=$(grep -E "ERROR .* Import failed" <"$LOG_FILE".stderr)
-TRANSF_INFO=$(grep -E "INFO .* Transferred" <"$LOG_FILE".stderr)
+OUTPUT_ERROR=$(grep -E "ERROR .* Import failed" <"$LOG_FILE".stdout)
+TRANSF_INFO=$(grep -E "INFO .* Transferred" <"$LOG_FILE".stdout)
 
 if [[ $OUTPUT_ERROR == *"ERROR"* || ! $TRANSF_INFO == *"INFO"* ]]; then
     util4loge "Error occurred, check $LOG_FILE"
