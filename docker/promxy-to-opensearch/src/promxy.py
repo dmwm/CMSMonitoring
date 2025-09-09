@@ -69,6 +69,7 @@ def generate_os_docs(responses: list[RangeQueryResponse], os_index: str) -> Iter
                         + "Z",
                         "rse": fields.get("rse"),
                         "rse_type": fields.get("rse_type"),
+                        "tier": fields.get("rse")[:2],
                         "country": fields.get("country"),
                         "rucioInstance": fields.get("rucioInstance"),
                         "source": fields.get("source"),
