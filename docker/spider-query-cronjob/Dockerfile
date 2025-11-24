@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 # Application user and directories
 RUN useradd -ms /bin/bash cmsjobmon && \
-    mkdir -p /opt/spider && \
+    mkdir -p /opt/spider/scripts && \
     chown -R cmsjobmon:cmsjobmon /opt/spider
 
 WORKDIR /opt/spider
@@ -21,7 +21,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY ./src ./src
-COPY ./*.sh ./bin/
+COPY ./spider_cms_*.sh ./scripts/
+RUN cp ./src/spider_cms.py ./scripts/spider_cms.py && \
+    chmod +x ./scripts/*.sh
 
 RUN chown -R cmsjobmon:cmsjobmon /home/cmsjobmon /opt/spider
 
@@ -30,8 +32,3 @@ ENV PYTHONPATH=/opt/spider/src \
     AFFILIATION_DIR_LOCATION=/opt/spider/.affiliation_dir.json
 
 USER cmsjobmon
-
-# Default entrypoint simply invokes python. Override CMD/args per cronjob template.
-ENTRYPOINT ["python"]
-CMD ["--version"]
-
