@@ -21,8 +21,7 @@ source "$SPIDER_WORKDIR/venv/bin/activate"
 
 # ./scripts/cronAffiliation.sh # First run
 
-python scripts/spider_cms.py \
-    --feed_amq \
+python "$SPIDER_WORKDIR/spider_cms.py" \
     --log_dir $_LOGDIR \
     --log_level $_LOG_LEVEL \
     --skip_history \
