@@ -168,7 +168,7 @@ int_vals = {
     "MaxWallTimeMins_RAW",
     "MemoryUsage",
     "MinHosts",
-    "NumGlobusSubmits" "NumJobMatches",
+    "NumGlobusSubmitsNumJobMatches",
     "NumJobStarts",
     "NumRestarts",
     "NumShadowStarts",
@@ -657,10 +657,16 @@ def convert_to_json(
     if cms:
         ad.setdefault(
             "MATCH_EXP_JOB_GLIDEIN_CMSSite",
-            ad.get("MATCH_EXP_JOBGLIDEIN_CMSSite",
-                   ad.get("MATCH_GLIDEIN_CMSSite",
-                          ad.get("MachineAttrGLIDEIN_CMSSite0",
-                                 ad.get("MachineAttrCMSProcessingSiteName0", "Unknown")))),
+            ad.get(
+                "MATCH_EXP_JOBGLIDEIN_CMSSite",
+                ad.get(
+                    "MATCH_GLIDEIN_CMSSite",
+                    ad.get(
+                        "MachineAttrGLIDEIN_CMSSite0",
+                        ad.get("MachineAttrCMSProcessingSiteName0", "Unknown"),
+                    ),
+                ),
+            ),
         )
 
     bulk_convert_ad_data(ad, result)
@@ -674,7 +680,9 @@ def convert_to_json(
         result["CondorExitCode"] = ad["ExitCode"]
 
     if cms:
-        result["task"] = ad.get("WMAgent_SubTaskName")  # add "task" field to unify with WMArchive
+        result["task"] = ad.get(
+            "WMAgent_SubTaskName"
+        )  # add "task" field to unify with WMArchive
         result["CMS_JobType"] = str(
             ad.get("CMS_JobType", "Analysis" if analysis else "Unknown")
         )
@@ -738,8 +746,8 @@ def convert_to_json(
     )
     result["CommittedWallClockHr"] = ad.get("CommittedTime", 0) / 3600.0
     result["CpuTimeHr"] = (
-                              ad.get("RemoteSysCpu", 0) + ad.get("RemoteUserCpu", 0)
-                          ) / 3600.0
+        ad.get("RemoteSysCpu", 0) + ad.get("RemoteUserCpu", 0)
+    ) / 3600.0
     result["DiskUsageGB"] = ad.get("DiskUsage_RAW", 0) / 1000000.0
     result["MemoryMB"] = ad.get("ResidentSetSize_RAW", 0) / 1024.0
     result["DataLocations"] = make_list_from_string_field(
@@ -834,8 +842,8 @@ def convert_to_json(
     result["Status"] = status.get(ad.get("JobStatus"), "Unknown")
     result["Universe"] = universe.get(ad.get("JobUniverse"), "Unknown")
     result["QueueHrs"] = (
-                             ad.get("JobCurrentStartDate", time.time()) - ad["QDate"]
-                         ) / 3600.0
+        ad.get("JobCurrentStartDate", time.time()) - ad["QDate"]
+    ) / 3600.0
     result["Badput"] = max(result["CoreHr"] - result["CommittedCoreHr"], 0.0)
     result["CpuBadput"] = max(result["CoreHr"] - result["CpuTimeHr"], 0.0)
 
@@ -1020,7 +1028,7 @@ def guessTaskType(ad):
             camp2 = camp2_info[1]
         else:
             camp2 = ttype
-    
+
         if "CleanupUnmerged" in ttype:
             return "Cleanup"
         elif "Merge" in ttype:
@@ -1033,13 +1041,9 @@ def guessTaskType(ad):
             return "MINIAOD"
         elif "MiniAOD" in ttype:
             return "MINIAOD"
-        elif ttype == "StepOneProc" and (
-            re.search("[1-9][0-9]DR", camp2)
-        ):
+        elif ttype == "StepOneProc" and (re.search("[1-9][0-9]DR", camp2)):
             return "DIGIRECO"
-        elif (
-            re.search("[1-9][0-9]GS", camp2)
-        ) and ttype.endswith("_0"):
+        elif (re.search("[1-9][0-9]GS", camp2)) and ttype.endswith("_0"):
             return "GENSIM"
         elif ttype.endswith("_0"):
             return "DIGI"
@@ -1081,9 +1085,9 @@ def guessCampaign(ad, analysis, cms_campaign_type):
 
 def guess_campaign_type(ad, analysis):
     """
-        Based on the request name return a campaign type.
-        The campaign type is based on the classification defined at
-        https://its.cern.ch/jira/browse/CMSMONIT-174#comment-3050384
+    Based on the request name return a campaign type.
+    The campaign type is based on the classification defined at
+    https://its.cern.ch/jira/browse/CMSMONIT-174#comment-3050384
     """
     camp = ad.get("WMAgent_RequestName", "UNKNOWN")
     if analysis:
@@ -1098,7 +1102,9 @@ def guess_campaign_type(ad, analysis):
         return "Run3 requests"
     elif "RVCMSSW" in camp:
         return "RelVal"
-    elif re.match(r".*(RunII|(Summer|Fall|Autumn|Winter|Spring)(1[5-9]|20)).*", camp):  # [!] Should be after UL
+    elif re.match(
+        r".*(RunII|(Summer|Fall|Autumn|Winter|Spring)(1[5-9]|20)).*", camp
+    ):  # [!] Should be after UL
         return "Run2 requests"
     elif "SnowmassWinter21" in camp:
         # Example WMAgent_RequestName: pdmvserv_task_TSG-SnowmassWinter21wmLHEGEN-00229__v1_T_211208_125036_3179
@@ -1140,15 +1146,18 @@ def jobFailed(ad):
     if commonExitCode(ad) == 0:
         return 0
     else:
-        return 1 
+        return 1
+
 
 def isAnalysisJob(ad):
     """
-    Check if this is an analysis job, based on 
+    Check if this is an analysis job, based on
     the CMS_Type/CMS_JobType classads in the job.
     """
-    if ad.get("CMS_Type", "unknown").lower() == "analysis" \
-        or ad.get("CMS_JobType", "unknown") == "Analysis":
+    if (
+        ad.get("CMS_Type", "unknown").lower() == "analysis"
+        or ad.get("CMS_JobType", "unknown") == "Analysis"
+    ):
         return True
 
     return False
@@ -1158,7 +1167,7 @@ def commonExitCode(ad):
     """
     Consolidate the exit code values of JobExitCode,
     the  chirped CRAB and WMCore values, and
-    the original condor exit code, according to 
+    the original condor exit code, according to
     the workflow type: production or analysis.
     """
     # If the raw ExitCode in the ad is not present,
@@ -1166,22 +1175,20 @@ def commonExitCode(ad):
     # hence we return 50666 for any workflow type.
     if not "ExitCode" in ad:
         return 50666
-    
+
     condorExitCode = ad.get("ExitCode")
 
-    if isAnalysisJob(ad): # CRAB or CMS Connect job
-        return ad.get(
-            "JobExitCode",
-            ad.get("Chirp_CRAB3_Job_ExitCode", condorExitCode)
-        )
-    else: # production job
+    if isAnalysisJob(ad):  # CRAB or CMS Connect job
+        return ad.get("JobExitCode", ad.get("Chirp_CRAB3_Job_ExitCode", condorExitCode))
+    else:  # production job
         # If cmsRun exit code exists and was not 0, we consider the job failed
         # even if the wrapper reported a sucess status in condor.
-        # Also, if cmsRunExitCode was 0, but not wrapper exit code, 
+        # Also, if cmsRunExitCode was 0, but not wrapper exit code,
         # we stick with the wrapper exit code and consider the job failed.
         if ad.get("Chirp_WMCore_cmsRun_ExitCode", 0) > 0:
             return ad["Chirp_WMCore_cmsRun_ExitCode"]
         return condorExitCode
+
 
 def errorType(ad):
     """
@@ -1217,9 +1224,7 @@ def errorType(ad):
     if exitcode == 8021:
         return "FileRead"
 
-    if exitcode in [8030, 8031, 8032, 9000] or (
-        50660 <= exitcode <= 50669
-    ):
+    if exitcode in [8030, 8031, 8032, 9000] or (50660 <= exitcode <= 50669):
         return "OutOfBounds"
 
     if (7000 <= exitcode <= 9000) or exitcode == 139:
@@ -1380,7 +1385,9 @@ def bulk_convert_ad_data(ad, result):
             except ValueError:
                 if value == "Unknown":
                     value = None
-                elif (key == "MATCH_EXP_JOB_GLIDEIN_MaxMemMBs") and (value == "GLIDEIN_MaxMemMBs"):
+                elif (key == "MATCH_EXP_JOB_GLIDEIN_MaxMemMBs") and (
+                    value == "GLIDEIN_MaxMemMBs"
+                ):
                     # FIXME after SI/WMA/CRAB teams solve this upstream. This key should be convertible to int
                     continue
                 else:
@@ -1406,7 +1413,7 @@ def bulk_convert_ad_data(ad, result):
         # elif key in date_vals:
         #    value = datetime.datetime.fromtimestamp(value).strftime("%Y-%m-%d %H:%M:%S")
         if key.startswith("MATCH_EXP_JOB_"):
-            key = key[len("MATCH_EXP_JOB_"):]
+            key = key[len("MATCH_EXP_JOB_") :]
         if key.endswith("_RAW"):
             key = key[: -len("_RAW")]
         if _wmcore_exe_exmsg.match(key):
@@ -1421,7 +1428,9 @@ def evaluate_fields(result, ad):
         try:
             result["RequestMemory_Eval"] = ad.eval("RequestMemory")
         except Exception as eval_exc:
-            logging.error("Could not evaluate RequestMemory exp, error: %s" % (str(eval_exc)))
+            logging.error(
+                "Could not evaluate RequestMemory exp, error: %s" % (str(eval_exc))
+            )
 
 
 def decode_and_decompress(value):
@@ -1445,8 +1454,8 @@ def convert_dates_to_millisecs(record):
 
 def drop_fields_for_running_jobs(record):
     """
-        Check if the job is running or pending
-        and prune it if it is.
+    Check if the job is running or pending
+    and prune it if it is.
     """
     if "Status" in record and record["Status"] not in ["Running", "Idle", "Held"]:
         return record

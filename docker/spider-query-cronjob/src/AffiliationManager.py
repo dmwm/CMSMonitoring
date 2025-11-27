@@ -26,10 +26,14 @@ def setup_logging():
         if not os.path.exists(AFFILIATION_LOG_DIR):
             os.makedirs(AFFILIATION_LOG_DIR)
     except Exception as e:
-        _logger.warning("AFFILIATION_LOG_DIR does not exist: " + AFFILIATION_LOG_DIR + str(e))
+        _logger.warning(
+            "AFFILIATION_LOG_DIR does not exist: " + AFFILIATION_LOG_DIR + str(e)
+        )
     log_file = os.path.join(AFFILIATION_LOG_DIR, "affiliation.log")
     log_handler = RotatingFileHandler(log_file, maxBytes=100000, backupCount=5)
-    log_handler.setFormatter(logging.Formatter("%(asctime)s : %(name)s:%(levelname)s - %(message)s"))
+    log_handler.setFormatter(
+        logging.Formatter("%(asctime)s : %(name)s:%(levelname)s - %(message)s")
+    )
     _logger.addHandler(log_handler)
 
 
@@ -156,6 +160,7 @@ class AffiliationManager:
 
 class AffiliationManagerException(Exception):
     """
-    Exception wrapper for problems that prevents us to obtain the affiliation info. 
+    Exception wrapper for problems that prevents us to obtain the affiliation info.
     """
+
     pass
