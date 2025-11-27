@@ -17,7 +17,11 @@ _QUERY_POOL_SIZE=16
 _UPLOAD_POOL_SIZE=8
 
 cd $SPIDER_WORKDIR || exit
-source "$SPIDER_WORKDIR/venv/bin/activate"
+# For running locally with a virtual environment (for production we already have the docker container)
+if [ -f "$SPIDER_WORKDIR/venv/bin/activate" ]; then
+    # shellcheck disable=SC1091
+    source "$SPIDER_WORKDIR/venv/bin/activate"
+fi
 
 # ./scripts/cronAffiliation.sh # First run
 
