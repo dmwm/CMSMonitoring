@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 # Application user and directories
 RUN useradd -ms /bin/bash cmsjobmon && \
-    mkdir -p /opt/spider/scripts && \
+    mkdir -p /opt/spider/ && \
     chown -R cmsjobmon:cmsjobmon /opt/spider
 
 WORKDIR /opt/spider
@@ -21,9 +21,12 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY ./src ./src
-COPY ./spider_cms_*.sh ./scripts/
-RUN cp ./src/spider_cms.py ./scripts/spider_cms.py && \
-    chmod +x ./scripts/*.sh
+COPY ./spider_cms_*.sh ./
+COPY ./collectors.json ./etc/collectors.json
+# For testing with only specific collectors
+# COPY ./test_collectors.json ./etc/collectors.json
+RUN cp ./src/spider_cms.py ./spider_cms.py && \
+    chmod +x ./*.sh
 
 RUN chown -R cmsjobmon:cmsjobmon /home/cmsjobmon /opt/spider
 
