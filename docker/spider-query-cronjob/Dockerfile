@@ -7,6 +7,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
+        libexpat1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Application user and directories
