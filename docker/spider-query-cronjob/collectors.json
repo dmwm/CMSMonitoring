@@ -1,0 +1,7 @@
+{
+    "Global":["cmsgwms-collector-global.cern.ch:9620", "cmsgwms-collector-global.fnal.gov:9620","cmssrv276.fnal.gov"],
+    "Tier0":["cmsgwms-collector-tier0.cern.ch:9620","cmsgwms-collector-tier0.fnal.gov:9620"],
+    "Volunteer":["vocms0840.cern.ch"],
+    "ITB":["cmsgwms-collector-itb.cern.ch"],
+    "UCSD":["htcondor-cm-ucsd.osg.chtc.io"]
+}

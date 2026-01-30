@@ -9,7 +9,7 @@ CMSMonitoring==0.6.12
 # last version for Py v3.9
 requests~=2.31
 
-# after any OpenSearch upgrade, it may change
-opensearch-py~=2.5
-
 click
+
+# OpenTelemetry for metrics
+opentelemetry-exporter-otlp~=1.39.0

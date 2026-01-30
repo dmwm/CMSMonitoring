@@ -3,53 +3,59 @@ Methods for processing the history in a schedd queue.
 """
 
 import datetime
-import json
-import logging
-import multiprocessing
-import os
 import time
 import traceback
+import threading
+from multiprocessing import Manager
+from queue import Empty
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from queue import Queue
+from typing import Tuple
 
 import classad
 import htcondor
 
-from utils import send_email_alert, time_remaining, TIMEOUT_MINS
-from convert_to_json import convert_to_json, unique_doc_id
-from nats import get_nats_connection, publish_job_to_nats
+from opentelemetry import context as otel_context
+from opentelemetry import trace
 
-# Main query time, should be same with cron schedule.
-QUERY_TIME_PERIOD = 720  # 12 minutes
+from utils import send_email_alert, global_logger
+from otel_setup import trace_span
+from nats_client import (
+    get_nats_connection,
+    get_jetstream_context,
+    publish_jobs_to_nats,
+    set_checkpoint,
+    get_all_checkpoints,
+    close_nats_connection,
+)
+import constants as const
 
-# Even in checkpoint.json last query time is older than this, older than "now()-12h" results will be ignored.
-CRAB_MAX_QUERY_TIME_SPAN = 12 * 3600  # 12 hours
-
-# If last query time in checkpoint.json is too old, but not from crab, results older
-# than "now()-RETENTION_POLICY" will be ignored.
-RETENTION_POLICY = 39 * 24 * 3600  # 39 days
-
-_WORKDIR = os.getenv("SPIDER_WORKDIR", "/opt/spider")
-_CHECKPOINT_JSON = os.path.join(_WORKDIR, "checkpoint.json")
-
-
-def process_schedd(
-    starttime, last_completion, checkpoint_queue, schedd_ad, args, metadata=None
-):
+# TODO: Improve exceptions
+@trace_span("query_schedd_history")
+def query_schedd_history(starttime: float, last_completion: float, schedd_ad: classad.ClassAd, job_queue = None):
     """
     Given a schedd, process its entire set of history since last checkpoint.
-    """
-    my_start = time.time()
-    pool_name = schedd_ad.get("CMS_Pool", "Unknown")
-    if time_remaining(starttime) < 10:
-        message = (
-            "No time remaining to process %s history; exiting." % schedd_ad["Name"]
-        )
-        logging.error(message)
-        send_email_alert(
-            args.email_alerts, "spider_cms history timeout warning", message
-        )
-        return last_completion
+    If job_queue is provided, jobs are queued for publishing by the main process.
+    Otherwise, jobs are published directly (backward compatibility).
+    
+    Params:
+    - starttime: The start time of the query in seconds since the epoch.
+    - last_completion: The last completion time of the query in seconds since the epoch.
+    - schedd_ad: The schedd ad to query.
+    - job_queue: Optional multiprocessing Queue to enqueue jobs for publishing.
 
-    metadata = metadata or {}
+    Returns:
+    - Tuple of (latest_completion_time, job_count) if job_queue is provided
+    - latest_completion_time (float) if job_queue is None (backward compatibility)
+    """
+    from opentelemetry import trace
+    current_span = trace.get_current_span()
+    if current_span:
+        schedd_name = schedd_ad["Name"]
+        current_span.set_attribute("schedd.name", schedd_name)
+        current_span.set_attribute("last_completion", last_completion)
+        current_span.set_attribute("use_queue", job_queue is not None)
+
     schedd = htcondor.Schedd(schedd_ad)
     _q = """
         (JobUniverse == 5) && (CMS_Type != "DONOTMONIT")
@@ -59,244 +65,488 @@ def process_schedd(
             || CRAB_PostJobLastUpdate >= %(last_completion)d
         )
         """
-    history_query = classad.ExprTree(_q % {"last_completion": last_completion - QUERY_TIME_PERIOD})
-    logging.info(
-        "Querying %s for history: %s.  " "%.1f minutes of ads",
+    history_query = classad.ExprTree(
+        _q % {"last_completion": last_completion - const.QUERY_TIME_PERIOD}
+    )
+    global_logger.info(
+        "Querying %s for history: %s.  %.1f minutes of ads",
         schedd_ad["Name"],
         history_query,
         (time.time() - last_completion) / 60.0,
     )
-    count = 0
-    published_count = 0
-    sent_warnings = False
-    timed_out = False
+    counts = {
+        "count": 0,
+        "published_count": 0,
+    }   
     error = False
     latest_completion = last_completion
-    
-    # Get NATS JetStream connection
+    jetstream = None
+
+    # Query history and fetch ALL data into a list FIRST
+    # This is critical: the schedd.history() iterator blocks for 5+ seconds per item
+    # during iteration. By fetching all data first (before creating NATS connection),
+    # the blocking happens when NATS isn't involved, so it doesn't interfere with
+    # NATS network I/O processing.
+    history_jobs = []
     try:
-        _, jetstream = get_nats_connection(args)
-        # Use a different subject for history if specified
-        history_subject = getattr(args, 'nats_history_subject', None) or os.getenv('NATS_HISTORY_SUBJECT', 'cms.htcondor.history.job')
-    except Exception as e:
-        logging.error("Failed to get NATS connection: %s", str(e))
-        error = True
-        jetstream = None
-        history_subject = None
-    
-    try:
-        if not args.dry_run:
+        if not const.DRY_RUN:
+            global_logger.info("Fetching all history data for %s (this may take a while)...", schedd_ad["Name"])
+            fetch_start = time.time()
             history_iter = schedd.history(history_query, [], match=-1)
+            # Fetch all jobs into a list - blocking happens here, before NATS is involved
+            history_jobs = list(history_iter)
+            fetch_duration = time.time() - fetch_start
+            global_logger.info(
+                "Fetched %d history jobs for %s in %.2f seconds",
+                len(history_jobs),
+                schedd_ad["Name"],
+                fetch_duration
+            )
         else:
-            history_iter = []
+            history_jobs = []
     except RuntimeError:
-        message = "Failed to query schedd for job history: %s" % schedd_ad["Name"]
-        exc = traceback.format_exc()
-        message += "\n{}".format(exc)
-        logging.error(message)
+        global_logger.error(
+            "Failed to query schedd %s for job history: %s",
+            schedd_ad["Name"],
+            traceback.format_exc(),
+        )
+        current_span.set_attribute("error", True)
+        current_span.set_attribute("error.message", traceback.format_exc())
         error = True
-        history_iter = []
-    
-    # Process each job in history and publish to NATS
-    if not error and jetstream is not None:
+        history_jobs = []
+
+    # Process each job in history
+    # If using queue: enqueue jobs for main process to publish
+    # Otherwise: publish directly (backward compatibility)
+    if not error:
+        # Initialize batch for direct publishing (backward compatibility mode)
+        job_batch = []
+        
         try:
-            for job_ad in history_iter:
-                if time_remaining(starttime) < 10:
-                    message = (
-                        "History crawler on %s has been running for "
-                        "more than %d minutes; exiting"
-                        % (schedd_ad["Name"], TIMEOUT_MINS)
-                    )
-                    logging.error(message)
-                    send_email_alert(
-                        args.email_alerts, "spider_cms history timeout warning", message
-                    )
-                    timed_out = True
-                    break
-
-                dict_ad = None
-                try:
-                    dict_ad = convert_to_json(
-                        job_ad,
-                        return_dict=True,
-                        reduce_data=not args.keep_full_queue_data,
-                        pool_name=pool_name,
-                    )
-                except Exception as e:
-                    message = "Failure when converting document on %s history: %s" % (
-                        schedd_ad["Name"],
-                        str(e),
-                    )
-                    logging.warning(message)
-                    if not sent_warnings:
-                        send_email_alert(
-                            args.email_alerts,
-                            "spider_cms history document conversion error",
-                            message,
-                        )
-                        sent_warnings = True
-                    continue
-
-                if not dict_ad:
-                    continue
-
-                job_id = unique_doc_id(dict_ad)
-                count += 1
+            global_logger.debug("Enqueuing %d jobs from %s to publish queue", len(history_jobs), schedd_ad["Name"])
+            
+            for idx, job_ad in enumerate(history_jobs):
+                counts["count"] += 1
 
                 # Update latest completion time based on job's completion date
-                job_completion = dict_ad.get("CompletionDate") or dict_ad.get("EnteredCurrentStatus") or dict_ad.get("RecordTime")
+                job_completion = (
+                    job_ad.get("CompletionDate")
+                    or job_ad.get("EnteredCurrentStatus")
+                    or job_ad.get("RecordTime")
+                )
                 if job_completion and job_completion > latest_completion:
                     latest_completion = job_completion
 
-                # Publish each job to NATS JetStream
-                if not args.dry_run:
-                    if publish_job_to_nats(jetstream, history_subject, job_id, dict_ad, args):
-                        published_count += 1
+                # Either enqueue for main process to publish, or publish directly
+                if not const.DRY_RUN:
+                    try:
+                        job_queue.put((schedd_ad["Name"], job_ad), timeout=30)
+                        counts["published_count"] += 1  # Count as "published" since it's queued
+                    except Exception as e:
+                        global_logger.warning(
+                            "Failed to enqueue job %d/%d for %s: %s",
+                            idx + 1,
+                            len(history_jobs),
+                            schedd_ad["Name"],
+                            str(e)
+                        )
                 else:
-                    logging.debug("DRY RUN: Would publish history job %s", job_id)
+                    global_logger.debug("DRY RUN: Would publish history job %s", job_ad)
 
-        except Exception as e:
-            message = "Failure when processing schedd history query on %s: %s" % (
-                schedd_ad["Name"],
-                str(e),
+            global_logger.debug(
+                "Finished enqueuing all %d jobs for %s",
+                len(history_jobs),
+                schedd_ad["Name"]
             )
-            exc = traceback.format_exc()
-            message += "\n{}".format(exc)
-            logging.error(message)
-            send_email_alert(
-                args.email_alerts, "spider_cms schedd history query error", message
+
+            # Publish any remaining jobs in the final batch
+            if job_batch:
+                batch_published = publish_jobs_to_nats(
+                    jetstream, const.NATS_SUBJECT, job_batch
+                )
+                counts["published_count"] += batch_published
+                
+                global_logger.info(
+                    "Finished publishing all %d jobs for %s. Published: %d, Failed: %d",
+                    len(history_jobs),
+                    schedd_ad["Name"],
+                    counts["published_count"],
+                    len(history_jobs) - counts["published_count"]
+                )
+
+        except Exception:
+            global_logger.error(
+                "Failure when processing schedd history query on %s: %s",
+                schedd_ad["Name"],
+                traceback.format_exc()
             )
             error = True
-    
-    # If we got to this point without a timeout and processed jobs, update the checkpoint
-    if not timed_out and not error and count > 0:
-        checkpoint_queue.put((schedd_ad["Name"], latest_completion))
-    
-    total_time = (time.time() - my_start) / 60.0
+
+    # Checkpoint update happens in the main process after all publishing is done
+
+    total_time = (time.time() - starttime) / 60.0
     last_formatted = datetime.datetime.fromtimestamp(last_completion).strftime(
         "%Y-%m-%d %H:%M:%S"
     )
-    logging.warning(
-        "Schedd %-25s history: queried %5d jobs, published %5d jobs; last completion %s; "
+    global_logger.info(
+        "Schedd %-25s history: queried %5d jobs, enqueued %5d jobs; last completion %s; "
         "query time %.2f min",
         schedd_ad["Name"],
-        count,
-        published_count,
+        counts["count"],
+        counts["published_count"],
         last_formatted,
         total_time,
     )
+
+    return (latest_completion, counts)
+
+
+
+@trace_span("nats_publisher_thread")
+def nats_publisher_thread(job_queue: Queue[Tuple[str, classad.ClassAd]], stop_event: threading.Event, stats: dict, thread_id: int = 0):
+    """
+    Publisher thread that consumes jobs from the queue and publishes them to NATS.
+    Runs in the main process to avoid NATS connection contention.
+    Uses the global NATS connection since there's only one publisher thread.
     
-    return latest_completion
-
-
-def update_checkpoint(name, completion_date):
-    try:
-        with open(_CHECKPOINT_JSON, "r") as fd:
-            checkpoint = json.load(fd)
-    except Exception as e:
-        logging.warning("!!! checkpoint.json is not found or not readable. "
-                        "It will be created and fresh results will be written. " + str(e))
-        checkpoint = {}
-
-    checkpoint[name] = completion_date
-
-    with open(_CHECKPOINT_JSON, "w") as fd:
-        json.dump(checkpoint, fd)
-
-
-def process_histories(schedd_ads, starttime, pool, args, metadata=None):
+    Args:
+        job_queue: Queue containing (schedd_name, job_ad) tuples
+        stop_event: Event to signal when to stop (when all workers are done)
+        stats: Dictionary to track publishing statistics (shared across threads)
+        thread_id: Thread identifier for logging
     """
-    Process history files for each schedd listed in a given
-    multiprocessing pool
-    """
+    current_span = trace.get_current_span()
+    if current_span:
+        current_span.set_attribute("thread_id", thread_id)
+    
+    global_logger.info("Starting NATS publisher thread %d", thread_id)
+    
+    nats_connection = None
+    jetstream = None
     try:
-        checkpoint = json.load(open(_CHECKPOINT_JSON))
+        nats_connection, jetstream = get_nats_connection(
+            const.NATS_SERVER, const.NATS_STREAM_NAME, const.NATS_SUBJECT
+        )
+        global_logger.info("NATS publisher thread %d connected to NATS", thread_id)
     except Exception as e:
-        # Exception should be general
-        logging.warning("!!! checkpoint.json is not found or not readable. Empty dict will be used. " + str(e))
-        checkpoint = {}
+        global_logger.error("Failed to get NATS connection in publisher thread %d: %s", thread_id, str(e))
+        stats["error"] = True
+        return
+    
+    published_count = 0
+    failed_count = 0
+    BATCH_SIZE = 100  
+    job_batch = []
+    
+    while True:
+        try:
+            try:
+                schedd_name, job_ad = job_queue.get(timeout=1.0)
+                job_batch.append(job_ad)
+            except Empty:
+                if stop_event.is_set():
+                    if job_batch and not const.DRY_RUN:
+                        batch_published = publish_jobs_to_nats(
+                            jetstream, const.NATS_SUBJECT, job_batch, batch_size=BATCH_SIZE
+                        )
+                        published_count += batch_published
+                        failed_count += len(job_batch) - batch_published
+                        job_batch = []
+                    break
+                # If we have a batch ready, publish it even if queue is temporarily empty
+                if len(job_batch) >= BATCH_SIZE:
+                    # Fall through to publish the batch
+                    pass
+                else:
+                    continue
+            
+            
+            # Publish batch when it reaches BATCH_SIZE
+            if len(job_batch) >= BATCH_SIZE:
+                if not const.DRY_RUN:
+                    batch_published = publish_jobs_to_nats(
+                        jetstream, const.NATS_SUBJECT, job_batch, batch_size=BATCH_SIZE
+                    )
+                    published_count += batch_published
+                    failed_count += len(job_batch) - batch_published
+                    if failed_count % 10 == 0 and failed_count > 0:
+                        global_logger.warning("Publisher thread: %d failed publishes so far", failed_count)
+                else:
+                    published_count += len(job_batch)
+                    if published_count % 1000 == 0 and published_count > 0:
+                        global_logger.info("Publisher thread: %d published so far", published_count)
 
-    futures = []
+                job_batch = []
+            
+            try:
+                job_queue.task_done()
+            except ValueError:
+                # task_done() called more times than items retrieved - ignore
+                pass
+            
+        except Exception as e:
+            global_logger.error("Error in publisher thread: %s", str(e))
+            failed_count += len(job_batch)
+            # Clear the batch on error to avoid reprocessing
+            job_batch = []
+            import traceback
+            global_logger.error("Traceback: %s", traceback.format_exc())
+
+    global_logger.info(
+        "Publisher thread finished: published %d jobs, failed %d jobs",
+        published_count,
+        failed_count
+    )
+    
+    current_span.set_attribute("jobs.published", published_count)
+    current_span.set_attribute("jobs.failed", failed_count)
+    
+    # Note: We don't close the global NATS connection here since it may be used elsewhere
+    # (e.g., for checkpoint updates). The connection will be closed at the end of query_job_history()
+
+
+def update_checkpoint(
+    jetstream, name, completion_date, kv_bucket_name=const.CHECKPOINT_KV_BUCKET
+):
+    """
+    Update checkpoint for a schedd in NATS KeyValue store.
+
+    Args:
+        jetstream: NATS JetStream context
+        name: Schedd name
+        completion_date: Completion timestamp
+        kv_bucket_name: KeyValue bucket name
+    """
+    if jetstream is None:
+        global_logger.error("Cannot update checkpoint: NATS JetStream connection is None")
+        return
+
+    success = set_checkpoint(jetstream, name, completion_date, kv_bucket_name)
+    if not success:
+        global_logger.warning(
+            "Failed to update checkpoint for %s in KeyValue store. Completion date: %s",
+            name,
+            completion_date,
+        )
+
+
+def load_checkpoints_and_prepare_tasks(schedd_ads, metadata=None):
+    """
+    Load checkpoints from NATS KeyValue store and prepare tasks for processing.
+    Each worker process will directly update checkpoints in the KV store.
+    """
     metadata = metadata or {}
     metadata["spider_source"] = "condor_history"
 
-    manager = multiprocessing.Manager()
-    checkpoint_queue = manager.Queue()
+    jetstream = None
+    try:
+        # Use get_jetstream_context instead of get_nats_connection since
+        # KeyValue operations don't require a stream to be created
+        jetstream = get_jetstream_context(const.NATS_SERVER)
+    except Exception as e:
+        global_logger.warning(
+            "Failed to get NATS connection for checkpoints. "
+            "Will use default time windows. Error: %s",
+            str(e),
+        )
 
+    # Load checkpoints from KeyValue store
+    if jetstream is not None:
+        try:
+            checkpoint = get_all_checkpoints(jetstream, const.CHECKPOINT_KV_BUCKET)
+            global_logger.info(
+                "Loaded %d checkpoints from KeyValue store", len(checkpoint)
+            )
+        except Exception as e:
+            global_logger.warning(
+                "Failed to load checkpoints from KeyValue store. "
+                "Empty dict will be used. Error: %s",
+                str(e),
+            )
+            checkpoint = {}
+    else:
+        global_logger.warning(
+            "NATS connection not available. Using empty checkpoint dict. "
+            "All schedds will use default time windows."
+        )
+        checkpoint = {}
+
+    # Prepare tasks with their checkpoints
+    tasks = []
     for schedd_ad in schedd_ads:
         name = schedd_ad["Name"]
 
         # Check for last completion time
-        # If there was no previous completion, get last 12 h
-        history_query_max_n_minutes = args.history_query_max_n_minutes  # Default 12 * 60
-        last_completion = checkpoint.get(name, time.time() - history_query_max_n_minutes * 60)
-        last_completion = max(last_completion, time.time() - RETENTION_POLICY)
+        last_completion = checkpoint.get(
+            name, time.time() - const.HISTORY_QUERY_MAX_N_MINUTES * 60
+        )
+        last_completion = max(last_completion, time.time() - const.RETENTION_POLICY)
 
         # For CRAB, only ever get a maximum of 12 h
-        if name.startswith("crab") and last_completion < time.time() - CRAB_MAX_QUERY_TIME_SPAN:
-            last_completion = time.time() - history_query_max_n_minutes * 60
+        if (
+            name.startswith("crab")
+            and last_completion < time.time() - const.CRAB_MAX_QUERY_TIME_SPAN
+        ):
+            last_completion = time.time() - const.HISTORY_QUERY_MAX_N_MINUTES * 60
 
-        future = pool.apply_async(
-            process_schedd,
-            (starttime, last_completion, checkpoint_queue, schedd_ad, args, metadata),
-        )
-        futures.append((name, future))
+        tasks.append((schedd_ad, last_completion))
 
-    def _chkp_updater():
-        while True:
+    return tasks
+
+
+@trace_span("query_job_history")
+def query_job_history(schedd_ads: list[classad.ClassAd], starttime: float, metadata: dict = None):
+    """
+    Queries the job history for each schedd and publishes the jobs to NATS JetStream.
+    Uses a queue-based approach: worker processes enqueue jobs, main process publishes them.
+    This eliminates NATS connection contention between worker processes.
+    
+    Params:
+    - schedd_ads: A list of schedd ads to query.
+    - starttime: The start time of the query in seconds since the epoch.
+    - metadata: A dictionary of metadata to be passed to the worker processes.
+    """
+    from opentelemetry import trace
+    current_span = trace.get_current_span()
+    if current_span:
+        current_span.set_attribute("schedd.count", len(schedd_ads))
+        current_span.set_attribute("max_history_processes", const.MAX_HISTORY_PROCESSES)
+    
+    # Load checkpoints and prepare tasks
+    tasks = load_checkpoints_and_prepare_tasks(schedd_ads, metadata)
+
+    # Create a Manager to create shareable queue that can be passed to worker processes
+    manager = Manager()
+    job_queue = manager.Queue()
+    # Shared counters for thread-safe statistics
+    published_counter = manager.Value('i', 0)
+    failed_counter = manager.Value('i', 0)
+    stop_event = threading.Event()
+    publisher_stats = {"published": published_counter, "failed": failed_counter, "error": False}
+
+    # Capture current trace context so the publisher thread inherits it (same trace).
+    # Contextvars do not propagate to new threads by default.
+    parent_ctx = otel_context.get_current()
+
+    def run_publisher_with_context():
+        token = otel_context.attach(parent_ctx)
+        try:
+            nats_publisher_thread(job_queue, stop_event, publisher_stats, 0)
+        finally:
+            otel_context.detach(token)
+
+    # Start single publisher thread
+    publisher_thread = threading.Thread(
+        target=run_publisher_with_context,
+        daemon=False,
+    )
+    publisher_thread.start()
+    global_logger.info("Started NATS publisher thread with queue monitoring")
+
+    # Track checkpoints per schedd
+    schedd_checkpoints = {}
+    
+    # Use ProcessPoolExecutor with as_completed, same pattern as spider_cms.py
+    # Workers now enqueue jobs instead of publishing directly
+    with ProcessPoolExecutor(max_workers=const.MAX_HISTORY_PROCESSES) as executor:
+        futures = {
+            executor.submit(
+                query_schedd_history,
+                starttime,
+                last_completion,
+                schedd_ad,
+                job_queue,  # Pass queue to workers
+            ): schedd_ad.get("Name")
+            for schedd_ad, last_completion in tasks
+        }
+
+        for future in as_completed(futures):
+            schedd_name = futures[future]
             try:
-                job = checkpoint_queue.get()
-                if job is None:  # Swallow poison pill
-                    break
-            except EOFError as error:
-                logging.warning(
-                    "EOFError - Nothing to consume left in the queue %s", error
+                result = future.result()
+                # Result is either a tuple (latest_completion, count) or just latest_completion
+                if isinstance(result, tuple):
+                    latest_completion, counts = result
+                else:
+                    latest_completion = result
+                    counts = {
+                        "count": 0,
+                        "published_count": 0,
+                    }
+                
+                # Store checkpoint for this schedd
+                if latest_completion:
+                    schedd_checkpoints[schedd_name] = latest_completion
+                
+                global_logger.info(
+                    "Completed querying job history for schedd %s; latest completion: %s, jobs: %d, published: %d",
+                    schedd_name,
+                    datetime.datetime.fromtimestamp(latest_completion).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                    if latest_completion
+                    else "N/A",
+                    counts["count"],
+                    counts["published_count"],
                 )
-                break
-            update_checkpoint(*job)
-
-    chkp_updater = multiprocessing.Process(target=_chkp_updater)
-    chkp_updater.start()
-
-    # Check whether one of the processes timed out and reset their last
-    # completion checkpoint in case
-    timed_out = False
-    for name, future in futures:
-        if time_remaining(starttime, positive=False) > -20:
-            try:
-                future.get(time_remaining(starttime) + 10)
-            except multiprocessing.TimeoutError:
-                # This implies that the checkpoint hasn't been updated
-                message = "Schedd %s history timed out; ignoring progress." % name
-                exc = traceback.format_exc()
-                message += "\n{}".format(exc)
-                logging.error(message)
+            except Exception as exc:  # pylint: disable=broad-except
+                message = "Schedd %s history generated an exception: %s" % (
+                    schedd_name,
+                    str(exc),
+                )
+                exc_trace = traceback.format_exc()
+                message += "\n{}".format(exc_trace)
+                global_logger.error(message)
                 send_email_alert(
-                    args.email_alerts, "spider_cms history timeout warning", message
-                )
-            except Exception as e:
-                # Catch any other exceptions from process_schedd
-                message = (
-                    "Error while processing history data of %s: %s"
-                    % (name, str(e))
-                )
-                exc = traceback.format_exc()
-                message += "\n{}".format(exc)
-                logging.error(message)
-                send_email_alert(
-                    args.email_alerts,
+                    const.EMAIL_ALERTS,
                     "spider_cms history processing error warning",
                     message,
                 )
-        else:
-            timed_out = True
-            break
-    if timed_out:
-        pool.terminate()
 
-    checkpoint_queue.put(None)  # Send a poison pill
-    chkp_updater.join()
+    # All workers are done - signal publisher thread to finish processing remaining jobs
+    global_logger.info("All worker processes completed, waiting for publisher thread to finish...")
+    stop_event.set()
+    
+    # Wait for publisher thread to finish
+    publisher_thread.join(timeout=300)  # 5 minute timeout
+    if publisher_thread.is_alive():
+        global_logger.error("Publisher thread did not finish within timeout")
+    else:
+        total_published = publisher_stats["published"].value if "published" in publisher_stats else 0
+        total_failed = publisher_stats["failed"].value if "failed" in publisher_stats else 0
+        global_logger.info(
+            "Publisher thread completed: published %d jobs, failed %d jobs",
+            total_published,
+            total_failed
+        )
+    
+    # Update checkpoints for all schedds
+    if schedd_checkpoints:
+        try:
+            jetstream = get_jetstream_context(const.NATS_SERVER)
+            for schedd_name, latest_completion in schedd_checkpoints.items():
+                update_checkpoint(jetstream, schedd_name, latest_completion)
+                global_logger.info(
+                    "Updated checkpoint for %s: %s",
+                    schedd_name,
+                    datetime.datetime.fromtimestamp(latest_completion).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                )
+        except Exception as e:
+            global_logger.error("Failed to update checkpoints: %s", str(e))
+        finally:
+            # Clean up the global NATS connection used for checkpoints
+            try:
+                close_nats_connection(timeout=5.0)
+                global_logger.debug("Closed global NATS connection after checkpoint updates")
+            except Exception as e:
+                global_logger.warning("Error closing global NATS connection: %s", str(e))
+    
+    # Shutdown the manager to clean up resources
+    manager.shutdown()
+    global_logger.info("Manager shutdown complete")
 
-    logging.warning(
+    global_logger.warning(
         "Processing time for history: %.2f mins", ((time.time() - starttime) / 60.0)
     )

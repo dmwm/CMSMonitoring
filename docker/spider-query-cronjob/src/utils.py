@@ -6,53 +6,52 @@ import os
 import pwd
 import sys
 import time
-import errno
 import shlex
 import socket
-import random
 import logging
 import smtplib
 import subprocess
 import email.mime.text
-import logging.handlers
 import json
 
 import classad
 import htcondor
 
-TIMEOUT_MINS = 60
 
-
-def get_schedds_from_file(args=None, collectors_file=None):
+def get_schedds_from_file(collectors_file: str = None, schedd_filter: str = None):
     schedds = []
-    names = set()
+    names = set[str]()
     try:
-        pools = json.load(collectors_file)
-        for pool in pools:
-            _pool_schedds = get_schedds(args, collectors=pools[pool], pool_name=pool)
+        # TODO: Check type validation for pools
+        with open(collectors_file, "r") as f:
+            pools: dict[str, list[str]] = json.load(f)
+        for pool in pools.keys():
+            _pool_schedds = get_schedds(collectors=pools[pool], pool_name=pool, schedd_filter=schedd_filter)
             schedds.extend([s for s in _pool_schedds if s.get("Name") not in names])
             names.update([s.get("Name") for s in _pool_schedds])
 
     except (IOError, json.JSONDecodeError):
-        schedds = get_schedds(args)
+        schedds = get_schedds(schedd_filter=schedd_filter)
+
+    global_logger.info("&&& There are %d schedds to query.", len(schedds))
     return schedds
 
 
-def get_schedds(args=None, collectors=None, pool_name="Unknown"):
+def get_schedds(collectors: list[str] = None, pool_name: str = "Unknown", schedd_filter: str = None) -> list[dict]:
     """
     Return a list of schedd ads representing all the schedds in the pool.
     """
     collectors = collectors or []
     schedd_query = classad.ExprTree("!isUndefined(CMSGWMS_Type)")
 
-    schedd_ads = {}
+    schedd_ads: dict[str, dict] = {}
     for host in collectors:
         coll = htcondor.Collector(host)
         try:
             schedds = coll.query(
                 htcondor.AdTypes.Schedd,
                 schedd_query,
-                projection=["MyAddress", "ScheddIpAddr", "Name"],
+                projection=["MyAddress", "ScheddIpAddr", "Name", "TotalRunningJobs", "TotalIdleJobs", "TotalHeldJobs"],
             )
         except IOError as e:
             logging.warning(str(e))
@@ -62,15 +61,16 @@ def get_schedds(args=None, collectors=None, pool_name="Unknown"):
             try:
                 schedd["CMS_Pool"] = pool_name
                 schedd_ads[schedd["Name"]] = schedd
+                schedd_ads[schedd["Name"]]["TotalJobs"] = schedd["TotalRunningJobs"] + schedd["TotalIdleJobs"] + schedd["TotalHeldJobs"]
             except KeyError:
                 pass
 
     schedd_ads = list(schedd_ads.values())
-    random.shuffle(schedd_ads)
+    schedd_ads.sort(key=lambda x: x["TotalJobs"], reverse=True)
 
-    if args and args.schedd_filter:
-        return [s for s in schedd_ads if s["Name"] in args.schedd_filter.split(",")]
-
+    if schedd_filter:
+        return [s for s in schedd_ads if s["Name"] in schedd_filter.split(",")]
+    
     return schedd_ads
 
 
@@ -104,7 +104,7 @@ def send_email_alert(recipients, subject, message):
         logging.warning("Email notification failed: %s", str(exn))
 
 
-def time_remaining(starttime, timeout=TIMEOUT_MINS * 60, positive=True):
+def time_remaining(starttime: float, timeout: int = 3600, positive: bool = True) -> int:
     """
     Return the remaining time (in seconds) until starttime + timeout
     Returns 0 if there is no time remaining
@@ -115,36 +115,28 @@ def time_remaining(starttime, timeout=TIMEOUT_MINS * 60, positive=True):
     return timeout - elapsed
 
 
-def set_up_logging(args):
+def set_up_logging(log_level: int = logging.INFO) -> logging.Logger:
     """Configure root logger with rotating file handler"""
     logger = logging.getLogger()
-
-    log_level = getattr(logging, args.log_level.upper(), None)
-    if not isinstance(log_level, int):
-        raise ValueError("Invalid log level: %s" % log_level)
     logger.setLevel(log_level)
 
     if log_level <= logging.INFO:
         logging.getLogger("CMSMonitoring.StompAMQ").setLevel(log_level + 10)
         logging.getLogger("stomp.py").setLevel(log_level + 10)
 
-    try:
-        os.makedirs(args.log_dir)
-    except OSError as oserr:
-        if oserr.errno != errno.EEXIST:
-            raise
-
-    log_file = os.path.join(args.log_dir, "spider_cms.log")
-    filehandler = logging.handlers.RotatingFileHandler(log_file, maxBytes=100000)
-    filehandler.setFormatter(
-        logging.Formatter("%(asctime)s : %(name)s:%(levelname)s - %(message)s")
+    # Check if a StreamHandler already exists to avoid duplicate handlers
+    # This prevents duplicate log messages when the function is called multiple times
+    has_stream_handler = any(
+        isinstance(handler, logging.StreamHandler) and handler.stream == sys.stdout
+        for handler in logger.handlers
     )
-    logger.addHandler(filehandler)
-
-    if os.isatty(sys.stdout.fileno()):
-        streamhandler = logging.StreamHandler(stream=sys.stdout)
-        logger.addHandler(streamhandler)
-
+    
+    if not has_stream_handler:
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(logging.Formatter('%(asctime)s : %(name)s:%(levelname)s PID: %(process)d - %(message)s'))
+        logger.addHandler(stream_handler)
+    
+    return logger
 
 def collect_metadata():
     """
@@ -174,3 +166,6 @@ def get_githash():
     except Exception as e:
         logging.warning(str(e))
         return "unknown"
+
+
+global_logger = set_up_logging()

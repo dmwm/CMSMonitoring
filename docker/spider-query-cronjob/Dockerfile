@@ -10,7 +10,6 @@ RUN apt-get update && \
         libexpat1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Application user and directories
 RUN useradd -ms /bin/bash cmsjobmon && \
     mkdir -p /opt/spider/ && \
     chown -R cmsjobmon:cmsjobmon /opt/spider
@@ -22,17 +21,24 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY ./src ./src
-COPY ./spider_cms_*.sh ./
+COPY ./running_jobs.py ./running_jobs.py
+COPY ./job_history.py ./job_history.py
 COPY ./collectors.json ./etc/collectors.json
-# For testing with only specific collectors
+# For testing with only specific collectors instead (lower volume of data)
 # COPY ./test_collectors.json ./etc/collectors.json
-RUN cp ./src/spider_cms.py ./spider_cms.py && \
-    chmod +x ./*.sh
+RUN chmod +x ./*.py
 
 RUN chown -R cmsjobmon:cmsjobmon /home/cmsjobmon /opt/spider
 
-ENV PYTHONPATH=/opt/spider/src \
+# Build arguments for docker image (used for monitoring)
+ARG DOCKER_TAG=unknown
+ARG IMAGE_NAME=unknown
+
+ENV PYTHONPATH=/opt/spider/src:$PYTHONPATH \
     SPIDER_WORKDIR=/opt/spider \
-    AFFILIATION_DIR_LOCATION=/opt/spider/.affiliation_dir.json
+    AFFILIATION_DIR_LOCATION=/opt/spider/.affiliation_dir.json \
+    DOCKER_TAG=${DOCKER_TAG} \
+    IMAGE_NAME=${IMAGE_NAME} \
+    COLLECTORS_FILE=/opt/spider/etc/collectors.json
 
 USER cmsjobmon
