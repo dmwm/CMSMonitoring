@@ -130,20 +130,20 @@ function util_check_and_create_dir() {
 
 # ------------------------------------- PRE SETUP UTILS -------------------------------------------
 #######################################
-# Util to authenticate with keytab and to return Kerberos principle name
+# Util to authenticate with keytab and to return Kerberos principal name
 #  Arguments:
 #    $1: keytab file
 #  Usage:
-#    principle=$(util_kerberos_auth_with_keytab /foo/keytab)
+#    principal=$(util_kerberos_auth_with_keytab /foo/keytab)
 #  Returns:
-#    success: principle name before '@' part. If principle is 'johndoe@cern.ch, will return 'johndoe'
+#    success: principal name before '@' part. If principal is 'johndoe@cern.ch, will return 'johndoe'
 #    fail   : exits with exit-code 1
 #######################################
 function util_kerberos_auth_with_keytab() {
-    local principle krb5ccname
-    principle=$(klist -k "$1" | tail -1 | awk '{print $2}')
+    local principal krb5ccname
+    principal=$(klist -k "$1" | tail -1 | awk '{print $2}')
     # run kinit and check if it fails or not
-    if ! kinit "$principle" -k -t "$1" >/dev/null; then
+    if ! kinit "$principal" -k -t "$1" >/dev/null; then
         util4loge "Exiting. Kerberos authentication failed with keytab:$1"
         exit 1
     fi
@@ -154,8 +154,8 @@ function util_kerberos_auth_with_keytab() {
         exit 1
     fi
     export KRB5CCNAME="$krb5ccname"
-    # remove "@" part from the principle name
-    echo "$principle" | grep -o '^[^@]*'
+    # remove "@" part from the principal name
+    echo "$principal" | grep -o '^[^@]*'
 }
 # -------------------------------------------------------------------------------------------------
 
