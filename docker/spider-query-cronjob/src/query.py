@@ -239,7 +239,7 @@ def query_schedds(
 def query_running_jobs(
     starttime: float,
     schedd_ads: list[classad.ClassAd],
-):
+) -> dict[str, int]:
     """
     Parallel wrapper for querying all schedds for running jobs in parallel.
     The jobs are then published to NATS JetStream.

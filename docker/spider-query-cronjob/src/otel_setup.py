@@ -181,7 +181,7 @@ def trace_span(span_name: str = None, **attributes):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             # Use provided span_name or default to function name
-            name = span_name or f"{func.__module__}.{func.__name__}"
+            name = span_name or f"{const.OTEL_SERVICE_NAME}.{func.__module__}.{func.__name__}"
             # Start a new span
             with global_tracer.start_as_current_span(name) as span:
                 # Set initial attributes
@@ -189,7 +189,7 @@ def trace_span(span_name: str = None, **attributes):
                     span.set_attribute(key, value)
                 
                 # Set span kind to INTERNAL (default for internal operations)
-                span.set_attribute("span.kind", "internal")
+                span.set_attribute("execution.id", EXECUTION_ID)
                 
                 try:
                     # Execute the function
