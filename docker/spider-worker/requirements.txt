@@ -1,0 +1,7 @@
+CMSMonitoring==0.6.12
+htcondor==23.0.28
+nats-py==2.6.0
+opensearch-py~=2.5
+elasticsearch==7.17.9
+requests~=2.31
+opentelemetry-exporter-otlp~=1.39.0
