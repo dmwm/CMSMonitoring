@@ -6,13 +6,10 @@ IMAGE_NAME = os.getenv("IMAGE_NAME", "spider-query-cronjob")
 DOCKER_TAG = os.getenv("DOCKER_TAG", "unknown")
 
 DRY_RUN = os.getenv("DRY_RUN", "false").lower() == "true"
-MAX_DOCUMENTS = os.getenv("MAX_DOCUMENTS", 0)
 MAX_PROCESSES = os.getenv("MAX_PROCESSES", 16)
 MAX_HISTORY_PROCESSES = int(os.getenv("MAX_HISTORY_PROCESSES", 10))
 
 
-FEED_ES = os.getenv("FEED_ES", "true").lower() == "true"
-FEED_AMQ = os.getenv("FEED_AMQ", "true").lower() == "true"
 # TODO: Look into the alerts
 EMAIL_ALERTS = os.getenv("EMAIL_ALERTS", "").split(",") # "cms-comp-monit-alerts@cern.ch"
 
