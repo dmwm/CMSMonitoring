@@ -142,7 +142,7 @@ def query_single_schedd(
         finally:
             # Always publish any remaining jobs, even if an exception occurred
             if job_batch and not const.DRY_RUN:
-                global_logger.warning(
+                global_logger.debug(
                     "Publishing %d remaining jobs in batch for %s",
                     len(job_batch),
                     schedd_name,
@@ -184,7 +184,7 @@ def query_single_schedd(
         )
 
         global_logger.info(
-            "Schedd %-25s queue: queried %5d jobs, published %5d jobs; query time %.2f min",
+            "Completed querying %-25s: queried %5d jobs, published %5d jobs; query time %.2f min",
             schedd_name,
             counts["count"],
             counts["published_count"],
@@ -233,6 +233,17 @@ def query_schedds(
         )
         total_counts["count"] += counts.get("count", 0)
         total_counts["published_count"] += counts.get("published_count", 0)
+    
+    # Check if published count differs from total count
+    if total_counts["count"] != total_counts["published_count"]:
+        error_message = (
+            "@@@ MISMATCH: Total jobs queried: %d, Total jobs published: %d. "
+            "Some jobs were not successfully published to NATS."
+        ) % (total_counts["count"], total_counts["published_count"])
+        global_logger.error(error_message)
+        trace.get_current_span().set_status(Status(StatusCode.ERROR, error_message))
+        trace.get_current_span().set_attribute("error", True)
+    
     return total_counts
 
 @trace_span("query_running_jobs")
@@ -271,32 +282,12 @@ def query_running_jobs(
                 counts = future.result()
                 total_counts["count"] += counts.get("count", 0)
                 total_counts["published_count"] += counts.get("published_count", 0)
-                global_logger.info(
-                    "Completed processing schedd %s: queried %d jobs, published %d jobs",
-                    schedd_name,
-                    counts.get("count", 0),
-                    counts.get("published_count", 0),
-                )
             except Exception as exc:  # pylint: disable=broad-except
                 global_logger.error(
                     "Schedd %s generated an exception: %s", schedd_name, str(exc)
                 )
 
     total_duration = time.time() - starttime
-    global_logger.info("@@@ Total querying time: %.2f mins", (total_duration / 60.0))
+    global_logger.info("@@@ Total querying time: %.2f mins, queried %d jobs, published %d jobs", (total_duration / 60.0), total_counts["count"], total_counts["published_count"])
     
-    # Check if published count differs from total count
-    if total_counts["count"] != total_counts["published_count"]:
-        error_message = (
-            "@@@ MISMATCH: Total jobs queried: %d, Total jobs published: %d. "
-            "Some jobs were not successfully published to NATS."
-        ) % (total_counts["count"], total_counts["published_count"])
-        global_logger.error(error_message)
-        current_span.set_status(Status(StatusCode.ERROR, error_message))
-        current_span.set_attribute("error", True)
-    else:
-        global_logger.info(
-            "@@@ Total jobs queried: %d, Total jobs published: %d",
-            total_counts["count"],
-            total_counts["published_count"],
-        )
+    return total_counts

@@ -309,9 +309,7 @@ def publish_jobs_to_nats(
 
             except asyncio.TimeoutError:
                 logging.error(
-                    "Timeout publishing batch to NATS (timeout=%.1fs, batch_size=%d)",
-                    batch_timeout,
-                    len(batch),
+                    "Timeout publishing batch to NATS",
                 )
                 # Continue with next batch
                 continue
@@ -412,20 +410,9 @@ def get_checkpoint_kv(
             _checkpoint_kv = loop.run_until_complete(
                 jetstream.key_value(kv_bucket_name)
             )
-            logging.info("Connected to existing KeyValue store: %s", kv_bucket_name)
+            logging.debug("Connected to existing KeyValue store: %s", kv_bucket_name)
         except Exception:
-            # KeyValue store doesn't exist, create it
-            logging.info("Creating KeyValue store: %s", kv_bucket_name)
-            try:
-                _checkpoint_kv = loop.run_until_complete(
-                    jetstream.create_key_value(bucket=kv_bucket_name)
-                )
-                logging.info("Created KeyValue store: %s", kv_bucket_name)
-            except Exception as e:
-                logging.error(
-                    "Failed to create KeyValue store %s: %s", kv_bucket_name, str(e)
-                )
-                raise
+            logging.error("Failed to get KeyValue store: %s", kv_bucket_name)
 
     return _checkpoint_kv
 
@@ -498,7 +485,6 @@ def set_checkpoint(
     """
     try:
         kv = get_checkpoint_kv(jetstream, kv_bucket_name)
-
         try:
             loop = asyncio.get_event_loop()
             if loop.is_closed():
@@ -512,7 +498,11 @@ def set_checkpoint(
         # Store completion time as string
         value = str(completion_date).encode("utf-8")
         loop.run_until_complete(kv.put(encoded_key, value))
-        logging.debug("Updated checkpoint for %s: %s", schedd_name, completion_date)
+        logging.info(
+            "Updated checkpoint for %s: %s",
+            schedd_name,
+            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(completion_date)),
+        )
         return True
     except Exception as e:
         logging.error(
