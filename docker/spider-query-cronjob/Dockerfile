@@ -23,9 +23,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY ./src ./src
 COPY ./running_jobs.py ./running_jobs.py
 COPY ./job_history.py ./job_history.py
-COPY ./collectors.json ./etc/collectors.json
-# For testing with only specific collectors instead (lower volume of data)
-# COPY ./test_collectors.json ./etc/collectors.json
 RUN chmod +x ./*.py
 
 RUN chown -R cmsjobmon:cmsjobmon /home/cmsjobmon /opt/spider
