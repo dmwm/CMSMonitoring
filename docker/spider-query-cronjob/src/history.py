@@ -3,7 +3,6 @@ Methods for processing the history in a schedd queue.
 """
 
 import datetime
-from re import S
 import time
 import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
