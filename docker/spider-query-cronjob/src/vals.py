@@ -379,6 +379,7 @@ bool_vals = {
     "HasBeenOverflowRouted",
     "HasBeenTimingTuned",
     "MachineAttrCUDAECCEnabled0",
+    "MachineAttrGLIDEIN_OVERLOAD_ENABLED0",
 }
 
 # Fields to be kept in docs concerning running jobs
