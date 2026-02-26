@@ -29,7 +29,7 @@ NATS_SERVER = os.getenv("NATS_SERVER", "nats://nats.cluster.local:4222")
 NATS_STREAM_NAME = os.getenv("NATS_STREAM_NAME", "CMS_HTCONDOR_QUEUE")
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "cms.htcondor.queue.job")
 CHECKPOINT_KV_BUCKET = os.getenv("CHECKPOINT_KV_BUCKET", "spider_checkpoints")
-NATS_PUBLISH_TIMEOUT = int(os.getenv("NATS_PUBLISH_TIMEOUT", 600))  # seconds
+NATS_PUBLISH_TIMEOUT = int(os.getenv("NATS_PUBLISH_TIMEOUT", 10))  # seconds
 NATS_BATCH_SIZE = int(os.getenv("NATS_BATCH_SIZE", 100))
 
 # OpenTelemetry
