@@ -16,11 +16,11 @@ from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
 
 # Create metrics for per-schedd operations
-# schedd_duration_histogram = global_meter.create_histogram(
-#     name="spider_cms.schedd.queue.duration",
-#     description="Duration of queue query per schedd in seconds",
-#     unit="s",
-# )
+schedd_duration_histogram = global_meter.create_histogram(
+    name="spider_cms.schedd.queue.duration",
+    description="Duration of queue query per schedd in seconds",
+    unit="s",
+)
 jobs_queried_counter = global_meter.create_counter(
     name="spider_cms.schedd.queue.jobs",
     description="Number of jobs queried per schedd",
@@ -174,6 +174,7 @@ def query_single_schedd(
             "schedd": schedd_name,
             "pool": pool_name,
         }
+        schedd_duration_histogram.record(total_time, attributes=schedd_attributes)
         jobs_queried_counter.add(
             counts["count"],
             attributes=schedd_attributes,
