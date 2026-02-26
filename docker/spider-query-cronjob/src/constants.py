@@ -39,7 +39,8 @@ OTEL_SERVICE_NAME = os.getenv("OTEL_SERVICE_NAME", "spider-query-cronjob")
 OTEL_USERNAME = os.getenv("OPENTELEMETRY_USERNAME")
 OTEL_PASSWORD = os.getenv("OPENTELEMETRY_PASSWORD")
 
-TIMEOUT_MINS = os.getenv("TIMEOUT_MINS", 60)
+# Timeout for each schedd query (some schedds can be degraded and take a long time to query)
+TIMEOUT_MINS = os.getenv("TIMEOUT_MINS", 12)
 
 # History
 # If last query time in checkpoint is too old, but not from crab, results older
