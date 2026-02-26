@@ -11,7 +11,6 @@ from nats.aio.client import Client as NATS
 from nats.js import JetStreamContext
 
 import classad
-from otel_setup import trace_span
 
 # Global NATS JetStream connection
 _nats_connection = None
@@ -59,10 +58,6 @@ def get_nats_connection(nats_servers: str, stream_name: str, subject: str):
                     )
                 _nats_connection = None
                 _nats_jetstream = None
-
-            # In multi-process contexts (ProcessPoolExecutor), each worker process
-            # needs its own isolated event loop. Always create a fresh event loop.
-            # Close any existing loop if it exists to avoid conflicts
             try:
                 existing_loop = asyncio.get_event_loop()
                 if not existing_loop.is_closed():
@@ -75,30 +70,10 @@ def get_nats_connection(nats_servers: str, stream_name: str, subject: str):
             # Store the loop for reuse
             _nats_loop = loop
             _nats_connection = NATS()
-            # TODO: Why do we need to create new streams?
-            logging.warning("Connecting to NATS JetStream at %s", nats_servers)
             loop.run_until_complete(_nats_connection.connect(servers=nats_servers))
             _nats_jetstream = _nats_connection.jetstream()
 
-            # Ensure the stream exists
-            try:
-                loop.run_until_complete(_nats_jetstream.stream_info(stream_name))
-            except Exception:
-                # Stream doesn't exist, create it
-                logging.info("Creating NATS JetStream stream: %s", stream_name)
-                try:
-                    loop.run_until_complete(
-                        _nats_jetstream.add_stream(name=stream_name, subjects=[subject])
-                    )
-                except Exception as e:
-                    # TODO: Improve this
-                    # If stream already exists with this subject (error 10065), that's fine
-                    if "10065" in str(e) or "subjects overlap" in str(e).lower():
-                        logging.info("Stream with subject %s already exists", subject)
-                    else:
-                        raise
-
-            logging.info("Connected to NATS JetStream at %s", nats_servers)
+            logging.debug("Connected to NATS JetStream at %s", nats_servers)
         except Exception as e:
             logging.error("Failed to connect to NATS JetStream: %s", str(e))
             raise
@@ -106,80 +81,7 @@ def get_nats_connection(nats_servers: str, stream_name: str, subject: str):
     return _nats_connection, _nats_jetstream
 
 
-@trace_span("get_jetstream_context")
-def get_jetstream_context(nats_servers: str):
-    """
-    Get or create a NATS JetStream context without creating a stream.
-    This is useful for KeyValue operations that don't need a stream.
-    The connection is shared with get_nats_connection if already established.
-
-    Args:
-        nats_servers: Comma-separated list of NATS server URLs
-
-    Returns:
-        JetStreamContext: The JetStream context for operations
-    """
-    global _nats_connection, _nats_jetstream, _nats_loop
-
-    # Reuse existing connection if available
-    if _nats_connection is not None and not _nats_connection.is_closed:
-        return _nats_jetstream
-
-    # Create new connection if needed
-    nats_servers_list = [s.strip() for s in nats_servers.split(",")]
-
-    try:
-        # Clean up any existing connection state before creating new ones
-        # This is critical in multi-process contexts to avoid state conflicts
-        if _nats_connection is not None:
-            # Connection exists but is closed - clean it up
-            try:
-                if (
-                    _nats_loop is not None
-                    and not _nats_loop.is_closed()
-                    and not _nats_connection.is_closed
-                ):
-                    _nats_loop.run_until_complete(_nats_connection.close())
-            except Exception as e:
-                logging.debug(
-                    "Error closing existing NATS connection (may already be closed): %s",
-                    str(e),
-                )
-            _nats_connection = None
-            _nats_jetstream = None
-
-        # In multi-process contexts, each worker process needs its own isolated
-        # event loop. Always create a fresh event loop.
-        # Close any existing loop if it exists to avoid conflicts
-        try:
-            existing_loop = asyncio.get_event_loop()
-            if not existing_loop.is_closed():
-                existing_loop.close()
-        except (RuntimeError, AttributeError):
-            pass
-        # Create a completely fresh event loop for this process
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        # Store the loop for reuse (important for publish operations)
-        _nats_loop = loop
-
-        _nats_connection = NATS()
-        logging.debug(
-            "Connecting to NATS JetStream at %s (for KeyValue operations)",
-            nats_servers_list,
-        )
-        loop.run_until_complete(_nats_connection.connect(servers=nats_servers_list))
-        _nats_jetstream = _nats_connection.jetstream()
-
-        logging.info("Connected to NATS JetStream at %s", nats_servers_list)
-    except Exception as e:
-        logging.error("Failed to connect to NATS JetStream: %s", str(e))
-        raise
-
-    return _nats_jetstream
-
-# This creates a lot of spans and can increase load in the trace storage. Use only for debugging.
+# This decorator creates a lot of spans and can increase load in the trace storage. Use only for debugging.
 # @trace_span("publish_jobs_to_nats")
 def publish_jobs_to_nats(
     jetstream: JetStreamContext,
@@ -188,7 +90,7 @@ def publish_jobs_to_nats(
     batch_size: int = 100,
     timeout: int = None,
     loop=None,
-):
+) -> int:
     """
     Publish jobs to NATS JetStream in batches.
     This is the primary method for publishing jobs. Jobs are published concurrently
@@ -294,16 +196,10 @@ def publish_jobs_to_nats(
         for batch_idx in range(0, len(job_docs), batch_size):
             batch = messages[batch_idx : batch_idx + batch_size]
 
-            # Calculate batch timeout - since publishes are concurrent, they should complete within roughly the timeout time
-            # Use a multiplier to account for network overhead with many concurrent requests
-            batch_timeout = timeout * min(
-                3, len(batch)
-            )  # Cap at 3x timeout for large batches
-
             try:
                 # Publish the batch with timeout
                 publish_coro = asyncio.wait_for(
-                    _publish_batch(batch), timeout=batch_timeout
+                    _publish_batch(batch), timeout=const.NATS_PUBLISH_TIMEOUT
                 )
                 batch_published = loop.run_until_complete(publish_coro)
                 total_published += batch_published
