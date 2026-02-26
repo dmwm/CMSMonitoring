@@ -19,6 +19,7 @@ _nats_jetstream = None
 _nats_loop = None
 _checkpoint_kv = None
 
+
 # Usually these spans are not needed and increase noise. Use for debugging if needed.
 # @trace_span("get_nats_connection")
 def get_nats_connection(nats_servers: str, stream_name: str, subject: str):
@@ -575,7 +576,7 @@ def close_nats_connection(connection=None, loop=None, timeout=5.0):
     Returns:
         bool: True if closed successfully, False otherwise
     """
-    global _nats_connection, _nats_jetstream, _nats_loop
+    global _nats_connection, _nats_jetstream, _nats_loop, _checkpoint_kv
 
     # Use provided connection or global connection
     if connection is None:
@@ -583,6 +584,9 @@ def close_nats_connection(connection=None, loop=None, timeout=5.0):
 
     if connection is None or connection.is_closed:
         logging.debug("NATS connection is None or already closed")
+        # Clear cached KV store if this is the global connection (it references the closed connection)
+        if connection is _nats_connection:
+            _checkpoint_kv = None
         return True
 
     # Determine which loop to use
@@ -626,6 +630,9 @@ def close_nats_connection(connection=None, loop=None, timeout=5.0):
         if connection == _nats_connection:
             _nats_connection = None
             _nats_jetstream = None
+            _checkpoint_kv = (
+                None  # Also clear cached KV store since it uses the closed connection
+            )
             # Don't close the loop here - it might be reused
             # _nats_loop = None
 
