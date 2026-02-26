@@ -4,7 +4,6 @@ Script for processing the contents of the CMS pool.
 """
 
 import time
-import signal
 import os
 
 # Ensure this script has a distinct OpenTelemetry service name (for tracing)
@@ -22,7 +21,6 @@ from opentelemetry import trace
 def main():
     starttime = time.time()
     global_logger.info("Starting spider_cms running jobs process.")
-    signal.alarm(const.TIMEOUT_MINS * 60 + 60)
 
     # Get all the schedd ads (these are ClassAds; they can be sent directly
     # to worker processes, and `htcondor.Schedd` expects this type).
