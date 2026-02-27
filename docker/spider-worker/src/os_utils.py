@@ -1,7 +1,12 @@
 import datetime
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
 from opensearchpy import OpenSearch, helpers, RequestsHttpConnection
 import constants as const
+import src.vals as vals
+
+
+_INDEX_SETTINGS = {"mapping.total_fields.limit": 2000}
+_DATE_MAPPING = {"type": "date", "format": "epoch_millis"}
 
 def get_opensearch_client() -> OpenSearch:
 
@@ -52,9 +57,17 @@ def ensure_daily_index(
     if os_client.indices.exists(index=index_name):
         return False
 
-
-    os_client.indices.create(index=index_name, ignore=400)
+    os_client.indices.create(index=index_name, body=_build_index_body())
     return True
+
+
+def _build_index_body() -> dict[str, Any]:
+    return {
+        "settings": {"index": _INDEX_SETTINGS},
+        "mappings": {
+            "properties": {field: dict(_DATE_MAPPING) for field in vals.date_vals}
+        },
+    }
 
 
 def os_upload_docs_in_bulk(
