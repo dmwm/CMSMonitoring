@@ -7,14 +7,10 @@ What this shows:
 - Logs: emits OTLP logs to the collector.
 
 Prerequisites:
-1) Go 1.22+
-2) From this folder, initialize and fetch dependencies:
+1) Go 1.25+
+2) From this folder, initialize the module and resolve imports:
     go mod init examples/go-otel-toy
-    go get go.opentelemetry.io/otel@latest
-    go get go.opentelemetry.io/otel/sdk@latest
-    go get go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc@latest
-    go get go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc@latest
-    go get go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc@latest
+    go mod tidy
     go run go_app_otel_example.go
 
 Collector configuration:
