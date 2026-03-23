@@ -69,6 +69,7 @@ _camp_re = re.compile(r"[A-Za-z0-9_]+_[A-Z0-9]+-([A-Za-z0-9]+)-")
 _prep_re = re.compile(r"[A-Za-z0-9_]+_([A-Z]+-([A-Za-z0-9]+)-[0-9]+)")
 _rval_re = re.compile(r"[A-Za-z0-9]+_(RVCMSSW_[0-9]+_[0-9]+_[0-9]+)")
 _prep_prompt_re = re.compile(r"(PromptReco|Repack|Express)_[A-Za-z0-9]+_([A-Za-z0-9]+)")
+_dynamic_bool_key_re = re.compile(r"^MachineAttrGLIDEIN_OVERLOAD_ENABLED\d+$")
 # Executable error messages in WMCore
 _wmcore_exe_exmsg = re.compile(r"^Chirp_WMCore_[A-Za-z0-9]+_Exception_Message$")
 # 2016 reRECO; of the form cerminar_Run2016B-v2-JetHT-23Sep2016_8020_160923_164036_4747
