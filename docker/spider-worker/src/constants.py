@@ -21,6 +21,11 @@ NATS_SERVER = os.environ.get("NATS_SERVER", "nats://nats.cluster.local:4222")
 NATS_STREAM_NAME = os.environ.get("NATS_STREAM_NAME", "CMS_HTCONDOR_QUEUE")
 NATS_SUBJECT = os.environ.get("NATS_SUBJECT", "cms.htcondor.queue.job")
 NATS_CONSUMER_NAME = os.environ.get("NATS_CONSUMER_NAME", "spider-worker")
+NATS_BATCH_SIZE = int(os.environ.get("NATS_BATCH_SIZE", "1000"))
+NATS_FETCH_TIMEOUT = float(os.environ.get("NATS_FETCH_TIMEOUT", "0.5"))
+NATS_IDLE_SLEEP = float(os.environ.get("NATS_IDLE_SLEEP", "0.2"))
+NATS_CHUNK_SIZE = int(os.environ.get("NATS_CHUNK_SIZE", "200"))
+NATS_ACK_WAIT_SECONDS = float(os.environ.get("NATS_ACK_WAIT_SECONDS", "120"))
 
 # Affiliation KV bucket
 AFFILIATION_KV_BUCKET = os.environ.get("AFFILIATION_KV_BUCKET", "spider_affiliations")

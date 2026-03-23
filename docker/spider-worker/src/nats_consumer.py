@@ -12,9 +12,18 @@ import classad
 from nats.aio.client import Client as NATS
 from nats.js.api import ConsumerConfig, AckPolicy, DeliverPolicy
 
-import constants as const
-from convert_to_json import unique_doc_id
-from otel_setup import global_logger
+import src.constants as const
+from src.convert_to_json import unique_doc_id
+from src.otel_setup import global_logger
+
+
+def _normalize_header_value(value):
+    """Normalize NATS header value to a single string."""
+    if isinstance(value, list):
+        return value[0] if value else None
+    if isinstance(value, str):
+        return value
+    return None
 
 
 def _get_event_loop() -> asyncio.AbstractEventLoop:
@@ -48,7 +57,12 @@ class NATSBatch:
     jobs: List[Tuple[str, classad.ClassAd]]
     _messages: Sequence
     _loop: asyncio.AbstractEventLoop
-    query_execution_id: str = None  # Execution ID from query cronjob that triggered this work
+    traceparent: str = None  # First valid traceparent seen in the batch
+    tracestate: str = None  # tracestate associated with the first traceparent
+    latest_traceparent: str = None  # Latest traceparent seen (for mismatch diagnostics)
+    latest_tracestate: str = None  # Latest tracestate seen (for mismatch diagnostics)
+    has_traceparent_mismatch: bool = False
+    redelivered_messages: int = 0
 
     def ack(self) -> None:
         """Acknowledge all messages in the batch using parallel async operations."""
@@ -89,6 +103,29 @@ class NATSBatch:
             self.ack()
         else:
             self.nak()
+
+    def chunked(self, chunk_size: int) -> List["NATSBatch"]:
+        """Split this batch into smaller sub-batches for earlier finalize/ack."""
+        if chunk_size <= 0 or len(self.jobs) <= chunk_size:
+            return [self]
+
+        result: List[NATSBatch] = []
+        for start in range(0, len(self.jobs), chunk_size):
+            end = start + chunk_size
+            result.append(
+                NATSBatch(
+                    jobs=self.jobs[start:end],
+                    _messages=self._messages[start:end],
+                    _loop=self._loop,
+                    traceparent=self.traceparent,
+                    tracestate=self.tracestate,
+                    latest_traceparent=self.latest_traceparent,
+                    latest_tracestate=self.latest_tracestate,
+                    has_traceparent_mismatch=self.has_traceparent_mismatch,
+                    redelivered_messages=self.redelivered_messages,
+                )
+            )
+        return result
 
 
 class NATSQueueConsumer:
@@ -148,10 +185,11 @@ class NATSQueueConsumer:
                 filter_subject=self.subject,
                 deliver_policy=DeliverPolicy.ALL,
                 max_ack_pending=100000,  # High limit to allow many in-flight messages (you already have 100k)
+                ack_wait=const.NATS_ACK_WAIT_SECONDS,
                 # Note: Other throughput optimizations:
                 # - Increase max_waiting_pulls if you see "Waiting Pulls" hitting limits
                 # - Consider rate_limit/rate_limit_burst if server-side throttling is an issue
-                # - ack_wait can be increased if processing takes longer than default 30s
+                # - Existing consumers keep prior ack_wait unless recreated
             )
             self.loop.run_until_complete(
                 self.jetstream.add_consumer(
@@ -186,21 +224,34 @@ class NATSQueueConsumer:
 
         jobs: List[Tuple[str, classad.ClassAd]] = []
         valid_messages = []
-        query_execution_id = None
+        first_traceparent = None
+        first_tracestate = None
+        latest_traceparent = None
+        latest_tracestate = None
+        has_traceparent_mismatch = False
+        redelivered_messages = 0
         
         for msg in messages:
             try:
-                # Extract execution_id from message headers if present
-                # This links worker logs back to the query cronjob that triggered them
-                if msg.headers and "X-Query-Execution-Id" in msg.headers:
-                    header_value = msg.headers["X-Query-Execution-Id"]
-                    if isinstance(header_value, list) and len(header_value) > 0:
-                        query_execution_id = header_value[0]
-                    elif isinstance(header_value, str):
-                        query_execution_id = header_value
-                    # Only extract from first message to avoid unnecessary processing
-                    if query_execution_id and not hasattr(self, '_execution_id_extracted'):
-                        self._execution_id_extracted = True
+                metadata = getattr(msg, "metadata", None)
+                if metadata and getattr(metadata, "num_delivered", 1) > 1:
+                    redelivered_messages += 1
+
+                if msg.headers:
+                    message_traceparent = _normalize_header_value(
+                        msg.headers.get("traceparent")
+                    )
+                    message_tracestate = _normalize_header_value(
+                        msg.headers.get("tracestate")
+                    )
+                    if message_traceparent:
+                        latest_traceparent = message_traceparent
+                        latest_tracestate = message_tracestate
+                        if first_traceparent is None:
+                            first_traceparent = message_traceparent
+                            first_tracestate = message_tracestate
+                        elif message_traceparent != first_traceparent:
+                            has_traceparent_mismatch = True
                 
                 payload = json.loads(msg.data.decode("utf-8"))
                 job_doc = _str_to_classad(payload)
@@ -215,9 +266,13 @@ class NATSQueueConsumer:
                     global_logger.error("Failed to ack malformed message: %s", ack_exc)
 
         batch = NATSBatch(jobs=jobs, _messages=valid_messages, _loop=self.loop)
-        # Store query execution_id in batch for use by caller
-        if query_execution_id:
-            batch.query_execution_id = query_execution_id
+        if first_traceparent:
+            batch.traceparent = first_traceparent
+            batch.tracestate = first_tracestate
+            batch.latest_traceparent = latest_traceparent
+            batch.latest_tracestate = latest_tracestate
+            batch.has_traceparent_mismatch = has_traceparent_mismatch
+        batch.redelivered_messages = redelivered_messages
         return batch
 
     def close(self) -> None:
