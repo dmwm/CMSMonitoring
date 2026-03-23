@@ -7,6 +7,7 @@ import base64
 import logging
 import uuid
 import functools
+import contextvars
 import opentelemetry
 from opentelemetry.metrics import Meter
 from opentelemetry.sdk.metrics import MeterProvider
@@ -21,6 +22,8 @@ from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry._logs import set_logger_provider
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry import trace
+from opentelemetry.trace import format_trace_id
 from typing import Tuple
 
 import constants as const
@@ -29,6 +32,20 @@ logger = logging.getLogger(__name__)
 
 # Global execution ID for this cronjob run
 EXECUTION_ID = str(uuid.uuid4())
+_root_span_context = contextvars.ContextVar("root_span_context", default=None)
+
+
+def get_execution_id() -> str:
+    """Return the current trace ID; fallback to process execution ID."""
+    span_context = trace.get_current_span().get_span_context()
+    if span_context and span_context.is_valid:
+        return format_trace_id(span_context.trace_id)
+    return EXECUTION_ID
+
+
+def get_root_span_context():
+    """Return the root span context for the current execution context, if any."""
+    return _root_span_context.get()
 
 
 class CustomLoggingHandler(LoggingHandler):
@@ -40,13 +57,15 @@ class CustomLoggingHandler(LoggingHandler):
         self._service_version = service_version
     
     def _get_attributes(self, record: logging.LogRecord):
-        """Override to add service.name and service.version to attributes"""
+        """Override to add stable log attributes with highest precedence."""
         # Get base attributes from parent
         attributes = super()._get_attributes(record)
         
         # Add service.name and service.version to log attributes (highest precedence)
         attributes["service.name"] = self._service_name
         attributes["service.version"] = self._service_version
+        # Keep execution.id in log attributes (like spider-worker logs), not only resource.
+        attributes["execution.id"] = get_execution_id()
         
         return attributes
 
@@ -182,14 +201,21 @@ def trace_span(span_name: str = None, **attributes):
         def wrapper(*args, **kwargs):
             # Use provided span_name or default to function name
             name = span_name or f"{const.OTEL_SERVICE_NAME}.{func.__module__}.{func.__name__}"
+            parent_span_context = trace.get_current_span().get_span_context()
+            is_root_span = not (
+                parent_span_context and parent_span_context.is_valid
+            )
+            root_token = None
             # Start a new span
             with global_tracer.start_as_current_span(name) as span:
+                if is_root_span:
+                    root_token = _root_span_context.set(span.get_span_context())
                 # Set initial attributes
                 for key, value in attributes.items():
                     span.set_attribute(key, value)
                 
                 # Set span kind to INTERNAL (default for internal operations)
-                span.set_attribute("execution.id", EXECUTION_ID)
+                span.set_attribute("execution.id", get_execution_id())
                 
                 try:
                     # Execute the function
@@ -202,6 +228,9 @@ def trace_span(span_name: str = None, **attributes):
                     span.set_status(Status(StatusCode.ERROR, str(e)))
                     span.record_exception(e)
                     raise
+                finally:
+                    if root_token is not None:
+                        _root_span_context.reset(root_token)
         
         return wrapper
     return decorator

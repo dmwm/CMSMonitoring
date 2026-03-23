@@ -50,7 +50,6 @@ time_since_last_checkpoint_histogram = global_meter.create_histogram(
 )
 
 
-# TODO: Improve exceptions
 @trace_span("query_schedd_history")
 def query_schedd_history(starttime: float, last_completion: float, schedd_ad: classad.ClassAd):
     """

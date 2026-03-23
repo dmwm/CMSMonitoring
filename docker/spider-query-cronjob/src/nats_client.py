@@ -7,6 +7,8 @@ import logging
 import asyncio
 import time
 import sys
+from opentelemetry.propagate import inject
+from opentelemetry.trace import format_trace_id, format_span_id
 from nats.aio.client import Client as NATS
 from nats.js import JetStreamContext
 
@@ -17,6 +19,34 @@ _nats_connection = None
 _nats_jetstream = None
 _nats_loop = None
 _checkpoint_kv = None
+
+
+def _build_root_traceparent() -> str:
+    """
+    Build a W3C traceparent using the root span-id of the current trace.
+    This lets downstream workers attach directly to the root span.
+    """
+    # Support both import styles (`otel_setup` and `src.otel_setup`) to avoid
+    # losing root context when modules are loaded under different names.
+    root_ctx = None
+    for module_name in ("otel_setup", "src.otel_setup"):
+        try:
+            module = __import__(module_name, fromlist=["get_root_span_context"])
+            ctx = module.get_root_span_context()
+            if ctx and ctx.is_valid:
+                root_ctx = ctx
+                break
+        except Exception:
+            continue
+
+    if not root_ctx or not root_ctx.is_valid:
+        return None
+
+    trace_flags = f"{int(root_ctx.trace_flags):02x}"
+    return (
+        f"00-{format_trace_id(root_ctx.trace_id)}-"
+        f"{format_span_id(root_ctx.span_id)}-{trace_flags}"
+    )
 
 
 # Usually these spans are not needed and increase noise. Use for debugging if needed.
@@ -155,13 +185,28 @@ def publish_jobs_to_nats(
             )
             return 0
 
-        # Import here to avoid circular imports
-        from otel_setup import EXECUTION_ID
-
-        # Prepare all messages with headers containing execution_id for correlation
+        # Prepare all messages with propagated W3C trace context.
         # NATS Python library expects headers as dict[str, str] (not dict[str, list])
         messages = []
-        headers = {"X-Query-Execution-Id": str(EXECUTION_ID)}
+        headers = {}
+
+        # Collect tracestate from active context (if any).
+        w3c_trace_headers = {}
+        inject(w3c_trace_headers)
+        tracestate = w3c_trace_headers.get("tracestate")
+
+        # Strict mode: only propagate a root-based traceparent.
+        root_traceparent = _build_root_traceparent()
+        if not root_traceparent:
+            logging.warning(
+                "Strict root trace propagation enabled but root span context is missing; "
+                "publishing without trace headers"
+            )
+        else:
+            headers["traceparent"] = root_traceparent
+            if tracestate:
+                headers["tracestate"] = tracestate
+
         for job_doc in job_docs:
             job_str = str(job_doc)
             message_bytes = json.dumps(job_str).encode("utf-8")
