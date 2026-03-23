@@ -1,10 +1,8 @@
 import os
-import uuid
 
 # IMAGE_NAME has to start with `spider-`, otherwise the Opensearch logs index
 # template won't get the data properly.
 IMAGE_NAME = os.environ.get("IMAGE_NAME")
-EXECUTION_ID = str(uuid.uuid4())
 
 TIMEOUT_MINS = os.environ.get("TIMEOUT_MINS", 60)
 WORKDIR = os.getenv("SPIDER_WORKDIR", "/opt/spider-worker")

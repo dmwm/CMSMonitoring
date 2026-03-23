@@ -7,17 +7,21 @@ import src.vals as vals
 
 _INDEX_SETTINGS = {"mapping.total_fields.limit": 2000}
 _DATE_MAPPING = {"type": "date", "format": "epoch_millis"}
+_OS_CLIENT: Optional[OpenSearch] = None
+_ENSURED_DAILY_INDICES: set[str] = set()
 
 def get_opensearch_client() -> OpenSearch:
-
-    return OpenSearch(
-        hosts=[const.OS_HOST],
-        http_auth=(const.OS_USERNAME, const.OS_PASSWORD),
-        use_ssl=True,
-        verify_certs=True,
-        ca_certs=const.OS_CERT_PATH,
-        connection_class=RequestsHttpConnection,
-    )
+    global _OS_CLIENT
+    if _OS_CLIENT is None:
+        _OS_CLIENT = OpenSearch(
+            hosts=[const.OS_HOST],
+            http_auth=(const.OS_USERNAME, const.OS_PASSWORD),
+            use_ssl=True,
+            verify_certs=True,
+            ca_certs=const.OS_CERT_PATH,
+            connection_class=RequestsHttpConnection,
+        )
+    return _OS_CLIENT
 
 
 def get_daily_index_name(timestamp: float, index_prefix: str) -> str:
@@ -54,10 +58,15 @@ def ensure_daily_index(
     Returns:
         True if index was created, False if it already existed
     """
+    if index_name in _ENSURED_DAILY_INDICES:
+        return False
+
     if os_client.indices.exists(index=index_name):
+        _ENSURED_DAILY_INDICES.add(index_name)
         return False
 
     os_client.indices.create(index=index_name, body=_build_index_body())
+    _ENSURED_DAILY_INDICES.add(index_name)
     return True
 
 
