@@ -853,8 +853,17 @@ def bulk_convert_ad_data(ad, result):
                 continue
             else:
                 value = None
-        elif key in bool_vals:
-            value = bool(value)
+        elif key in bool_vals or _is_dynamic_bool_key(key):
+            converted, parsed_value = _coerce_bool_value(key, value)
+            if not converted:
+                logging.warning(
+                    "Failed to convert key %s with value %s to bool",
+                    key,
+                    repr(value),
+                )
+                value = None
+            else:
+                value = parsed_value
         elif key in int_vals:
             try:
                 value = int(value)
