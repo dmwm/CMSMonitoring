@@ -796,6 +796,42 @@ def handle_chirp_info(ad, result):
 _CONVERT_COUNT = 0
 _CONVERT_CPU = 0
 
+# TODO: Look into making this more efficient
+def _is_dynamic_bool_key(key):
+    """Return True for dynamic boolean keys with numeric suffixes."""
+    return bool(_dynamic_bool_key_re.match(key))
+
+
+def _coerce_bool_value(key, value):
+    """
+    Coerce values to bool with strict parsing.
+
+    Returns:
+        tuple[bool, bool|None]: (success, parsed_value)
+    """
+    if isinstance(value, bool):
+        return True, value
+
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1"}:
+            return True, True
+        if normalized in {"false", "0"}:
+            return True, False
+        return False, None
+
+    if isinstance(value, (int, float)):
+        if value in (0, 1):
+            return True, bool(value)
+        return False, None
+
+    logging.debug(
+        "Unsupported bool conversion for key %s with value type %s",
+        key,
+        type(value).__name__,
+    )
+    return False, None
+
 
 def bulk_convert_ad_data(ad, result):
     """
