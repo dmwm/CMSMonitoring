@@ -1,6 +1,6 @@
 module github.com/dmwm/CMSMonitoring/src/go/NATS
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/gizak/termui/v3 v3.1.0
@@ -14,6 +14,6 @@ require (
 	github.com/nats-io/nkeys v0.4.10 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nsf/termbox-go v0.0.0-20190121233118-02980233997d // indirect
-	golang.org/x/crypto v0.34.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
 )
