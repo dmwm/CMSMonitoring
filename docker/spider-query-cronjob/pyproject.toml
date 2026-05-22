@@ -1,0 +1,20 @@
+[project]
+name = "spider-query-cronjob"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "cmsmonitoring>=0.6.13",
+    "htcondor==23.0.28",
+    "ipykernel>=6.31.0",
+    "opensearch-py>=3.0.0",
+    "opentelemetry-exporter-otlp>=1.39.0",
+    "requests>=2.32.5",
+    "ruff>=0.14.6",
+]
+
+[tool.uv.workspace]
+members = [
+    "python3.9",
+]
