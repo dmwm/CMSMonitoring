@@ -211,6 +211,9 @@ def process_nats_queue(
                     try:
                         if const.DRY_RUN:
                             global_logger.info("Dry run, would have uploaded %d jobs to OpenSearch", len(amq_bunch))
+                        elif const.SKIP_OS_UPLOAD:
+                            global_logger.info("Upload to OpenSearch is disabled, skipping upload")
+                            success = True
                         else:
                             os_upload_start_time = time.time()
                             success, _ = os_utils.os_upload_docs_in_bulk(list(doc[1] for doc in amq_bunch), index_prefix=const.OS_INDEX_TEMPLATE, timestamp=time.time())

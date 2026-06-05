@@ -9,6 +9,7 @@ WORKDIR = os.getenv("SPIDER_WORKDIR", "/opt/spider-worker")
 SECRET_DIR = os.environ.get("SECRET_DIR", "/etc/secrets")
 DOCKER_TAG = os.environ.get("DOCKER_TAG", "unknown")
 DRY_RUN = os.getenv("DRY_RUN", "false").lower() == "true"
+SKIP_OS_UPLOAD = os.getenv("SKIP_OS_UPLOAD", "false").lower() == "true"
 
 
 # We reduce the data by default to save space in the Opensearch index.
