@@ -129,20 +129,23 @@ function util_check_and_create_dir() {
 # -------------------------------------------------------------------------------------------------
 
 # ------------------------------------- PRE SETUP UTILS -------------------------------------------
+UTIL_KERBEROS_USER=""
 #######################################
 # Util to authenticate with keytab and to return Kerberos principal name
 #  Arguments:
 #    $1: keytab file
 #  Usage:
-#    principal=$(util_kerberos_auth_with_keytab /foo/keytab)
+#    util_kerberos_auth_with_keytab /foo/keytab
+#    KERBEROS_USER=$UTIL_KERBEROS_USER
+#  Do not call inside $() — subshells drop KRB5CCNAME, which EOS access needs.
 #  Returns:
 #    success: principal name before '@' part. If principal is 'johndoe@cern.ch, will return 'johndoe'
 #    fail   : exits with exit-code 1
 #######################################
 function util_kerberos_auth_with_keytab() {
     local principal krb5ccname
-    principal=$(klist -k "$1" | tail -1 | awk '{print $2}')
-    # run kinit and check if it fails or not
+    # cmsmonit keytabs list cmsmonit@ and cms.monit@; only the former has proper permissions.
+    principal=$(klist -k "$1" | awk 'NR>1 && $2 ~ /@/ {print $2; exit}')
     if ! kinit "$principal" -k -t "$1" >/dev/null; then
         util4loge "Exiting. Kerberos authentication failed with keytab:$1"
         exit 1
@@ -154,8 +157,8 @@ function util_kerberos_auth_with_keytab() {
         exit 1
     fi
     export KRB5CCNAME="$krb5ccname"
-    # remove "@" part from the principal name
-    echo "$principal" | grep -o '^[^@]*'
+    UTIL_KERBEROS_USER=$(echo "$principal" | grep -o '^[^@]*')
+    echo "$UTIL_KERBEROS_USER"
 }
 # -------------------------------------------------------------------------------------------------
 
