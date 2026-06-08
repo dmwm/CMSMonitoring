@@ -30,15 +30,18 @@ def get_daily_index_name(timestamp: float, index_prefix: str) -> str:
 
     Args:
         timestamp: Unix timestamp (seconds since epoch)
-        index_prefix: Prefix for the index name (e.g., 'cms', 'monitoring')
+        index_prefix: Prefix for the index name (e.g., 'cms', 'cms-htcondor-%Y-%m-%d')
 
     Returns:
-        Index name in format: '{prefix}-YYYY-MM-DD'
+        Index name in format: '{prefix}-YYYY-MM-DD' or strftime-expanded prefix
 
     Example:
         get_daily_index(1704067200.0, 'cms') -> 'cms-2024-01-01'
+        get_daily_index(1704067200.0, 'cms-htcondor-%Y-%m-%d') -> 'cms-htcondor-2024-01-01'
     """
     dt = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
+    if "%" in index_prefix:
+        return dt.strftime(index_prefix)
     return f"{index_prefix}-{dt.strftime('%Y-%m-%d')}"
 
 
@@ -79,6 +82,18 @@ def _build_index_body() -> dict[str, Any]:
     }
 
 
+def _bulk_index_actions(doc_iterable: Iterable, index: str):
+    for item in doc_iterable:
+        if isinstance(item, tuple) and len(item) == 2:
+            doc_id, doc = item
+        else:
+            doc_id, doc = None, item
+        action = {"_index": index, "_source": doc}
+        if doc_id:
+            action["_id"] = doc_id
+        yield action
+
+
 def os_upload_docs_in_bulk(
     doc_iterable: Iterable,
     index_prefix: Optional[str] = None,
@@ -88,10 +103,9 @@ def os_upload_docs_in_bulk(
     Upload documents in bulk to OpenSearch.
 
     Args:
-        os_host: OpenSearch host URL
-        ca_cert_path: Path to CA certificate file
-        credentials: Tuple of (username, password)
-        doc_iterable: Iterable of documents to upload
+        doc_iterable: Iterable of documents, or (doc_id, document) pairs.
+            When doc_id is provided the document is indexed with that _id so
+            reprocessing the same job overwrites instead of duplicating.
         timestamp: Optional Unix timestamp. It will create a daily
             index by appending it's date to the index_prefix.
         index_prefix: Prefix for daily index. It will be used
@@ -107,6 +121,8 @@ def os_upload_docs_in_bulk(
     )
     ensure_daily_index(os_client, index)
     success, failures = helpers.bulk(
-        os_client, doc_iterable, max_retries=3, index=index
+        os_client,
+        _bulk_index_actions(doc_iterable, index),
+        max_retries=3,
     )
     return success, failures

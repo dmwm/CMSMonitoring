@@ -196,8 +196,20 @@ def process_nats_queue(
                                 pool_name="Unknown",  # TODO: Get pool_name from metadata or job
                             )
                             if dict_ad:
-                                amq_bunch.append((job_id, convert_dates_to_millisecs(dict_ad)))
-                                job_sizes.append(len(dict_ad.keys()))
+                                payload = convert_dates_to_millisecs(dict_ad)
+                                payload, stripped = amq.prepare_job_payload(payload)
+                                if stripped:
+                                    global_logger.warning(
+                                        "Removed unevaluated ClassAd expressions from job %s (doc_id=%s): %s",
+                                        payload.get("GlobalJobId", job_id),
+                                        job_id,
+                                        "; ".join(
+                                            "%s=%r" % (path, expression)
+                                            for path, expression in stripped
+                                        ),
+                                    )
+                                amq_bunch.append((job_id, payload))
+                                job_sizes.append(len(payload.keys()))
                         except Exception as e:
                             global_logger.warning("Failed to convert ClassAd to dict for job %s: %s", job_id, e)
                             continue
@@ -210,25 +222,15 @@ def process_nats_queue(
                         )
                     try:
                         if const.DRY_RUN:
-                            global_logger.info("Dry run, would have uploaded %d jobs to OpenSearch", len(amq_bunch))
-                        elif const.SKIP_OS_UPLOAD:
-                            global_logger.info("Upload to OpenSearch is disabled, skipping upload")
-                            success = True
-                        else:
-                            os_upload_start_time = time.time()
-                            success, _ = os_utils.os_upload_docs_in_bulk(list(doc[1] for doc in amq_bunch), index_prefix=const.OS_INDEX_TEMPLATE, timestamp=time.time())
-                            global_logger.debug("Uploaded %d/%d jobs to OpenSearch in %.1f seconds", success, len(amq_bunch), time.time() - os_upload_start_time)
-                            counts["total_sent_os"] += success
-                            counts["total_upload_time_os"] += time.time() - os_upload_start_time
-                    except Exception as e:
-                        global_logger.error("Error uploading to OpenSearch: %s", e)
-                        # success = False
-                    try:
-                        if const.DRY_RUN:
                             global_logger.info("Dry run, would have uploaded %d jobs to AMQ", len(amq_bunch))
+                            global_logger.info("Dry run, would have uploaded %d jobs to OpenSearch", len(amq_bunch))
                             chunk.finalize(success)
                             continue
                         sent, received, elapsed = amq.post_ads(amq_bunch, metadata=metadata)
+                        if sent != received:
+                            raise RuntimeError(
+                                "AMQ accepted only %d/%d jobs" % (sent, received)
+                            )
                         global_logger.debug(
                             "Uploaded %d/%d docs to StompAMQ in %.1f seconds",
                             sent,
@@ -237,12 +239,34 @@ def process_nats_queue(
                         )
                         counts["total_sent_amq"] += sent
                         counts["total_upload_time"] += elapsed
+                        if const.SKIP_OS_UPLOAD:
+                            global_logger.info("Upload to OpenSearch is disabled, skipping upload")
+                        else:
+                            os_upload_start_time = time.time()
+                            uploaded, failures = os_utils.os_upload_docs_in_bulk(
+                                amq_bunch,
+                                index_prefix=const.OS_INDEX_TEMPLATE,
+                                timestamp=time.time(),
+                            )
+                            if failures or uploaded != len(amq_bunch):
+                                raise RuntimeError(
+                                    "OpenSearch accepted only %d/%d jobs (%d failures)"
+                                    % (uploaded, len(amq_bunch), len(failures or []))
+                                )
+                            global_logger.debug(
+                                "Uploaded %d/%d jobs to OpenSearch in %.1f seconds",
+                                uploaded,
+                                len(amq_bunch),
+                                time.time() - os_upload_start_time,
+                            )
+                            counts["total_sent_os"] += uploaded
+                            counts["total_upload_time_os"] += time.time() - os_upload_start_time
                     except Exception as exc:
                         success = False
-                        global_logger.error("Error posting to AMQ: %s", exc)
+                        global_logger.error("Error posting jobs: %s", exc, exc_info=True)
                         send_email_alert(
                             email_alerts,
-                            "spider_cms NATS queue AMQ failure",
+                            "spider_cms NATS queue upload failure",
                             str(exc),
                         )
                 except Exception as exc:  # pylint: disable=broad-except
