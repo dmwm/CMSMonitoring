@@ -18,6 +18,7 @@ import base64
 import functools
 import logging
 import os
+import sys
 import uuid
 from typing import Callable, Optional, Tuple, TypeVar
 
@@ -49,6 +50,36 @@ EXECUTION_ID = str(uuid.uuid4())
 _otel_initialized = False
 
 _STOMP_LOGGERS = ("stomp.py", "StompAMQ", "StompyListener")
+
+DEFAULT_LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
+
+_logging_configured = False
+
+
+def configure_logging() -> None:
+    """Attach a stdout handler to the root logger (idempotent).
+
+    Child scripts should import helpers.otel_setup before calling logging.getLogger()
+    and should not call logging.basicConfig() — stdout is configured here, and OTLP
+    export is added when OTEL_ENABLED and OTEL_LOGS_ENABLED are true.
+    """
+    global _logging_configured
+
+    if _logging_configured:
+        return
+
+    config = otel_config()
+    log_level = getattr(logging, config["log_level"], logging.INFO)
+    root_logger = logging.getLogger()
+
+    if not any(isinstance(h, logging.StreamHandler) for h in root_logger.handlers):
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FORMAT))
+        stdout_handler.setLevel(log_level)
+        root_logger.addHandler(stdout_handler)
+
+    root_logger.setLevel(log_level)
+    _logging_configured = True
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -131,6 +162,8 @@ def setup_opentelemetry() -> Tuple[Meter, Tracer]:
     meter = opentelemetry.metrics.get_meter(__name__)
     tracer = opentelemetry.trace.get_tracer(__name__)
 
+    configure_logging()
+
     if not config["enabled"]:
         return meter, tracer
 
@@ -188,12 +221,12 @@ def setup_opentelemetry() -> Tuple[Meter, Tracer]:
 
         log_level = getattr(logging, config["log_level"], logging.INFO)
         root_logger = logging.getLogger()
-        otel_handler = LoggingHandler(
-            logger_provider=logger_provider,
-            level=log_level,
-        )
-        root_logger.addHandler(otel_handler)
-        root_logger.setLevel(log_level)
+        if not any(isinstance(h, LoggingHandler) for h in root_logger.handlers):
+            otel_handler = LoggingHandler(
+                logger_provider=logger_provider,
+                level=log_level,
+            )
+            root_logger.addHandler(otel_handler)
         _configure_stomp_log_levels()
 
         atexit.register(_shutdown_on_exit)

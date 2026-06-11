@@ -29,11 +29,12 @@ This image functions as a base image for CMS Monitoring services that require Py
 
 Child images can send metrics, traces, and logs to the in-cluster OpenTelemetry Collector via `helpers/otel_setup.py`. Instrumentation is opt-in: set `OTEL_ENABLED=true` and `OTEL_SERVICE_NAME` in the workload environment (and `OTEL_EXPORTER_OTLP_ENDPOINT` if not using the default `opentelemetry-collector.opentelemetry.svc.cluster.local:4317`).
 
-Import `otel_setup` at startup so the OTLP handler is attached to the Python logging module. Jobs should use `logging` (not `print`) for log export:
+Import `otel_setup` at startup (before `logging.getLogger()`). It configures stdout logging for `kubectl logs` and, when `OTEL_ENABLED=true`, also exports logs to the collector. Jobs should use `logging` (not `print`):
 
 ```python
 import logging
 
+import helpers.otel_setup  # noqa: F401 — configures stdout + optional OTLP
 from helpers.otel_setup import global_meter, shutdown_opentelemetry, trace_span
 
 logger = logging.getLogger(__name__)
