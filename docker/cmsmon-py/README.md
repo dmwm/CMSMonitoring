@@ -53,4 +53,4 @@ if __name__ == "__main__":
 
 See `helpers/otel_setup.py` for the full list of supported environment variables.
 
-Stomp loggers (`stomp.py`, `StompAMQ`, `StompyListener`) are set to `WARNING` during OpenTelemetry setup so `INFO` and below are not exported.
+Stomp loggers are set to `WARNING` on import (independent of `OTEL_ENABLED`). Re-call `configure_stomp_log_levels()` after `StompAMQ` init if needed.

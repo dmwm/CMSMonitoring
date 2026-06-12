@@ -49,11 +49,40 @@ EXECUTION_ID = str(uuid.uuid4())
 
 _otel_initialized = False
 
-_STOMP_LOGGERS = ("stomp.py", "StompAMQ", "StompyListener")
+_STOMP_LOGGERS = ("stomp.py", "StompAMQ", "StompyListener", "stomp")
 
 DEFAULT_LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 
 _logging_configured = False
+
+
+def configure_stomp_log_levels() -> None:
+    """Set stomp loggers to WARNING. Safe to call again after StompAMQ init."""
+    for logger_name in _STOMP_LOGGERS:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
+
+
+def _has_stdout_handler(root_logger: logging.Logger) -> bool:
+    return any(
+        isinstance(handler, logging.StreamHandler)
+        and getattr(handler, "stream", None) is sys.stdout
+        for handler in root_logger.handlers
+    )
+
+
+def _retarget_stderr_to_stdout(root_logger: logging.Logger, log_level: int) -> bool:
+    """basicConfig() adds a stderr handler; point it at stdout for kubectl logs."""
+    for handler in root_logger.handlers:
+        if (
+            isinstance(handler, logging.StreamHandler)
+            and getattr(handler, "stream", None) is sys.stderr
+        ):
+            handler.stream = sys.stdout
+            if handler.formatter is None:
+                handler.setFormatter(logging.Formatter(DEFAULT_LOG_FORMAT))
+            handler.setLevel(log_level)
+            return True
+    return False
 
 
 def configure_logging() -> None:
@@ -65,6 +94,8 @@ def configure_logging() -> None:
     """
     global _logging_configured
 
+    configure_stomp_log_levels()
+
     if _logging_configured:
         return
 
@@ -72,11 +103,12 @@ def configure_logging() -> None:
     log_level = getattr(logging, config["log_level"], logging.INFO)
     root_logger = logging.getLogger()
 
-    if not any(isinstance(h, logging.StreamHandler) for h in root_logger.handlers):
-        stdout_handler = logging.StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FORMAT))
-        stdout_handler.setLevel(log_level)
-        root_logger.addHandler(stdout_handler)
+    if not _has_stdout_handler(root_logger):
+        if not _retarget_stderr_to_stdout(root_logger, log_level):
+            stdout_handler = logging.StreamHandler(sys.stdout)
+            stdout_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FORMAT))
+            stdout_handler.setLevel(log_level)
+            root_logger.addHandler(stdout_handler)
 
     root_logger.setLevel(log_level)
     _logging_configured = True
@@ -111,11 +143,6 @@ def otel_config() -> dict:
         "export_timeout_sec": int(os.getenv("OTEL_EXPORTER_OTLP_TIMEOUT", "10")),
         "insecure": _env_bool("OTEL_EXPORTER_OTLP_INSECURE", default=True),
     }
-
-
-def _configure_stomp_log_levels() -> None:
-    for logger_name in _STOMP_LOGGERS:
-        logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 
 def _grpc_channel_options() -> tuple:
@@ -222,12 +249,9 @@ def setup_opentelemetry() -> Tuple[Meter, Tracer]:
         log_level = getattr(logging, config["log_level"], logging.INFO)
         root_logger = logging.getLogger()
         if not any(isinstance(h, LoggingHandler) for h in root_logger.handlers):
-            otel_handler = LoggingHandler(
-                logger_provider=logger_provider,
-                level=log_level,
+            root_logger.addHandler(
+                LoggingHandler(logger_provider=logger_provider, level=log_level)
             )
-            root_logger.addHandler(otel_handler)
-        _configure_stomp_log_levels()
 
         atexit.register(_shutdown_on_exit)
 
