@@ -8,6 +8,11 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 # Get nice util functions
 . "${script_dir}"/utils.sh
 
+if [ -z "$K8S_ENV" ]; then
+    util4loge "K8S_ENV is not set. This script is intended to run in Kubernetes."
+    exit 1
+fi
+
 # Do not change the order of "--output_file"([0],[1]) which is replaced in K8s run
 py_input_args=(
     --output_file "/eos/user/c/cmsmonit/www/eos_openstack/openstack_accounting.html"
@@ -15,44 +20,16 @@ py_input_args=(
     --static_html_dir "${script_dir}/html"
 )
 
-# ---------------------------------------------------------------------------------------------------------- Run in K8S
-if [ -n "$K8S_ENV" ]; then
-    # $1: output
-    # Replace static output file with user arg for testability.
-    py_input_args[1]=$1
+# $1: output — replace static output file with user arg for testability.
+py_input_args[1]=$1
 
-    util4logi "${myname} is starting.."
-    util_cron_send_start "$myname" "1h"
+export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME:-openstack-accounting}"
 
-    util_kerberos_auth_with_keytab /etc/secrets/keytab
-    python3 "${script_dir}"/openstack_accounting.py "${py_input_args[@]}" 2>&1
+util4logi "${myname} is starting.."
+util_cron_send_start "$myname" "1h"
 
-    util_cron_send_end "$myname" "1h" "$?"
-    util4logi "${myname} successfully finished."
-    exit 0
-    # break
-fi
-# Run in LxPlus for test ----------------------------------------------------------------------------------------------
+util_kerberos_auth_with_keytab /etc/secrets/keytab
+python3 "${script_dir}"/openstack_accounting.py "${py_input_args[@]}"
 
-. /cvmfs/sft.cern.ch/lcg/views/LCG_101/x86_64-centos7-gcc8-opt/setup.sh
-
-# Catch output to not print successful jobs stdout to email, print when failed
-output=$(pip install --user schema 2>&1)
-ec=$?
-if [ $ec -ne 0 ]; then
-    echo "$output" - exit code: $ec
-    exit $ec
-fi
-
-if ! [ "$(python -c 'import sys; print(sys.version_info.major)')" = 3 ]; then
-    echo "It seem python version is not 3.X! Exiting..."
-    exit 1
-fi
-
-# Catch	output to not print successful jobs stdout to email, print when failed
-output=$(python "{$script_dir}"/openstack_accounting.py "${py_input_args[@]}" 2>&1)
-ec=$?
-if [ $ec -ne 0 ]; then
-    echo "$output" - exit code: $ec
-    exit $ec
-fi
+util_cron_send_end "$myname" "1h" "$?"
+util4logi "${myname} successfully finished."

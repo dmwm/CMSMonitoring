@@ -8,13 +8,17 @@
 #
 
 import json
+import logging
 import os
 import sys
 from datetime import datetime
 
 import click
 import pandas as pd
+from helpers.otel_setup import shutdown_opentelemetry
 from schema import Schema, Use, SchemaError
+
+logger = logging.getLogger(__name__)
 
 pd.options.display.float_format = "{:,.2f}".format
 pd.set_option("display.max_colwidth", None)
@@ -87,22 +91,13 @@ SUMMARY_COL_ORDER = {'openstackProjectName': 'Openstack Project Name',
                      'contacts': 'Contacts'}
 
 
-def tstamp():
-    """Return timestamp for logging"""
-    return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-
-
 def get_update_time_of_file(summary_file):
-    """Create update time depending on reading Openstack accounting results from file"""
-    if summary_file:
-        # Set update time to Openstack accounting file modification time, minimum of 2
-        summary_ts = os.path.getmtime(summary_file)
-        try:
-            return datetime.utcfromtimestamp(summary_ts).strftime('%Y-%m-%d %H:%M:%S')
-        except OSError as e:
-            print(tstamp(), "ERROR: could not get last modification time of file:", str(e))
-    else:
-        # !! means time did not come from file but cron job time
+    """Return summary file mtime, or a fallback timestamp prefixed with !! on error."""
+    try:
+        mtime = os.path.getmtime(summary_file)
+        return datetime.utcfromtimestamp(mtime).strftime('%Y-%m-%d %H:%M:%S')
+    except OSError as e:
+        logger.error("could not get last modification time of %s: %s", summary_file, e)
         return "!!" + datetime.utcnow().strftime("%Y-%m-%d H:%M:%S")
 
 
@@ -132,10 +127,10 @@ def get_df_with_validation(json_file, schema, column_order):
 
         return df
     except SchemaError as e:
-        print(tstamp(), "Data not exist or not valid:", str(e))
+        logger.error("data not exist or not valid: %s", e)
         sys.exit(1)
     except json.JSONDecodeError as e:
-        print(tstamp(), json_file, "file is empty:", str(e))
+        logger.error("%s file is empty: %s", json_file, e)
         sys.exit(1)
 
 
@@ -175,13 +170,13 @@ def create_main_html(df_summary, update_time, base_html_directory):
 
 
 @click.command()
-@click.option("--output_file", default=None, required=True, help="For example: /eos/.../www/test/test.html")
+@click.option("--output_file", required=True, help="For example: /eos/.../www/test/test.html")
 @click.option("--summary_json", required=True, help="/eos/cms/store/accounting/openstack_accounting_summary.json")
-@click.option("--static_html_dir", default=None, required=True,
+@click.option("--static_html_dir", required=True,
               help="Html directory for main html template. For example: ~/CMSMonitoring/src/html/openstack_accounting")
 def main(output_file=None, summary_json=None, static_html_dir=None):
     joint_update_time = get_update_time_of_file(summary_json)
-    print("[INFO] Update time of input files:", joint_update_time)
+    logger.info("update time of input files: %s", joint_update_time)
 
     df_summary = get_df_with_validation(summary_json, SUMMARY_SCHEMA, SUMMARY_COL_ORDER)
     main_html = create_main_html(df_summary, joint_update_time, static_html_dir)
@@ -190,4 +185,7 @@ def main(output_file=None, summary_json=None, static_html_dir=None):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        shutdown_opentelemetry()
