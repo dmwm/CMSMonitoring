@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 # Author: Benedikt Maier <benedikt [DOT] maier AT cern [DOT] ch>
 # Create html table for Rucio RSE quotas
-import click
+import logging
 import os
 from datetime import datetime
 
+import click
 import pandas as pd
+from helpers.otel_setup import shutdown_opentelemetry
 from rucio.client import Client
+
+logger = logging.getLogger(__name__)
 
 
 @click.command()
@@ -55,6 +59,8 @@ def main(output=None, template_dir=None):
     data = {'RSE': rse_names_final, '   Used space   ': used_space, '   Total space   ': static_space,
             '   Fraction used (%)   ': fraction_space, '   Free space   ': free_space}
 
+    logger.info("found %d RSEs with quota data", len(rse_names_final))
+
     df = pd.DataFrame.from_dict(data=data).round(1)
     # df.style.set_properties(subset=['   Used space   '], **{'width': '300px'})
     html = df.to_html(escape=False, index=False, col_space='150px')
@@ -74,6 +80,11 @@ def main(output=None, template_dir=None):
     with open(output, "w+") as f:
         f.write(main_html)
 
+    logger.info("wrote output to %s", output)
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        shutdown_opentelemetry()
