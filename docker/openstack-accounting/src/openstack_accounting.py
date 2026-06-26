@@ -16,7 +16,7 @@ from datetime import datetime
 import click
 import pandas as pd
 from helpers.otel_setup import shutdown_opentelemetry
-from schema import Schema, Use, SchemaError
+from schema import Optional, Schema, Use, SchemaError
 
 logger = logging.getLogger(__name__)
 
@@ -28,21 +28,21 @@ SUMMARY_SCHEMA = Schema([{'openstackProjectName': str,
                           'maxTotalInstances': Use(int),
                           'maxTotalCores': Use(int),
                           'maxTotalRAMSize': Use(int),
-                          'maxSecurityGroups': Use(int),
-                          'maxTotalFloatingIps': Use(int),
+                          Optional('maxSecurityGroups', default=0): Use(int),
+                          Optional('maxTotalFloatingIps', default=0): Use(int),
                           'maxServerMeta': Use(int),
-                          'maxImageMeta': Use(int),
-                          'maxPersonality': Use(int),
-                          'maxPersonalitySize': Use(int),
-                          'maxSecurityGroupRules': Use(int),
+                          Optional('maxImageMeta', default=0): Use(int),
+                          Optional('maxPersonality', default=0): Use(int),
+                          Optional('maxPersonalitySize', default=0): Use(int),
+                          Optional('maxSecurityGroupRules', default=0): Use(int),
                           'maxTotalKeypairs': Use(int),
                           'maxServerGroups': Use(int),
                           'maxServerGroupMembers': Use(int),
                           'totalRAMUsed': Use(int),
                           'totalCoresUsed': Use(int),
                           'totalInstancesUsed': Use(int),
-                          'totalFloatingIpsUsed': Use(int),
-                          'totalSecurityGroupsUsed': Use(int),
+                          Optional('totalFloatingIpsUsed', default=0): Use(int),
+                          Optional('totalSecurityGroupsUsed', default=0): Use(int),
                           'totalServerGroupsUsed': Use(int),
                           'maxTotalVolumes': Use(int),
                           'maxTotalSnapshots': Use(int),
