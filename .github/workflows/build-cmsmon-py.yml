@@ -17,9 +17,6 @@ jobs:
       - name: Get git tag
         id: get_tag
         run: echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-      - name: Get cmsmon-py Dockerfile
-        run: |
-          curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/cmsmon-py/Dockerfile
       - name: Login to registry.cern.ch
         uses: docker/login-action@v3
         with:
@@ -29,10 +26,7 @@ jobs:
       - name: Publish cmsmon-py image to registry.cern.ch
         uses: docker/build-push-action@v6
         with:
-          context: ./
-          file: ./Dockerfile
+          context: docker/cmsmon-py
+          file: docker/cmsmon-py/Dockerfile
           push: true
-          build-args: |
-            PY_VERSION=3.9.12
-            CMSMONITORING_TAG=${{ steps.get_tag.outputs.tag }}
           tags: registry.cern.ch/cmsmonitoring/cmsmon-py:${{ steps.get_tag.outputs.tag }}
