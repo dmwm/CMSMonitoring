@@ -36,6 +36,8 @@ ENV PYTHONPATH=/opt/spider/src:$PYTHONPATH \
     AFFILIATION_DIR_LOCATION=/opt/spider/.affiliation_dir.json \
     DOCKER_TAG=${DOCKER_TAG} \
     IMAGE_NAME=${IMAGE_NAME} \
-    COLLECTORS_FILE=/opt/spider/etc/collectors.json
+    COLLECTORS_FILE=/opt/spider/etc/collectors.json \
+    GRPC_ENABLE_FORK_SUPPORT=true \
+    GRPC_POLL_STRATEGY=poll
 
 USER cmsjobmon

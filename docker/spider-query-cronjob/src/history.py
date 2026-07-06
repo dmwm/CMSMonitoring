@@ -13,7 +13,8 @@ import htcondor
 from opentelemetry import trace
 
 from utils import send_email_alert, global_logger
-from otel_setup import global_meter, trace_span
+import src.otel_setup as otel_setup
+from src.otel_setup import trace_span
 from nats_client import (
     get_nats_connection,
     publish_jobs_to_nats,
@@ -21,33 +22,41 @@ from nats_client import (
 )
 from checkpoints import load_checkpoints, prepare_tasks, update_checkpoint
 import constants as const
+from opentelemetry.metrics import Meter
 
-# Metrics for history job
-history_jobs_queried_counter = global_meter.create_counter(
-    name="spider_cms.history.jobs",
-    description="Number of jobs queried per schedd in history",
-    unit="1",
-)
-history_jobs_not_published_counter = global_meter.create_counter(
-    name="spider_cms.history.jobs_not_published",
-    description="Number of jobs not published per schedd in history",
-    unit="1",
-)
-history_query_duration_histogram = global_meter.create_histogram(
-    name="spider_cms.history.query_duration",
-    description="Duration of history query per schedd in seconds",
-    unit="s",
-)
-total_history_query_duration_histogram = global_meter.create_histogram(
-    name="spider_cms.history.total_query_duration",
-    description="Total duration of history query for all schedds in seconds",
-    unit="s",
-)
-time_since_last_checkpoint_histogram = global_meter.create_histogram(
-    name="spider_cms.history.time_since_last_checkpoint",
-    description="Time since last checkpoint in seconds",
-    unit="s",
-)
+
+def _create_history_instruments(meter: Meter) -> dict:
+    return {
+        "jobs_queried": meter.create_counter(
+            name="spider_cms.history.jobs",
+            description="Number of jobs queried per schedd in history",
+            unit="1",
+        ),
+        "jobs_not_published": meter.create_counter(
+            name="spider_cms.history.jobs_not_published",
+            description="Number of jobs not published per schedd in history",
+            unit="1",
+        ),
+        "query_duration": meter.create_histogram(
+            name="spider_cms.history.query_duration",
+            description="Duration of history query per schedd in seconds",
+            unit="s",
+        ),
+        "total_query_duration": meter.create_histogram(
+            name="spider_cms.history.total_query_duration",
+            description="Total duration of history query for all schedds in seconds",
+            unit="s",
+        ),
+        "time_since_last_checkpoint": meter.create_histogram(
+            name="spider_cms.history.time_since_last_checkpoint",
+            description="Time since last checkpoint in seconds",
+            unit="s",
+        ),
+    }
+
+
+def _history_metrics() -> dict:
+    return otel_setup.lazy_instruments(_create_history_instruments)
 
 
 @trace_span("query_schedd_history")
@@ -68,7 +77,9 @@ def query_schedd_history(starttime: float, last_completion: float, schedd_ad: cl
     - latest_completion_time (float) if job_queue is None (backward compatibility)
     """
     schedd_start_time = time.time()
-    time_since_last_checkpoint_histogram.record(schedd_start_time - last_completion)
+    _history_metrics()["time_since_last_checkpoint"].record(
+        schedd_start_time - last_completion
+    )
     from opentelemetry import trace
     current_span = trace.get_current_span()
     if current_span:
@@ -210,9 +221,13 @@ def query_schedd_history(starttime: float, last_completion: float, schedd_ad: cl
 
     # Record metrics for this schedd
     schedd_attributes = {"schedd": schedd_ad["Name"]}
-    history_jobs_queried_counter.add(counts["count"], attributes=schedd_attributes)
-    history_jobs_not_published_counter.add(counts["count"] - counts["published_count"], attributes=schedd_attributes)
-    history_query_duration_histogram.record(query_time, attributes=schedd_attributes)
+    metrics = _history_metrics()
+    metrics["jobs_queried"].add(counts["count"], attributes=schedd_attributes)
+    metrics["jobs_not_published"].add(
+        counts["count"] - counts["published_count"],
+        attributes=schedd_attributes,
+    )
+    metrics["query_duration"].record(query_time, attributes=schedd_attributes)
 
     global_logger.info(
         "Finished querying %-25s history: queried %5d jobs, enqueued %5d jobs; last completion %s; "
@@ -249,7 +264,10 @@ def query_job_history(schedd_ads: list[classad.ClassAd], starttime: float) -> di
         "published_count": 0,
     }
 
-    with ProcessPoolExecutor(max_workers=const.MAX_HISTORY_PROCESSES) as executor:
+    with ProcessPoolExecutor(
+        max_workers=const.MAX_HISTORY_PROCESSES,
+        initializer=otel_setup.reinit_otel_in_worker,
+    ) as executor:
         futures = {
             executor.submit(
                 query_schedd_history,
@@ -305,7 +323,7 @@ def query_job_history(schedd_ads: list[classad.ClassAd], starttime: float) -> di
                 )
     
     total_query_time = time.time() - starttime
-    total_history_query_duration_histogram.record(total_query_time)
+    _history_metrics()["total_query_duration"].record(total_query_time)
     global_logger.warning(
         "Processing time for history: %.2f mins, total counts: %d, published counts: %d", ((time.time() - starttime) / 60.0), total_counts["count"], total_counts["published_count"]
     )

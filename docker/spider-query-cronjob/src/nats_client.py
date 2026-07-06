@@ -14,6 +14,8 @@ from nats.js import JetStreamContext
 
 import classad
 
+from src.otel_setup import get_root_span_context
+
 # Global NATS JetStream connection
 _nats_connection = None
 _nats_jetstream = None
@@ -26,19 +28,7 @@ def _build_root_traceparent() -> str:
     Build a W3C traceparent using the root span-id of the current trace.
     This lets downstream workers attach directly to the root span.
     """
-    # Support both import styles (`otel_setup` and `src.otel_setup`) to avoid
-    # losing root context when modules are loaded under different names.
-    root_ctx = None
-    for module_name in ("otel_setup", "src.otel_setup"):
-        try:
-            module = __import__(module_name, fromlist=["get_root_span_context"])
-            ctx = module.get_root_span_context()
-            if ctx and ctx.is_valid:
-                root_ctx = ctx
-                break
-        except Exception:
-            continue
-
+    root_ctx = get_root_span_context()
     if not root_ctx or not root_ctx.is_valid:
         return None
 

@@ -8,29 +8,38 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import htcondor
 import classad
 
-from otel_setup import global_meter, trace_span
+import src.otel_setup as otel_setup
+from src.otel_setup import trace_span
 from utils import send_email_alert, time_remaining, global_logger
 from nats_client import publish_jobs_to_nats, get_nats_connection, close_nats_connection
 import constants as const
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
+from opentelemetry.metrics import Meter
 
-# Create metrics for per-schedd operations
-schedd_duration_histogram = global_meter.create_histogram(
-    name="spider_cms.schedd.queue.duration",
-    description="Duration of queue query per schedd in seconds",
-    unit="s",
-)
-jobs_queried_counter = global_meter.create_counter(
-    name="spider_cms.schedd.queue.jobs",
-    description="Number of jobs queried per schedd",
-    unit="1",
-)
-jobs_published_counter = global_meter.create_counter(
-    name="spider_cms.schedd.queue.jobs_published",
-    description="Number of jobs published per schedd",
-    unit="1",
-)
+
+def _create_queue_instruments(meter: Meter) -> dict:
+    return {
+        "schedd_duration": meter.create_histogram(
+            name="spider_cms.schedd.queue.duration",
+            description="Duration of queue query per schedd in seconds",
+            unit="s",
+        ),
+        "jobs_queried": meter.create_counter(
+            name="spider_cms.schedd.queue.jobs",
+            description="Number of jobs queried per schedd",
+            unit="1",
+        ),
+        "jobs_published": meter.create_counter(
+            name="spider_cms.schedd.queue.jobs_published",
+            description="Number of jobs published per schedd",
+            unit="1",
+        ),
+    }
+
+
+def _queue_metrics() -> dict:
+    return otel_setup.lazy_instruments(_create_queue_instruments)
 
 
 @trace_span("query_single_schedd")
@@ -174,12 +183,13 @@ def query_single_schedd(
             "schedd": schedd_name,
             "pool": pool_name,
         }
-        schedd_duration_histogram.record(total_time, attributes=schedd_attributes)
-        jobs_queried_counter.add(
+        metrics = _queue_metrics()
+        metrics["schedd_duration"].record(total_time, attributes=schedd_attributes)
+        metrics["jobs_queried"].add(
             counts["count"],
             attributes=schedd_attributes,
         )
-        jobs_published_counter.add(
+        metrics["jobs_published"].add(
             counts["published_count"],
             attributes=schedd_attributes,
         )
@@ -268,7 +278,10 @@ def query_running_jobs(
             "count": 0,
             "published_count": 0,
         }
-    with ProcessPoolExecutor(max_workers=const.MAX_PROCESSES) as executor:
+    with ProcessPoolExecutor(
+        max_workers=const.MAX_PROCESSES,
+        initializer=otel_setup.reinit_otel_in_worker,
+    ) as executor:
         futures = {
             executor.submit(
                 query_single_schedd,
