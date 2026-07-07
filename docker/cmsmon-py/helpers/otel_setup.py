@@ -19,7 +19,6 @@ import functools
 import logging
 import os
 import sys
-import uuid
 from typing import Callable, Optional, Tuple, TypeVar
 
 import opentelemetry
