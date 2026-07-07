@@ -45,7 +45,7 @@ DEFAULT_COLLECTOR_ENDPOINT = (
     "opentelemetry-collector.opentelemetry.svc.cluster.local:4317"
 )
 
-EXECUTION_ID = str(uuid.uuid4())
+JOB_ID = os.getenv("JOB_ID")
 
 _otel_initialized = False
 
@@ -201,7 +201,7 @@ def setup_opentelemetry() -> Tuple[Meter, Tracer]:
         {
             "service.name": config["service_name"],
             "service.version": config["service_version"],
-            "execution.id": EXECUTION_ID,
+            "job.id": JOB_ID,
         }
     )
 
@@ -257,11 +257,11 @@ def setup_opentelemetry() -> Tuple[Meter, Tracer]:
 
     _otel_initialized = True
     logger.warning(
-        "OpenTelemetry initialized: endpoint=%s, service=%s, version=%s, execution_id=%s",
+        "OpenTelemetry initialized: endpoint=%s, service=%s, version=%s, job_id=%s",
         grpc_endpoint,
         config["service_name"],
         config["service_version"],
-        EXECUTION_ID,
+        JOB_ID,
     )
 
     return meter, tracer
