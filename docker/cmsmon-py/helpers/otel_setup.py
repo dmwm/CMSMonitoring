@@ -335,4 +335,12 @@ def trace_span(span_name: Optional[str] = None, **attributes: object) -> Callabl
     return decorator
 
 
+# TODO(multiprocessing): setup_opentelemetry() runs at import and starts OTLP gRPC
+# exporters with background threads. If a cmsmon-py workload later uses fork-based
+# multiprocessing (e.g. ProcessPoolExecutor), child processes inherit broken gRPC
+# state and OTEL's global MeterProvider/TracerProvider/LoggerProvider cannot be
+# replaced ("Overriding ... is not allowed"), causing "closed channel" export errors.
+# See docker/spider-query-cronjob/src/otel_setup.py: reinit_otel_in_worker() shuts
+# down inherited providers, resets OTEL Once flags, and installs a fresh OTLP stack
+# per worker. Also set GRPC_ENABLE_FORK_SUPPORT=true and GRPC_POLL_STRATEGY=poll.
 global_meter, global_tracer = setup_opentelemetry()
