@@ -12,6 +12,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     krb5-user \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir click pandas rucio-clients schema stomp.py==7.0.0
+RUN pip install --no-cache-dir \
+    click \
+    opentelemetry-exporter-otlp~=1.39.0 \
+    pandas \
+    rucio-clients \
+    schema \
+    stomp.py==7.0.0
 
+COPY helpers/ $WDIR/helpers/
 COPY src/ ./
