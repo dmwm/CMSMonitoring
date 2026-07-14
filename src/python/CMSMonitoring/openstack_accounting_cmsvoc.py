@@ -34,7 +34,7 @@ def query_openstack_cli():
         # os.system('openstack project list -f value -c Name | while read -r project ; do echo openstackProjectName $project ; OS_PROJECT_NAME="$project" openstack limits show --absolute -f value ; OS_PROJECT_NAME="$project" openstack role assignment list --project "$project" --names -f value ; echo ====== ; done > %s' % accounting_file.name)
         # all the env variables have been added in order to let this script correctly run as acrontab job. See ticket
         # RQF2243694 "can't create acrontab job"
-        os.system('export OS_AUTH_URL=https://keystone.cern.ch/v3; export OS_AUTH_TYPE=v3fedkerb; export OS_PROTOCOL=kerberos; export OS_IDENTITY_PROVIDER=sssd; export OS_PROJECT_DOMAIN_ID=default; openstack project list -f value -c Name | while read -r project ; do echo openstackProjectName $project ; OS_PROJECT_NAME="$project" openstack limits show --absolute -f value ; OS_PROJECT_NAME="$project" openstack role assignment list --project "$project" --names -f value ; echo ====== ; done > %s' % accounting_file.name)
+        os.system('export OS_AUTH_URL=https://keystone.cern.ch/v3; export OS_AUTH_TYPE=v3fedkerb; export OS_PROTOCOL=kerberos; export OS_IDENTITY_PROVIDER=sssd; export OS_PROJECT_DOMAIN_ID=default; openstack project list -f value -c Name | while read -r project ; do echo "querying $project" >&2; echo openstackProjectName $project ; timeout 180 env OS_PROJECT_NAME="$project" openstack limits show --absolute -f value ; timeout 180 env OS_PROJECT_NAME="$project" openstack role assignment list --project "$project" --names -f value ; echo ====== ; done > %s' % accounting_file.name)
     except:
         print('Cannot get the Openstack accounting data')
     with open(accounting_file.name, 'r') as file:
@@ -65,39 +65,35 @@ def get_openstack_accounting():
         #
         elif line.startswith("======"):
             # openstack_project["contacts"] is in the format of "foo@Default, bar@Default, ". Following line removes "@Default" occurrencies
-            openstack_project["contacts"] = openstack_project["contacts"].replace("@Default", "")
+            contacts = openstack_project.get("contacts", "")
+            openstack_project["contacts"] = contacts.replace("@Default", "")
             # openstack_project["contacts"] is in the format of "foo, bar, ". [:-2] removes the ", " at the end of the line
-            openstack_project["contacts"] = openstack_project["contacts"][:-2]
+            if openstack_project["contacts"].endswith(", "):
+                openstack_project["contacts"] = openstack_project["contacts"][:-2]
             dictionary_list.append(openstack_project)
             openstack_project = {}
         elif (not line.startswith("openstackProjectName") and not line.startswith("======")):
-            if line.startswith("coordinator") or line.startswith("Member") or line.startswith("operator") or line.startswith("owner"):
-                line_chunks = line.split(' ')
-                """
-                Openstack CLI returns contacts list that sometimes have two spaces
-                instead of one. This leads split(' ') to return "" as second chunk.
-                If this happens, such chunk must be ignored.
-                """
-                # if second chunk is "", then skip to the third one
-                if not line_chunks[1]:
-                    # if openstack_project["contacts"] exists, append the new value
-                    # to the old one
-                    if "contacts" in openstack_project:
-                        openstack_project["contacts"] += line_chunks[2] + ", "
-                    else:
-                        openstack_project["contacts"] = line_chunks[2] + ", "
+            if "@Default" in line or "@" in line:
+                line_chunks = line.split()
+                email = next((chunk for chunk in line_chunks if "@Default" in chunk or "@" in chunk), None)
+                if not email:
+                    print(f"Warning: could not extract contact from line: '{line.strip()}'")
                 else:
-                    # if openstack_project["contacts"] exists, append the new value
-                    # to the old one
                     if "contacts" in openstack_project:
-                        openstack_project["contacts"] += line_chunks[1] + ", "
+                        openstack_project["contacts"] += email + ", "
                     else:
-                        openstack_project["contacts"] = line_chunks[1] + ", "
-            # the line contains a metric of the Openstack project
+                        openstack_project["contacts"] = email + ", "
             else:
-                attribute = line.split(" ")[0].strip()
-                value = int(line.split(" ")[1].strip())
-                openstack_project[attribute] = value
+                parts = line.split()
+                if len(parts) < 2:
+                    print(f"Warning: cannot parse metric line: '{line.strip()}'")
+                    continue
+                try:
+                    value = int(parts[1])
+                except ValueError:
+                    print(f"Warning: skipping non-numeric metric line: '{line.strip()}'")
+                    continue
+                openstack_project[parts[0]] = value
     # this block sums the metrics of all Openstack projects
     counter = collections.Counter()
     for d in dictionary_list:
@@ -109,5 +105,6 @@ def get_openstack_accounting():
     return dictionary_list + [total]
 
 
+summary = get_openstack_accounting()
 with open('/eos/cms/store/accounting/openstack_accounting_summary.json', 'w') as json_summary_output:
-    json.dump(get_openstack_accounting(), json_summary_output, indent=4)
+    json.dump(summary, json_summary_output, indent=4)
