@@ -36,6 +36,12 @@ In these examples, services export telemetry through OTLP (OpenTelemetry Protoco
   - General Python worker-style process (non-web example).
   - Emits traces, metrics, and logs in a loop.
 
+- `python_multiprocessing_otel_example.py`
+  - Fork-based `ProcessPoolExecutor` workload (same pattern as spider query cronjob).
+  - Shows how to safely reinitialize OTLP exporters after `fork`, avoid log duplication,
+    and recreate metric instruments per worker PID.
+  - Requires `GRPC_ENABLE_FORK_SUPPORT=true` and `GRPC_POLL_STRATEGY=poll`.
+
 - `flask_app_otel_example.py`
   - Python HTTP server using Flask (`GET /`).
   - Creates one span per request and increments a request counter.
@@ -57,10 +63,21 @@ All examples support these environment variables:
 - `OPENTELEMETRY_USERNAME` / `OPENTELEMETRY_PASSWORD`: optional basic auth credentials used to build OTLP headers.
 - `OTEL_METRIC_EXPORT_INTERVAL`: export interval in milliseconds (Python examples).
 
-## Running the instrumented HTTP server examples
+Multiprocessing example also uses:
+
+- `GRPC_ENABLE_FORK_SUPPORT` / `GRPC_POLL_STRATEGY` (defaulted to `true` / `poll` in the script).
+- `EXAMPLE_WORKER_PROCESSES`: how many forked processes the demo `ProcessPoolExecutor` starts (default `2`).
+- `EXAMPLE_WORK_ITEMS`: how many toy work items the demo submits to that pool (default `4`).
+
+## Running the instrumented examples
 
 From this directory:
 
+- Plain Python worker:
+  - `python3 python_app_otel_example.py`
+- Multiprocessing (fork-safe OTel):
+  - `python3 python_multiprocessing_otel_example.py`
+  - optional: `EXAMPLE_WORKER_PROCESSES=2 EXAMPLE_WORK_ITEMS=4`
 - Flask:
   - `python3 flask_app_otel_example.py`
   - open `http://127.0.0.1:5000/`
@@ -72,6 +89,21 @@ From this directory:
   - `go mod tidy`
   - `go run go_app_otel_example.go`
   - open `http://127.0.0.1:8081/`
+
+### Multiprocessing / fork note
+
+If OpenTelemetry is initialized in the parent and you later create child processes with
+`fork` (for example via `ProcessPoolExecutor`), inherited OTLP gRPC exporters are unsafe.
+The spider query cronjob pattern is:
+
+1. Export `GRPC_ENABLE_FORK_SUPPORT=true` and `GRPC_POLL_STRATEGY=poll`.
+2. Use a pool `initializer` that shuts down inherited providers, resets OpenTelemetry's
+   set-once flags, and installs a fresh OTLP stack in each worker.
+3. Rebuild instruments per PID (see `lazy_instruments` in the multiprocessing example).
+4. Remove inherited OTLP `LoggingHandler`s before attaching a new one to avoid duplicated logs.
+
+See `python_multiprocessing_otel_example.py` and
+`docker/spider-query-cronjob/src/otel_setup.py` (`reinit_otel_in_worker`).
 
 ## Client usage
 
