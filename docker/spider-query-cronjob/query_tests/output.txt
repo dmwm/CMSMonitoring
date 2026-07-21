@@ -1,0 +1,1 @@
+Failed to query collector cmsgwms-collector-global.fnal.gov:9620 for schedd crab3@vocms0197.cern.ch: Failed communication with collector.
