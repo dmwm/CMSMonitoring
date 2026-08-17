@@ -1,0 +1,15 @@
+# be consistent with: https://gitlab.cern.ch/ai/it-puppet-hostgroup-vocms/-/blob/master/data/fqdns/vocms0240.cern.ch.yaml#L7
+# check breaking changes before any update and ask to HTCondor-users <htcondor-users> if you see any problem
+htcondor==23.0.28
+
+# exact version is needed, previous versions include breaking changes;
+# installs also stomp.py==7.0.0
+CMSMonitoring==0.6.12
+
+# last version for Py v3.9
+requests~=2.31
+
+click
+
+# OpenTelemetry for metrics
+opentelemetry-exporter-otlp~=1.39.0
