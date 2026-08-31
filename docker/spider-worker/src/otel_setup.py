@@ -106,7 +106,7 @@ def set_up_logging(log_level: int = logging.INFO) -> logging.Logger:
 
     # Stream handler for stdout
     stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(logging.Formatter('%(asctime)s : %(name)s:%(levelname)s - %(message)s'))
+    stream_handler.setFormatter(logging.Formatter('%(asctime)s : %(name)s:%(levelname)s [PID %(process)d] - %(message)s'))
     
     # OpenTelemetry handler - adds service.name directly to log attributes
     service_name = const.IMAGE_NAME or "spider-worker"
