@@ -87,6 +87,7 @@ def query_schedd_history(starttime: float, last_completion: float, schedd_ad: cl
         current_span.set_attribute("schedd.name", schedd_name)
         current_span.set_attribute("last_completion", last_completion)
 
+    pool_name = schedd_ad.get("CMS_Pool", "Unknown")
     schedd = htcondor.Schedd(schedd_ad)
     # TODO: Aren't we missing jobs because of using CRAB_PostJobLastUpdate in the constraint?
     _q = """
@@ -156,6 +157,7 @@ def query_schedd_history(starttime: float, last_completion: float, schedd_ad: cl
             
             for idx, job_ad in enumerate(history_iter):
                 counts["count"] += 1
+                job_ad["CMS_Pool"] = pool_name
                 job_batch.append(job_ad)
                 # Update latest completion time based on job's completion date
                 job_completion = (

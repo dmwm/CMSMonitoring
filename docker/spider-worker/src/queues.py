@@ -193,7 +193,7 @@ def process_nats_queue(
                                 classad_obj,
                                 return_dict=True,
                                 reduce_data=const.REDUCE_DATA,
-                                pool_name="Unknown",  # TODO: Get pool_name from metadata or job
+                                pool_name=classad_obj.get("CMS_Pool", "Unknown"),
                             )
                             if dict_ad:
                                 payload = convert_dates_to_millisecs(dict_ad)

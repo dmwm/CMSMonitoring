@@ -116,6 +116,7 @@ def query_single_schedd(
                 # Collect jobs in batches for efficient publishing
                 for job_ad in query_iter:
                     counts["count"] += 1
+                    job_ad["CMS_Pool"] = pool_name
                     job_batch.append(job_ad)
                     
                     if len(job_batch) >= const.NATS_BATCH_SIZE:
