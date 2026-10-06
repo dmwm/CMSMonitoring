@@ -145,9 +145,10 @@ def process_ad(
         result["Workflow"] = guessWorkflow(ad, analysis)
     now = time.time()
     if ad.get("JobStatus") == 2 and (ad.get("EnteredCurrentStatus", now + 1) < now):
-        ad["RemoteWallClockTime"] = int(now - ad["EnteredCurrentStatus"])
-        ad["CommittedTime"] = ad["RemoteWallClockTime"]
-    result["WallClockHr"] = ad.get("RemoteWallClockTime", 0) / 3600.0
+        timeSinceJobStart = int(now - ad["EnteredCurrentStatus"])
+        ad["LastRemoteWallClockTime"] = timeSinceJobStart
+        ad["CommittedTime"] = timeSinceJobStart
+    result["WallClockHr"] = ad.get("LastRemoteWallClockTime", 0) / 3600.0
     result["PilotRestLifeTimeMins"] = -1
     if analysis and ad.get("JobStatus") == 2 and "LastMatchTime" in ad:
         try:
