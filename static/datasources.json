@@ -345,7 +345,7 @@
         "id": 10125,
         "type": "prometheus",
         "database": "",
-        "url": "http://dbs-prod.cern.ch:30000"
+        "url": "http://dbs-prod2.cern.ch:30000"
     },
     "es-cms": {
         "id": 8983,
